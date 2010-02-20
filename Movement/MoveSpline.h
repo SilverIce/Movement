@@ -11,7 +11,7 @@
 #include "mov_constants.h"
 #include "spline.h"
 #include "G3D/Vector4.h"
-#include "MoveSplineFlag.h"
+#include "MoveSplineInitArgs.h"
 
 #include <limits>
 
@@ -40,42 +40,14 @@ namespace Movement {
         T m_counter;
     };
 
-    // TODO: make it Atomic
-    typedef counter<uint32, 0> MoveSplineCounter;
-    extern MoveSplineCounter movespline_counter;
+    // MoveSpline - кривая гладкая или ломаная линия и точка на ней, движущаяся из начала в конец кривой
+    // точка может иметь вертикальную составляющую движения
+    // кривая может быть замкнута - в этом случае точка никогда не остановится
+    // состояние MoveSpline необратимо: точка может двигаться только вперед
 
-    union FacingInfo
-    {
-        struct Point{
-            float x,y,z;
-        }       spot;
-        uint64  target;
-        float   angle;
-
-        FacingInfo(const Point& p) : spot(p){}
-        FacingInfo(float o) : angle(o) {}
-        FacingInfo(uint64 t) : target(t) {}
-        FacingInfo() {}
-    };
-
-    struct MoveSplineInitArgs
-    {
-        MoveSplineInitArgs() : path_Idx_offset(0),
-            velocity(0.f), parabolic_heigth(0.f), time_perc(0.f)   {}
-
-        PointsArray path;
-        FacingInfo facing;
-        MoveSplineFlag flags;
-        int32 path_Idx_offset;
-        float velocity;
-        float parabolic_heigth;
-        float time_perc;
-
-        bool Validate() const;
-    private:
-        bool _checkPathBounds() const;
-    };
-
+    // MoveSpline represents smooth catmullrom or linear curve and point that moves belong it
+    // curve can be cyclic - in this case movement will be cyclic
+    // point can have vertical acceleration motion componemt(used in fall, parabolic movement)
     class MoveSpline
     {
     public:
@@ -92,12 +64,12 @@ namespace Movement {
 
         MoveSplineFlag  splineflags;
 
-        int32          time_passed;
+        int32           time_passed;
         // currently duration mods are unused, but its _currently_
         //float           duration_mod;
         //float           duration_mod_next;
         float           vertical_acceleration;
-        int32          spec_effect_time;
+        int32           spec_effect_time;
 
     protected:
         bool isCyclic() const { return splineflags.cyclic;}
