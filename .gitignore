@@ -7,22 +7,10 @@
 # command after changing this file, to see if there are
 # any tracked files which get ignored after the change.
 
-*.c
-*.cpp
-*.h
-
-data-files/
-bin/
-doc-files/
-temp/
-build/
-mov_build/
+*
 
 # Extensions
 !.gitignore
 !Movement/*
 !mov_research/*
 !mov_tests/*
-
-# VC files
-VC9/*
