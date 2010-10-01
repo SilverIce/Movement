@@ -2,12 +2,14 @@
 
 
 #include "SimpleWorld.h"
-#include <windows.h>
+#include <Windows.h>
 
+extern void test();
 
-int main(int, char *[])
+int main()
 {
-    sWorld.Run();
+    test();
+    Sleep(0xFFFFFF);
     return 0;
 }
 
@@ -26,8 +28,9 @@ void World::Run()
     uint32 prevSleepTime = 0;                               // used for balanced full tick time length near WORLD_SLEEP_CONST
 
     InitWorld();
+    state_run = true;
 
-    while ( run == true )
+    while ( state_run == true )
     {
         realCurrTime = GetTickCount();
         uint32 diff = getMSTimeDiff(realPrevTime,realCurrTime);
@@ -47,13 +50,13 @@ void World::Run()
 
 World::~World()
 {
-    for(std::vector<TestArea*>::iterator it = m_tests_tt.begin();it!=m_tests_tt.end(); ++it)
+    for(std::vector<TestArea*>::iterator it = m_tests.begin();it!=m_tests.end(); ++it)
         delete (*it);
 }
 
-void World::Update(const uint32 & diff)
+void World::Update(const uint32 diff)
 {
-    for(std::vector<TestArea*>::iterator it = m_tests_tt.begin();it!=m_tests_tt.end(); ++it)
+    for(std::vector<TestArea*>::iterator it = m_tests.begin();it!=m_tests.end(); ++it)
     {
         if((*it)->running())
            (*it)->Update(diff);
@@ -62,8 +65,7 @@ void World::Update(const uint32 & diff)
 
 World::World()
 {
-    InitWorld();
-    run = true;
+    SLEEP_TIME = def_sleep_time;
 }
 
 /*
@@ -136,15 +138,21 @@ struct Corrd : public TestArea
 };*/
 
 
-void World::InitWorld()
-{
-    //new MoveTest;
-    //new Corrd;
-
-}
-
 World& World::instance()
 {
     static World si;
     return si;
+}
+
+void World::register_test( TestArea &t )
+{
+    m_tests.push_back(&t);
+}
+
+TestArea::TestArea()
+{
+    InitTest();
+    run();
+
+    sWorld.register_test(*this);
 }
