@@ -25,13 +25,12 @@ void OutLogger::write(const char* str, ...)
 
     va_start(ap, str);
     vfprintf(stdout, str, ap);
-    printf( "\n" );
+    vfprintf(file, str, ap);
     va_end(ap);
 
-    va_start(ap, str);
-    vfprintf(file, str, ap);
+    printf( "\n" );
     fprintf(file, "\n" );
-    va_end(ap);
+
     fflush(file);
     fflush(stdout);
 }
