@@ -1,82 +1,75 @@
+
 #include "packet_builder.h"
-#include "Movement.h"
+#include "mov_constants.h"
 #include "OutLog.h"
 
-#include "const_tables.h"
-#include <assert.h>
+#include "Movement.h"
 #include "SplineState.h"
+#include <assert.h>
 
 #include "WorldPacket_fake.h"
 
 namespace Movement
 {
+    class IPacketBuilder
     {
     public:
+        virtual void SpeedUpdate(MovementState const& mov, SpeedType type, WorldPacket&) const = 0;
+        virtual void MoveModeUpdate(MovementState const& mov, MoveMode mode, WorldPacket&) const = 0;
+        virtual void PathUpdate(MovementState const& mov, WorldPacket&) const = 0;
     };
 
-    class IPacketBuilderType
+    class ClientBuilder : public IPacketBuilder
     {
     public:
-        virtual void SpeedUpdate(UnitMoveType type, WorldPacket&) const = 0;
-        virtual void MoveModeUpdate(MoveMode mode, WorldPacket&) const = 0;
-        virtual void PathUpdate(WorldPacket&) const = 0;
+        void SpeedUpdate(MovementState const& mov, SpeedType type, WorldPacket&) const;
+        void MoveModeUpdate(MovementState const& mov, MoveMode mode, WorldPacket&) const;
+        void PathUpdate(MovementState const& mov, WorldPacket& ) const;
     };
 
-    class ClientBuilder : public IPacketBuilderType
+    class SplineBuilder : public IPacketBuilder
     {
     public:
-        MovementState const& mov;
-        ClientBuilder(MovementState &dat) : mov(dat) {}
-
-        void SpeedUpdate(UnitMoveType type, WorldPacket&) const;
-        void MoveModeUpdate(MoveMode mode, WorldPacket&) const;
-        void PathUpdate(WorldPacket& ) const;
+        void SpeedUpdate(MovementState const& mov, SpeedType type, WorldPacket&) const;
+        void MoveModeUpdate(MovementState const& mov, MoveMode mode, WorldPacket&) const;
+        void PathUpdate(MovementState const& mov, WorldPacket&) const;
     };
 
-    class SplineBuilder : public IPacketBuilderType
+    static const IPacketBuilder * const m_states[MovControlCount] =
     {
-    public:
-        MovementState const& mov;
-        SplineBuilder(MovementState &dat) : mov(dat) {}
-
-        void SpeedUpdate(UnitMoveType type, WorldPacket&) const;
-        void MoveModeUpdate(MoveMode mode, WorldPacket&) const;
-        void PathUpdate(WorldPacket&) const;
+        new ClientBuilder,
+        new SplineBuilder,
     };
 
 
     PacketBuilder::PacketBuilder(class MovementState *const dat, MovControlType c)
-        : current(c)
+        : current(c), mov(*dat)
     {
-        m_states[MovControlClient] = new ClientBuilder(*dat);
-        m_states[MovControlServer] = new SplineBuilder(*dat);
     }
 
     PacketBuilder::~PacketBuilder()
     {
-        delete m_states[MovControlClient];
-        delete m_states[MovControlServer];
     }
 
-    void PacketBuilder::SpeedUpdate(UnitMoveType type, WorldPacket& p) const
+    void PacketBuilder::SpeedUpdate(SpeedType type, WorldPacket& p) const
     {
-        m_states[current]->SpeedUpdate(type,p);
+        m_states[current]->SpeedUpdate(mov,type,p);
     }
 
     void PacketBuilder::MoveModeUpdate(MoveMode mode, WorldPacket& p) const
     {
-        m_states[current]->MoveModeUpdate(mode,p);
+        m_states[current]->MoveModeUpdate(mov,mode,p);
     }
 
-    void PacketBuilder::PathUpdate(WorldPacket& p) const
+    void PacketBuilder::StateUpdate(WorldPacket& p) const
     {
-        m_states[current]->PathUpdate(p);
+        m_states[current]->PathUpdate(mov,p);
     }
 
 
 
 
-    void SplineBuilder::SpeedUpdate(UnitMoveType type, WorldPacket& data) const
+    void SplineBuilder::SpeedUpdate(MovementState const& mov, SpeedType type, WorldPacket& data) const
     {
         uint16 opcode = S_Speed2Opc_table[type];
         sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
@@ -86,7 +79,7 @@ namespace Movement
         data << (float)mov.GetSpeed(type);
     }
 
-    void SplineBuilder::MoveModeUpdate(MoveMode mode, WorldPacket& data) const
+    void SplineBuilder::MoveModeUpdate(MovementState const& mov, MoveMode mode, WorldPacket& data) const
     {
         uint16 opcode = S_Mode2Opc_table[mode][mov.HasMode(mode)];
         sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
@@ -95,7 +88,7 @@ namespace Movement
         //data.append(mov.wow_object->GetPackGUID());
     }
 
-    void SplineBuilder::PathUpdate(WorldPacket& data) const
+    void SplineBuilder::PathUpdate(MovementState const& mov, WorldPacket& data) const
     {
         const SplineState& spline = mov.spline;
         const NodeList& path = spline.spline_path;
@@ -183,12 +176,12 @@ namespace Movement
 
 
 
-    void ClientBuilder::MoveModeUpdate(MoveMode /*type*/, WorldPacket& /*apply*/) const
+    void ClientBuilder::MoveModeUpdate(MovementState const& mov, MoveMode /*type*/, WorldPacket& /*apply*/) const
     {
         //mov.wow_object->BuildHeartBeatMsg(&mov.wow_object->PrepareSharedMessage());
     }
 
-    void ClientBuilder::SpeedUpdate(UnitMoveType ty, WorldPacket& data) const
+    void ClientBuilder::SpeedUpdate(MovementState const& mov, SpeedType ty, WorldPacket& data) const
     {
         bool forced = true;
 
@@ -215,7 +208,7 @@ namespace Movement
         //data << mov.GetSpeed(ty);
     }
 
-    void ClientBuilder::PathUpdate(WorldPacket&) const
+    void ClientBuilder::PathUpdate(MovementState const& mov, WorldPacket&) const
     {
         // do nothing
     }
