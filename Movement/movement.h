@@ -102,8 +102,13 @@ namespace Movement
             uint32 t_time;
         } m_transport;
 
-        struct 
+        struct SpeedInfo
         {
+            void init()
+            {
+                memcpy(this, BaseSpeed, sizeof SpeedInfo);
+            }
+
             float current;
             float walk;
             float run;
@@ -114,9 +119,8 @@ namespace Movement
             float flight_back;
             float turn;
             float pitch;
-            //float speed_14;
+        };
 
-        } speed_block;
         
         float speed[MAX_MOVE_TYPE];
 

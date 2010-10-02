@@ -66,4 +66,18 @@ namespace Movement
         {MSG_MOVE_SET_PITCH_RATE,       SMSG_FORCE_PITCH_RATE_CHANGE},
     };
 
+    static const float BaseSpeed[SpeedMaxCount] =
+    {
+        7.0f,                                                   // SpeedCurrent
+        2.5f,                                                   // SpeedWalk
+        7.0f,                                                   // SpeedRun
+        4.5f,                                                   // SpeedSwimBack
+        4.722222f,                                              // SpeedSwim
+        1.25f,                                                  // SpeedRunBack
+        7.0f,                                                   // SpeedFlight
+        4.5f,                                                   // SpeedFlightBack
+        3.141594f,                                              // SpeedTurn
+        3.141594f,                                              // SpeedPitch
+    };
+
 }
