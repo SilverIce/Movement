@@ -147,21 +147,23 @@ namespace Movement
         MoveModeMaxCount
     };
 
-    enum UnitMoveType
+    enum SpeedType
     {
-        MOVE_NONE           =-1,
-        MOVE_WALK           = 0,
-        MOVE_RUN            = 1,
-        MOVE_SWIM_BACK      = 2,
-        MOVE_SWIM           = 3,
-        MOVE_RUN_BACK       = 4,
-        MOVE_FLIGHT         = 5,
-        MOVE_FLIGHT_BACK    = 6,
+        SpeedNone           =-1,
 
-        MOVE_TURN_RATE      = 7,
-        MOVE_PITCH_RATE     = 8,
+        SpeedCurrent        = 0,
+        SpeedWalk           = 1,
+        SpeedRun            = 2,
+        SpeedSwimBack       = 3,
+        SpeedSwim           = 4,
+        SpeedRunBack        = 5,
+        SpeedFlight         = 6,
+        SpeedFlightBack     = 7,
 
-        MAX_MOVE_TYPE       = 9,
+        SpeedTurn           = 8,
+        SpeedPitch          = 9,
+
+        SpeedMaxCount       = 10,
     };
 
     static const float gravity_rate = 19.291105f;
@@ -175,13 +177,13 @@ namespace Movement
             MOVEFLAG_SWIMMING | MOVEFLAG_FLYING,
         };
 
-        static UnitMoveType Select(const uint32& fl)
+        static SpeedType Select(const uint32& fl)
         {
             if( (fl & DIRECTIONS_MASK)==NULL || (fl & MOVEFLAG_ROOT))
-                return MOVE_NONE;
+                return SpeedNone;
 
             if(fl & MOVEFLAG_WALK_MODE)
-                return MOVE_WALK;
+                return SpeedWalk;
 
             if(fl & MOVEFLAG_BACKWARD)
             {
@@ -190,18 +192,18 @@ namespace Movement
                 if(fl & MOVEFLAG_FLYING)
                     return MOVE_FLIGHT_BACK;
 
-                return MOVE_RUN_BACK;
+                return SpeedRunBack;
             }
             // all directions except backward
             if(fl & (DIRECTIONS_MASK & ~MOVEFLAG_BACKWARD))
             {
                 if(fl & MOVEFLAG_SWIMMING)
-                    return MOVE_SWIM;
+                    return SpeedSwim;
                 if(fl & MOVEFLAG_FLYING)
-                    return MOVE_FLIGHT;
-                return MOVE_RUN;
+                    return SpeedFlight;
+                return SpeedRun;
             }
-            return MOVE_NONE;
+            return SpeedNone;
         }
     };*/
 }

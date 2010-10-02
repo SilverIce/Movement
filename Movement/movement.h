@@ -38,10 +38,10 @@ namespace Movement
         /// Get-Set methtods
 
         /// Speed
-        void SetSpeed(UnitMoveType type, float s) { speed[type] = s; }
-        float GetSpeed(UnitMoveType type) const { return speed[type]; }
         float GetCurrentSpeed() const { return speed[mt]; }
         void SetMoveType(UnitMoveType type) { mt = type; }
+        void SetSpeed(SpeedType type, float s) { speed[type] = s; }
+        float GetSpeed(SpeedType type) const { return speed[type]; }
 
         /// Movement flags
         void AddMovementFlag(uint32 f) { moveFlags |= f; }
