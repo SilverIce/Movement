@@ -25,6 +25,7 @@ namespace Movement
         }
 
 
+        #pragma region methtods
         PacketBuilder& GetBuilder() { return msg_builder; }
         PacketBuilder msg_builder;
 
@@ -32,18 +33,20 @@ namespace Movement
 
         /// Get-Set methtods
 
+        /// Speed
         void SetSpeed(UnitMoveType type, float s) { speed[type] = s; }
         float GetSpeed(UnitMoveType type) const { return speed[type]; }
         float GetCurrentSpeed() const { return speed[mt]; }
         void SetMoveType(UnitMoveType type) { mt = type; }
 
+        /// Movement flags
         void AddMovementFlag(uint32 f) { moveFlags |= f; }
         void RemoveMovementFlag(uint32 f) { moveFlags &= ~f; }
         bool HasMovementFlag(uint32 f) const { return moveFlags & f; }
         uint32 GetMovementFlags() const { return moveFlags; }
         void SetMovementFlags(uint32 f) { moveFlags = f; }
 
-        /// Direction info
+        /// Direction flags
         void AddDirectionFlag(uint8 f) { direction_flags |= f; }
         void RemoveDirectionFlag(uint8 f) { direction_flags &= ~f; }
         bool HasDirectionFlag(uint8 f) const { return direction_flags & f; }
@@ -56,12 +59,12 @@ namespace Movement
         /// Move Modes
         bool HasMode(MoveMode m) const { return move_mode & (1 << m);}
 
-        void SetMoveMode(MoveMode mode, bool began)
+        void ApplyMoveMode(MoveMode mode, bool apply)
         {
-            if (began)
+            if (apply)
             {
                 AddMovementFlag(Mode2Flag_table[mode]);
-                move_mode |= 1 << mode;
+                move_mode |= (1 << mode);
             }
             else
             {
@@ -71,15 +74,16 @@ namespace Movement
         }
 
         /// Apply/remove modes
-        void Root(bool apply) { SetMoveMode(MoveModeRoot, apply); }
-        void Swim(bool apply) { SetMoveMode(MoveModeSwim, apply); }
-        void Walk(bool apply) { SetMoveMode(MoveModeWalk, apply); }
-        void WaterWalk(bool apply) { SetMoveMode(MoveModeWaterwalk, apply); }
-        void SlowFall(bool apply) { SetMoveMode(MoveModeSlow_fall, apply); }
-        void Fly(bool apply) { SetMoveMode(MoveModeFly, apply); }
-        void Hover(bool apply) { SetMoveMode(MoveModeHover, apply); }
+        void Root(bool apply) { ApplyMoveMode(MoveModeRoot, apply); }
+        void Swim(bool apply) { ApplyMoveMode(MoveModeSwim, apply); }
+        void Walk(bool apply) { ApplyMoveMode(MoveModeWalk, apply); }
+        void WaterWalk(bool apply) { ApplyMoveMode(MoveModeWaterwalk, apply); }
+        void SlowFall(bool apply) { ApplyMoveMode(MoveModeSlowfall, apply); }
+        void Fly(bool apply) { ApplyMoveMode(MoveModeFly, apply); }
+        void Hover(bool apply) { ApplyMoveMode(MoveModeHover, apply); }
 
         /// end of Get-Set methtods
+        #pragma endregion
 
         uint32 move_mode;
 
@@ -125,13 +129,10 @@ namespace Movement
         float speed[MAX_MOVE_TYPE];
 
         UnitMoveType mt;
-        /// end generic data
 
-        /// Spline move data
 
         SplineState spline;
 
-        /// end spline data
 
 
         /// Some client's formulas:

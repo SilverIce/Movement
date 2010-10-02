@@ -120,9 +120,9 @@ namespace Movement
 
     enum SplineMode
     {
-        SPLINEMODE_LINEAR       = 0,
-        SPLINEMODE_CATMULLROM   = 1,
-        SPLINEMODE_BEZIER3      = 2
+        SplineModeLinear       = 0,
+        SplineModeCatmullrom   = 1,
+        SplineModeBezier3      = 2
     };
 
     enum SplineType

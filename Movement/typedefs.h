@@ -12,3 +12,10 @@ namespace Movement
     typedef __int64         int64;
     typedef unsigned __int64 uint64;
 }
+
+namespace G3D
+{
+    class Vector3;
+}
+
+using G3D::Vector3;

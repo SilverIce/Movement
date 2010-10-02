@@ -8,8 +8,6 @@
 
 namespace Movement
 {
-    using G3D::Vector3;
-
     struct MoveNode 
     {
         MoveNode(Vector3 const& poi) : vec(poi), time(0), seg_lenght(0) {}
