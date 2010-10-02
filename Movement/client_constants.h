@@ -136,14 +136,15 @@ namespace Movement
 
     enum MoveMode
     {
-        MoveModeWalk       = 0,
-        MoveModeRoot       = 2,
-        MoveModeSwim       = 4,
-        MoveModeWaterwalk  = 6,
-        MoveModeSlow_fall  = 8,
-        MoveModeHover      = 10,
-        MoveModeFly        = 12,
-        //SPLINE_MODE     = 14,
+        MoveModeWalk,
+        MoveModeRoot,
+        MoveModeSwim,
+        MoveModeWaterwalk,
+        MoveModeSlowfall,
+        MoveModeHover,
+        MoveModeFly,
+        //SPLINE_MODE      = 7,
+        MoveModeMaxCount
     };
 
     enum UnitMoveType

@@ -5,19 +5,12 @@ namespace Movement
     static const uint32 Mode2Flag_table[]=
     {
         {/*WALK_BEGAN,*/        MOVEFLAG_WALK_MODE},
-        {0},
         {/*ROOT_BEGAN,*/        MOVEFLAG_ROOT},
-        {0},   
         {/*SWIM_BEGAN,*/        MOVEFLAG_SWIMMING},
-        {0},
         {/*WATERWALK_MODE,*/    MOVEFLAG_WATERWALKING},
-        {0},
         {/*SLOW_FALL_BEGAN,*/   MOVEFLAG_SAFE_FALL},
-        {0},
         {/*HOVER_BEGAN,*/       MOVEFLAG_HOVER},
-        {0},
         {/*FLY_BEGAN, */        MOVEFLAG_FLYING},
-        {0},
         //{/*SPLINE_BEGAN, */     MOVEFLAG_SPLINE_ENABLED},
         //{0},
     };
@@ -35,22 +28,15 @@ namespace Movement
         {/*MOVE_PITCH_RATE,*/   SMSG_SPLINE_SET_PITCH_RATE},
     };
 
-    static const uint16 S_Mode2Opc_table[]=
+    static const uint16 S_Mode2Opc_table[MoveModeMaxCount][2]=
     {
-        {/*WALK_BEGAN,*/        SMSG_SPLINE_MOVE_SET_WALK_MODE},
-        {/*WALK_STOP,*/         SMSG_SPLINE_MOVE_SET_RUN_MODE},
-        {/*ROOT_BEGAN,*/        SMSG_SPLINE_MOVE_ROOT},
-        {/*ROOT_STOP,*/         SMSG_SPLINE_MOVE_UNROOT},   
-        {/*SWIM_BEGAN,*/        SMSG_SPLINE_MOVE_START_SWIM},
-        {/*SWIM_STOP,*/         SMSG_SPLINE_MOVE_STOP_SWIM},
-        {/*WATERWALK_MODE,*/    SMSG_SPLINE_MOVE_WATER_WALK},
-        {/*WATERWALK_STOP,*/    SMSG_SPLINE_MOVE_LAND_WALK},
-        {/*SLOW_FALL_BEGAN,*/   SMSG_SPLINE_MOVE_FEATHER_FALL},
-        {/*SLOW_FALL_END,*/     SMSG_SPLINE_MOVE_NORMAL_FALL},
-        {/*HOVER_BEGAN,*/       SMSG_SPLINE_MOVE_SET_HOVER},
-        {/*HOVER_STOP,*/        SMSG_SPLINE_MOVE_UNSET_HOVER},
-        {/*FLY_BEGAN,*/         SMSG_SPLINE_MOVE_SET_FLYING},
-        {/*FLY_STOP,*/          SMSG_SPLINE_MOVE_UNSET_FLYING},
+        {/*WALK_BEGAN,*/        SMSG_SPLINE_MOVE_SET_RUN_MODE, SMSG_SPLINE_MOVE_SET_WALK_MODE},
+        {/*ROOT_BEGAN,*/        SMSG_SPLINE_MOVE_UNROOT,       SMSG_SPLINE_MOVE_ROOT},
+        {/*SWIM_BEGAN,*/        SMSG_SPLINE_MOVE_STOP_SWIM,    SMSG_SPLINE_MOVE_START_SWIM},
+        {/*WATERWALK_MODE,*/    SMSG_SPLINE_MOVE_LAND_WALK,    SMSG_SPLINE_MOVE_WATER_WALK},
+        {/*SLOW_FALL_BEGAN,*/   SMSG_SPLINE_MOVE_NORMAL_FALL,  SMSG_SPLINE_MOVE_FEATHER_FALL},
+        {/*HOVER_BEGAN,*/       SMSG_SPLINE_MOVE_UNSET_HOVER,  SMSG_SPLINE_MOVE_SET_HOVER},
+        {/*FLY_BEGAN,*/         SMSG_SPLINE_MOVE_UNSET_FLYING, SMSG_SPLINE_MOVE_SET_FLYING},
     };
 
     static const uint16 SetSpeed2Opc_table[][2]=

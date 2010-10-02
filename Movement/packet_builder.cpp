@@ -88,7 +88,7 @@ namespace Movement
 
     void SplineBuilder::MoveModeUpdate(MoveMode mode, WorldPacket& data) const
     {
-        uint16 opcode = S_Mode2Opc_table[ mode + (mov.HasMode(mode) ? 1 : 0) ];
+        uint16 opcode = S_Mode2Opc_table[mode][mov.HasMode(mode)];
         sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
 
         //WorldPacket &data = mov.wow_object->PrepareSharedMessage(opc, 8+4);
@@ -194,8 +194,8 @@ namespace Movement
         bool forced = true;
 
         //WorldObject *m = mov.wow_object;
+        uint16 opcode = SetSpeed2Opc_table[ty][forced];
         sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
-        uint16 opcode = SetSpeed2Opc_table[ty][forced ? 1 : 0];
 
         //WorldPacket& data = m->PrepareSharedMessage(opcode, 10); 
         //data.append(m->GetPackGUID());
