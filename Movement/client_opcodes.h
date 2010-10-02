@@ -1314,4 +1314,6 @@ namespace Movement
         UMSG_UNKNOWN_1306                               = 0x51A, // not found
         NUM_MSG_TYPES                                   = 0x51B
     };
+
+    const char* OpcodeName(uint16 id);
 }

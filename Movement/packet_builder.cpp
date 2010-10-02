@@ -96,7 +96,7 @@ namespace Movement
     void SplineBuilder::SpeedUpdate(UnitMoveType type, WorldPacket& data) const
     {
         uint16 opcode = S_Speed2Opc_table[type];
-        sLog.write("PacketBuilder: control: Server, create x%X message", opcode);
+        sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
 
         //WorldPacket &data = mov.wow_object->PrepareSharedMessage(opcode, 8+4);
         //data.append(mov.wow_object->GetPackGUID());
@@ -106,7 +106,7 @@ namespace Movement
     void SplineBuilder::MoveModeUpdate(MoveMode mode, WorldPacket& data) const
     {
         uint16 opcode = S_Mode2Opc_table[ mode + (mov.HasMode(mode) ? 1 : 0) ];
-        sLog.write("PacketBuilder: control: Server, create x%X message", opcode);
+        sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
 
         //WorldPacket &data = mov.wow_object->PrepareSharedMessage(opc, 8+4);
         //data.append(mov.wow_object->GetPackGUID());
@@ -120,7 +120,7 @@ namespace Movement
         assert(path.size());
 
         uint16 opcode = SMSG_MONSTER_MOVE;
-        sLog.write("PacketBuilder: control: Server, create x%X message", opcode);
+        sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
 
         //WorldPacket &data = wow_object->PrepareSharedMessage( SMSG_MONSTER_MOVE, 30, true);
         //data.append(mov.wow_object->GetPackGUID());
@@ -211,8 +211,8 @@ namespace Movement
         bool forced = true;
 
         //WorldObject *m = mov.wow_object;
+        sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
         uint16 opcode = SetSpeed2Opc_table[ty][forced ? 1 : 0];
-        sLog.write("PacketBuilder: control: Client, create x%X message", opcode);
 
         //WorldPacket& data = m->PrepareSharedMessage(opcode, 10); 
         //data.append(m->GetPackGUID());
