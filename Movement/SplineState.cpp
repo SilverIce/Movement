@@ -1,4 +1,4 @@
-#include "client_constants.h"
+#include "mov_constants.h"
 #include "SplineState.h"
 
 using namespace Movement;
@@ -29,4 +29,21 @@ void SplineState::SetFacing( Vector3 const& spot )
 void SplineState::ResetFacing()
 {
     RemoveSplineFlag(SPLINE_MASK_FINAL_FACING);
+}
+
+Movement::SplineState::SplineState()
+{
+    spline_path.reserve(10);
+
+    time_stamp = 0;
+    splineflags = 0;
+    total_lenght = 0;
+
+    move_time_full = 0;
+    move_time_passed = 0;
+
+    mode = SplineModeLinear;
+
+    parabolic_speed = 0;
+    parabolic_time = 0;
 }

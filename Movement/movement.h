@@ -18,6 +18,10 @@ namespace Movement
     public:
         MovementState() :  msg_builder(this, MovControlServer)
         {
+            move_mode = 0;
+            time_stamp = 0;
+            moveFlags = 0;
+            move_flags2 = 0;
         }
 
         ~MovementState()
@@ -101,6 +105,7 @@ namespace Movement
         /// Transport info
         struct TransportData
         {
+            TransportData() : t_guid(0), t_time(0) {}
             uint64 t_guid;
             Vector3 t_offset;
             uint32 t_time;

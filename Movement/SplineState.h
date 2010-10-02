@@ -10,33 +10,34 @@ namespace Movement {
     {
     public:
 
-        SplineState()
-        {
-            spline_path.reserve(10);
-        }
+        SplineState();
 
         union FaceData
         {
-            struct Point 
-            {
+            struct Point{
                 float x,y,z;
             } spot;
-            
             uint64 target;
             float angle;
-        } facing_info;
+        };
 
-        // Spline & Movement states have independant timestamp fields
-        uint32 time_stamp;
+        FaceData        facing_info;
 
-        uint32 splineflags;
+        // Spline & Movement states has independant timestamp fields
+        uint32          time_stamp;
+        uint32          splineflags;
 
-        float total_lenght;
-        uint32 move_time_full;
-        uint32 move_time_passed;
+        float           total_lenght;
+        uint32          move_time_full;
+        uint32          move_time_passed;
+
+        float           parabolic_speed;
+        uint32          parabolic_time;
 
         // cached path points
-        NodeList spline_path;
+        NodeList        spline_path;
+
+        SplineMode      mode;
 
         void AddSplineFlag(uint32 f) { splineflags |= f; }
         void RemoveSplineFlag(uint32 f) { splineflags &= ~f; }
@@ -44,11 +45,10 @@ namespace Movement {
         uint32 GetSplineFlags() const { return splineflags; }
         void SetSplineFlags(uint32 f) { splineflags = f; }
 
-        /// Get-Set, facing info
-        void SetFacing(uint64 guid);
-        void SetFacing(float o);
-        void SetFacing(Vector3 const& spot);
-
+        /// facing info
+        void SetFacing(uint64 target_guid);
+        void SetFacing(float angle);
+        void SetFacing(Vector3 const& point);
         void ResetFacing();
 
         float TimePassedCoeff() const { return (float(move_time_passed) / float(move_time_full));}
