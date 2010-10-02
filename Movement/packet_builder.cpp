@@ -110,13 +110,12 @@ namespace Movement
         data << uint8(0);
         // so positon became useless, there no more position, current position - only node,
         // or i'm not correct and need really send _current position?
-        //path[mov.node].WriteCoords3(data);
         const Vector3& start = mov.position;
         data << start;
 
         data << uint32(spline.time_stamp);
 
-        uint32 nodes = path.size();
+        uint32 nodes_count = path.size();
         uint32 splineflags = spline.GetSplineFlags();  // spline flags are here? not sure...
 
         if(splineflags & SPLINE_MASK_FINAL_FACING)
@@ -140,10 +139,10 @@ namespace Movement
                 assert(false);
         }
         else
-            data << uint8(0);
+            data << uint8(SPLINETYPE_NORMAL);
 
         data << uint32(splineflags);      // splineflags
-        data << uint32(nodes);
+        data << uint32(nodes_count);
 
         if (splineflags & SPLINEFLAG_UNKNOWN3)
         {
@@ -161,19 +160,19 @@ namespace Movement
 
         if(splineflags & (SPLINEFLAG_FLYING | SPLINEFLAG_CATMULLROM))
         {
-            for(uint32 i = 0; i < nodes; ++i)
-                data.append(path[i].vec);
+            for(uint32 i = 0; i < nodes_count; ++i)
+                data << path[i].vec;
         }
         else
         {
             const Vector3 &dest = path.back().vec;
-            data.append(dest);   // dest point
+            data << dest;   // dest point
 
-            if(nodes > 1)
+            if(nodes_count > 1)
             {
                 Vector3 vec = (start + dest) / 2;
 
-                for(uint32 i = 0; i < nodes - 1; ++i)// "nodes-1" because last node already appended
+                for(uint32 i = 0; i < nodes_count - 1; ++i)// "nodes_count-1" because destination point already appended
                 {
                     Vector3 temp = vec - path[i].vec;
                     data.appendPackXYZ(temp.x, temp.y, temp.z);
