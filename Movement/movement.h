@@ -16,12 +16,14 @@ namespace Movement
     {
 
     public:
-        MovementState() :  msg_builder(this, MovControlServer)
+        MovementState() : msg_builder(this, MovControlServer)
         {
             move_mode = 0;
             time_stamp = 0;
             moveFlags = 0;
             move_flags2 = 0;
+
+            speed_obj.init();
         }
 
         ~MovementState()
@@ -38,10 +40,9 @@ namespace Movement
         /// Get-Set methtods
 
         /// Speed
-        float GetCurrentSpeed() const { return speed[mt]; }
-        void SetMoveType(UnitMoveType type) { mt = type; }
         void SetSpeed(SpeedType type, float s) { speed[type] = s; }
         float GetSpeed(SpeedType type) const { return speed[type]; }
+        float GetCurrentSpeed() const { return speed_obj.current; }
 
         /// Movement flags
         void AddMovementFlag(uint32 f) { moveFlags |= f; }
@@ -89,19 +90,6 @@ namespace Movement
         /// end of Get-Set methtods
         #pragma endregion
 
-        uint32 move_mode;
-
-        // position-time pair
-        Vector3 position;// current position
-        uint32 time_stamp;
-
-        union
-        {
-            uint8 direction_flags;
-            uint32 moveFlags;
-        };
-        uint16 move_flags2;
-
         /// Transport info
         struct TransportData
         {
@@ -109,7 +97,7 @@ namespace Movement
             uint64 t_guid;
             Vector3 t_offset;
             uint32 t_time;
-        } m_transport;
+        };
 
         struct SpeedInfo
         {
@@ -130,15 +118,26 @@ namespace Movement
             float pitch;
         };
 
-        
-        float speed[MAX_MOVE_TYPE];
+        uint32          move_mode;
 
-        UnitMoveType mt;
+        // time-position pair
+        Vector3         position;
+        uint32          time_stamp;
 
+        union {
+            uint8       direction_flags;
+            uint32      moveFlags;
+        };
+        uint16          move_flags2;
 
-        SplineState spline;
+        TransportData   m_transport;
+   
+        union {
+            SpeedInfo   speed_obj;
+            float       speed[SpeedMaxCount];
+        };
 
-
+        SplineState     spline;
 
         /// Some client's formulas:
 
@@ -158,31 +157,31 @@ namespace Movement
             {
                 if ( moveFlags & MOVEFLAG_FLYING )
                 {
-                    if ( moveFlags & MOVEFLAG_BACKWARD && speed_block.flight >= speed_block.flight_back )
-                        return speed_block.flight_back;
+                    if ( moveFlags & MOVEFLAG_BACKWARD && speed_obj.flight >= speed_obj.flight_back )
+                        return speed_obj.flight_back;
                     else
-                        return speed_block.flight;
+                        return speed_obj.flight;
                 }
                 else if ( moveFlags & MOVEFLAG_SWIMMING )
                 {
-                    if ( moveFlags & MOVEFLAG_BACKWARD && speed_block.swim >= speed_block.swim_back )
-                        return speed_block.swim_back;
+                    if ( moveFlags & MOVEFLAG_BACKWARD && speed_obj.swim >= speed_obj.swim_back )
+                        return speed_obj.swim_back;
                     else
-                        return speed_block.swim;
+                        return speed_obj.swim;
                 }
                 else
                 {
                     if ( moveFlags & MOVEFLAG_WALK_MODE || is_walking )
                     {
-                        if ( speed_block.run > speed_block.walk )
-                            return speed_block.walk;
+                        if ( speed_obj.run > speed_obj.walk )
+                            return speed_obj.walk;
                     }
                     else
                     {
-                        if ( moveFlags & MOVEFLAG_BACKWARD && speed_block.run >= speed_block.run_back )
-                            return speed_block.run_back;
+                        if ( moveFlags & MOVEFLAG_BACKWARD && speed_obj.run >= speed_obj.run_back )
+                            return speed_obj.run_back;
                     }
-                    return speed_block.run;
+                    return speed_obj.run;
                }
             }
             else
