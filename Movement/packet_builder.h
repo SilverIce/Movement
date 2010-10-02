@@ -3,6 +3,8 @@
 
 #include "mov_constants.h"
 
+class WorldPacket;
+
 namespace Movement
 {
     enum MovControlType
@@ -12,7 +14,6 @@ namespace Movement
         MovControlCount,
     };
 
-    class WorldPacket;
 
     class PacketBuilder
     {
