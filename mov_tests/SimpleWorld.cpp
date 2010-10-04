@@ -9,16 +9,8 @@ extern void test();
 int main()
 {
     test();
-    Sleep(0xFFFFFF);
+    //Sleep(0xFFFFFF);
     return 0;
-}
-
-uint32 getMSTimeDiff(uint32 old_time, uint32 new_time)
-{
-    if (new_time > old_time)
-        return new_time - old_time;
-    else
-        return 0xFFFFFFFF - old_time + new_time;
 }
 
 void World::Run()
@@ -149,10 +141,7 @@ void World::register_test( TestArea &t )
     m_tests.push_back(&t);
 }
 
-TestArea::TestArea()
+TestArea::TestArea() : state_run(true)
 {
-    InitTest();
-    run();
-
     sWorld.register_test(*this);
 }

@@ -122,7 +122,8 @@ namespace Movement
     {
         SplineModeLinear       = 0,
         SplineModeCatmullrom   = 1,
-        SplineModeBezier3      = 2
+        SplineModeBezier3      = 2,
+        SplineModeCount        = 3,
     };
 
     enum SplineType

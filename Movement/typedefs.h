@@ -11,6 +11,15 @@ namespace Movement
 
     typedef __int64         int64;
     typedef unsigned __int64 uint64;
+
+    // TODO: move it out of here
+    inline uint32 getMSTimeDiff(uint32 old_time, uint32 new_time)
+    {
+        if (old_time > new_time)
+            return (0xFFFFFFFF - old_time) + new_time;
+        else
+            return new_time - old_time;
+    }
 }
 
 namespace G3D

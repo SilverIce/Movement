@@ -10,7 +10,7 @@ OutLogger::OutLogger() : file(0)
     file = fopen("out.log","wb");
     assert(file);
 
-    write("    Init log file\n");
+    write("    Log file initialized\n");
 }
 
 OutLogger::~OutLogger()

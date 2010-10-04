@@ -48,7 +48,6 @@ public:
     bool running() const{ return state_run; }
 
     virtual void Update(const uint32 diff) = 0;
-    virtual void InitTest() {}
 
     TestArea( );
 };
