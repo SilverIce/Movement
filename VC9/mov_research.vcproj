@@ -178,6 +178,10 @@
 			>
 		</File>
 		<File
+			RelativePath="..\mov_research\containers.h"
+			>
+		</File>
+		<File
 			RelativePath="..\mov_research\spline_basis.h"
 			>
 			<FileConfiguration

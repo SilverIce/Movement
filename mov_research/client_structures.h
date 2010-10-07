@@ -1,10 +1,18 @@
 #pragma once
 
 #include "typedefs.h"
+#include "containers.h"
 
 void CheckOffsets();
 
 #pragma pack(push,1)
+
+enum SplineMode
+{
+    SplineModeLinear       = 0,
+    SplineModeBezier3      = 2,
+    SplineModeCount        = 3,
+};
 
 struct Vector3
 {
@@ -29,6 +37,58 @@ struct objGUID
     uint32 type_id;
     uint32 data;
 };
+
+struct C34Matrix //struc ; (sizeof=0x30, standard type
+{
+    float a0;
+    float a1;
+    float a2;
+    float b0;
+    float b1;
+    float b2;
+    float c0;
+    float c1;
+    float c2;
+    float d0;
+    float d1;
+    float d2;
+};
+
+struct C44Matrix //struc ; (sizeof=0x40, standard type
+{
+    float a0;
+    float a1;
+    float a2;
+    float a3;
+    float b0;
+    float b1;
+    float b2;
+    float b3;
+    float c0;
+    float c1;
+    float c2;
+    float c3;
+    float d0;
+    float d1;
+    float d2;
+    float d3;
+};
+
+struct C3Spline
+{
+    void* vtable;
+    float cachedLength;
+
+    TSGrowableArray_Vector3 points;
+    TSGrowableArray_float cachedSegLength;
+};
+
+struct C3Spline_CatmullRom
+{
+    C3Spline    baseclass_0;
+    SplineMode splineMode : 4; 
+};
+
 
 //444
 struct SplineInfo   //SMemAlloc(544, (int)".\\Movement_C.cpp", 0xA6u, 0);  ~544 bytes

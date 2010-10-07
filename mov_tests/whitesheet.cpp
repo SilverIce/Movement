@@ -78,20 +78,6 @@ void test()
         catm.append( nodes[i]);
     catm.finalInterval = mover.finalInterval;
 
-    //mover.SetfinalInterval(250);
-    //catm.finalInterval = 250;
-//     for (int i = -2; i < 6;  )
-//     {
-//         Vector3 c1;
-//         Vector3 c2;
-//         float t1 = 0;
-//         int t2 = 0;
-// 
-//         catm.getControl(i, t1, c1);
-//         mover.getControl(i, t2, c2);
-//         ++i;
-//     }
-
     sLog.write("G3D spline:");
     float dur = catm.duration(), part = dur/20;
     for (float i = 0; i <= dur; i += part )
@@ -107,13 +93,6 @@ void test()
     {
         Vector3 v;
         mover.evaluate(i, v);
-    }
-
-    sLog.write("\nLengths:");
-    for (int i = 0; i <= 6; ++i )
-    {
-        float l = mover.SegLength(i);
-        sLog.write("%i   %f", i, l);
     }
 }
 
