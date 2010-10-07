@@ -56,27 +56,28 @@ static G3D::Matrix4 g3d_catmullrom_basis2(
     -0.f, 1.f, 0.f, 0.f);
 
 
-Vector3 nodes[3]=
+Vector3 nodes[]=
 {
     Vector3(0,     -0.5,   0),
     Vector3(2,     2,   0),
     Vector3(3,     -1.5, 0),
+    Vector3(1.7,   0, 0),
 };
 
 
 void test()
 {
-    GD3_spline catm;
-    catm.cyclic = true;
  
     SplinePure mover;
-    mover.cyclic = true;
-    mover.mode = SplineModeCatmullrom;
+    mover.push_path(nodes, 4, SplineModeCatmullrom, true);
 
-    for (int i = 0; i < 3; ++i)
+    GD3_spline catm;
+    catm.cyclic = mover.cyclic;
+
+    for (int i = 0; i < 4; ++i)
         catm.append( nodes[i]);
+    catm.finalInterval = mover.finalInterval;
 
-    mover.append(nodes, 3);
     //mover.SetfinalInterval(250);
     //catm.finalInterval = 250;
 //     for (int i = -2; i < 6;  )
@@ -93,7 +94,7 @@ void test()
 
     sLog.write("G3D spline:");
     float dur = catm.duration(), part = dur/20;
-    for (float i = 0; i < dur; i += part )
+    for (float i = 0; i <= dur; i += part )
     {
         Vector3 c;
         catm.evaluate(i, c, g3d_catmullrom_basis2);
@@ -101,11 +102,18 @@ void test()
     }
 
     sLog.write("\nMine spline:");
-    dur = mover.hight_bound(), part = dur/20;
-    for (float i = mover.low_bound(); i < dur; i += part )
+    dur = mover.duration(), part = dur/20;
+    for (float i = 0; i <= dur; i += part )
     {
         Vector3 v;
         mover.evaluate(i, v);
+    }
+
+    sLog.write("\nLengths:");
+    for (int i = 0; i <= 6; ++i )
+    {
+        float l = mover.SegLength(i);
+        sLog.write("%i   %f", i, l);
     }
 }
 

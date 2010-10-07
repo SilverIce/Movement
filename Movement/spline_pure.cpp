@@ -6,41 +6,43 @@
 
 using namespace G3D;
 
-void InterpolateLinear(int Idx, float u, const SplinePure&, Vector3&);
-void InterpolateCatmullRom(int Idx, float u, const SplinePure&, Vector3&);
-void InterpolateBezier(int Idx, float u, const SplinePure&, Vector3&);
-
-typedef void (*InterpolationMethtod)(int, float, const SplinePure&, Vector3&);
-
-const InterpolationMethtod interpolators[SplineModeCount]=
+SplinePure::InterpolatorPtr SplinePure::interpolators[SplineModeCount] =
 {
-    &InterpolateLinear,
-    &InterpolateCatmullRom,
-    &InterpolateBezier,    //not implemented
+    &SplinePure::InterpolateLinear,
+    &SplinePure::InterpolateCatmullRom,
+    &SplinePure::InterpolateBezier3,    //not implemented
 };
 
-void SplinePure::evaluate( int time, Vector3 & c ) const
+SplinePure::SegLenghtPtr SplinePure::seglengths[SplineModeCount] =
 {
-    assert(times.size() == points.size());
+    &SplinePure::SegLengthLinear,
+    &SplinePure::SegLengthCatmullRom,
+    &SplinePure::SegLengthBezier3,    //not implemented
+};
+
+
+void SplinePure::evaluate( time_type time, Vector3 & c ) const
+{
+    assert(time >= 0 && times.size() == points.size());
 
     int Index = 0;
     float u = 0.f;
     computeIndex(0, Index, time, u);
 
-    (*interpolators[mode])(Index, u, *this, c);
+    (this->*interpolators[mode])(Index, u, c);
 
     sLog.write("%f   %f", c.x, c.y);
 }
 
-void SplinePure::computeIndex( int lastIndex, int& Index, int &X, float &percent) const
+void SplinePure::computeIndex( index_type lastIndex, index_type& Index, time_type &X, float &percent) const
 {
-    int N = times.size();
+    index_type N = times.size();
 
-    if (!inBounds(X))
+    time_type high = hight_bound();
+    time_type low = low_bound();
+
+    if (low > X || X >= high)  // X is out of bounds?
     {
-        int high = hight_bound();
-        int low = low_bound();
-
         if (!cyclic)
         {
             percent = 0.f;
@@ -58,12 +60,12 @@ void SplinePure::computeIndex( int lastIndex, int& Index, int &X, float &percent
         }
         else
         {
-            X = X % high;    // x now in range [ 0; duration )
+            X = X % duration();    // X now in range [ 0; duration )
 
-            if( X < low)    // X is between last and first point: [0; times[0]) or ( times[N-1]; times[0] )
+            if( X >= high)    // X in range  [ high; duration )
             {
-                Index = N - 1; // its cycled spline, so '-1' equals to 'N - 1'
-                percent = float(X) / float(low);
+                Index = N - 1;
+                percent = float(X - high) / float(finalInterval);
                 return;
             }
 
@@ -71,11 +73,9 @@ void SplinePure::computeIndex( int lastIndex, int& Index, int &X, float &percent
         }
     }
 
-    assert(Index+1 < N);
     Index = computeIndexInBounds(lastIndex, X);
+    assert(Index + 1 < N);
     percent = float(X - times[Index]) / float(times[Index+1] - times[Index]);
-
-    assert(X <= duration());
 }
 
 template<class Y, class X> inline Y interporate(const Y * a, X ia,  X I)
@@ -83,9 +83,9 @@ template<class Y, class X> inline Y interporate(const Y * a, X ia,  X I)
     return ( a[0] + (a[1] - a[0]) / 1 * (I - ia) );
 }
 
-void SplinePure::getControl(int i, int& t, Vector3& c ) const
+void SplinePure::getControl(index_type i, time_type& t, Vector3& c ) const
 {
-    int N = times.size();
+    index_type N = times.size();
     if (i >= 0 && i < N) // normal, in bounds case
     {
         t = times[i];
@@ -93,23 +93,8 @@ void SplinePure::getControl(int i, int& t, Vector3& c ) const
         return;
     }
 
-    // indexes that not in bounds are in range  (-N; N+N) -
-    // this simplifies my calculations a lot
-    assert( -N < i && i < N+N );
-    int last_i = N - 1;
     if (cyclic)
     {
-//         int normalized = i % N;
-//         if (i < 0)
-//             normalized = N + normalized;
-// 
-//         if(i >= 0)
-//             t = times[last_i] + times[normalized];
-//         else
-//             t = -times[last_i] + times[normalized];
-// 
-//         c = points[normalized];
-
         if(i >= 0)
         {
             int wraps = i / N;
@@ -127,33 +112,36 @@ void SplinePure::getControl(int i, int& t, Vector3& c ) const
     } 
     else
     {
+        index_type last_i = N - 1;
         if(i >= 0)
         {
-            c = interporate<Vector3,int>(&points[last_i-1], last_i-1, i);
-            t = interporate<int,int>(&times[last_i-1], last_i-1, i);
+            c = interporate<Vector3,index_type>(&points[last_i-1], last_i-1, i);
+            t = interporate<time_type,index_type>(&times[last_i-1], last_i-1, i);
         }
         else
         {
-            c = interporate<Vector3,int>(&points[0], 0, i);
-            t = interporate<int,int>(&times[0], 0, i);
+            c = interporate<Vector3,index_type>(&points[0], 0, i);
+            t = interporate<time_type,index_type>(&times[0], 0, i);
         }
     }
 }
 
-void SplinePure::append( Vector3 control )
+SplinePure::index_type SplinePure::computeIndexInBounds( index_type lastIdx, const time_type time_passed_delta ) const
 {
-    points.push_back(control);
-}
-
-int SplinePure::computeIndexInBounds( int lastIdx, const int time_passed_delta ) const
-{
-    uint32 N = times.size();
+    index_type N = times.size();
     while (lastIdx+1 < N && times[lastIdx+1] < time_passed_delta)
     {
         ++lastIdx;
     }
     return lastIdx;
 }
+
+
+float SplinePure::SegLength( index_type Index ) const
+{
+    return (this->*seglengths[mode])(Index);
+}
+
 ///////////
 
 static const G3D::Matrix4 s_catmullRomCoeffs(
@@ -162,35 +150,29 @@ static const G3D::Matrix4 s_catmullRomCoeffs(
     -0.5f, 0.f,  0.5f, 0.f,
     0.f,  1.f,  0.f,  0.f);
 
-static const G3D::Matrix4 s_bezierCoeffs(
+static const G3D::Matrix4 s_Bezier3Coeffs(
     -1.f,  3.f, -3.f, 1.f,
     3.f, -6.f,  3.f, 0.f,
     -3.f,  3.f,  0.f, 0.f,
     1.f,  0.f,  0.f, 0.f);
 
+static const G3D::Matrix4 g3d_catmullrom_basis(
+    0.5f, 2.f, -2.f, 0.5f,
+    -1.f, -3.f, 3.f, -0.5f,
+    0.5f, 0.f, 0.f, 0.f,
+    -0.f, 1.f, 0.f, 0.f);
 
-void InterpolateLinear(int Idx, float u, const SplinePure & spline, Vector3& result)
+void SplinePure::InterpolateLinear(index_type Idx, float u, Vector3& result) const
 {
-    if ( Idx+1 < spline.times.size() )
-    {
-        result = spline.points[Idx] + (spline.points[Idx+1] - spline.points[Idx]) * u;
-    }
-    else
-    {
-        if (!spline.cyclic)
-            result = spline.points.back();// Idx points at last point
-        else
-        {
-            result = spline.points[Idx] + (spline.points[0] - spline.points[Idx]) * u;
-        }
-    }
+    time_type unused;
+    Vector3 pos1, pos2;
+    getControl(Idx, unused, pos1);
+    getControl(Idx+1, unused, pos2);
+    result = pos1 + (pos2 - pos1) * u;
 }
 
-void InterpolateCatmullRom(int i, float u, const SplinePure & spline, Vector3& result)
+inline void InterpolateCatmullRom2(const Vector3* p, const SplinePure::time_type* t, float u, Vector3& result)
 {
-    Vector3 p[4];
-    int     t[4];
-    spline.getControls(i - 1, t, p, 4);
     float dt0 = t[1] - t[0];
     float dt1 = t[2] - t[1];
     float dt2 = t[3] - t[2];
@@ -200,15 +182,15 @@ void InterpolateCatmullRom(int i, float u, const SplinePure & spline, Vector3& r
     const Vector3& p2 = p[2];
     const Vector3& p3 = p[3];
 
-    const Vector3& dp0 = p1 - p0;
-    const Vector3& dp1 = p2 - p1;
     const Vector3& dp2 = p3 - p2;
+    const Vector3& dp1 = p2 - p1;
+    const Vector3& dp0 = p1 - p0;
 
     // Powers of u
     G3D::Vector4 uvec((float)(u*u*u), (float)(u*u), (float)u, 1.0f);
 
     // Compute the weights on each of the control points.
-    const G3D::Vector4& weights = uvec * s_catmullRomCoeffs;
+    const G3D::Vector4& weights = uvec * g3d_catmullrom_basis;
 
     // The factor of 1/2 from averaging two time intervals is 
     // already factored into the basis
@@ -230,8 +212,63 @@ void InterpolateCatmullRom(int i, float u, const SplinePure & spline, Vector3& r
         tan2 * weights[3]; 
 }
 
-void InterpolateBezier(int, float, const SplinePure&, Vector3&)
+void SplinePure::InterpolateCatmullRom(index_type i, float u, Vector3& result) const
+{
+    Vector3     p[4];
+    time_type   t[4];
+    getControls(i - 1, t, p, 4);
+    InterpolateCatmullRom2(p, t, u, result);
+}
+
+void SplinePure::InterpolateBezier3(index_type, float, Vector3&) const
 {
     assert(false);
 }
 
+float SplinePure::SegLengthLinear(index_type i) const
+{
+    index_type unused;
+    Vector3 pos1, pos2;
+    getControl(i, unused, pos1);
+    getControl(i+1, unused, pos2);
+    return (pos2 - pos1).length();
+}
+
+#define STEPS_PER_SEGMENT   20
+
+// egg or chicken?
+// seems to get the length of one segment need know whole spline length or length between spline vertices..
+
+float SplinePure::SegLengthCatmullRom(index_type Index) const
+{
+    Vector3 curPos, nextPos;
+
+    Vector3     p[4];
+    time_type   t[4];
+    getControls(Index - 1, t, p, 4);
+    InterpolateCatmullRom2(p, t, 0.f, curPos);
+    nextPos = curPos;
+
+    index_type N = STEPS_PER_SEGMENT;
+    index_type i = 1;
+    float length = 0;
+    while (i < N)
+    {
+        InterpolateCatmullRom2(p, t, float(i) / float(N), nextPos);
+        length += (nextPos - curPos).length();
+        curPos = nextPos;
+        ++i;
+    }
+    return length;
+}
+
+float SplinePure::SegLengthBezier3(index_type Index) const
+{
+    assert(false);
+    return 0.f;
+}
+
+SplinePure::SplinePure() : cyclic(false), mode(SplineModeLinear), times(2), finalInterval(0)
+{
+
+}

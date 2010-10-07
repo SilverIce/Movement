@@ -37,8 +37,8 @@ namespace Movement
 
     static const IPacketBuilder * const m_states[MovControlCount] =
     {
-        new ClientBuilder,
-        new SplineBuilder,
+        &(static const ClientBuilder()),
+        &(static const SplineBuilder()),
     };
 
 

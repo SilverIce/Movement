@@ -296,6 +296,14 @@
 		<File
 			RelativePath="..\Movement\movement.cpp"
 			>
+			<FileConfiguration
+				Name="Release|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+				/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="..\Movement\movement.h"

@@ -80,7 +80,7 @@ void GD3_spline::append( Vector3 &v )
     int N = control.size();
     if (N > 1)
     {
-        float t = (control[N-1]-control[N-2]).length() / 7.0f * 1000;
+        float t = (control[N-1]-control[N-2]).length() / 7.0f * 1000.f;
         this->time.push_back( time.last() + t);
     }
     else

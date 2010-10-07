@@ -16,102 +16,102 @@ enum SplineMode
 
 struct SplinePure
 {
+    typedef int time_type;
+    typedef int index_type;
+
     std::vector<Vector3> points;
-    std::vector<int> times;      // t0, t1, t2, t3 ... 
-    std::vector<int> deltas;     // d0, d1, d2, d3 ...     t(N) = d(N-1) + d(N-2) + ... + d(0)
+    std::vector<time_type> times;      // t0, t1, t2, t3 ... 
+    //std::vector<int> deltas;     // d0, d1, d2, d3 ...     t(N) = d(N-1) + d(N-2) + ... + d(0)
+
+    int finalInterval;
 
     bool cyclic;
-    SplineMode mode;
 
-    int computeIndexInBounds(int lastIdx, const int time_passed_delta) const;
+    index_type computeIndexInBounds(index_type lastIdx, const time_type time_passed_delta) const;
 
-    // assumes that 'time' can't be negative
-    void evaluate(int time, Vector3 & c) const;
+    time_type low_bound() const { return 0;}
+    time_type hight_bound() const { return times.back();}
 
-    // amount of time covered by spline in one period
-    int duration() const { return times.back(); }
+    //bool TimeInBounds(int t) const { return low_bound() < t && t < hight_bound(); }
 
-    int low_bound() const { return times.front();}
-    int hight_bound() const { return times.back();}
+    void computeIndex(index_type lastIndex, index_type& Index, time_type &X, float &u) const;
 
-    void SetfinalInterval(int t) { times[0] = t; }
-
-    bool inBounds(int t) const { return times[0] <= t && t <= times.back(); }
-
-    void computeIndex(int lastIndex, int& Index, int &X, float &u) const;
-
-    void append(Vector3 control);
-
-    void getControls(int i, int* t, Vector3* c, int N) const
+    void getControls(index_type i, time_type* t, Vector3* c, index_type N) const
     {
-        for (int j = 0; j < N; ++j)
+        for (index_type j = 0; j < N; ++j)
             getControl(i + j, t[j], c[j]);
     }
 
-    void getControl(const int Idx, int& time, Vector3& c) const;
+    void getControl(const index_type Idx, time_type& time, Vector3& c) const;
 
-    void SetCyclic(bool cyclic_)
+private:
+
+    void InterpolateLinear(index_type, float, Vector3&) const;
+    void InterpolateCatmullRom(index_type, float, Vector3&) const;
+    void InterpolateBezier3(index_type, float, Vector3&) const;
+    typedef void (SplinePure::*InterpolatorPtr)(index_type,float,Vector3&) const;
+    static InterpolatorPtr interpolators[SplineModeCount];
+
+    float SegLengthLinear(index_type) const;
+    float SegLengthCatmullRom(index_type) const;
+    float SegLengthBezier3(index_type) const;
+    typedef float (SplinePure::*SegLenghtPtr)(index_type) const;
+    static SegLenghtPtr seglengths[SplineModeCount];
+
+public:
+
+    SplineMode mode;
+
+    // assumes that 'time' can't be negative
+    void evaluate(time_type time, Vector3 & c) const;
+
+    // amount of time covered by spline in one period
+    time_type duration() const { return times.back() + finalInterval; }
+
+    void push_path(const Vector3 * controls, const int N, SplineMode m, bool cyclic_)
     {
         cyclic = cyclic_;
-        times[0] = cyclic ? deltas[0] : 0;
-    }
-
-    void prepare()
-    {
-        int N = points.size();
-
-        times.resize(N);
-        deltas.resize(N);
-
-        int i = 1;
-        while(i < N)
-        {
-            deltas[i] = (points[i] - points[i-1]).length() / Movement::absolute_velocy * 1000.f;
-            ++i;
-        }
-        deltas[0] = (points.back()-points.front()).length() / Movement::absolute_velocy * 1000.f;
-
-        // updates times[0]
-        SetCyclic(cyclic);
-
-        i = 1;
-        while(i < N)
-        {
-            times[i] = times[i-1] + deltas[i];
-            ++i;
-        }
-    }
-
-    void append(const Vector3 * controls, const int N)
-    {
+        mode = m;
         points.resize(N);
         memcpy(&points[0],controls, sizeof(Vector3) * N);
+        times.resize(N,0);
 
-        times.resize(N);
-        deltas.resize(N);
+        //deltas.resize(N,0);
+
+/*
+        if (cyclic_)
+            finalInterval = SegLength(N-1) / Movement::absolute_velocy * 1000.f;
+        else
+            finalInterval = 0;
 
         int i = 1;
         while(i < N)
         {
-            deltas[i] = (points[i] - points[i-1]).length() / Movement::absolute_velocy * 1000.f;
+            times[i] = times[i-1] +
+                SegLength(i-1) / Movement::absolute_velocy * 1000.f;
             ++i;
         }
-        deltas[0] = (points[N-1] - points[0]).length() / Movement::absolute_velocy * 1000.f;
+*/
+        if (cyclic_)
+            finalInterval = (points[N-1] - points[0]).length() / Movement::absolute_velocy * 1000.f;
+        else
+            finalInterval = 0;
 
-        // updates times[0]
-        SetCyclic(cyclic);
-
-        i = 1;
+        int i = 1;
         while(i < N)
         {
-            times[i] = times[i-1] + deltas[i];
+            times[i] = times[i-1] +
+                (points[i] - points[i-1]).length() / Movement::absolute_velocy * 1000.f;
             ++i;
         }
+
     }
 
-    SplinePure() : cyclic(false), mode(SplineModeLinear), times(2), deltas(2)
-    {
-    }
+    float length() const;
+
+    float SegLength(int segment) const;
+
+    SplinePure();
 };
 
 
