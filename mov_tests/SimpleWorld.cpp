@@ -3,6 +3,7 @@
 
 #include "SimpleWorld.h"
 #include <Windows.h>
+#include "time.h"
 
 extern void test();
 

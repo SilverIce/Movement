@@ -3,15 +3,13 @@
 #include "typedefs.h"
 #include "client_constants.h"
 #include "Node.h"
+#include "spline_mover.h"
 
 namespace Movement {
 
-    class SplineState
+    class SplineState : public BaseMover
     {
     public:
-
-        SplineState();
-
         union FaceData
         {
             struct Point{
@@ -20,24 +18,18 @@ namespace Movement {
             uint64 target;
             float angle;
         };
-
+        // this is shoud be store here? its related to movement?  not sure
         FaceData        facing_info;
 
         // Spline & Movement states has independant timestamp fields
-        uint32          time_stamp;
         uint32          splineflags;
-
-        float           total_lenght;
-        uint32          move_time_full;
-        uint32          move_time_passed;
 
         float           parabolic_speed;
         uint32          parabolic_time;
 
-        // cached path points
-        NodeList        spline_path;
+    public:
 
-        SplineMode      mode;
+        SplineState();
 
         void AddSplineFlag(uint32 f) { splineflags |= f; }
         void RemoveSplineFlag(uint32 f) { splineflags &= ~f; }
@@ -51,8 +43,7 @@ namespace Movement {
         void SetFacing(Vector3 const& point);
         void ResetFacing();
 
-        float TimePassedCoeff() const { return (float(move_time_passed) / float(move_time_full));}
-        uint32 TimeElapsed() const { return move_time_full - move_time_passed;}
+        void append_path_and_run(const std::vector<Vector3>& path, uint32 ms_time);
     };
 }
 

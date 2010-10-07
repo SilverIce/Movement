@@ -113,8 +113,8 @@ namespace Movement
     }
 
     LinearMover::LinearMover(MovementState *m) :
-        position(m->position), path(m->spline.spline_path), time_stamp(m->spline.time_stamp),
-        move_time_full(m->spline.move_time_full), move_time_passed(m->spline.move_time_passed)
+        position(m->position), path(m->spline.spline_path), time_stamp(m->spline.last_ms_time),
+        move_time_full(m->spline.duration), move_time_passed(m->spline.time_passed)
     {
         elapsed_local = 0;
         current_node = path.end();
@@ -137,7 +137,7 @@ namespace Movement
 
         float speed = mov.GetCurrentSpeed();
 
-        mov.move_time_full = 0;
+        mov.duration = 0;
         for(NodeList::iterator node = path.begin(); node+1 != path.end(); ++node) 
         {
             const Vector3& begin = node->vec;
@@ -147,7 +147,7 @@ namespace Movement
             uint32 move_time = uint32((dist * 1000.0f)/speed);
 
             node->time = move_time;
-            mov.move_time_full += move_time;
+            mov.duration += move_time;
         }
     }
 
@@ -167,11 +167,11 @@ namespace Movement
 
     //    elapsed_local = float(elapsed_local) / perc;
 
-    //    mov.move_time_full = 0;
+    //    mov.duration = 0;
     //    for(NodeList::iterator node = path.begin(); (node+1) != path.end(); ++node) 
     //    {
     //        node->time = float(node->time) / perc;
-    //        mov.move_time_full += node->time;
+    //        mov.duration += node->time;
     //    }
     //}
 

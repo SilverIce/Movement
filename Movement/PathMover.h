@@ -8,13 +8,6 @@ namespace Movement
 {
     class Movement;
 
-    class BaseMover
-    {
-        virtual bool Update_short(const int32 &diff);
-
-        // расчитано на любые промежутки времени
-        virtual  bool UpdatePosition(const uint32 & curr_ms_time);
-    };
 
 
     class SplineState;

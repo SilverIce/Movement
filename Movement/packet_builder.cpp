@@ -91,7 +91,7 @@ namespace Movement
     void SplineBuilder::PathUpdate(MovementState const& mov, WorldPacket& data) const
     {
         const SplineState& spline = mov.spline;
-        const NodeList& path = spline.spline_path;
+        const std::vector<Vector3>& path = spline.points;
 
         assert(path.size());
 
@@ -106,7 +106,7 @@ namespace Movement
         const Vector3& start = mov.position;
         data << start;
 
-        data << uint32(spline.time_stamp);
+        data << uint32(spline.last_ms_time);
 
         uint32 nodes_count = path.size();
         uint32 splineflags = spline.GetSplineFlags();  // spline flags are here? not sure...
@@ -143,7 +143,7 @@ namespace Movement
             data << uint32(0);
         }
 
-        data << spline.move_time_full;
+        data << spline.duration;
 
         if (splineflags & SPLINEFLAG_TRAJECTORY)
         {
@@ -154,12 +154,12 @@ namespace Movement
         if(splineflags & (SPLINEFLAG_FLYING | SPLINEFLAG_CATMULLROM))
         {
             for(uint32 i = 0; i < nodes_count; ++i)
-                data << path[i].vec;
+                data << path[i];
         }
         else
         {
-            const Vector3 &dest = path.back().vec;
-            data << dest;   // dest point
+            const Vector3 &dest = path.back();
+            data << dest;   // destination
 
             if(nodes_count > 1)
             {
@@ -167,7 +167,7 @@ namespace Movement
 
                 for(uint32 i = 0; i < nodes_count - 1; ++i)// "nodes_count-1" because destination point already appended
                 {
-                    Vector3 temp = vec - path[i].vec;
+                    Vector3 temp = vec - path[i];
                     data.appendPackXYZ(temp.x, temp.y, temp.z);
                 }
             }

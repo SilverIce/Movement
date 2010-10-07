@@ -178,6 +178,18 @@
 			>
 		</File>
 		<File
+			RelativePath="..\mov_research\spline_basis.h"
+			>
+			<FileConfiguration
+				Name="Release|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
 			RelativePath="..\mov_research\struct_checker.cpp"
 			>
 		</File>

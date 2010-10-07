@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\G3D.lib\include\"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -103,19 +103,19 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
+				Optimization="0"
 				InlineFunctionExpansion="0"
-				EnableIntrinsicFunctions="true"
+				EnableIntrinsicFunctions="false"
 				FavorSizeOrSpeed="0"
 				OmitFramePointers="false"
-				EnableFiberSafeOptimizations="true"
-				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="E:\libraries\G3D\G3D.lib\include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
+				EnableFiberSafeOptimizations="false"
+				WholeProgramOptimization="false"
+				AdditionalIncludeDirectories="..\G3D.lib\include\"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				WarningLevel="3"
+				WarningLevel="2"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -161,6 +161,10 @@
 				RelativePath="..\Movement\outLog.h"
 				>
 			</File>
+			<File
+				RelativePath="..\Movement\time.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="constants"
@@ -182,6 +186,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Movement\globals.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\Movement\mov_constants.h"
 				>
 			</File>
@@ -201,10 +217,6 @@
 		<Filter
 			Name="spline"
 			>
-			<File
-				RelativePath="..\Movement\spline_base.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="trajectory_builder"
@@ -218,6 +230,73 @@
 			Name="research"
 			>
 		</Filter>
+		<Filter
+			Name="spline_mover"
+			>
+			<File
+				RelativePath="..\Movement\g3d_based.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Movement\g3d_based.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Movement\PathMover.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\Movement\PathMover.h"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\Movement\spline_mover.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Movement\spline_pure.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Movement\spline_pure.h"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\Movement\SplineState.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Movement\SplineState.h"
+				>
+			</File>
+		</Filter>
+		<File
+			RelativePath="..\Movement\movement.cpp"
+			>
+		</File>
 		<File
 			RelativePath="..\Movement\movement.h"
 			>
@@ -240,22 +319,6 @@
 		</File>
 		<File
 			RelativePath="..\Movement\Node.h"
-			>
-		</File>
-		<File
-			RelativePath="..\Movement\PathMover.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\Movement\PathMover.h"
-			>
-		</File>
-		<File
-			RelativePath="..\Movement\SplineState.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\Movement\SplineState.h"
 			>
 		</File>
 		<File

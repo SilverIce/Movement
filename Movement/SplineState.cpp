@@ -31,19 +31,22 @@ void SplineState::ResetFacing()
     RemoveSplineFlag(SPLINE_MASK_FINAL_FACING);
 }
 
-Movement::SplineState::SplineState()
+SplineState::SplineState()
 {
-    spline_path.reserve(10);
-
-    time_stamp = 0;
+    //last_ms_time = 0;
     splineflags = 0;
-    total_lenght = 0;
 
-    move_time_full = 0;
-    move_time_passed = 0;
+    //duration = 0;
+    //time_passed = 0;
 
     mode = SplineModeLinear;
 
     parabolic_speed = 0;
     parabolic_time = 0;
+}
+
+void SplineState::append_path_and_run( const std::vector<Vector3>& path, uint32 time )
+{
+    BaseMover::points.assign(path.begin(), path.end());
+    BaseMover::prepare(time);
 }

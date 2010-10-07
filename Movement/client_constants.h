@@ -118,14 +118,6 @@ namespace Movement
         SPLINE_MASK_FINAL_FACING = SPLINEFLAG_FINALPOINT | SPLINEFLAG_FINALTARGET | SPLINEFLAG_FINALFACING,
     };
 
-    enum SplineMode
-    {
-        SplineModeLinear       = 0,
-        SplineModeCatmullrom   = 1,
-        SplineModeBezier3      = 2,
-        SplineModeCount        = 3,
-    };
-
     enum SplineType
     {
         SPLINETYPE_NORMAL       = 0,
@@ -167,8 +159,7 @@ namespace Movement
         SpeedMaxCount       = 10,
     };
 
-    static const float gravity_rate = 19.291105f;
-    static const float terminalVelocity = 60.148003f;
+    static float absolute_velocy = 7.f;
 
     /*class MoveTypeSelector
     {

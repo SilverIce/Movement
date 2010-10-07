@@ -186,9 +186,9 @@ namespace Movement
             }
             else
             {
-                if ( !spline.move_time_full )
+                if ( !spline.duration )
                     return 0.0f;
-                speed = spline.total_lenght / spline.move_time_full * 1000.0f;
+                //speed = spline.total_lenght / spline.duration * 1000.0f;
             }
             return speed;
         }
