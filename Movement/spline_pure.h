@@ -8,10 +8,11 @@
 
 enum SplineMode
 {
-    SplineModeLinear       = 0,
-    SplineModeCatmullrom   = 1,
-    SplineModeBezier3      = 2,
-    SplineModeCount        = 3,
+    SplineModeLinear,
+    SplineMode_G3D_Catmullrom,
+    SplineModeCatmullrom,
+    SplineModeBezier3,
+    SplineModeCount,
 };
 
 struct SplinePure
@@ -47,12 +48,14 @@ struct SplinePure
 private:
 
     void InterpolateLinear(index_type, float, Vector3&) const;
+    void InterpolateG3DCatmullRom(index_type, float, Vector3&) const;
     void InterpolateCatmullRom(index_type, float, Vector3&) const;
     void InterpolateBezier3(index_type, float, Vector3&) const;
     typedef void (SplinePure::*InterpolatorPtr)(index_type,float,Vector3&) const;
     static InterpolatorPtr interpolators[SplineModeCount];
 
     float SegLengthLinear(index_type) const;
+    float SegLengthG3DCatmullRom(index_type) const;
     float SegLengthCatmullRom(index_type) const;
     float SegLengthBezier3(index_type) const;
     typedef float (SplinePure::*SegLenghtPtr)(index_type) const;
@@ -78,7 +81,6 @@ public:
 
         //deltas.resize(N,0);
 
-/*
         if (cyclic_)
             finalInterval = SegLength(N-1) / Movement::absolute_velocy * 1000.f;
         else
@@ -91,19 +93,19 @@ public:
                 SegLength(i-1) / Movement::absolute_velocy * 1000.f;
             ++i;
         }
-*/
-        if (cyclic_)
-            finalInterval = (points[N-1] - points[0]).length() / Movement::absolute_velocy * 1000.f;
-        else
-            finalInterval = 0;
 
-        int i = 1;
-        while(i < N)
-        {
-            times[i] = times[i-1] +
-                (points[i] - points[i-1]).length() / Movement::absolute_velocy * 1000.f;
-            ++i;
-        }
+//         if (cyclic_)
+//             finalInterval = (points[N-1] - points[0]).length() / Movement::absolute_velocy * 1000.f;
+//         else
+//             finalInterval = 0;
+// 
+//         int i = 1;
+//         while(i < N)
+//         {
+//             times[i] = times[i-1] +
+//                 (points[i] - points[i-1]).length() / Movement::absolute_velocy * 1000.f;
+//             ++i;
+//         }
 
     }
 

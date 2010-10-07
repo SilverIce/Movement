@@ -9,15 +9,17 @@ using namespace G3D;
 SplinePure::InterpolatorPtr SplinePure::interpolators[SplineModeCount] =
 {
     &SplinePure::InterpolateLinear,
+    &SplinePure::InterpolateG3DCatmullRom,
     &SplinePure::InterpolateCatmullRom,
-    &SplinePure::InterpolateBezier3,    //not implemented
+    &SplinePure::InterpolateBezier3,
 };
 
 SplinePure::SegLenghtPtr SplinePure::seglengths[SplineModeCount] =
 {
     &SplinePure::SegLengthLinear,
+    &SplinePure::SegLengthG3DCatmullRom,
     &SplinePure::SegLengthCatmullRom,
-    &SplinePure::SegLengthBezier3,    //not implemented
+    &SplinePure::SegLengthBezier3,
 };
 
 
@@ -162,6 +164,25 @@ static const G3D::Matrix4 g3d_catmullrom_basis(
     0.5f, 0.f, 0.f, 0.f,
     -0.f, 1.f, 0.f, 0.f);
 
+void C_Evaluate(const Vector3 *vertice, float t, const Matrix4& coeffs, Vector3 &position)
+{
+    int _4_cycles = 4;
+    int i = 0;
+
+    position = Vector3::zero();
+
+    double c;
+    while ( i < _4_cycles )
+    {
+        c = (((coeffs[0][i] * t + coeffs[1][i]) * t) + coeffs[2][i]) * t + coeffs[3][i];
+       
+        position += c * (*vertice);
+
+        ++i;
+        ++vertice;
+    }
+}
+
 void SplinePure::InterpolateLinear(index_type Idx, float u, Vector3& result) const
 {
     time_type unused;
@@ -212,7 +233,7 @@ inline void InterpolateCatmullRom2(const Vector3* p, const SplinePure::time_type
         tan2 * weights[3]; 
 }
 
-void SplinePure::InterpolateCatmullRom(index_type i, float u, Vector3& result) const
+void SplinePure::InterpolateG3DCatmullRom(index_type i, float u, Vector3& result) const
 {
     Vector3     p[4];
     time_type   t[4];
@@ -220,9 +241,22 @@ void SplinePure::InterpolateCatmullRom(index_type i, float u, Vector3& result) c
     InterpolateCatmullRom2(p, t, u, result);
 }
 
-void SplinePure::InterpolateBezier3(index_type, float, Vector3&) const
+void SplinePure::InterpolateCatmullRom( index_type i, float t, Vector3& result) const
 {
-    assert(false);
+    Vector3     p[4];
+    time_type   unused[4];
+    getControls(i - 1, unused, p, 4);
+
+    C_Evaluate(p, t, s_catmullRomCoeffs, result);
+}
+
+void SplinePure::InterpolateBezier3(index_type i, float t, Vector3& result) const
+{
+    Vector3     p[4];
+    time_type   unused[4];
+    getControls(i - 1, unused, p, 4);
+
+    C_Evaluate(p, t, s_Bezier3Coeffs, result);
 }
 
 float SplinePure::SegLengthLinear(index_type i) const
@@ -239,10 +273,9 @@ float SplinePure::SegLengthLinear(index_type i) const
 // egg or chicken?
 // seems to get the length of one segment need know whole spline length or length between spline vertices..
 
-float SplinePure::SegLengthCatmullRom(index_type Index) const
+float SplinePure::SegLengthG3DCatmullRom(index_type Index) const
 {
     Vector3 curPos, nextPos;
-
     Vector3     p[4];
     time_type   t[4];
     getControls(Index - 1, t, p, 4);
@@ -262,13 +295,55 @@ float SplinePure::SegLengthCatmullRom(index_type Index) const
     return length;
 }
 
+float SplinePure::SegLengthCatmullRom( index_type Index ) const
+{
+    Vector3 curPos, nextPos;
+    Vector3     p[4];
+    time_type   t[4];
+    getControls(Index - 1, t, p, 4);
+
+    curPos = nextPos = p[1];
+
+    index_type N = STEPS_PER_SEGMENT;
+    index_type i = 1;
+    float length = 0;
+    while (i < N)
+    {
+        C_Evaluate(p, float(i) / float(N), s_catmullRomCoeffs, nextPos);
+        length += (nextPos - curPos).length();
+        curPos = nextPos;
+        ++i;
+    }
+    return length;
+}
+
 float SplinePure::SegLengthBezier3(index_type Index) const
 {
-    assert(false);
-    return 0.f;
+    Vector3 curPos, nextPos;
+    Vector3     p[4];
+    time_type   t[4];
+    getControls(Index - 1, t, p, 4);
+
+    curPos = nextPos = p[1];
+
+    index_type N = STEPS_PER_SEGMENT;
+    index_type i = 1;
+    float length = 0;
+    while (i < N)
+    {
+        C_Evaluate(p, float(i) / float(N), s_Bezier3Coeffs, nextPos);
+        length += (nextPos - curPos).length();
+        curPos = nextPos;
+        ++i;
+    }
+    return length;
 }
 
 SplinePure::SplinePure() : cyclic(false), mode(SplineModeLinear), times(2), finalInterval(0)
 {
 
 }
+
+
+
+
