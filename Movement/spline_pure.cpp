@@ -9,7 +9,7 @@ using namespace G3D;
 SplinePure::InterpolatorPtr SplinePure::interpolators[SplineModeCount] =
 {
     &SplinePure::InterpolateLinear,
-    &SplinePure::InterpolateG3DCatmullRom,
+    //&SplinePure::InterpolateG3DCatmullRom,
     &SplinePure::InterpolateCatmullRom,
     &SplinePure::InterpolateBezier3,
 };
@@ -17,7 +17,7 @@ SplinePure::InterpolatorPtr SplinePure::interpolators[SplineModeCount] =
 SplinePure::SegLenghtPtr SplinePure::seglengths[SplineModeCount] =
 {
     &SplinePure::SegLengthLinear,
-    &SplinePure::SegLengthG3DCatmullRom,
+    //&SplinePure::SegLengthG3DCatmullRom,
     &SplinePure::SegLengthCatmullRom,
     &SplinePure::SegLengthBezier3,
 };

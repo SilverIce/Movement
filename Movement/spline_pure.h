@@ -9,7 +9,7 @@
 enum SplineMode
 {
     SplineModeLinear,
-    SplineMode_G3D_Catmullrom,
+    //SplineMode_G3D_Catmullrom,
     SplineModeCatmullrom,
     SplineModeBezier3,
     SplineModeCount,

@@ -67,7 +67,7 @@ Vector3 nodes[]=
 
 void test()
 {
- 
+    float N = 38;
     SplinePure mover;
     mover.push_path(nodes, 4, SplineModeCatmullrom, true);
 
@@ -79,7 +79,7 @@ void test()
     catm.finalInterval = mover.finalInterval;
 
     sLog.write("G3D spline:");
-    float dur = catm.duration(), part = dur/20;
+    float dur = catm.duration(), part = dur/N;
     for (float i = 0; i <= dur; i += part )
     {
         Vector3 c;
@@ -88,7 +88,7 @@ void test()
     }
 
     sLog.write("\nMine spline:");
-    dur = mover.duration(), part = dur/20;
+    dur = mover.duration(), part = dur/N;
     for (float i = 0; i <= dur; i += part )
     {
         Vector3 v;
