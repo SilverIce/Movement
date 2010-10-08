@@ -164,23 +164,23 @@ static const G3D::Matrix4 g3d_catmullrom_basis(
     0.5f, 0.f, 0.f, 0.f,
     -0.f, 1.f, 0.f, 0.f);
 
-void C_Evaluate(const Vector3 *vertice, float t, const Matrix4& coeffs, Vector3 &position)
+inline void C_Evaluate(const Vector3 *vertice, float t, const Matrix4& coeffs, Vector3 &position)
 {
-    int _4_cycles = 4;
     int i = 0;
+    Vector4 tvec((float)t*t*t, (float)t*t, (float)t, 1.f);
+    Vector3 res;
 
-    position = Vector3::zero();
-
-    double c;
-    while ( i < _4_cycles )
+    //double c;
+    while ( i < 4 )
     {
-        c = (((coeffs[0][i] * t + coeffs[1][i]) * t) + coeffs[2][i]) * t + coeffs[3][i];
-       
-        position += c * (*vertice);
+        //c = (((coeffs[0][i] * t + coeffs[1][i]) * t) + coeffs[2][i]) * t + coeffs[3][i];
+        //position += c * (*vertice);
+        res += (tvec * coeffs.column(i)).sum() * (*vertice);
 
         ++i;
         ++vertice;
     }
+    position = res;
 }
 
 void SplinePure::InterpolateLinear(index_type Idx, float u, Vector3& result) const
