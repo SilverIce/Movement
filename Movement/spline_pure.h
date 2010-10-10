@@ -57,6 +57,7 @@ private:
     static SegLenghtPtr seglengths[SplineModeCount];
 
     enum{
+        // could be modified, affects segment legth evaluation precision
         STEPS_PER_SEGMENT = 20,
     };
 public:
