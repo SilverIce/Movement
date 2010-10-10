@@ -56,6 +56,12 @@ private:
     typedef float (SplinePure::*SegLenghtPtr)(index_type) const;
     static SegLenghtPtr seglengths[SplineModeCount];
 
+    void InitLinear(const Vector3*, const int);
+    void InitCatmullRom(const Vector3*, const int);
+    void InitBezier3(const Vector3*, const int);
+    typedef void (SplinePure::*InitPathPtr)(const Vector3*, const int);
+    static InitPathPtr initializers[SplineModeCount];
+
     enum{
         // could be modified, affects segment legth evaluation precision
         STEPS_PER_SEGMENT = 20,

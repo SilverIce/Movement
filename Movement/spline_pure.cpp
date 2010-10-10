@@ -20,6 +20,12 @@ SplinePure::SegLenghtPtr SplinePure::seglengths[SplineModeCount] =
     &SplinePure::SegLengthBezier3,
 };
 
+SplinePure::InitPathPtr SplinePure::initializers[SplineModeCount] =
+{
+    &SplinePure::InitLinear,
+    &SplinePure::InitCatmullRom,
+    &SplinePure::InitBezier3,
+};
 
 void SplinePure::evaluate( time_type time, Vector3 & c ) const
 {
@@ -204,11 +210,16 @@ SplinePure::SplinePure() : cyclic(false), mode(SplineModeLinear)
 
 void SplinePure::push_path( const Vector3 * controls, const int count, SplineMode m, bool cyclic_ )
 {
-    assert( count <= 3);
     cyclic = cyclic_;
     mode = m;
 
-    const int real_size = count + (cyclic_ ? (1+2) : (1+1));
+    (this->*initializers[mode])(controls, count);
+}
+
+void SplinePure::InitLinear( const Vector3* controls, const int count )
+{
+    assert( count >= 2);
+    const int real_size = count + 2;
 
     points.resize(real_size);
     times.resize(real_size,0);
@@ -223,17 +234,57 @@ void SplinePure::push_path( const Vector3 * controls, const int count, SplineMod
     // these points are required for proper C_Evaluate methtod work
     if (cyclic)
     {
-        //init first point
         points[0] = points[high_idx];
-        //init two last points
+        points[high_idx+1] = points[lo_idx];
+    }
+    else
+    {
+        points[0] = points[lo_idx];
+        points[high_idx+1] = points[high_idx];
+    }
+
+    index_lo = lo_idx;
+    index_hi = high_idx + (cyclic ? 1 : 0);
+
+    int i = lo_idx;
+    full_length = 0.f;
+    while(i+1 < real_size){
+        full_length += SegLengthLinear(i);
+        lengths[i+1] = full_length;
+        ++i;
+    }
+
+    i = lo_idx + 1;
+    while(i < real_size){
+        times[i] = lengths[i] / Movement::absolute_velocy * 1000.f;
+        ++i;
+    }
+}
+
+void SplinePure::InitCatmullRom( const Vector3* controls, const int count )
+{
+    const int real_size = count + (cyclic ? (1+2) : (1+1));
+
+    points.resize(real_size);
+    times.resize(real_size,0);
+    lengths.resize(real_size,0.f);
+
+    int lo_idx = 1;
+    int high_idx = lo_idx + count - 1; 
+
+    memcpy(&points[lo_idx],controls, sizeof(Vector3) * count);
+
+    // index 0 and last two\one indexes are space for special 'virtual points'
+    // these points are required for proper C_Evaluate methtod work
+    if (cyclic)
+    {
+        points[0] = points[high_idx];
         points[high_idx+1] = points[lo_idx];
         points[high_idx+2] = points[lo_idx+1];
     }
     else
     {
-        //init first point
         points[0] = points[lo_idx];
-        //init last point
         points[high_idx+1] = points[high_idx];
     }
 
@@ -255,6 +306,9 @@ void SplinePure::push_path( const Vector3 * controls, const int count, SplineMod
     }
 }
 
+void SplinePure::InitBezier3( const Vector3* controls, const int count )
+{
 
+}
 
 
