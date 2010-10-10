@@ -161,10 +161,6 @@
 				RelativePath="..\Movement\outLog.h"
 				>
 			</File>
-			<File
-				RelativePath="..\Movement\time.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="constants"
@@ -242,30 +238,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\PathMover.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\Movement\PathMover.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="..\Movement\spline_mover.h"
 				>
 			</File>
@@ -324,10 +296,6 @@
 					Name="VCCustomBuildTool"
 				/>
 			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="..\Movement\Node.h"
-			>
 		</File>
 		<File
 			RelativePath="..\Movement\typedefs.h"
