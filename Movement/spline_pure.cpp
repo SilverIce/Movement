@@ -153,9 +153,9 @@ void SplinePure::InterpolateCatmullRom( index_type Index, float t, Vector3& resu
 
 void SplinePure::InterpolateBezier3(index_type Index, float t, Vector3& result) const
 {
+    Index *= 3u;
     assert(Index >= 0 && Index+3 < points.size());
-    Index *= 3;
-    C_Evaluate(&points[Index - 1], t, s_Bezier3Coeffs, result);
+    C_Evaluate(&points[Index], t, s_Bezier3Coeffs, result);
 }
 
 float SplinePure::SegLengthLinear(index_type i) const
@@ -186,12 +186,14 @@ float SplinePure::SegLengthCatmullRom( index_type Index ) const
 
 float SplinePure::SegLengthBezier3(index_type Index) const
 {
+    Index *= 3u;
     assert(Index >= 0 && Index+3 < points.size());
-    Index *= 3;
 
     Vector3 curPos, nextPos;
-    const Vector3 * p = &points[Index - 1];
-    curPos = nextPos = p[1];
+    const Vector3 * p = &points[Index];
+
+    C_Evaluate(p, 0.f, s_Bezier3Coeffs, nextPos);
+    curPos = nextPos;
 
     index_type i = 1;
     float length = 0;
@@ -314,6 +316,32 @@ void SplinePure::InitCatmullRom( const Vector3* controls, const int count )
 void SplinePure::InitBezier3( const Vector3* controls, const int count )
 {
 
+    index_type c = count / 3u * 3u;
+    index_type t = c / 3u;
+
+    points.resize(c);
+    times.resize(t,0);
+    lengths.resize(t,0.f);
+    memcpy(&points[0],controls, sizeof(Vector3) * c);
+
+    index_lo = 0;
+    index_hi = t-1;
+
+    //assert(points.size() % 3 == 0);
+
+    index_type i = 0;
+    full_length = 0.f;
+    while(i+1 < t ){
+        full_length += SegLengthBezier3(i);
+        lengths[i+1] = full_length;
+        ++i;
+    }
+
+    i = 0;
+    while(i < t){
+        times[i] = lengths[i] / Movement::absolute_velocy * 1000.f;
+        ++i;
+    }
 }
 
 
