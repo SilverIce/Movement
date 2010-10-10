@@ -151,7 +151,7 @@ namespace Movement
             data << uint32(0); // some time
         }
 
-        if(splineflags & (SPLINEFLAG_FLYING | SPLINEFLAG_CATMULLROM))
+        if(splineflags & (SPLINEFLAG_BEZIER3 | SPLINEFLAG_CATMULLROM))
         {
             for(uint32 i = 0; i < nodes_count; ++i)
                 data << path[i];
