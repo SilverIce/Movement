@@ -155,20 +155,17 @@ float SplinePure::SegLengthLinear(index_type i) const
     return (points[i] - points[i+1]).length();
 }
 
-#define STEPS_PER_SEGMENT   20
-
 float SplinePure::SegLengthCatmullRom( index_type Index ) const
 {
     Vector3 curPos, nextPos;
     const Vector3 * p = &points[Index - 1];
     curPos = nextPos = p[1];
 
-    index_type N = STEPS_PER_SEGMENT;
     index_type i = 1;
     float length = 0;
-    while (i < N)
+    while (i < STEPS_PER_SEGMENT)
     {
-        C_Evaluate(p, float(i) / float(N), s_catmullRomCoeffs, nextPos);
+        C_Evaluate(p, float(i) / float(STEPS_PER_SEGMENT), s_catmullRomCoeffs, nextPos);
         length += (nextPos - curPos).length();
         curPos = nextPos;
         ++i;

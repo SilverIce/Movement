@@ -56,6 +56,9 @@ private:
     typedef float (SplinePure::*SegLenghtPtr)(index_type) const;
     static SegLenghtPtr seglengths[SplineModeCount];
 
+    enum{
+        STEPS_PER_SEGMENT = 20,
+    };
 public:
 
     // assumes that 'time' can't be negative
