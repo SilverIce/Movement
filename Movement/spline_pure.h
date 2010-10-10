@@ -39,7 +39,7 @@ struct SplinePure
     void computeIndex(index_type lastIndex, index_type& Index, time_type &X, float &u) const;
 
     // returns distance between [i; i+1] points
-    // assumes that index i in range [1; N - 2]
+    // assumes that index i is in bounds
     float SegLength(index_type i) const;
 
 private:

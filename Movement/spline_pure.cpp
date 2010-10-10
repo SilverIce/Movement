@@ -29,7 +29,7 @@ SplinePure::InitPathPtr SplinePure::initializers[SplineModeCount] =
 
 void SplinePure::evaluate( time_type time, Vector3 & c ) const
 {
-    assert(time >= 0 && times.size() == points.size());
+    assert(time >= 0);
 
     int Index = index_lo;
     float u = 0.f;
@@ -92,7 +92,6 @@ SplinePure::index_type SplinePure::computeIndexInBounds( index_type lastIdx, con
 
 float SplinePure::SegLength( index_type Index ) const
 {
-    assert(0 <= Index && Index+1 < points.size());
     return (this->*seglengths[mode])(Index);
 }
 
@@ -142,27 +141,33 @@ inline void C_Evaluate(const Vector3 *vertice, float t, const Matrix4& coeffs, V
 
 void SplinePure::InterpolateLinear(index_type Idx, float u, Vector3& result) const
 {
+    assert(Index >= 0 && Index+1 < points.size());
     result = points[Idx] + (points[Idx+1] - points[Idx]) * u;
 }
 
 void SplinePure::InterpolateCatmullRom( index_type Index, float t, Vector3& result) const
 {
+    assert(Index-1 >= 0 && Index+2 < points.size());
     C_Evaluate(&points[Index - 1], t, s_catmullRomCoeffs, result);
 }
 
 void SplinePure::InterpolateBezier3(index_type Index, float t, Vector3& result) const
 {
+    assert(Index >= 0 && Index+3 < points.size());
     Index *= 3;
     C_Evaluate(&points[Index - 1], t, s_Bezier3Coeffs, result);
 }
 
 float SplinePure::SegLengthLinear(index_type i) const
 {
+    assert(Index >= 0 && Index+1 < points.size());
     return (points[i] - points[i+1]).length();
 }
 
 float SplinePure::SegLengthCatmullRom( index_type Index ) const
 {
+    assert(Index-1 >= 0 && Index+2 < points.size());
+
     Vector3 curPos, nextPos;
     const Vector3 * p = &points[Index - 1];
     curPos = nextPos = p[1];
@@ -181,6 +186,7 @@ float SplinePure::SegLengthCatmullRom( index_type Index ) const
 
 float SplinePure::SegLengthBezier3(index_type Index) const
 {
+    assert(Index >= 0 && Index+3 < points.size());
     Index *= 3;
 
     Vector3 curPos, nextPos;
@@ -217,7 +223,7 @@ void SplinePure::push_path( const Vector3 * controls, const int count, SplineMod
 
 void SplinePure::InitLinear( const Vector3* controls, const int count )
 {
-    assert( count >= 2);
+    assert(count >= 2);
     const int real_size = count + 2;
 
     points.resize(real_size);
@@ -293,7 +299,7 @@ void SplinePure::InitCatmullRom( const Vector3* controls, const int count )
     int i = lo_idx;
     full_length = 0.f;
     while(i < real_size - 2 ){
-        full_length += SegLength(i);
+        full_length += SegLengthCatmullRom(i);
         lengths[i+1] = full_length;
         ++i;
     }
