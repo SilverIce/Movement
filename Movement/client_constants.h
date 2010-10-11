@@ -95,13 +95,13 @@ namespace Movement
         SPLINEFLAG_NO_SPLINE    = 0x00000400,
         SPLINEFLAG_TRAJECTORY   = 0x00000800,
         SPLINEFLAG_WALKMODE     = 0x00001000,
-        SPLINEFLAG_BEZIER3      = 0x00002000,
-        SPLINEFLAG_KNOCKBACK    = 0x00004000,
+        SPLINEFLAG_BEZIER3      = 0x00002000,           // used Bezier3 interpolation mode
+        SPLINEFLAG_KNOCKBACK    = 0x00004000,           // model orientation fixed
         SPLINEFLAG_FINALPOINT   = 0x00008000,
         SPLINEFLAG_FINALTARGET  = 0x00010000,
         SPLINEFLAG_FINALFACING  = 0x00020000,
-        SPLINEFLAG_CATMULLROM   = 0x00040000,
-        SPLINEFLAG_UNKNOWN1     = 0x00080000,
+        SPLINEFLAG_CATMULLROM   = 0x00040000,           // used CatmullRom interpolation mode
+        SPLINEFLAG_CYCLIC       = 0x00080000,           // movement by spline cycled
         SPLINEFLAG_UNKNOWN2     = 0x00100000,
         SPLINEFLAG_UNKNOWN3     = 0x00200000,
         SPLINEFLAG_UNKNOWN4     = 0x00400000,
