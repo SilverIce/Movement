@@ -186,7 +186,7 @@ namespace Movement
             }
             else
             {
-                if ( !spline.duration )
+                if ( !spline.duration() )
                     return 0.0f;
                 //speed = spline.total_lenght / spline.duration * 1000.0f;
             }

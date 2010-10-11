@@ -238,10 +238,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\spline_mover.h"
-				>
-			</File>
-			<File
 				RelativePath="..\Movement\spline_pure.cpp"
 				>
 			</File>

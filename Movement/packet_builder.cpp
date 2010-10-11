@@ -90,8 +90,8 @@ namespace Movement
 
     void SplineBuilder::PathUpdate(MovementState const& mov, WorldPacket& data) const
     {
-        const SplineState& spline = mov.spline;
-        const std::vector<Vector3>& path = spline.points;
+        const SplineState& splineInfo = mov.spline;
+        const G3D::Array<Vector3>& path = splineInfo.spline.points;
 
         assert(path.size());
 
@@ -106,27 +106,27 @@ namespace Movement
         const Vector3& start = mov.position;
         data << start;
 
-        data << uint32(spline.last_ms_time);
+        data << uint32(splineInfo.last_ms_time);
 
         uint32 nodes_count = path.size();
-        uint32 splineflags = spline.GetSplineFlags();  // spline flags are here? not sure...
+        uint32 splineflags = splineInfo.GetSplineFlags();  // spline flags are here? not sure...
 
         if(splineflags & SPLINE_MASK_FINAL_FACING)
         {
             if (splineflags & SPLINEFLAG_FINALTARGET)
             {
                 data << uint8(SPLINETYPE_FACINGTARGET);
-                data << spline.facing_info.target;
+                data << splineInfo.facing_info.target;
             }
             else if(splineflags & SPLINETYPE_FACINGANGLE)
             {
                 data << uint8(SPLINETYPE_FACINGANGLE);
-                data << spline.facing_info.angle;
+                data << splineInfo.facing_info.angle;
             }
             else if(splineflags & SPLINEFLAG_FINALFACING)
             {
                 data << uint8(SPLINETYPE_FACINGSPOT);
-                data << spline.facing_info.spot;
+                data << splineInfo.facing_info.spot;
             }
             else
                 assert(false);
@@ -143,7 +143,7 @@ namespace Movement
             data << uint32(0);
         }
 
-        data << spline.duration;
+        data << splineInfo.duration();
 
         if (splineflags & SPLINEFLAG_TRAJECTORY)
         {
@@ -158,7 +158,7 @@ namespace Movement
         }
         else
         {
-            const Vector3 &dest = path.back();
+            const Vector3 &dest = path[nodes_count-1];
             data << dest;   // destination
 
             if(nodes_count > 1)
