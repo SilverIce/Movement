@@ -55,7 +55,7 @@ void CheckOffsets()
     CHECK_OFFSET(FIELD_MOVE_FLAGS, CMovement, CMovement::m_moveFlags);
     CHECK_OFFSET(FIELD_TRANSPORT_GUID, CMovement, CMovement::m_transportGUID);
     CHECK_OFFSET(FIELD_POSITION, CMovement, CMovement::m_position);
-    CHECK_OFFSET(FIELD_SPLINE_INFO_PTR, CMovement, CMovement::spline_info);
+    CHECK_OFFSET(FIELD_SPLINE_INFO_PTR, CMovement, CMovement::m_spline);
     CHECK_OFFSET(FIELD_SKIPPED_TIME, CMovement, CMovement::some_skipped_time);
     ;
 }

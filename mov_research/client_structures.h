@@ -95,8 +95,16 @@ struct SplineInfo   //SMemAlloc(544, (int)".\\Movement_C.cpp", 0xA6u, 0);  ~544 
 {
     uint32 data0[4];//16
 
-    float facing;
-    uint32 face_data[2];
+    union FaceData
+    {
+        struct Point{
+            float x,y,z;
+        } spot;
+        uint64 target;
+        float angle;
+    };
+
+    FaceData facing_info;
 
     uint32 data1[1];//32;
     uint32 splineflags;//36
@@ -150,7 +158,7 @@ struct CMovement
         float m_jumpVelocity;
     } speed;
     //////////
-    SplineInfo * spline_info;//188
+    SplineInfo * m_spline;//188
 
     /////// 122
     uint32 data6;

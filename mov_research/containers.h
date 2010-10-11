@@ -30,7 +30,7 @@
         uint32 m_chunk;\
     }\
 
-class Vector3;
+struct Vector3;
 
 TSGrowableArray(float);
 TSGrowableArray(Vector3);
