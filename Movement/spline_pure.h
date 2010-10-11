@@ -74,7 +74,7 @@ public:
     // amount of time covered by spline in one period
     time_type duration() const { return hight_bound() - low_bound(); }
 
-    void push_path(const Vector3 * controls, const int N, SplineMode m, bool cyclic_);
+    void init_path(const Vector3 * controls, const int N, SplineMode m, bool cyclic_);
 
     // returns lenth of the spline
     float length() const { return full_length; }

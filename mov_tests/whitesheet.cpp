@@ -95,7 +95,7 @@ void test()
 {
 
     SplinePure spline;
-    spline.push_path(nodes2, sizeof(nodes2)/sizeof(Vector3),
+    spline.init_path(nodes, sizeof(nodes)/sizeof(Vector3),
         SplineModeCatmullrom, true);
 
     float N = 20;
@@ -109,7 +109,7 @@ void test()
 
 
     SplinePure mover;
-    mover.push_path(nodes, sizeof(nodes)/sizeof(Vector3) , SplineModeCatmullrom, true);
+    mover.init_path(nodes, sizeof(nodes)/sizeof(Vector3) , SplineModeCatmullrom, true);
 
     GD3_spline catm;
     catm.cyclic = mover.cyclic;

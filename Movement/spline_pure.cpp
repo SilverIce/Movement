@@ -215,7 +215,7 @@ SplinePure::SplinePure() : cyclic(false), mode(SplineModeLinear)
     full_length = 0.f;
 }
 
-void SplinePure::push_path( const Vector3 * controls, const int count, SplineMode m, bool cyclic_ )
+void SplinePure::init_path( const Vector3 * controls, const int count, SplineMode m, bool cyclic_ )
 {
     cyclic = cyclic_;
     mode = m;
@@ -226,34 +226,23 @@ void SplinePure::push_path( const Vector3 * controls, const int count, SplineMod
 void SplinePure::InitLinear( const Vector3* controls, const int count )
 {
     assert(count >= 2);
-    const int real_size = count + 2;
+    const int real_size = count + (cyclic ? 1 : 0);
 
     points.resize(real_size);
     times.resize(real_size,0);
     lengths.resize(real_size,0.f);
 
-    int lo_idx = 1;
-    int high_idx = lo_idx + count - 1; 
-
-    memcpy(&points[lo_idx],controls, sizeof(Vector3) * count);
+    memcpy(&points[0],controls, sizeof(Vector3) * count);
 
     // index 0 and last two\one indexes are space for special 'virtual points'
     // these points are required for proper C_Evaluate methtod work
     if (cyclic)
-    {
-        points[0] = points[high_idx];
-        points[high_idx+1] = points[lo_idx];
-    }
-    else
-    {
-        points[0] = points[lo_idx];
-        points[high_idx+1] = points[high_idx];
-    }
+        points[count] = points[0];
 
-    index_lo = lo_idx;
-    index_hi = high_idx + (cyclic ? 1 : 0);
+    index_lo = 0;
+    index_hi = real_size - 1;
 
-    int i = lo_idx;
+    int i = 0;
     full_length = 0.f;
     while(i+1 < real_size){
         full_length += SegLengthLinear(i);
@@ -261,7 +250,7 @@ void SplinePure::InitLinear( const Vector3* controls, const int count )
         ++i;
     }
 
-    i = lo_idx + 1;
+    i = 1;
     while(i < real_size){
         times[i] = lengths[i] / Movement::absolute_velocy * 1000.f;
         ++i;
