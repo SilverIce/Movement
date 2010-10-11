@@ -4,7 +4,6 @@
 #include "simpleworld.h"
 #include "PathMover.h"
 #include "worldpacket_fake.h"
-#include "spline_mover.h"
 #include "g3d_based.h"
 #include "outLog.h"
 #include "spline_pure.h"

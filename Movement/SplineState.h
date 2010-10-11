@@ -2,12 +2,11 @@
 
 #include "typedefs.h"
 #include "client_constants.h"
-#include "Node.h"
-#include "spline_mover.h"
+#include "spline_pure.h"
 
 namespace Movement {
 
-    class SplineState : public BaseMover
+    class SplineState
     {
     public:
         union FaceData
@@ -21,11 +20,17 @@ namespace Movement {
         // this is shoud be store here? its related to movement?  not sure
         FaceData        facing_info;
 
-        // Spline & Movement states has independant timestamp fields
         uint32          splineflags;
 
         float           parabolic_speed;
         uint32          parabolic_time;
+
+        // Spline & Movement states have independant timestamp fields
+        uint32          last_ms_time;
+        uint32          time_passed;
+        uint32          last_positionIdx;
+
+        SplinePure      spline;
 
     public:
 
@@ -43,7 +48,9 @@ namespace Movement {
         void SetFacing(Vector3 const& point);
         void ResetFacing();
 
-        void append_path_and_run(const std::vector<Vector3>& path, uint32 ms_time);
+        void init_path(const Vector3 * controls, const int count, SplineMode m, bool cyclic);
+        void UpdatePosition(uint32 curr_ms_time, float velocy, Vector3 & c);
+        uint32 duration() const { return spline.duration(); }
     };
 }
 
