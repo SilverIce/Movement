@@ -27,7 +27,20 @@ SplinePure::InitPathPtr SplinePure::initializers[SplineModeCount] =
     &SplinePure::InitBezier3,
 };
 
-void SplinePure::evaluate( time_type time, Vector3 & c ) const
+void SplinePure::evaluate(time_type time, Vector3 & c ) const
+{
+    assert(time >= 0);
+
+    int Index = index_lo;
+    float u = 0.f;
+    computeIndex(index_lo, Index, time, u);
+
+    (this->*interpolators[mode])(Index, u, c);
+
+    //sLog.write("%f   %f", c.x, c.y);
+}
+
+void SplinePure::evaluate(time_type& time, Vector3 & c) const
 {
     assert(time >= 0);
 

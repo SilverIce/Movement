@@ -3,28 +3,30 @@
 #include "typedefs.h"
 #include "client_constants.h"
 #include "G3D/Vector3.h"
+#include "G3D/Array.h"
 
 #include <assert.h>
 
 enum SplineMode
 {
     SplineModeLinear,
-    //SplineMode_G3D_Catmullrom,
     SplineModeCatmullrom,
     SplineModeBezier3,
     SplineModeCount,
 };
 
-struct SplinePure
+class SplinePure
 {
+public:
+
     typedef int time_type;
     typedef int index_type;
 
-    std::vector<Vector3> points;
-    std::vector<time_type> times;
+    G3D::Array<Vector3> points;
+    G3D::Array<time_type> times;
+    G3D::Array<float> lengths;
 
     float full_length;
-    std::vector<float> lengths;
 
     index_type index_lo, index_hi;
 
@@ -69,7 +71,8 @@ private:
 public:
 
     // assumes that 'time' can't be negative
-    void evaluate(time_type time, Vector3 & c) const;
+    void evaluate(const time_type time, Vector3 & c) const;
+    void evaluate(time_type& time, Vector3 & c) const;
 
     // amount of time covered by spline in one period
     time_type duration() const { return hight_bound() - low_bound(); }
