@@ -9,7 +9,6 @@
 #define TSBaseArray(T)\
     struct TSBaseArray_## T \
     {\
-        void* vtable;\
         uint32 m_alloc;\
         uint32 m_count;\
         T * m_data;\
