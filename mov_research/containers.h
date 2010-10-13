@@ -30,9 +30,9 @@
         uint32 m_chunk;\
     }\
 
-struct Vector3;
+struct C3Vector;
 
 TSGrowableArray(float);
-TSGrowableArray(Vector3);
+TSGrowableArray(C3Vector);
 
 #pragma pack(pop)
