@@ -2,11 +2,11 @@
 
 #include "movement.h"
 #include "simpleworld.h"
-#include "PathMover.h"
 #include "worldpacket_fake.h"
 #include "g3d_based.h"
 #include "outLog.h"
-#include "spline_pure.h"
+#include "spline.h"
+#include "IPathFinder.h"
 
 static G3D::Matrix4 g3d_catmullrom_basis2(
     0.5f, 2.f, -2.f, 0.5f,

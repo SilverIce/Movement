@@ -66,6 +66,8 @@ void SplineState::UpdatePosition( uint32 curr_ms_time, float velocy, Vector3 & c
 
 void SplineState::init_path( const Vector3 * controls, const int count, SplineMode m, bool cyclic )
 {
+    RemoveSplineFlag(SPLINEFLAG_CATMULLROM | SPLINEFLAG_BEZIER3 | SPLINEFLAG_CYCLIC);
+
     if (m == SplineModeCatmullrom)
         AddSplineFlag(SPLINEFLAG_CATMULLROM);
 

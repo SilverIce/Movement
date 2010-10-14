@@ -2,7 +2,7 @@
 
 #include "typedefs.h"
 #include "client_constants.h"
-#include "spline_pure.h"
+#include "spline.h"
 
 namespace Movement {
 

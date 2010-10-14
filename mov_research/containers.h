@@ -9,7 +9,6 @@
 #define TSBaseArray(T)\
     struct TSBaseArray_## T \
     {\
-        void* vtable;\
         uint32 m_alloc;\
         uint32 m_count;\
         T * m_data;\
@@ -30,9 +29,9 @@
         uint32 m_chunk;\
     }\
 
-struct Vector3;
+struct C3Vector;
 
 TSGrowableArray(float);
-TSGrowableArray(Vector3);
+TSGrowableArray(C3Vector);
 
 #pragma pack(pop)

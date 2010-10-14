@@ -9,7 +9,7 @@
     if ( offset != offsetof(s,m) )\
     {\
         printf("\noffsetcheck %s failed\n", # offset);\
-        printf("real address 0x%X != 0x%X member adress\n\n", offset, offsetof(s,m));\
+        printf("real address %u != %u member adress\n\n", offset, offsetof(s,m));\
     }\
     else\
         printf("offsetcheck %s succeded\n", # offset);\
@@ -27,6 +27,7 @@ enum
 {
     CMovement_SIZE = 0x148,
     SplineInfo_SIZE = 0x224,
+    C3Spline_SIZE   = 0x150,
 
 
     FIELD_SPLINE_FLAGS  = 0x20,
@@ -45,18 +46,19 @@ enum
 void CheckOffsets()
 {
     CHECK_SIZE(CMovement_SIZE, CMovement);
-    CHECK_SIZE(SplineInfo_SIZE, SplineInfo);
+    CHECK_SIZE(SplineInfo_SIZE, CMoveSpline);
+    CHECK_SIZE(C3Spline_SIZE, C3Spline);
 
-    CHECK_OFFSET(FIELD_SPLINE_FLAGS, SplineInfo, SplineInfo::splineflags);
-    CHECK_OFFSET(FIELD_SPLINE_PATH, SplineInfo, SplineInfo::path_ptr);
-    CHECK_OFFSET(FIELD_SPLINE_MOV_TIME_PASSED, SplineInfo, SplineInfo::move_time_passed);
-    CHECK_OFFSET(FIELD_SPLINE_PARABOLIC_SPEED, SplineInfo, SplineInfo::parabolic_speed);
+    CHECK_OFFSET(FIELD_SPLINE_FLAGS, CMoveSpline, CMoveSpline::splineflags);
+    //CHECK_OFFSET(FIELD_SPLINE_PATH, CMoveSpline, CMoveSpline::m_spline);
+    CHECK_OFFSET(FIELD_SPLINE_MOV_TIME_PASSED, CMoveSpline, CMoveSpline::move_time_passed);
+    CHECK_OFFSET(FIELD_SPLINE_PARABOLIC_SPEED, CMoveSpline, CMoveSpline::parabolic_speed);
 
     CHECK_OFFSET(FIELD_MOVE_FLAGS, CMovement, CMovement::m_moveFlags);
     CHECK_OFFSET(FIELD_TRANSPORT_GUID, CMovement, CMovement::m_transportGUID);
     CHECK_OFFSET(FIELD_POSITION, CMovement, CMovement::m_position);
     CHECK_OFFSET(FIELD_SPLINE_INFO_PTR, CMovement, CMovement::m_spline);
-    CHECK_OFFSET(FIELD_SKIPPED_TIME, CMovement, CMovement::some_skipped_time);
+    //CHECK_OFFSET(FIELD_SKIPPED_TIME, CMovement, CMovement::some_skipped_time);
     ;
 }
 
@@ -64,7 +66,8 @@ void CheckOffsets()
 int main()
 {
     CheckOffsets();
-    _getch();
+    //_getch();
 
     return 0;
-}
+} 
+ 
