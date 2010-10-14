@@ -211,10 +211,6 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="spline"
-			>
-		</Filter>
-		<Filter
 			Name="trajectory_builder"
 			>
 			<File
@@ -227,7 +223,7 @@
 			>
 		</Filter>
 		<Filter
-			Name="spline_mover"
+			Name="spline"
 			>
 			<File
 				RelativePath="..\Movement\g3d_based.cpp"
