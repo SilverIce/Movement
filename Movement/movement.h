@@ -14,6 +14,7 @@ namespace Movement
 
     class MovementState
     {
+        friend class PacketBuilder;
 
     public:
         MovementState() : msg_builder(this, MovControlServer)

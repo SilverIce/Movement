@@ -19,7 +19,16 @@ namespace Movement
     class PacketBuilder
     {
         const MovementState& mov;
-        MovControlType current;
+        MovControlType mode;
+
+        void Client_SpeedUpdate(SpeedType type, WorldPacket&) const;
+        void Client_MoveModeUpdate(MoveMode mode, WorldPacket&) const;
+        void Client_PathUpdate(WorldPacket&) const;
+
+        void Spline_SpeedUpdate(SpeedType type, WorldPacket&) const;
+        void Spline_MoveModeUpdate(MoveMode mode, WorldPacket&) const;
+        void Spline_PathUpdate(WorldPacket&) const;
+
     public:
         PacketBuilder(MovementState *const dat, MovControlType c);
         ~PacketBuilder();
@@ -28,7 +37,7 @@ namespace Movement
         void MoveModeUpdate(MoveMode mode, WorldPacket& ) const;
         void StateUpdate(WorldPacket& ) const;
 
-        void SetControl(MovControlType c) { current = c; }
-        MovControlType GetControl(MovControlType c) const { return current; }
+        void SetControl(MovControlType c) { mode = c; }
+        MovControlType GetControl(MovControlType c) const { return mode; }
     };
 }

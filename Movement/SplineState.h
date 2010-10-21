@@ -8,6 +8,7 @@ namespace Movement {
 
     class SplineState
     {
+        friend class PacketBuilder;
     public:
         union FaceData
         {
