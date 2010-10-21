@@ -46,9 +46,13 @@ SplineState::SplineState()
 
 void SplineState::UpdatePosition( uint32 curr_ms_time, float velocy, Vector3 & c )
 {
+    // not implemeneted yet, it's sketch only
+
     // amount of time passed since last evaluate call
     uint32 t_passed = getMSTimeDiff(last_ms_time, curr_ms_time);
     last_ms_time = curr_ms_time;
+
+    passed_length += double(t_passed) * velocy / 1000.f;
 
     /** convert passed time to absolute passed time:
     *   if     absolute_velocy = velocy * alpha
@@ -77,7 +81,7 @@ void SplineState::init_path( const Vector3 * controls, const int count, SplineMo
     if (cyclic)
         AddSplineFlag(SPLINEFLAG_CYCLIC);
 
-    spline.init_path(path, count, m, cyclic);
+    spline.init_path(controls, count, m, cyclic);
 
     last_positionIdx = 0;
 }

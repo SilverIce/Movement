@@ -170,14 +170,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\client_opcodes.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\Movement\client_opcodes.h"
-				>
-			</File>
-			<File
 				RelativePath="..\Movement\const_tables.h"
 				>
 			</File>
@@ -195,6 +187,14 @@
 			</File>
 			<File
 				RelativePath="..\Movement\mov_constants.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Movement\opcodes.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Movement\opcodes.h"
 				>
 			</File>
 		</Filter>
@@ -234,19 +234,12 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\spline_pure.cpp"
+				RelativePath="..\Movement\spline.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\spline_pure.h"
+				RelativePath="..\Movement\spline.h"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\Movement\SplineState.cpp"

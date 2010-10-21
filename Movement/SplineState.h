@@ -32,15 +32,20 @@ namespace Movement {
 
         SplinePure      spline;
 
-    public:
+        float           passed_length;
 
-        SplineState();
+
+    private:
 
         void AddSplineFlag(uint32 f) { splineflags |= f; }
         void RemoveSplineFlag(uint32 f) { splineflags &= ~f; }
         bool HasSplineFlag(uint32 f) const { return splineflags & f; }
         uint32 GetSplineFlags() const { return splineflags; }
         void SetSplineFlags(uint32 f) { splineflags = f; }
+
+    public:
+
+        SplineState();
 
         /// facing info
         void SetFacing(uint64 target_guid);

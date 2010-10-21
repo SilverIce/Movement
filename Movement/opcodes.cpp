@@ -1,5 +1,5 @@
 #include "typedefs.h"
-#include "client_opcodes.h"
+#include "opcodes.h"
 
 namespace Movement {
 

@@ -1,5 +1,5 @@
 
-#include "spline_pure.h"
+#include "spline.h"
 #include "g3d\matrix4.h"
 #include "g3d\vector4.h"
 #include "outLog.h"
