@@ -37,7 +37,7 @@ void SplinePure::evaluate(time_type time, Vector3 & c ) const
 
     (this->*interpolators[mode])(Index, u, c);
 
-    //sLog.write("%f   %f", c.x, c.y);
+    sLog.write("%f   %f", c.x, c.y);
 }
 
 void SplinePure::evaluate(time_type& time, Vector3 & c) const
@@ -82,7 +82,7 @@ void SplinePure::computeIndex( index_type lastIndex, index_type& Index, time_typ
         }
     }
 
-    Index = computeIndexInBounds(lastIndex, X);
+    Index = computeIndexInBounds(X);
     assert(Index < index_hi);
     percent = float(X - times[Index]) / float(times[Index+1] - times[Index]);
 }
@@ -102,6 +102,25 @@ SplinePure::index_type SplinePure::computeIndexInBounds( index_type lastIdx, con
     return lastIdx;
 }
 
+SplinePure::index_type SplinePure::computeIndexInBounds( time_type t ) const
+{
+    index_type hi = index_hi;
+    index_type lo = index_lo;
+
+    index_type i = lo + (hi - lo) * (t - low_bound()) / duration();
+
+    while ((times[i] > t) || (times[i + 1] <= t))
+    {
+        if (times[i] > t)
+            hi = i - 1; // too big
+        else if (times[i + 1] <= t)
+            lo = i + 1; // too small
+
+        i = (hi + lo) / 2;
+    }
+
+    return i;
+}
 
 float SplinePure::SegLength( index_type Index ) const
 {

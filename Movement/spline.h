@@ -34,6 +34,7 @@ public:
     bool cyclic;
 
     index_type computeIndexInBounds(index_type lastIdx, const time_type time_passed_delta) const;
+    index_type computeIndexInBounds(time_type time_passed_delta) const;
 
     time_type low_bound() const { return times[index_lo];}
     time_type hight_bound() const { return times[index_hi];}
@@ -65,7 +66,7 @@ private:
     static InitPathPtr initializers[SplineModeCount];
 
     enum{
-        // could be modified, affects segment legth evaluation precision
+        // could be modified, affects segment length evaluation precision
         STEPS_PER_SEGMENT = 20,
     };
 public:
@@ -79,7 +80,7 @@ public:
 
     void init_path(const Vector3 * controls, const int N, SplineMode m, bool cyclic_);
 
-    // returns lenth of the spline
+    // returns length of the whole spline
     float length() const { return full_length; }
 
     SplinePure();
