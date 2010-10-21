@@ -205,7 +205,7 @@ float SplinePure::SegLengthCatmullRom( index_type Index ) const
     curPos = nextPos = p[1];
 
     index_type i = 1;
-    float length = 0;
+    double length = 0;
     while (i <= STEPS_PER_SEGMENT)
     {
         C_Evaluate(p, float(i) / float(STEPS_PER_SEGMENT), s_catmullRomCoeffs, nextPos);
@@ -228,7 +228,7 @@ float SplinePure::SegLengthBezier3(index_type Index) const
     curPos = nextPos;
 
     index_type i = 1;
-    float length = 0;
+    double length = 0;
     while (i <= STEPS_PER_SEGMENT)
     {
         C_Evaluate(p, float(i) / float(STEPS_PER_SEGMENT), s_Bezier3Coeffs, nextPos);
@@ -275,12 +275,13 @@ void SplinePure::InitLinear( const Vector3* controls, const int count )
     index_hi = real_size - 1;
 
     int i = 0;
-    full_length = 0.f;
+    double length = 0;
     while(i+1 < real_size){
-        full_length += SegLengthLinear(i);
-        lengths[i+1] = full_length;
+        length += SegLengthLinear(i);
+        lengths[i+1] = length;
         ++i;
     }
+    full_length = length;
 
     i = 1;
     while(i < real_size){
@@ -320,12 +321,13 @@ void SplinePure::InitCatmullRom( const Vector3* controls, const int count )
     index_hi = high_idx + (cyclic ? 1 : 0);
 
     int i = lo_idx;
-    full_length = 0.f;
+    double length = 0;
     while(i < real_size - 2 ){
-        full_length += SegLengthCatmullRom(i);
-        lengths[i+1] = full_length;
+        length += SegLengthCatmullRom(i);
+        lengths[i+1] = length;
         ++i;
     }
+    full_length = length;
 
     i = lo_idx + 1;
     while(i < real_size - 1){
@@ -351,12 +353,13 @@ void SplinePure::InitBezier3( const Vector3* controls, const int count )
     //assert(points.size() % 3 == 0);
 
     index_type i = 0;
-    full_length = 0.f;
+    double length = 0;
     while(i+1 < t ){
-        full_length += SegLengthBezier3(i);
-        lengths[i+1] = full_length;
+        length += SegLengthBezier3(i);
+        lengths[i+1] = length;
         ++i;
     }
+    full_length = length;
 
     i = 0;
     while(i < t){
