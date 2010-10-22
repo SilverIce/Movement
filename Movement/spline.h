@@ -69,6 +69,9 @@ private:
         // could be modified, affects segment length evaluation precision
         STEPS_PER_SEGMENT = 20,
     };
+
+    void cacheLengths();
+
 public:
 
     // assumes that 'time' can't be negative

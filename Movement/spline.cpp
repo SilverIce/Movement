@@ -31,7 +31,7 @@ void SplinePure::evaluate(time_type time, Vector3 & c ) const
 {
     assert(time >= 0);
 
-    int Index = index_lo;
+    index_type Index = index_lo;
     float u = 0.f;
     computeIndex(index_lo, Index, time, u);
 
@@ -44,7 +44,7 @@ void SplinePure::evaluate(time_type& time, Vector3 & c) const
 {
     assert(time >= 0);
 
-    int Index = index_lo;
+    index_type Index = index_lo;
     float u = 0.f;
     computeIndex(index_lo, Index, time, u);
 
@@ -258,7 +258,7 @@ void SplinePure::init_path( const Vector3 * controls, const int count, SplineMod
 void SplinePure::InitLinear( const Vector3* controls, const int count )
 {
     assert(count >= 2);
-    const int real_size = count + (cyclic ? 1 : 0);
+    const int real_size = count + 1;
 
     points.resize(real_size);
     times.resize(real_size,0);
@@ -270,24 +270,13 @@ void SplinePure::InitLinear( const Vector3* controls, const int count )
     // these points are required for proper C_Evaluate methtod work
     if (cyclic)
         points[count] = points[0];
+    else
+        points[count] = points[count-1];
 
     index_lo = 0;
-    index_hi = real_size - 1;
+    index_hi = cyclic ? count : (count - 1);
 
-    int i = 0;
-    double length = 0;
-    while(i+1 < real_size){
-        length += SegLengthLinear(i);
-        lengths[i+1] = length;
-        ++i;
-    }
-    full_length = length;
-
-    i = 1;
-    while(i < real_size){
-        times[i] = lengths[i] / Movement::absolute_velocy * 1000.f;
-        ++i;
-    }
+    cacheLengths();
 }
 
 void SplinePure::InitCatmullRom( const Vector3* controls, const int count )
@@ -319,26 +308,11 @@ void SplinePure::InitCatmullRom( const Vector3* controls, const int count )
 
     index_lo = lo_idx;
     index_hi = high_idx + (cyclic ? 1 : 0);
-
-    int i = lo_idx;
-    double length = 0;
-    while(i < real_size - 2 ){
-        length += SegLengthCatmullRom(i);
-        lengths[i+1] = length;
-        ++i;
-    }
-    full_length = length;
-
-    i = lo_idx + 1;
-    while(i < real_size - 1){
-        times[i] = lengths[i] / Movement::absolute_velocy * 1000.f;
-        ++i;
-    }
+    cacheLengths();
 }
 
 void SplinePure::InitBezier3( const Vector3* controls, const int count )
 {
-
     index_type c = count / 3u * 3u;
     index_type t = c / 3u;
 
@@ -351,21 +325,24 @@ void SplinePure::InitBezier3( const Vector3* controls, const int count )
     index_hi = t-1;
 
     //assert(points.size() % 3 == 0);
+    cacheLengths();
+}
 
-    index_type i = 0;
+void SplinePure::cacheLengths()
+{
+    index_type i = index_lo;
     double length = 0;
-    while(i+1 < t ){
-        length += SegLengthBezier3(i);
+    while(i < index_hi ){
+        length += SegLength(i);
         lengths[i+1] = length;
         ++i;
     }
     full_length = length;
 
-    i = 0;
-    while(i < t){
+    i = index_lo + 1;
+    while(i <= index_hi){
         times[i] = lengths[i] / Movement::absolute_velocy * 1000.f;
         ++i;
     }
 }
-
 
