@@ -116,6 +116,8 @@ namespace Movement
 
         // Masks
         SPLINE_MASK_FINAL_FACING = SPLINEFLAG_FINALPOINT | SPLINEFLAG_FINALTARGET | SPLINEFLAG_FINALFACING,
+        // flags that shouldn't be appended into SMSG_MONSTER_MOVE\SMSG_MONSTER_MOVE_TRANSPORT packet, should be more probably
+        SPLINE_MASK_NO_MONSTER_MOVE = SPLINE_MASK_FINAL_FACING | DIRECTIONS_MASK | SPLINEFLAG_DONE,
     };
 
     enum SplineType

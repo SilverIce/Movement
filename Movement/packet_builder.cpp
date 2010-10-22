@@ -123,7 +123,7 @@ namespace Movement
         else
             data << uint8(SPLINETYPE_NORMAL);
 
-        data << uint32(splineflags);      // splineflags
+        data << uint32(splineflags & ~SPLINE_MASK_NO_MONSTER_MOVE);
         data << uint32(nodes_count);
 
         if (splineflags & SPLINEFLAG_UNKNOWN3)
