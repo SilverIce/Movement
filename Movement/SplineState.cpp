@@ -70,13 +70,10 @@ void SplineState::UpdatePosition( uint32 curr_ms_time, float velocy, Vector3 & c
 
 void SplineState::init_path( const Vector3 * controls, const int count, SplineMode m, bool cyclic )
 {
-    RemoveSplineFlag(SPLINEFLAG_CATMULLROM | SPLINEFLAG_BEZIER3 | SPLINEFLAG_CYCLIC);
+    RemoveSplineFlag(SPLINEFLAG_CATMULLROM | SPLINEFLAG_CYCLIC);
 
     if (m == SplineModeCatmullrom)
         AddSplineFlag(SPLINEFLAG_CATMULLROM);
-
-    else if (m == SplineModeBezier3)
-        AddSplineFlag(SPLINEFLAG_BEZIER3);
 
     if (cyclic)
         AddSplineFlag(SPLINEFLAG_CYCLIC);

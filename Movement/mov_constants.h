@@ -97,7 +97,7 @@ namespace Movement
         SPLINEFLAG_NO_SPLINE    = 0x00000400,
         SPLINEFLAG_TRAJECTORY   = 0x00000800,
         SPLINEFLAG_WALKMODE     = 0x00001000,
-        SPLINEFLAG_BEZIER3      = 0x00002000,           // used Bezier3 interpolation mode
+        SPLINEFLAG_FLYING      = 0x00002000,           // used Bezier3 interpolation mode
         SPLINEFLAG_KNOCKBACK    = 0x00004000,           // model orientation fixed
         SPLINEFLAG_FINALPOINT   = 0x00008000,
         SPLINEFLAG_FINALTARGET  = 0x00010000,
