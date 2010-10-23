@@ -166,24 +166,8 @@
 			Name="constants"
 			>
 			<File
-				RelativePath="..\Movement\client_constants.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Movement\const_tables.h"
-				>
-			</File>
-			<File
 				RelativePath="..\Movement\globals.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\Movement\mov_constants.h"
@@ -255,7 +239,6 @@
 			>
 			<FileConfiguration
 				Name="Release|Win32"
-				ExcludedFromBuild="true"
 				>
 				<Tool
 					Name="VCCLCompilerTool"

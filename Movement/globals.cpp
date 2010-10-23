@@ -1,5 +1,8 @@
 #pragma once
 
+#include "client_constants.h"
+#include "opcodes.h"
+
 namespace Movement
 {
     static const uint32 Mode2Flag_table[]=
@@ -65,5 +68,13 @@ namespace Movement
         3.141594f,                                              // SpeedTurn
         3.141594f,                                              // SpeedPitch
     };
+
+    const float absolute_velocy = 7.f;
+
+    const double gravity = 19.29110527038574;
+
+    const double gravity_rate_half = 19.29110527038574/2;
+
+    const float terminalVelocity = 60.148003f;
 
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "typedefs.h"
-#include "client_constants.h"
 #include "G3D/Vector3.h"
 #include "G3D/Array.h"
 
