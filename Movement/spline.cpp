@@ -108,7 +108,7 @@ SplinePure::index_type SplinePure::computeIndexInBounds( time_type t ) const
     index_type hi = index_hi;
     index_type lo = index_lo;
 
-    index_type i = lo + (hi - lo) * (t - low_bound()) / duration();
+    index_type i = lo + (hi - lo) * (float)(t - low_bound()) / (float)duration();
 
     while ((times[i] > t) || (times[i + 1] <= t))
     {
@@ -254,6 +254,7 @@ void SplinePure::init_path( const Vector3 * controls, const int count, SplineMod
     mode = m;
 
     (this->*initializers[mode])(controls, count);
+    cacheLengths();
 }
 
 void SplinePure::InitLinear( const Vector3* controls, const int count )
@@ -276,8 +277,6 @@ void SplinePure::InitLinear( const Vector3* controls, const int count )
 
     index_lo = 0;
     index_hi = cyclic ? count : (count - 1);
-
-    cacheLengths();
 }
 
 void SplinePure::InitCatmullRom( const Vector3* controls, const int count )
@@ -309,7 +308,6 @@ void SplinePure::InitCatmullRom( const Vector3* controls, const int count )
 
     index_lo = lo_idx;
     index_hi = high_idx + (cyclic ? 1 : 0);
-    cacheLengths();
 }
 
 void SplinePure::InitBezier3( const Vector3* controls, const int count )
@@ -324,9 +322,7 @@ void SplinePure::InitBezier3( const Vector3* controls, const int count )
 
     index_lo = 0;
     index_hi = t-1;
-
     //assert(points.size() % 3 == 0);
-    cacheLengths();
 }
 
 void SplinePure::cacheLengths()
