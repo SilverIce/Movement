@@ -1,6 +1,7 @@
 
 #include "packet_builder.h"
 #include "mov_constants.h"
+#include "opcodes.h"
 #include "OutLog.h"
 
 #include "Movement.h"

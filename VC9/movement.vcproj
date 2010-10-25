@@ -203,10 +203,6 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="research"
-			>
-		</Filter>
-		<Filter
 			Name="spline"
 			>
 			<File
@@ -237,13 +233,6 @@
 		<File
 			RelativePath="..\Movement\movement.cpp"
 			>
-			<FileConfiguration
-				Name="Release|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-				/>
-			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="..\Movement\movement.h"

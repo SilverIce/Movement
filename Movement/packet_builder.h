@@ -38,6 +38,6 @@ namespace Movement
         void StateUpdate(WorldPacket& ) const;
 
         void SetControl(MovControlType c) { mode = c; }
-        MovControlType GetControl(MovControlType c) const { return mode; }
+        MovControlType GetControl() const { return mode; }
     };
 }

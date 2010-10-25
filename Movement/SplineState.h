@@ -1,7 +1,7 @@
 #pragma once
 
 #include "typedefs.h"
-#include "client_constants.h"
+#include "mov_constants.h"
 #include "spline.h"
 
 namespace Movement {

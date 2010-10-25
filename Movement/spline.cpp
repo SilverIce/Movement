@@ -3,7 +3,7 @@
 #include "g3d\matrix4.h"
 #include "g3d\vector4.h"
 #include "outLog.h"
-#include "client_constants.h"
+#include "mov_constants.h"
 
 using namespace G3D;
 
