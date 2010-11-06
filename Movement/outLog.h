@@ -3,19 +3,21 @@
 #include <stdio.h>
 
 
-class OutLogger
 namespace Movement
 {
-public:
+    class OutLogger
+    {
+    public:
 
-    explicit OutLogger();
-    ~OutLogger();
+        explicit OutLogger();
+        ~OutLogger();
 
-    void write(const char* str, ...);
+        void write(const char* str, ...);
 
-private:
-    FILE* file;
-};
+    private:
+        FILE* file;
+    };
+
+    static OutLogger movLog;
 }
 
-static OutLogger sLog;
