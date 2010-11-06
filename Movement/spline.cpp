@@ -37,22 +37,37 @@ void SplinePure::evaluate(time_type time, Vector3 & c ) const
     float u = 0.f;
     computeIndex(index_lo, Index, time, u);
 
-    (this->*interpolators[mode])(Index, u, c);
+    (this->*interpolators[m_mode])(Index, u, c);
 
-    sLog.write("%f   %f", c.x, c.y);
+    movLog.write("%f   %f", c.x, c.y);
 }
 
-void SplinePure::evaluate(time_type& time, Vector3 & c) const
+void SplinePure::evaluate( time_type time, Vector3 & c, time_type & out) const
 {
     assert(time >= 0);
 
     index_type Index = index_lo;
     float u = 0.f;
     computeIndex(index_lo, Index, time, u);
+    out = time;
 
-    (this->*interpolators[mode])(Index, u, c);
+    (this->*interpolators[m_mode])(Index, u, c);
 
-    sLog.write("%f   %f", c.x, c.y);
+    movLog.write("%f   %f", c.x, c.y);
+}
+
+void SplinePure::evaluate_percent( float t, Vector3 & c ) const
+{
+    assert(perc >= 0 && perc <= 1.f);
+
+    float length = t * full_length;
+    index_type Index = computeIndexInBounds(length, t);
+    assert(Index < index_hi);
+    float u = (length - lengths[Index]) / (lengths[Index+1] - lengths[Index]);
+
+    (this->*interpolators[m_mode])(Index, u, c);
+
+    movLog.write("%f   %f", c.x, c.y);
 }
 
 void SplinePure::computeIndex( index_type lastIndex, index_type& Index, time_type &X, float &percent) const
@@ -106,6 +121,7 @@ SplinePure::index_type SplinePure::computeIndexInBounds( index_type lastIdx, con
 
 SplinePure::index_type SplinePure::computeIndexInBounds( time_type t ) const
 {
+/* Temporary disabled: causes deadloop with t = times[index_hi]
     index_type hi = index_hi;
     index_type lo = index_lo;
 
@@ -119,6 +135,36 @@ SplinePure::index_type SplinePure::computeIndexInBounds( time_type t ) const
             lo = i + 1; // too small
 
         i = (hi + lo) / 2;
+    }*/
+
+
+    return i;
+}
+
+SplinePure::index_type SplinePure::computeIndexInBounds( float length, float t ) const
+{
+// Temporary disabled: causes deadloop with t = 1.f
+/*
+    index_type hi = index_hi;
+    index_type lo = index_lo;
+
+    index_type i = lo + (float)(hi - lo) * t;
+
+    while ((lengths[i] > length) || (lengths[i + 1] <= length))
+    {
+        if (lengths[i] > length)
+            hi = i - 1; // too big
+        else if (lengths[i + 1] <= length)
+            lo = i + 1; // too small
+
+        i = (hi + lo) / 2;
+    }*/
+
+    index_type i = index_lo;
+    index_type N = index_hi;
+    while (i+1 < N && lengths[i+1] < length)
+    {
+        ++i;
     }
 
     return i;
@@ -126,7 +172,7 @@ SplinePure::index_type SplinePure::computeIndexInBounds( time_type t ) const
 
 float SplinePure::SegLength( index_type Index ) const
 {
-    return (this->*seglengths[mode])(Index);
+    return (this->*seglengths[m_mode])(Index);
 }
 
 ///////////
@@ -242,7 +288,7 @@ float SplinePure::SegLengthBezier3(index_type Index) const
 }
 #pragma endregion
 
-SplinePure::SplinePure() : cyclic(false), mode(SplineModeLinear)
+SplinePure::SplinePure() : cyclic(false), m_mode(SplineModeLinear)
 {
     index_lo = 0;
     index_hi = 0;
@@ -252,9 +298,9 @@ SplinePure::SplinePure() : cyclic(false), mode(SplineModeLinear)
 void SplinePure::init_path( const Vector3 * controls, const int count, SplineMode m, bool cyclic_ )
 {
     cyclic = cyclic_;
-    mode = m;
+    m_mode = m;
 
-    (this->*initializers[mode])(controls, count);
+    (this->*initializers[m_mode])(controls, count);
     cacheLengths();
 }
 

@@ -24,19 +24,25 @@ public:
     typedef int time_type;
     typedef int index_type;
 
-    G3D::Array<Vector3> points;
-    G3D::Array<time_type> times;
-    G3D::Array<float> lengths;
+    typedef std::vector<Vector3> PointsArray;
+
+    PointsArray points;
+    std::vector<time_type> times;
+    std::vector<float> lengths;
+    //G3D::Array<Vector3> points;
+    //G3D::Array<time_type> times;
+    //G3D::Array<float> lengths;
 
     float full_length;
 
     index_type index_lo, index_hi;
 
-    SplineMode mode;
+    SplineMode m_mode;
     bool cyclic;
 
     index_type computeIndexInBounds(index_type lastIdx, const time_type time_passed_delta) const;
     index_type computeIndexInBounds(time_type time_passed_delta) const;
+    index_type computeIndexInBounds(float length, float t) const;
 
     time_type low_bound() const { return times[index_lo];}
     time_type hight_bound() const { return times[index_hi];}
@@ -76,9 +82,13 @@ private:
 
 public:
 
-    // assumes that 'time' can't be negative
-    void evaluate(const time_type time, Vector3 & c) const;
-    void evaluate(time_type& time, Vector3 & c) const;
+    // assumes that 'time' can't be negative, 'time' could be out of spline bounds
+    void evaluate(time_type time, Vector3 & c) const;
+    // 'out' time - corrected 'time' parameter that in bounds of spline
+    void evaluate(time_type time, Vector3 & c, time_type& out) const;
+
+    // 't' - percent of spline's length, t in range [0, 1]
+    void evaluate_percent(float t, Vector3 & c) const;
 
     // amount of time covered by spline in one period
     time_type duration() const { return hight_bound() - low_bound(); }
@@ -86,7 +96,9 @@ public:
     void init_path(const Vector3 * controls, const int N, SplineMode m, bool cyclic_);
 
     // returns length of the whole spline
-    float length() const { return full_length; }
+    float length() const { return lengths[index_hi];}
+
+    SplineMode mode() const { return m_mode;}
 
     SplinePure();
 };
