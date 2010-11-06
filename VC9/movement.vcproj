@@ -231,6 +231,10 @@
 			</File>
 		</Filter>
 		<File
+			RelativePath="..\Movement\ByteBufferExtensions.h"
+			>
+		</File>
+		<File
 			RelativePath="..\Movement\movement.cpp"
 			>
 		</File>
@@ -255,11 +259,19 @@
 			</FileConfiguration>
 		</File>
 		<File
+			RelativePath="..\Movement\Object.h"
+			>
+		</File>
+		<File
+			RelativePath="..\Movement\Session.h"
+			>
+		</File>
+		<File
 			RelativePath="..\Movement\typedefs.h"
 			>
 		</File>
 		<File
-			RelativePath="..\Movement\WorldPacket_fake.h"
+			RelativePath="..\Movement\WorldPacket.h"
 			>
 		</File>
 	</Files>

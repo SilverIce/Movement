@@ -2,7 +2,6 @@
 
 #include "movement.h"
 #include "simpleworld.h"
-#include "worldpacket_fake.h"
 #include "g3d_based.h"
 #include "outLog.h"
 #include "spline.h"
@@ -125,7 +124,7 @@ void test()
 //         sLog.write("%f   %f", c.x, c.y);
 //     }
 
-    sLog.write("\nMine spline:");
+    movLog.write("\nMine spline:");
     dur = mover.duration(), part = dur/N;
     for (float i = 0; i <= dur; i += part )
     {

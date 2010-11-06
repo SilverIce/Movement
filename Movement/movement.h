@@ -143,7 +143,7 @@ namespace Movement
 
         static float computeFallElevation(float t_passed, bool _boolean, float start_velocy_);
 
-        void Initialize(MovControlType controller, Vector4& position);
+        void Initialize(MovControlType controller, Vector4& position, uint32 ms_time);
 
         void Spline_computeElevation(float t_passed, Vector3& position);
 

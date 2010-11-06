@@ -8,7 +8,8 @@
 #include "SplineState.h"
 #include <assert.h>
 
-#include "WorldPacket_fake.h"
+#include "ByteBufferExtensions.h"
+#include "Object.h"
 
 namespace Movement
 {

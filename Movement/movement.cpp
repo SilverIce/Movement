@@ -121,7 +121,7 @@ MovementState::MovementState(WorldObject * owner) : msg_builder(this, MovControl
     m_owner = owner;
 
     move_mode = 0;
-    last_ms_time = getMSTime();
+    last_ms_time = 0;
     moveFlags = 0;
     move_flags2 = 0;
 
@@ -191,9 +191,9 @@ void MovementState::UpdatePositionWithTickDiff( uint32 t_passed, Vector3 & c )
     //Spline_computeElevation(t_passed, c);
 }
 
-void MovementState::Initialize( MovControlType controller, Vector4& pos )
+void MovementState::Initialize( MovControlType controller, Vector4& pos, uint32 ms_time )
 {
-    last_ms_time = getMSTime();
+    last_ms_time = ms_time;
 
     position = pos;
 

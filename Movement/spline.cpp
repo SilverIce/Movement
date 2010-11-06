@@ -136,7 +136,12 @@ SplinePure::index_type SplinePure::computeIndexInBounds( time_type t ) const
 
         i = (hi + lo) / 2;
     }*/
-
+    index_type i = index_lo;
+    index_type N = index_hi;
+    while (i+1 < N && times[i+1] < t)
+    {
+        ++i;
+    }
 
     return i;
 }

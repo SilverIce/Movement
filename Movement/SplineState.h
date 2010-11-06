@@ -3,6 +3,7 @@
 #include "typedefs.h"
 #include "mov_constants.h"
 #include "spline.h"
+#include "outLog.h"
 
 namespace Movement {
 
