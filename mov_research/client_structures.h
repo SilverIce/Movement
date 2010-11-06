@@ -79,12 +79,18 @@ struct C44Matrix //struc ; (sizeof=0x40, standard type
     float d3;
 };
 
+enum
+{
+    TSGrowableArray_C3Vector_s = sizeof(TSGrowableArray_C3Vector),
+};
+
 struct C3Spline
 {
     struct C3Spline__vTable *vTable;
     float CachedLength;
     C3Vector Points[25];
-    TSGrowableArray_C3Vector PointOverflowList;
+    char PointOverflowList[TSGrowableArray_C3Vector_s];
+    //TSGrowableArray_C3Vector PointOverflowList;
     int CachedSegLengthCount;
     float CachedSegLengths[25];
 
@@ -139,15 +145,16 @@ struct CMoveSpline   //SMemAlloc(544, (int)".\\Movement_C.cpp", 0xA6u, 0);  ~544
     uint32 splineflags;//36
     uint32 xz1;
     uint32 move_time_passed;
-    uint32 move_time_full;
+    uint32 duration;
     uint32 time_stamp;
 
     C3Spline_CatmullRom CatmullRom;
     C3Vector FinalDestinationPoint;
 
-    float some_coeff;
+    float duration_mod;
     float sync_coeff;
-    float parabolic_speed;//524
+
+    float z_acceleration;//524
     uint32 parabolic_time;//528
 
     int field_210;

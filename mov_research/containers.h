@@ -11,7 +11,7 @@
     {\
         uint32 m_alloc;\
         uint32 m_count;\
-        T * m_data;\
+        struct T * m_data;\
     }\
 
 #define TSFixedArray(T)\
@@ -29,9 +29,9 @@
         uint32 m_chunk;\
     }\
 
-struct C3Vector;
 
-TSGrowableArray(float);
+//TSGrowableArray(float);
+
 TSGrowableArray(C3Vector);
 
 #pragma pack(pop)

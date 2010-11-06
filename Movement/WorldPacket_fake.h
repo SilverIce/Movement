@@ -5,6 +5,8 @@ class WorldPacket
 {
 public:
 
+    void Initialize(uint16, size_t){}
+
     template<class T>
     WorldPacket& operator << (const T&)
     {

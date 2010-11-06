@@ -52,7 +52,7 @@ void CheckOffsets()
     CHECK_OFFSET(FIELD_SPLINE_FLAGS, CMoveSpline, CMoveSpline::splineflags);
     //CHECK_OFFSET(FIELD_SPLINE_PATH, CMoveSpline, CMoveSpline::m_spline);
     CHECK_OFFSET(FIELD_SPLINE_MOV_TIME_PASSED, CMoveSpline, CMoveSpline::move_time_passed);
-    CHECK_OFFSET(FIELD_SPLINE_PARABOLIC_SPEED, CMoveSpline, CMoveSpline::parabolic_speed);
+    CHECK_OFFSET(FIELD_SPLINE_PARABOLIC_SPEED, CMoveSpline, CMoveSpline::z_acceleration);
 
     CHECK_OFFSET(FIELD_MOVE_FLAGS, CMovement, CMovement::m_moveFlags);
     CHECK_OFFSET(FIELD_TRANSPORT_GUID, CMovement, CMovement::m_transportGUID);
