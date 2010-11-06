@@ -53,7 +53,7 @@ namespace Movement
         (this->*move_mode_ptrs[mode])(move_mode, p);
     }
 
-    void PacketBuilder::StateUpdate(WorldPacket& p) const
+    void PacketBuilder::PathUpdate(WorldPacket& p) const
     {
         static const PathPtr path_update_ptrs[MovControlCount] =
         {
@@ -70,9 +70,9 @@ namespace Movement
         uint16 opcode = S_Speed2Opc_table[type];
         sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
 
-        //WorldPacket &data = mov.wow_object->PrepareSharedMessage(opcode, 8+4);
-        //data.append(mov.wow_object->GetPackGUID());
-        data << (float)mov.GetSpeed(type);
+        data.Initialize(opcode, 8+4);
+        data << mov.m_owner->GetPackGUID();
+        data << mov.GetSpeed(type);
     }
 
     void PacketBuilder::Spline_MoveModeUpdate(MoveMode mode, WorldPacket& data) const
@@ -80,29 +80,27 @@ namespace Movement
         uint16 opcode = S_Mode2Opc_table[mode][mov.HasMode(mode)];
         sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
 
-        //WorldPacket &data = mov.wow_object->PrepareSharedMessage(opc, 8+4);
-        //data.append(mov.wow_object->GetPackGUID());
+        data.Initialize(opcode, 8+4);
+        data << mov.m_owner->GetPackGUID();
     }
 
     void PacketBuilder::Spline_PathUpdate(WorldPacket& data) const
     {
-        const SplineState& splineInfo = mov.spline;
-        const G3D::Array<Vector3>& path = splineInfo.spline.points;
+        const MoveSpline& splineInfo = mov.splineInfo;
+        const SplinePure::PointsArray& path = splineInfo.getPath();
 
-        assert(path.size());
+        assert(splineInfo.nodes_count());
 
         uint16 opcode = SMSG_MONSTER_MOVE;
         sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
 
-        //WorldPacket &data = wow_object->PrepareSharedMessage( SMSG_MONSTER_MOVE, 30, true);
-        //data.append(mov.wow_object->GetPackGUID());
+        data.Initialize(opcode, 30);
+        data << mov.m_owner->GetPackGUID();
         data << uint8(0);
-        // so positon became useless, there no more position, current position - only node,
-        // or i'm not correct and need really send _current position?
-        const Vector3& start = mov.position;
+        Vector3 start = mov.position.xyz();
         data << start;
 
-        data << uint32(splineInfo.last_ms_time);
+        data << uint32(splineInfo.sequience_Id);
 
         uint32 nodes_count = path.size();
         uint32 splineflags = splineInfo.GetSplineFlags();  // spline flags are here? not sure...
@@ -112,17 +110,17 @@ namespace Movement
             if (splineflags & SPLINEFLAG_FINALTARGET)
             {
                 data << uint8(SPLINETYPE_FACINGTARGET);
-                data << splineInfo.facing_info.target;
+                data << splineInfo.facing_target;
             }
             else if(splineflags & SPLINETYPE_FACINGANGLE)
             {
                 data << uint8(SPLINETYPE_FACINGANGLE);
-                data << splineInfo.facing_info.angle;
+                data << splineInfo.facing_angle;
             }
             else if(splineflags & SPLINEFLAG_FINALFACING)
             {
                 data << uint8(SPLINETYPE_FACINGSPOT);
-                data << splineInfo.facing_info.spot;
+                data << splineInfo.facing_spot.x << splineInfo.facing_spot.y << splineInfo.facing_spot.z;
             }
             else
                 assert(false);
@@ -133,21 +131,21 @@ namespace Movement
         data << uint32(splineflags & ~SPLINE_MASK_NO_MONSTER_MOVE);
         data << uint32(nodes_count);
 
-        if (splineflags & SPLINEFLAG_UNKNOWN3)
+        if (splineflags & SPLINEFLAG_ANIMATION)
         {
-            data << uint8(0);
-            data << uint32(0);
+            data << splineInfo.animationType;
+            data << splineInfo.animationTime;
         }
 
-        data << splineInfo.duration();
+        data << splineInfo.duration;
 
         if (splineflags & SPLINEFLAG_TRAJECTORY)
         {
-            data << float(0);   //z speed
-            data << uint32(0); // some time
+            data << splineInfo.z_acceleration;
+            data << splineInfo.duration_mod;
         }
 
-        if(splineflags & (SPLINEFLAG_BEZIER3 | SPLINEFLAG_CATMULLROM))
+        if(splineflags & (SPLINEFLAG_FLYING | SPLINEFLAG_CATMULLROM))
         {
             for(uint32 i = 0; i < nodes_count; ++i)
                 data << path[i];
@@ -186,7 +184,7 @@ namespace Movement
         sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
 
         //WorldPacket& data = m->PrepareSharedMessage(opcode, 10); 
-        //data.append(m->GetPackGUID());
+        //data << mov.m_owner->GetPackGUID();
 
         //if(!forced)
         //{
@@ -207,5 +205,107 @@ namespace Movement
     void PacketBuilder::Client_PathUpdate(WorldPacket& data) const
     {
         // do nothing
+    }
+
+    void PacketBuilder::FullUpdate( ByteBuffer& data) const
+    {
+        data << mov.moveFlags;
+        data << mov.move_flags2;
+
+        data << mov.last_ms_time_fake;
+        data << mov.position;
+
+        if (mov.HasMovementFlag(MOVEFLAG_ONTRANSPORT))
+        {
+            data << mov.m_transport.t_guid;
+            data << mov.m_transport.t_offset;
+            data << mov.m_transport.t_time;
+            data << mov.m_transport.t_seat;
+
+            if (mov.move_flags2 & MOVEFLAG2_INTERP_MOVE)
+                data << mov.m_transport.t_time2;
+        }
+        
+        if (mov.HasMovementFlag(MOVEFLAG_SWIMMING | MOVEFLAG_FLYING) || (mov.move_flags2 & MOVEFLAG2_ALLOW_PITCHING))
+        {
+            data << mov.s_pitch;
+        }
+
+        data << mov.fallTime;
+
+        if (mov.HasMovementFlag(MOVEFLAG_FALLING))
+        {
+            data << mov.j_velocity;
+            data << mov.j_sinAngle;
+            data << mov.j_cosAngle;
+            data << mov.j_xy_velocy;
+        }
+
+        if (mov.HasMovementFlag(MOVEFLAG_SPLINE_ELEVATION))
+        {
+            data << mov.u_unk1;
+        }
+
+        for (int i = SpeedWalk; i < SpeedMaxCount; ++i)
+            data << mov.GetSpeed((SpeedType)i);
+        
+        if (mov.HasMovementFlag(MOVEFLAG_SPLINE_ENABLED))
+        {
+            // for debugging
+            static float unkf1 = 1.f;
+            static float unkf2 = 1.f;
+            static float unkf3 = 0.f;
+            static float dur_multiplier = 1.f;
+
+            static uint32 addit_flags = 0;
+
+            const MoveSpline& splineInfo = mov.splineInfo;
+            uint32 splineFlags = mov.splineInfo.splineflags | addit_flags;
+
+            data << splineFlags;
+
+            if(splineFlags & SPLINEFLAG_FINALFACING)             // may be orientation
+            {
+                data << splineInfo.facing_angle;
+            }
+            else
+            {
+                if(splineFlags & SPLINEFLAG_FINALTARGET)         // probably guid there
+                {
+                    data << splineInfo.facing_target;
+                }
+                else
+                {
+                    if(splineFlags & SPLINEFLAG_FINALPOINT)      // probably x,y,z coords there
+                    {
+                        data << splineInfo.facing_spot.x << splineInfo.facing_spot.y << splineInfo.facing_spot.z;
+                    }
+                }
+            }
+
+            data << uint32(splineInfo.time_passed);
+            data << uint32(splineInfo.duration * dur_multiplier);
+            data << splineInfo.sequience_Id;
+
+            data << unkf1;                              // added in 3.1
+            data << unkf2;                              // added in 3.1
+            data << unkf3;                                // added in 3.1
+
+            data << uint32(0);                               // added in 3.1
+
+            uint32 nodes = splineInfo.nodes_count();
+            data << nodes;
+            for (uint32 i = 0; i < nodes; ++i)
+            {
+                data << splineInfo.getNode(i);
+            }
+
+            data << uint8(splineInfo.mode());
+
+            data << splineInfo.finalDestination;
+        }
+
+
+
     }
 }

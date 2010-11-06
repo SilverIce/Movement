@@ -3,6 +3,7 @@
 
 #include "mov_constants.h"
 
+class ByteBuffer;
 class WorldPacket;
 
 namespace Movement
@@ -35,7 +36,8 @@ namespace Movement
 
         void SpeedUpdate(SpeedType type, WorldPacket& ) const;
         void MoveModeUpdate(MoveMode mode, WorldPacket& ) const;
-        void StateUpdate(WorldPacket& ) const;
+        void PathUpdate(WorldPacket& ) const;
+        void FullUpdate(ByteBuffer& ) const;
 
         void SetControl(MovControlType c) { mode = c; }
         MovControlType GetControl() const { return mode; }
