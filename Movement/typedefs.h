@@ -1,5 +1,11 @@
 #pragma once
 
+namespace G3D
+{
+    class Vector3;
+    class Vector4;
+}
+
 namespace Movement
 {
     typedef signed char     int8;
@@ -20,11 +26,10 @@ namespace Movement
         else
             return new_time - old_time;
     }
-}
 
-namespace G3D
-{
-    class Vector3;
-}
+    template<class T> inline float ToSeconds(T t) { return 0.001f * t; }
+    //template<class T> inline double ToSeconds(T t) { return 0.001000000047497451 * t; }
 
-using G3D::Vector3;
+    using G3D::Vector3;
+    using G3D::Vector4;
+}
