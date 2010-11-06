@@ -105,7 +105,7 @@ namespace Movement
         SPLINEFLAG_CATMULLROM   = 0x00040000,           // used CatmullRom interpolation mode
         SPLINEFLAG_CYCLIC       = 0x00080000,           // movement by cycled spline 
         SPLINEFLAG_UNKNOWN2     = 0x00100000,           // appears with bezier3, cyclic flags, nodes > 1
-        SPLINEFLAG_UNKNOWN3     = 0x00200000,
+        SPLINEFLAG_ANIMATION    = 0x00200000,           // animationId (0...3), uint32 time
         SPLINEFLAG_UNKNOWN4     = 0x00400000,
         SPLINEFLAG_UNKNOWN5     = 0x00800000,
         SPLINEFLAG_UNKNOWN6     = 0x01000000,
@@ -129,6 +129,15 @@ namespace Movement
         SPLINETYPE_FACINGSPOT   = 2,
         SPLINETYPE_FACINGTARGET = 3,
         SPLINETYPE_FACINGANGLE  = 4
+    };
+
+    // used with 0x00200000 flag (SPLINEFLAG_ANIMATION) in monster move packet
+    enum AnimType
+    {
+        UNK0 = 0, // 460 = ToGround, index of AnimationData.dbc
+        UNK1 = 1, // 461 = FlyToFly?
+        UNK2 = 2, // 458 = ToFly
+        UNK3 = 3, // 463 = FlyToGround
     };
 
     enum MoveMode
