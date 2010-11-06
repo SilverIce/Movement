@@ -1,7 +1,7 @@
 #include "mov_constants.h"
 #include "SplineState.h"
 
-using namespace Movement;
+namespace Movement{
 
 void SplineState::SetFacing( uint64 guid )
 {
@@ -81,4 +81,5 @@ void SplineState::init_path( const Vector3 * controls, const int count, SplineMo
     spline.init_path(controls, count, m, cyclic);
 
     last_positionIdx = 0;
+}
 }

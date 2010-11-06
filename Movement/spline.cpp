@@ -6,6 +6,7 @@
 #include "mov_constants.h"
 
 using namespace G3D;
+namespace Movement{
 
 SplinePure::InterpolatorPtr SplinePure::interpolators[SplineModeCount] =
 {
@@ -343,3 +344,4 @@ void SplinePure::cacheLengths()
     }
 }
 
+}

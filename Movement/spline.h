@@ -4,7 +4,10 @@
 #include "G3D/Vector3.h"
 #include "G3D/Array.h"
 
+#include <vector>
 #include <assert.h>
+
+namespace Movement {
 
 enum SplineMode
 {
@@ -88,4 +91,5 @@ public:
     SplinePure();
 };
 
+}
 

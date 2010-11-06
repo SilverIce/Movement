@@ -2,7 +2,9 @@
 
 #include <stdio.h>
 
+
 class OutLogger
+namespace Movement
 {
 public:
 
@@ -14,5 +16,6 @@ public:
 private:
     FILE* file;
 };
+}
 
 static OutLogger sLog;
