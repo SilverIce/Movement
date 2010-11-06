@@ -8,35 +8,27 @@
 #include "G3D\Vector3.h"
 #include "G3D\Vector4.h"
 
+class WorldObject;
 
 namespace Movement
 {
-    class WorldObject;
-
-
     class MovementState
     {
         friend class PacketBuilder;
 
     public:
-        MovementState() : msg_builder(this, MovControlServer)
-        {
-            move_mode = 0;
-            time_stamp = 0;
-            moveFlags = 0;
-            move_flags2 = 0;
-
-            speed_obj.init();
-        }
+        MovementState(WorldObject * owner);
 
         ~MovementState()
         {
         }
 
-
-        #pragma region methtods
         PacketBuilder& GetBuilder() { return msg_builder; }
         PacketBuilder msg_builder;
+
+        WorldObject * m_owner;
+
+        #pragma region field accessors
 
         //WorldObject* wow_object;
 
@@ -64,22 +56,12 @@ namespace Movement
         bool HasDest() const { return direction_flags & DIRECTIONS_MASK; }
         void Stop()  { direction_flags &= ~DIRECTIONS_MASK; }
 
+        #pragma endregion
+
         /// Move Modes
         bool HasMode(MoveMode m) const { return move_mode & (1 << m);}
-
-        void ApplyMoveMode(MoveMode mode, bool apply)
-        {
-            if (apply)
-            {
-                AddMovementFlag(Mode2Flag_table[mode]);
-                move_mode |= (1 << mode);
-            }
-            else
-            {
-                RemoveMovementFlag(Mode2Flag_table[mode]);
-                move_mode &= ~(1 << mode);
-            }
-        }
+        void ApplyMoveMode(MoveMode mode, bool apply);
+        /// end of Get-Set methtods
 
         /// Apply/remove modes
         void Root(bool apply) { ApplyMoveMode(MoveModeRoot, apply); }
@@ -90,25 +72,22 @@ namespace Movement
         void Fly(bool apply) { ApplyMoveMode(MoveModeFly, apply); }
         void Hover(bool apply) { ApplyMoveMode(MoveModeHover, apply); }
 
-        /// end of Get-Set methtods
-        #pragma endregion
+        #pragma region fields
+
 
         /// Transport info
-        struct TransportData
+        struct TransportInfo
         {
-            TransportData() : t_guid(0), t_time(0) {}
+            TransportInfo() : t_guid(0), t_time(0), t_seat(0), t_time2(2) {}
             uint64 t_guid;
-            Vector3 t_offset;
+            Vector4 t_offset;
             uint32 t_time;
+            int8 t_seat;
+            uint32 t_time2;
         };
 
         struct SpeedInfo
         {
-            void init()
-            {
-                memcpy(this, BaseSpeed, sizeof SpeedInfo);
-            }
-
             float current;
             float walk;
             float run;
@@ -121,11 +100,13 @@ namespace Movement
             float pitch;
         };
 
-        uint32          move_mode;
-
         // time-position pair
-        Vector3         position;
-        uint32          time_stamp;
+        Vector4         position;
+        uint32          last_ms_time;
+
+        uint32          last_ms_time_fake;
+
+        uint32          move_mode;
 
         union {
             uint8       direction_flags;
@@ -133,68 +114,44 @@ namespace Movement
         };
         uint16          move_flags2;
 
-        TransportData   m_transport;
+        // swimming and flying
+        float           s_pitch;
+        // last fall time
+        uint32          fallTime;
+        float           fallStartElevation;
+        // jumping
+        float           j_velocity, j_sinAngle, j_cosAngle, j_xy_velocy;
+
+        float           u_unk1;
+
+        TransportInfo   m_transport;
    
         union {
             SpeedInfo   speed_obj;
             float       speed[SpeedMaxCount];
         };
 
-        SplineState     spline;
+        MoveSpline     splineInfo;
+
+        #pragma endregion
+
 
         /// Some client's formulas:
 
-        float CalculateCurrentSpeed(bool is_walking = false) const
-        {
-            uint32 splineflags = spline.splineflags;
+        void ReCalculateCurrentSpeed();
+        float CalculateCurrentSpeed(bool use_walk_forced) const;
 
-            // g_moveFlags_mask - some global client's moveflag mask
-            // TODO: get real value
-            static uint32 g_moveFlags_mask = 0xFFFFFFFF;
-            float speed = 0.0f;
+        static float computeFallElevation(float t_passed, bool _boolean, float start_velocy_);
 
-            if ( !(g_moveFlags_mask & moveFlags) )
-                return 0.0f;
+        void Initialize(MovControlType controller, Vector4& position);
 
-            if ( /*!spline ||*/ splineflags & SPLINEFLAG_NO_SPLINE )
-            {
-                if ( moveFlags & MOVEFLAG_FLYING )
-                {
-                    if ( moveFlags & MOVEFLAG_BACKWARD && speed_obj.flight >= speed_obj.flight_back )
-                        return speed_obj.flight_back;
-                    else
-                        return speed_obj.flight;
-                }
-                else if ( moveFlags & MOVEFLAG_SWIMMING )
-                {
-                    if ( moveFlags & MOVEFLAG_BACKWARD && speed_obj.swim >= speed_obj.swim_back )
-                        return speed_obj.swim_back;
-                    else
-                        return speed_obj.swim;
-                }
-                else
-                {
-                    if ( moveFlags & MOVEFLAG_WALK_MODE || is_walking )
-                    {
-                        if ( speed_obj.run > speed_obj.walk )
-                            return speed_obj.walk;
-                    }
-                    else
-                    {
-                        if ( moveFlags & MOVEFLAG_BACKWARD && speed_obj.run >= speed_obj.run_back )
-                            return speed_obj.run_back;
-                    }
-                    return speed_obj.run;
-               }
-            }
-            else
-            {
-                if ( !spline.duration() )
-                    return 0.0f;
-                //speed = spline.total_lenght / spline.duration * 1000.0f;
-            }
-            return speed;
-        }
+        void Spline_computeElevation(float t_passed, Vector3& position);
+
+        void MovebyPath(const Vector3*, int count, float speed, bool cyclic);
+        void MovebyPath(const Vector3*, int count, bool cyclic);
+
+        void UpdatePosition(uint32 curr_ms_time, Vector3 & c);
+        void UpdatePositionWithTickDiff(uint32 diff, Vector3 & c);
 
     };
 
