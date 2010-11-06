@@ -6,37 +6,101 @@
 
 namespace Movement {
 
-    class SplineState
+    struct SplineInfo
     {
-        friend class PacketBuilder;
-    public:
-        union FaceData
+        // SPLINE_MASK_FINAL_FACING
+        union
         {
             struct Point{
                 float x,y,z;
-            } spot;
-            uint64 target;
-            float angle;
+            } facing_spot;
+            uint64 facing_target;
+            float facing_angle;
         };
-        // this is shoud be store here? its related to movement?  not sure
-        FaceData        facing_info;
 
+        uint32          sequience_Id;
         uint32          splineflags;
 
-        float           parabolic_speed;
-        uint32          parabolic_time;
+        // SPLINEFLAG_ANIMATION
+        uint8           animationType;
+        uint32          animationTime;
+    };
 
-        // Spline & Movement states have independant timestamp fields
-        uint32          last_ms_time;
-        uint32          time_passed;
-        uint32          last_positionIdx;
+    // handles movement by parabolic trajectory
+    class ParabolicHandler 
+    {
+    public:
+        ParabolicHandler() {init();}
 
-        SplinePure      spline;
+        float   z_acceleration;
+        uint32  parabolic_time_shift;
 
-        float           passed_length;
+        void handleParabolic(uint32 t_duration, uint32 t_passed, Vector3& position) const;
 
+    protected:
+        void init()
+        {
+            z_acceleration = 0.f;
+            parabolic_time_shift = 0;
+        }
+    };
 
-    private:
+    // handles movement by spline 
+    class SplineHandler : private SplinePure
+    {
+    public:
+        SplineHandler() {init();}
+
+        using SplinePure::init_path;
+        using SplinePure::length;
+        using SplinePure::mode;
+
+        uint32  time_passed;
+        uint32  duration;
+        float   duration_mod;
+        float   sync_coeff;
+
+        bool arrived() const
+        {
+            return time_passed == duration;
+        }
+
+        uint32 nodes_count() const
+        {
+            return points.size();
+        }
+
+        const Vector3& getNode(uint32 i) const
+        {
+            return points[i];
+        }
+
+        const PointsArray& getPath() const
+        {
+            return points;
+        }
+
+        void handleSpline(uint32 t_diff, Vector3& position);
+
+    protected:
+        void init()
+        {
+            time_passed  = 0;
+            duration     = 0;
+            duration_mod = 1.f;
+            sync_coeff   = 1.f;
+        }
+    };
+
+    class MoveSpline : public SplineInfo, public SplineHandler, public ParabolicHandler
+    {
+        friend class PacketBuilder;
+    public:
+
+        //SplinePure          spline;
+        Vector3             finalDestination;
+
+    public:
 
         void AddSplineFlag(uint32 f) { splineflags |= f; }
         void RemoveSplineFlag(uint32 f) { splineflags &= ~f; }
@@ -44,9 +108,17 @@ namespace Movement {
         uint32 GetSplineFlags() const { return splineflags; }
         void SetSplineFlags(uint32 f) { splineflags = f; }
 
+        void ToggeSplineFlag(uint32 f, bool apply)
+        {
+            if (apply)
+                AddSplineFlag(f);
+            else
+                RemoveSplineFlag(f);
+        }
+
     public:
 
-        SplineState();
+        MoveSpline();
 
         /// facing info
         void SetFacing(uint64 target_guid);
@@ -54,9 +126,29 @@ namespace Movement {
         void SetFacing(Vector3 const& point);
         void ResetFacing();
 
-        void init_path(const Vector3 * controls, const int count, SplineMode m, bool cyclic);
-        void UpdatePosition(uint32 curr_ms_time, float velocy, Vector3 & c);
-        uint32 duration() const { return spline.duration(); }
+        void init_path(const Vector3 * controls, const int count, float curr_speed, float cyclic)
+        {
+            SplineHandler::init();
+            SplineHandler::init_path(controls, count, (SplineMode)HasSplineFlag(SPLINEFLAG_FLYING|SPLINEFLAG_CATMULLROM), cyclic);
+
+            duration = length() / curr_speed * 1000.f;
+
+            // TODO: where this should be handled?
+            if (duration == 0)
+            {
+                movLog.write("Error: null spline duration");
+                duration = 1;
+            }
+
+            ToggeSplineFlag(SPLINEFLAG_CYCLIC, cyclic);
+            if (cyclic)
+                finalDestination = Vector3::zero();
+            else
+                finalDestination = getPath().back();
+        }
+
+        void setDone() { AddSplineFlag(SPLINEFLAG_DONE); }
+        bool isCyclic() const { return HasSplineFlag(SPLINEFLAG_CYCLIC); }
     };
 }
 

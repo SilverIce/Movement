@@ -3,83 +3,68 @@
 
 namespace Movement{
 
-void SplineState::SetFacing( uint64 guid )
+void MoveSpline::SetFacing( uint64 guid )
 {
-    facing_info.target = guid;
+    facing_target = guid;
     RemoveSplineFlag(SPLINE_MASK_FINAL_FACING);
     AddSplineFlag(SPLINEFLAG_FINALTARGET);
 }
 
-void SplineState::SetFacing( float o )
+void MoveSpline::SetFacing( float o )
 {
-    facing_info.angle = o;
+    facing_angle = o;
     RemoveSplineFlag(SPLINE_MASK_FINAL_FACING);
     AddSplineFlag(SPLINEFLAG_FINALFACING);
 }
 
-void SplineState::SetFacing( Vector3 const& spot )
+void MoveSpline::SetFacing( Vector3 const& spot )
 {
-    facing_info.spot.x = spot.x;
-    facing_info.spot.y = spot.y;
-    facing_info.spot.z = spot.z;
+    facing_spot.x = spot.x;
+    facing_spot.y = spot.y;
+    facing_spot.z = spot.z;
     RemoveSplineFlag(SPLINE_MASK_FINAL_FACING);
     AddSplineFlag(SPLINEFLAG_FINALPOINT);
 }
 
-void SplineState::ResetFacing()
+void MoveSpline::ResetFacing()
 {
     RemoveSplineFlag(SPLINE_MASK_FINAL_FACING);
 }
 
-SplineState::SplineState()
+MoveSpline::MoveSpline()
 {
-    last_ms_time = 0;
-    last_positionIdx = 0;
-
     splineflags = 0;
 
     time_passed = 0;
-
-    parabolic_speed = 0;
-    parabolic_time = 0;
 }
 
-void SplineState::UpdatePosition( uint32 curr_ms_time, float velocy, Vector3 & c )
+void ParabolicHandler::handleParabolic( uint32 t_duration, uint32 t_passed, Vector3& position ) const
 {
-    // not implemeneted yet, it's sketch only
+    float t_passedf = ToSeconds(t_passed - parabolic_time_shift);
+    float t_durationf = ToSeconds(t_duration - parabolic_time_shift);
 
-    // amount of time passed since last evaluate call
-    uint32 t_passed = getMSTimeDiff(last_ms_time, curr_ms_time);
-    last_ms_time = curr_ms_time;
-
-    passed_length += double(t_passed) * velocy / 1000.f;
-
-    /** convert passed time to absolute passed time:
-    *   if     absolute_velocy = velocy * alpha
-    *   then   absolute_passed_time = t_passed / alpha;
-        i.e.
-        double alpha = absolute_velocy / velocy;
-        t_passed = double(t_passed) / alpha;
-    */
-        t_passed = double(t_passed) * velocy / absolute_velocy;
-
-    
-    uint32 X = time_passed + t_passed;
-    spline.evaluate(X, c);
+    // -a*x*x + bx + c:
+    //(dur * v3->z_acceleration * dt)/2 - (v3->z_acceleration * dt * dt)/2 + Z;
+    //position.z += t_durationf/2 * (z_acceleration * t_passedf) - (z_acceleration * t_passedf * t_passedf)/2;
+    position.z += (t_durationf - t_passedf) * 0.5f * z_acceleration * t_passedf;
 }
 
-void SplineState::init_path( const Vector3 * controls, const int count, SplineMode m, bool cyclic )
+void SplineHandler::handleSpline( uint32 t_passed, Vector3& c )
 {
-    RemoveSplineFlag(SPLINEFLAG_CATMULLROM | SPLINEFLAG_CYCLIC);
+    uint32 duration_ = (float)duration * duration_mod + 0.5f;
+    time_passed += t_passed;
 
-    if (m == SplineModeCatmullrom)
-        AddSplineFlag(SPLINEFLAG_CATMULLROM);
+    if (time_passed >= duration_)
+    {
+        if (cyclic)
+            time_passed = time_passed % duration_;
+        else
+        {
+            time_passed = duration_;
+        }
+    }
 
-    if (cyclic)
-        AddSplineFlag(SPLINEFLAG_CYCLIC);
-
-    spline.init_path(controls, count, m, cyclic);
-
-    last_positionIdx = 0;
+    float t = (float)time_passed / (float)duration_;
+    evaluate_percent(t, c);
 }
 }
