@@ -24,7 +24,8 @@ SplinePure::SegLenghtPtr SplinePure::seglengths[SplineModeCount] =
 
 SplinePure::InitPathPtr SplinePure::initializers[SplineModeCount] =
 {
-    &SplinePure::InitLinear,
+    //&SplinePure::InitLinear,
+    &SplinePure::InitCatmullRom,    // we should use catmullrom initializer even for linear mode! (client's internal structure limitation) 
     &SplinePure::InitCatmullRom,
     &SplinePure::InitBezier3,
 };
