@@ -130,7 +130,11 @@ namespace Movement {
         void init_path(const Vector3 * controls, const int count, float curr_speed, float cyclic)
         {
             SplineHandler::init();
-            SplineHandler::init_path(controls, count, (SplineMode)HasSplineFlag(SPLINEFLAG_FLYING|SPLINEFLAG_CATMULLROM), cyclic);
+
+            if (HasSplineFlag(SPLINEFLAG_FLYING|SPLINEFLAG_CATMULLROM))
+                SplineHandler::init_path(controls, count, SplineModeCatmullrom, cyclic);
+            else
+                SplineHandler::init_path(controls, count, SplineModeLinear, cyclic);
 
             duration = length() / curr_speed * 1000.f;
 
