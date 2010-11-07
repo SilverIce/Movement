@@ -9,14 +9,14 @@ void MoveSpline::SetFacing( uint64 guid )
 {
     facing_target = guid;
     RemoveSplineFlag(SPLINE_MASK_FINAL_FACING);
-    AddSplineFlag(SPLINEFLAG_FINALTARGET);
+    AddSplineFlag(SPLINEFLAG_FINAL_TARGET);
 }
 
 void MoveSpline::SetFacing( float o )
 {
     facing_angle = o;
     RemoveSplineFlag(SPLINE_MASK_FINAL_FACING);
-    AddSplineFlag(SPLINEFLAG_FINALFACING);
+    AddSplineFlag(SPLINEFLAG_FINAL_ANGLE);
 }
 
 void MoveSpline::SetFacing( Vector3 const& spot )
@@ -25,7 +25,7 @@ void MoveSpline::SetFacing( Vector3 const& spot )
     facing_spot.y = spot.y;
     facing_spot.z = spot.z;
     RemoveSplineFlag(SPLINE_MASK_FINAL_FACING);
-    AddSplineFlag(SPLINEFLAG_FINALPOINT);
+    AddSplineFlag(SPLINEFLAG_FINAL_POINT);
 }
 
 void MoveSpline::ResetFacing()

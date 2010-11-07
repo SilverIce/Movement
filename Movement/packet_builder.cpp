@@ -75,7 +75,7 @@ namespace Movement
         uint16 opcode = S_Mode2Opc_table[mode][mov.HasMode(mode)];
         sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
 
-        data.Initialize(opcode, 8+4);
+        data.Initialize(opcode, 8);
         data << mov.m_owner->GetPackGUID();
     }
 
@@ -102,7 +102,7 @@ namespace Movement
 
         if(splineflags & SPLINE_MASK_FINAL_FACING)
         {
-            if (splineflags & SPLINEFLAG_FINALTARGET)
+            if (splineflags & SPLINEFLAG_FINAL_TARGET)
             {
                 data << uint8(SPLINETYPE_FACINGTARGET);
                 data << splineInfo.facing_target;
@@ -112,7 +112,7 @@ namespace Movement
                 data << uint8(SPLINETYPE_FACINGANGLE);
                 data << splineInfo.facing_angle;
             }
-            else if(splineflags & SPLINEFLAG_FINALFACING)
+            else if(splineflags & SPLINEFLAG_FINAL_ANGLE)
             {
                 data << uint8(SPLINETYPE_FACINGSPOT);
                 data << splineInfo.facing_spot.x << splineInfo.facing_spot.y << splineInfo.facing_spot.z;
@@ -220,7 +220,7 @@ namespace Movement
             if (mov.move_flags2 & MOVEFLAG2_INTERP_MOVE)
                 data << mov.m_transport.t_time2;
         }
-        
+
         if (mov.HasMovementFlag(MOVEFLAG_SWIMMING | MOVEFLAG_FLYING) || (mov.move_flags2 & MOVEFLAG2_ALLOW_PITCHING))
         {
             data << mov.s_pitch;
@@ -259,19 +259,19 @@ namespace Movement
 
             data << splineFlags;
 
-            if(splineFlags & SPLINEFLAG_FINALFACING)             // may be orientation
+            if(splineFlags & SPLINEFLAG_FINAL_ANGLE)
             {
                 data << splineInfo.facing_angle;
             }
             else
             {
-                if(splineFlags & SPLINEFLAG_FINALTARGET)         // probably guid there
+                if(splineFlags & SPLINEFLAG_FINAL_TARGET)
                 {
                     data << splineInfo.facing_target;
                 }
                 else
                 {
-                    if(splineFlags & SPLINEFLAG_FINALPOINT)      // probably x,y,z coords there
+                    if(splineFlags & SPLINEFLAG_FINAL_POINT)
                     {
                         data << splineInfo.facing_spot.x << splineInfo.facing_spot.y << splineInfo.facing_spot.z;
                     }
@@ -299,8 +299,5 @@ namespace Movement
 
             data << splineInfo.finalDestination;
         }
-
-
-
     }
 }

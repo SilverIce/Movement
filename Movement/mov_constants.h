@@ -97,11 +97,11 @@ namespace Movement
         SPLINEFLAG_NO_SPLINE    = 0x00000400,
         SPLINEFLAG_TRAJECTORY   = 0x00000800,
         SPLINEFLAG_WALKMODE     = 0x00001000,
-        SPLINEFLAG_FLYING      = 0x00002000,           // used Bezier3 interpolation mode
+        SPLINEFLAG_FLYING       = 0x00002000,
         SPLINEFLAG_KNOCKBACK    = 0x00004000,           // model orientation fixed
-        SPLINEFLAG_FINALPOINT   = 0x00008000,
-        SPLINEFLAG_FINALTARGET  = 0x00010000,
-        SPLINEFLAG_FINALFACING  = 0x00020000,
+        SPLINEFLAG_FINAL_POINT   = 0x00008000,
+        SPLINEFLAG_FINAL_TARGET  = 0x00010000,
+        SPLINEFLAG_FINAL_ANGLE  = 0x00020000,
         SPLINEFLAG_CATMULLROM   = 0x00040000,           // used CatmullRom interpolation mode
         SPLINEFLAG_CYCLIC       = 0x00080000,           // movement by cycled spline 
         SPLINEFLAG_UNKNOWN2     = 0x00100000,           // appears with bezier3, cyclic flags, nodes > 1
@@ -117,7 +117,7 @@ namespace Movement
         SPLINEFLAG_UNKNOWN12    = 0x40000000,
 
         // Masks
-        SPLINE_MASK_FINAL_FACING = SPLINEFLAG_FINALPOINT | SPLINEFLAG_FINALTARGET | SPLINEFLAG_FINALFACING,
+        SPLINE_MASK_FINAL_FACING = SPLINEFLAG_FINAL_POINT | SPLINEFLAG_FINAL_TARGET | SPLINEFLAG_FINAL_ANGLE,
         // flags that shouldn't be appended into SMSG_MONSTER_MOVE\SMSG_MONSTER_MOVE_TRANSPORT packet, should be more probably
         SPLINE_MASK_NO_MONSTER_MOVE = SPLINE_MASK_FINAL_FACING | DIRECTIONS_MASK | SPLINEFLAG_DONE,
     };
