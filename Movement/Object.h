@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef USE_FAKE_CLASSES
+
 #include "WorldPacket.h"
 
 class Player;
@@ -15,6 +17,9 @@ public:
 
     ByteBuffer m_packGuid;
 };
+
+#endif
+
 
 
 

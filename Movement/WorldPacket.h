@@ -1,6 +1,6 @@
 #pragma once
 
-
+#ifdef USE_FAKE_CLASSES
 
 class ByteBuffer
 {
@@ -37,6 +37,9 @@ public:
     {
     }
 };
+#endif
+
+
 
 
 
