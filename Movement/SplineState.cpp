@@ -3,6 +3,8 @@
 
 namespace Movement{
 
+counter<uint32> MoveSpline::sequenceCounter;
+
 void MoveSpline::SetFacing( uint64 guid )
 {
     facing_target = guid;

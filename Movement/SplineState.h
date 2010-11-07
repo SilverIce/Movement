@@ -5,7 +5,28 @@
 #include "spline.h"
 #include "outLog.h"
 
+#include <limits>
+
 namespace Movement {
+
+    template<class T>
+    class counter
+    {
+    public:
+        counter() : m_counter(0) {}
+
+        T increase()
+        {
+            if (m_counter == std::numeric_limits<T>::max())
+                m_counter = 1;
+            else
+                ++m_counter;
+            return m_counter;
+        }
+
+    private:
+        T m_counter;
+    };
 
     struct SplineInfo
     {
@@ -101,6 +122,9 @@ namespace Movement {
         //SplinePure          spline;
         Vector3             finalDestination;
 
+        // TODO: make it Atomic
+        static counter<uint32> sequenceCounter;
+
     public:
 
         void AddSplineFlag(uint32 f) { splineflags |= f; }
@@ -150,6 +174,8 @@ namespace Movement {
                 finalDestination = Vector3::zero();
             else
                 finalDestination = getPath().back();
+
+            sequience_Id = sequenceCounter.increase();
         }
 
         void setDone() { AddSplineFlag(SPLINEFLAG_DONE); }
