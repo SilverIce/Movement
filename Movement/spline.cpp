@@ -3,7 +3,7 @@
 #include "g3d\matrix4.h"
 #include "g3d\vector4.h"
 #include "outLog.h"
-#include "mov_constants.h"
+#include <assert.h>
 
 using namespace G3D;
 namespace Movement{

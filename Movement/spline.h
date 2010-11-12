@@ -5,7 +5,6 @@
 #include "G3D/Array.h"
 
 #include <vector>
-#include <assert.h>
 
 namespace Movement {
 

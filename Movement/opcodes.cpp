@@ -1316,7 +1316,7 @@ namespace Movement {
     const char* OpcodeName(uint16 id)
     {
         if (id >= NUM_MSG_TYPES)
-            return "Received unknown opcode, it's more than max!";
+            return "unknown opcode id, it's more than max!";
         return opcodeNames[id];
     }
 }

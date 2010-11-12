@@ -1,5 +1,7 @@
 
 #include "movement.h"
+#include "WorldPacket.h"
+#include "Object.h"
 
 namespace Movement{
 

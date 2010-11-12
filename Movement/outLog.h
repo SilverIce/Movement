@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stdio.h>
-
 
 namespace Movement
 {
@@ -13,9 +11,6 @@ namespace Movement
         ~OutLogger();
 
         void write(const char* str, ...);
-
-    private:
-        FILE* file;
     };
 
     static OutLogger movLog;

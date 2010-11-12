@@ -1,6 +1,7 @@
 
 #include "OutLog.h"
 
+#include <stdio.h>
 #include <assert.h>
 #include <stdarg.h>
 
@@ -9,7 +10,9 @@ using namespace Movement;
 static bool MOV_LOG_FILE_ENABLED     = false;
 static bool MOV_LOG_CONSOLE_ENABLED  = false;
 
-OutLogger::OutLogger() : file(0)
+static FILE* file = NULL;
+
+OutLogger::OutLogger()
 {
     file = fopen("movement.log","wb");
     assert(file);
@@ -21,6 +24,7 @@ OutLogger::~OutLogger()
 {
     write("\n    Log file closed");
     fclose(file);
+    file = NULL;
 }
 
 void OutLogger::write(const char* str, ...)

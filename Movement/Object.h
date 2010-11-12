@@ -2,8 +2,8 @@
 
 #ifdef USE_FAKE_CLASSES
 
-#include "WorldPacket.h"
-
+class WorldPacket;
+class ByteBuffer;
 class Player;
 
 class WorldObject
