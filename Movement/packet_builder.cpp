@@ -163,11 +163,9 @@ namespace Movement
         }
     }
 
-
-
     void PacketBuilder::Client_MoveModeUpdate(MoveMode /*type*/, WorldPacket& data) const
     {
-        //mov.wow_object->BuildHeartBeatMsg(&mov.wow_object->PrepareSharedMessage());
+        //WriteClientStatus(data);
     }
 
     void PacketBuilder::Client_SpeedUpdate(SpeedType ty, WorldPacket& data) const
@@ -178,12 +176,12 @@ namespace Movement
         uint16 opcode = SetSpeed2Opc_table[ty][forced];
         sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
 
-        //WorldPacket& data = m->PrepareSharedMessage(opcode, 10); 
+        //data.Initialize(opcode, 10); 
         //data << mov.m_owner->GetPackGUID();
 
         //if(!forced)
         //{
-        //    m->WriteMovementBlock(data);
+        //    WriteClientStatus(data);
         //}
         //else
         //{
@@ -199,10 +197,11 @@ namespace Movement
 
     void PacketBuilder::Client_PathUpdate(WorldPacket& data) const
     {
+        //WriteClientStatus(data);
         // do nothing
     }
 
-    void PacketBuilder::FullUpdate( ByteBuffer& data) const
+    void PacketBuilder::WriteClientStatus( ByteBuffer& data ) const
     {
         data << mov.moveFlags;
         data << mov.move_flags2;
@@ -240,6 +239,11 @@ namespace Movement
         {
             data << mov.u_unk1;
         }
+    }
+
+    void PacketBuilder::FullUpdate( ByteBuffer& data) const
+    {
+        WriteClientStatus(data);
 
         for (int i = SpeedWalk; i < SpeedMaxCount; ++i)
             data << mov.GetSpeed((SpeedType)i);

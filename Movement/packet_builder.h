@@ -30,6 +30,9 @@ namespace Movement
         void Spline_MoveModeUpdate(MoveMode mode, WorldPacket&) const;
         void Spline_PathUpdate(WorldPacket&) const;
 
+        // helpers
+        void WriteClientStatus(ByteBuffer&) const;
+
     public:
         PacketBuilder(MovementState *const dat, MovControlType c);
         ~PacketBuilder();
