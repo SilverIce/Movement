@@ -13,6 +13,8 @@ int main()
     return 0;
 }
 
+uint32 getMSTime() { return GetTickCount();}
+
 void World::Run()
 {
     uint32 realCurrTime = 0;
