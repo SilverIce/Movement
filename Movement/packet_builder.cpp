@@ -279,14 +279,14 @@ namespace Movement
             }
 
             data << uint32(splineInfo.time_passed);
-            data << uint32(splineInfo.duration * dur_multiplier);
-            data << splineInfo.sequience_Id;
+            data << uint32(splineInfo.duration);
+            data << splineInfo.sequence_Id;
 
-            data << unkf1;                              // added in 3.1
-            data << unkf2;                              // added in 3.1
-            data << unkf3;                                // added in 3.1
+            data << splineInfo.duration_mod;            // duration mod?
+            data << splineInfo.sync_coeff;              // sync coeff?
 
-            data << uint32(0);                               // added in 3.1
+            data << unkf3;                              // z_acceleration?
+            data << uint32(0);                          // parabolic time shift?
 
             uint32 nodes = splineInfo.nodes_count();
             data << nodes;
