@@ -1,9 +1,9 @@
 
 #include "spline.h"
 #include "g3d\matrix4.h"
-#include "g3d\vector4.h"
 #include "outLog.h"
 #include <assert.h>
+#include <limits>
 
 using namespace G3D;
 namespace Movement{
@@ -382,8 +382,17 @@ void SplinePure::cacheLengths()
 {
     index_type i = index_lo;
     double length = 0;
-    while(i < index_hi ){
-        length += SegLength(i);
+    while(i < index_hi )
+    {
+        float l = SegLength(i);
+
+        // little trick:
+        // there are some paths provided by DB where all points have same coords!
+        // as a result - SplinePure interpolates position with NaN coords
+        if ( l == 0.f )
+            l = std::numeric_limits<float>::min();
+
+        length += l;
         lengths[i+1] = length;
         ++i;
     }
