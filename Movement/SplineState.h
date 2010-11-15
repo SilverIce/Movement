@@ -1,9 +1,8 @@
 #pragma once
 
-#include "typedefs.h"
 #include "mov_constants.h"
 #include "spline.h"
-#include "outLog.h"
+#include "G3D/Vector4.h"
 
 #include <limits>
 

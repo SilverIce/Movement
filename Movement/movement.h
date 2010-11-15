@@ -1,12 +1,9 @@
 
 #pragma once
 
-#include "typedefs.h"
 #include "mov_constants.h"
 #include "packet_builder.h"
 #include "SplineState.h"
-#include "G3D\Vector3.h"
-#include "G3D\Vector4.h"
 
 class WorldObject;
 

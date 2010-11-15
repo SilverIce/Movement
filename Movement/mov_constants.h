@@ -20,8 +20,6 @@ namespace Movement
                                     DIRECTION_TURN_LEFT | DIRECTION_TURN_RIGHT | DIRECTION_PITCH_UP | DIRECTION_PITCH_DOWN),
     };
 
-
-    // used in most movement packets (send and received)
     enum MovementFlags
     {
         MOVEFLAG_NONE               = 0x00000000,
@@ -99,8 +97,8 @@ namespace Movement
         SPLINEFLAG_WALKMODE     = 0x00001000,
         SPLINEFLAG_FLYING       = 0x00002000,
         SPLINEFLAG_KNOCKBACK    = 0x00004000,           // model orientation fixed
-        SPLINEFLAG_FINAL_POINT   = 0x00008000,
-        SPLINEFLAG_FINAL_TARGET  = 0x00010000,
+        SPLINEFLAG_FINAL_POINT  = 0x00008000,
+        SPLINEFLAG_FINAL_TARGET = 0x00010000,
         SPLINEFLAG_FINAL_ANGLE  = 0x00020000,
         SPLINEFLAG_CATMULLROM   = 0x00040000,           // used CatmullRom interpolation mode
         SPLINEFLAG_CYCLIC       = 0x00080000,           // movement by cycled spline 
@@ -122,13 +120,13 @@ namespace Movement
         SPLINE_MASK_NO_MONSTER_MOVE = SPLINE_MASK_FINAL_FACING | DIRECTIONS_MASK | SPLINEFLAG_DONE,
     };
 
-    enum SplineType
+    enum MonsterMoveType
     {
-        SPLINETYPE_NORMAL       = 0,
-        SPLINETYPE_STOP         = 1,
-        SPLINETYPE_FACINGSPOT   = 2,
-        SPLINETYPE_FACINGTARGET = 3,
-        SPLINETYPE_FACINGANGLE  = 4
+        MonsterMoveNormal       = 0,
+        MonsterMoveStop         = 1,
+        MonsterMoveFacingSpot   = 2,
+        MonsterMoveFacingTarget = 3,
+        MonsterMoveFacingAngle  = 4
     };
 
     // used with 0x00200000 flag (SPLINEFLAG_ANIMATION) in monster move packet

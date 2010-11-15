@@ -1,11 +1,9 @@
 
 #include "packet_builder.h"
-#include "mov_constants.h"
 #include "opcodes.h"
 #include "OutLog.h"
 
 #include "Movement.h"
-#include "SplineState.h"
 #include <assert.h>
 
 #include "ByteBufferExtensions.h"
@@ -104,24 +102,24 @@ namespace Movement
         {
             if (splineflags & SPLINEFLAG_FINAL_TARGET)
             {
-                data << uint8(SPLINETYPE_FACINGTARGET);
+                data << uint8(MonsterMoveFacingTarget);
                 data << splineInfo.facing_target;
-            }
-            else if(splineflags & SPLINETYPE_FACINGANGLE)
-            {
-                data << uint8(SPLINETYPE_FACINGANGLE);
-                data << splineInfo.facing_angle;
             }
             else if(splineflags & SPLINEFLAG_FINAL_ANGLE)
             {
-                data << uint8(SPLINETYPE_FACINGSPOT);
+                data << uint8(MonsterMoveFacingAngle);
+                data << splineInfo.facing_angle;
+            }
+            else if(splineflags & SPLINEFLAG_FINAL_POINT)
+            {
+                data << uint8(MonsterMoveFacingSpot);
                 data << splineInfo.facing_spot.x << splineInfo.facing_spot.y << splineInfo.facing_spot.z;
             }
             else
                 assert(false);
         }
         else
-            data << uint8(SPLINETYPE_NORMAL);
+            data << uint8(MonsterMoveNormal);
 
         data << uint32(splineflags & ~SPLINE_MASK_NO_MONSTER_MOVE);
         data << uint32(nodes_count);

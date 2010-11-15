@@ -18,6 +18,19 @@ public:
         return *this;
     }
 
+    template<class T>
+    void append(const T&)
+    {
+    }
+
+    template<class T>
+    void append(const T*, size_t)
+    {
+    }
+
+    void appendPackXYZ(float,float,float)
+    {
+    }
 };
 
 
@@ -26,16 +39,6 @@ class WorldPacket : public ByteBuffer
 public:
 
     void Initialize(unsigned short, size_t){}
-
-
-    template<class T>
-    void append(const T&)
-    {
-    }
-
-    void appendPackXYZ(float,float,float)
-    {
-    }
 };
 #endif
 
