@@ -91,25 +91,25 @@ namespace Movement
         SPLINEFLAG_PITCH_UP     = 0x00000040,
         SPLINEFLAG_PITCH_DOWN   = 0x00000080,
         SPLINEFLAG_DONE         = 0x00000100,
-        SPLINEFLAG_FALLING      = 0x00000200,
+        SPLINEFLAG_FALLING      = 0x00000200,           // not compartible with trajectory movement
         SPLINEFLAG_NO_SPLINE    = 0x00000400,
-        SPLINEFLAG_TRAJECTORY   = 0x00000800,
+        SPLINEFLAG_TRAJECTORY   = 0x00000800,           // not compartible with fall movement
         SPLINEFLAG_WALKMODE     = 0x00001000,
-        SPLINEFLAG_FLYING       = 0x00002000,
+        SPLINEFLAG_FLYING       = 0x00002000,           // smooth movement(CatmullRom interpolation mode), flying animation
         SPLINEFLAG_KNOCKBACK    = 0x00004000,           // model orientation fixed
         SPLINEFLAG_FINAL_POINT  = 0x00008000,
         SPLINEFLAG_FINAL_TARGET = 0x00010000,
         SPLINEFLAG_FINAL_ANGLE  = 0x00020000,
         SPLINEFLAG_CATMULLROM   = 0x00040000,           // used CatmullRom interpolation mode
         SPLINEFLAG_CYCLIC       = 0x00080000,           // movement by cycled spline 
-        SPLINEFLAG_UNKNOWN2     = 0x00100000,           // appears with bezier3, cyclic flags, nodes > 1
-        SPLINEFLAG_ANIMATION    = 0x00200000,           // animationId (0...3), uint32 time
-        SPLINEFLAG_UNKNOWN4     = 0x00400000,
+        SPLINEFLAG_ENTER_CYCLE  = 0x00100000,           // everytime appears with cyclic flag in monster move packet
+        SPLINEFLAG_ANIMATION    = 0x00200000,           // animationId (0...3), uint32 time, not compartible with trajectory and fall movement
+        SPLINEFLAG_UNKNOWN4     = 0x00400000,           // disables movement by path
         SPLINEFLAG_UNKNOWN5     = 0x00800000,
         SPLINEFLAG_UNKNOWN6     = 0x01000000,
         SPLINEFLAG_UNKNOWN7     = 0x02000000,
         SPLINEFLAG_UNKNOWN8     = 0x04000000,
-        SPLINEFLAG_UNKNOWN9     = 0x08000000,           // appears with walkmode flag, nodes = 1
+        SPLINEFLAG_UNKNOWN9     = 0x08000000,           // appears with walkmode flag, nodes = 1, handles orientation
         SPLINEFLAG_UNKNOWN10    = 0x10000000,
         SPLINEFLAG_UNKNOWN11    = 0x20000000,
         SPLINEFLAG_UNKNOWN12    = 0x40000000,
