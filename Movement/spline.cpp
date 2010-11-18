@@ -125,8 +125,7 @@ inline void C_Evaluate(const Vector3 *vertice, float t, const Matrix4& coeffs, V
 void SplinePure::InterpolateLinear(index_type Idx, float u, Vector3& result) const
 {
     assert(Index >= 0 && Index+1 < points.size());
-    //result = points[Idx] + (points[Idx+1] - points[Idx]) * u;
-    result = points[Idx]*(1-u) + points[Idx+1];
+    result = points[Idx] + (points[Idx+1] - points[Idx]) * u;
 }
 
 void SplinePure::InterpolateCatmullRom( index_type Index, float t, Vector3& result) const
