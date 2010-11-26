@@ -23,7 +23,8 @@ OutLogger::OutLogger()
 OutLogger::~OutLogger()
 {
     write("\n    Log file closed");
-    fclose(file);
+    if (file)
+        fclose(file);
     file = NULL;
 }
 

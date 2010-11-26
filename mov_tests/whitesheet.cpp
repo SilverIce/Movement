@@ -54,6 +54,9 @@ Spline End Point: 0 0 0
 High GUID: 08FCFF88
 */
 
+// 259.37573
+// time 16420
+// vel 15.78
 Vector3 nodes[] =
 {
     //Vector3(	-4015.405,	1186.572,	107.8463	),
@@ -69,9 +72,11 @@ Vector3 nodes[] =
     //Vector3(	-4016.442,	1117.503,	95.84628	),
 };
 
-    // lenght 324.072559
-    //Spline CurrTime: 1764
-    //Spline FullTime: 18818
+// 253.20219
+// vel 13.45
+
+// Spline CurrTime: 1764
+// Spline FullTime: 18818
 Vector3 nodes2[] =
 {
     //Vector3(-3982.866,	950.2649,	58.96975),
@@ -94,20 +99,20 @@ void test()
 
     SplinePure spline;
     spline.init_path(nodes, sizeof(nodes)/sizeof(Vector3),
-        SplineModeCatmullrom, true);
+        SplineModeLinear);
 
     float N = 20;
-    float dur = spline.duration(), part = dur/N;
+    float dur = 1.5, part = 1/N;
     for (float i = 0; i <= dur; i += part )
     {
         Vector3 c;
-        spline.evaluate(i, c);
+        spline.evaluate_percent(i, c);
     }
     return;
 
 
     SplinePure mover;
-    mover.init_path(nodes, sizeof(nodes)/sizeof(Vector3) , SplineModeCatmullrom, true);
+    mover.init_path(nodes, sizeof(nodes)/sizeof(Vector3) , SplineModeCatmullrom);
 
     GD3_spline catm;
     catm.cyclic = mover.cyclic;
@@ -125,11 +130,11 @@ void test()
 //     }
 
     movLog.write("\nMine spline:");
-    dur = mover.duration(), part = dur/N;
+    dur = 1, part = 1/N;
     for (float i = 0; i <= dur; i += part )
     {
         Vector3 v;
-        mover.evaluate(i, v);
+        mover.evaluate_percent(i, v);
     }
 }
 

@@ -191,22 +191,34 @@ float SplinePure::SegLengthBezier3(index_type Index) const
 }
 #pragma endregion
 
-SplinePure::SplinePure() : cyclic(false), m_mode(SplineModeLinear)
+SplinePure::SplinePure() : m_mode(SplineModeLinear)
 {
     index_lo = 0;
     index_hi = 0;
+    points_count = 0;
 }
 
-void SplinePure::init_path( const Vector3 * controls, const int count, SplineMode m, bool cyclic_ )
+void SplinePure::init_path( const Vector3 * controls, const int count, SplineMode m )
 {
-    cyclic = cyclic_;
     m_mode = m;
+    points_count = count;
+    cyclic = false;
 
-    (this->*initializers[m_mode])(controls, count);
+    (this->*initializers[m_mode])(controls, count, cyclic, 0);
     cacheLengths();
 }
 
-void SplinePure::InitLinear( const Vector3* controls, const int count )
+void SplinePure::init_cyclic_path( const Vector3 * controls, const int count, SplineMode m, int cyclic_point )
+{
+    m_mode = m;
+    points_count = count;
+    cyclic = true;
+
+    (this->*initializers[m_mode])(controls, count, cyclic, cyclic_point);
+    cacheLengths();
+}
+
+void SplinePure::InitLinear( const Vector3* controls, const int count, bool cyclic, int cyclic_point )
 {
     assert(count >= 2);
     const int real_size = count + 1;
@@ -219,15 +231,15 @@ void SplinePure::InitLinear( const Vector3* controls, const int count )
     // index 0 and last two\one indexes are space for special 'virtual points'
     // these points are required for proper C_Evaluate methtod work
     if (cyclic)
-        points[count] = points[0];
+        points[count] = controls[cyclic_point];
     else
-        points[count] = points[count-1];
+        points[count] = controls[count-1];
 
     index_lo = 0;
     index_hi = cyclic ? count : (count - 1);
 }
 
-void SplinePure::InitCatmullRom( const Vector3* controls, const int count )
+void SplinePure::InitCatmullRom( const Vector3* controls, const int count, bool cyclic, int cyclic_point )
 {
     const int real_size = count + (cyclic ? (1+2) : (1+1));
 
@@ -244,21 +256,25 @@ void SplinePure::InitCatmullRom( const Vector3* controls, const int count )
     // these points are required for proper C_Evaluate methtod work
     if (cyclic)
     {
-        points[0] = points[high_idx];
-        points[high_idx+1] = points[lo_idx];
-        points[high_idx+2] = points[lo_idx+1];
+        if (cyclic_point == 0)
+            points[0] = controls[count-1];
+        else
+            points[0] = controls[0];
+
+        points[high_idx+1] = controls[cyclic_point];
+        points[high_idx+2] = controls[cyclic_point+1];
     }
     else
     {
-        points[0] = points[lo_idx];
-        points[high_idx+1] = points[high_idx];
+        points[0] = controls[0];
+        points[high_idx+1] = controls[count-1];
     }
 
     index_lo = lo_idx;
     index_hi = high_idx + (cyclic ? 1 : 0);
 }
 
-void SplinePure::InitBezier3( const Vector3* controls, const int count )
+void SplinePure::InitBezier3( const Vector3* controls, const int count, bool cyclic, int cyclic_point )
 {
     index_type c = count / 3u * 3u;
     index_type t = c / 3u;
@@ -290,12 +306,67 @@ void SplinePure::cacheLengths()
         lengths[i+1] = length;
         ++i;
     }
+}
 
-    i = index_lo + 1;
-    while(i <= index_hi){
-        times[i] = lengths[i] / Movement::absolute_velocy * 1000.f;
+void SplinePure::clear()
+{
+    index_lo = 0;
+    index_hi = 0;
+    points_count = 0;
+
+    points.clear();
+    lengths.clear();
+}
+
+void SplinePure::erase( index_type i )
+{
+    assert(false && "SplinePure::erase is in dev. state, it shouldn't be used");
+    assert(index_lo >= i && i <= index_hi);
+
+    PointsArray copy;
+    copy.reserve(points_count-1);
+
+    std::vector<Vector3>::iterator it = points.begin()+index_lo;
+    copy.insert(copy.end(), it, it + i);
+    copy.insert(copy.end(), it + i, it + points_count);
+
+
+    --points_count;
+    (this->*initializers[m_mode])(&copy[0], copy.size(), cyclic, 0);
+    cacheLengths();
+}
+
+SplineLive::index_type SplineLive::computeIndexInBounds( float length, float t ) const
+{
+    index_type i = m_current_node;
+    index_type N = index_hi;
+    while (i+1 < N && lengths[i+1] < length)
         ++i;
-    }
+    return i;
+}
+
+void SplineLive::evaluate_percent( float t, Vector3 & c )
+{
+    assert(t >= 0.f && t <= 1.f);
+    float length_ = t * length();
+    m_current_node = computeIndexInBounds(length_, t);
+    assert(Index < index_hi);
+
+    float u = (length_ - lengths[m_current_node]) / (lengths[m_current_node+1] - lengths[m_current_node]);
+
+    (this->*interpolators[m_mode])(m_current_node, u, c);
+}
+
+void SplineLive::init_path( const Vector3 * controls, const int N, SplineMode m )
+{
+    SplinePure::init_path(controls, N, m);
+    reset_progress();
+}
+
+void SplineLive::init_cyclic_path( const Vector3 * controls, const int N, SplineMode m, int cyclic_point )
+{
+    SplinePure::init_cyclic_path(controls, N, m, cyclic_point);
+    reset_progress();
 }
 
 }

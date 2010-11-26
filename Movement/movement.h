@@ -23,6 +23,12 @@ namespace Movement
         PacketBuilder& GetBuilder() { return msg_builder; }
         PacketBuilder msg_builder;
 
+        void SetPosition(const Vector4& v, uint32 ms_time);
+        void SetPosition(const Vector3& v, uint32 ms_time);
+
+        const Vector4& GetPosition() const { return position;}
+        const Vector3& GetPosition3() const { return (Vector3&)position;}
+
         WorldObject * m_owner;
 
         #pragma region field accessors
@@ -51,7 +57,12 @@ namespace Movement
         void SetDirectionFlags(uint8 f) { direction_flags = f; }
 
         bool HasDest() const { return direction_flags & DIRECTIONS_MASK; }
-        void Stop()  { direction_flags &= ~DIRECTIONS_MASK; }
+        void ResetDirection()  { direction_flags = 0; }
+        void SetForwardDirection() { direction_flags = DIRECTION_FORWARD; }
+
+        bool SplineEnabled() const { return moveFlags & MOVEFLAG_SPLINE_ENABLED; }
+        void EnableSpline() { moveFlags |= MOVEFLAG_SPLINE_ENABLED; }
+        void DisableSpline() { moveFlags &= ~MOVEFLAG_SPLINE_ENABLED; }
 
         #pragma endregion
 
@@ -101,8 +112,6 @@ namespace Movement
         Vector4         position;
         uint32          last_ms_time;
 
-        uint32          last_ms_time_fake;
-
         uint32          move_mode;
 
         union {
@@ -128,7 +137,7 @@ namespace Movement
             float       speed[SpeedMaxCount];
         };
 
-        MoveSpline     splineInfo;
+        MoveSpline      move_spline;
 
         #pragma endregion
 
@@ -140,16 +149,81 @@ namespace Movement
 
         static float computeFallElevation(float t_passed, bool _boolean, float start_velocy_);
 
-        void Initialize(MovControlType controller, Vector4& position, uint32 ms_time);
+        void Initialize(MovControlType controller, const Vector4& position, uint32 ms_time);
 
         void Spline_computeElevation(float t_passed, Vector3& position);
 
-        void MovebyPath(const Vector3*, int count, float speed, bool cyclic);
-        void MovebyPath(const Vector3*, int count, bool cyclic);
+        class SplineFace& GetSplineFace() { return (class SplineFace&)*this; }
 
-        void UpdatePosition(uint32 curr_ms_time, Vector3 & c);
-        void UpdatePositionWithTickDiff(uint32 diff, Vector3 & c);
+        MoveSpline& NewSpline();
+    };
 
+
+
+    class SplineFace : public MovementState
+    {
+    public:
+        // set spline to default state - disabled
+        void ResetSplineState();
+
+        void SendPath();
+
+        void UpdateState();
+    };
+
+    /// Initializes movement
+    class MoveSplineInit
+    {
+    public:
+
+        explicit MoveSplineInit(MovementState& m) :
+            state(m), move(m.move_spline), init2(move), m_new_flags(0) {}
+
+        class SecondInit
+        {
+            friend class MoveSplineInit;
+            MoveSpline&     move;
+            explicit SecondInit(MoveSpline& m) : move(m) {}
+
+        public:
+
+            SecondInit& SetKnockBack(float z_acceleration, uint32 start_time);
+            SecondInit& SetTrajectory(float z_acceleration, uint32 start_time);
+            /// sets final facing animation
+            SecondInit& SetFacing(uint64 target_guid);
+            SecondInit& SetFacing(float angle);
+            SecondInit& SetFacing(Vector3 const& point);
+        };
+
+        SecondInit& MovebyPath(const PointsArray& controls);
+        SecondInit& MovebyCyclicPath(const PointsArray& controls);
+        SecondInit& MoveTo(const Vector3& dest);
+        void MoveFall(const Vector3& dest);
+
+        MoveSplineInit& SetFly();
+        MoveSplineInit& SetWalk();
+        MoveSplineInit& SetSmooth();
+
+        MoveSplineInit& SetVelocy(float velocy);
+
+    private:
+        MovementState&  state;
+        MoveSpline&     move;
+        SecondInit      init2;
+        uint32          m_new_flags;
+
+        // lets prevent dynamic allocation
+        void* operator new(size_t);
+    };
+
+
+    class MovementAuraFace
+    {
+    public:
+
+        void WaterWalk(bool on);
+        void Hover(bool on);
+        void CanFly(bool on);
     };
 
 

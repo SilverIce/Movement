@@ -170,7 +170,6 @@ namespace Movement
         SpeedMaxCount       = 10,
     };
 
-    extern const float absolute_velocy;
     extern const double gravity;
     extern const float terminalVelocity;
 
@@ -179,4 +178,7 @@ namespace Movement
     extern const uint16 S_Mode2Opc_table[MoveModeMaxCount][2];
     extern const uint16 SetSpeed2Opc_table[][2];
     extern const float  BaseSpeed[SpeedMaxCount];
+
+    uint32 computeFallTime(float path_length, bool isSafeFall);
+    float computeFallElevation(float t_passed, bool isSafeFall, float start_velocy);
 }

@@ -16,6 +16,8 @@ enum SplineMode
     SplineModeCount,
 };
 
+typedef std::vector<Vector3> PointsArray;
+
 class SplinePure
 {
 public:
@@ -23,14 +25,13 @@ public:
     typedef int time_type;
     typedef int index_type;
 
-    typedef std::vector<Vector3> PointsArray;
-
     PointsArray points;
     std::vector<float> lengths;
     //G3D::Array<Vector3> points;
     //G3D::Array<float> lengths;
 
     index_type index_lo, index_hi;
+    index_type points_count;
     bool cyclic;
 
     SplineMode m_mode;
@@ -44,7 +45,7 @@ public:
     // assumes that index i is in bounds
     float SegLength(index_type i) const;
 
-private:
+protected:
 
     void InterpolateLinear(index_type, float, Vector3&) const;
     void InterpolateCatmullRom(index_type, float, Vector3&) const;
@@ -58,10 +59,10 @@ private:
     typedef float (SplinePure::*SegLenghtPtr)(index_type) const;
     static SegLenghtPtr seglengths[SplineModeCount];
 
-    void InitLinear(const Vector3*, const int);
-    void InitCatmullRom(const Vector3*, const int);
-    void InitBezier3(const Vector3*, const int);
-    typedef void (SplinePure::*InitPathPtr)(const Vector3*, const int);
+    void InitLinear(const Vector3*, const int, bool, int);
+    void InitCatmullRom(const Vector3*, const int, bool, int);
+    void InitBezier3(const Vector3*, const int, bool, int);
+    typedef void (SplinePure::*InitPathPtr)(const Vector3*, const int, bool, int);
     static InitPathPtr initializers[SplineModeCount];
 
     enum{
@@ -78,14 +79,52 @@ public:
     // 't' - percent of spline's length, assumes that t in range [0, 1]
     void evaluate_percent(float t, Vector3 & c) const;
 
-
-    void init_path(const Vector3 * controls, const int N, SplineMode m, bool cyclic_);
+    void init_path(const Vector3 * controls, const int N, SplineMode m);
+    void init_cyclic_path(const Vector3 * controls, const int N, SplineMode m, int cyclic_point);
 
     // returns length of the whole spline
     float length() const { return lengths[index_hi];}
+    // returns length between given nodes
+    float length(index_type first, index_type last) const { return lengths[last]-lengths[first];}
 
+    index_type first() const { return index_lo;}
+    index_type last()  const { return index_hi;}
+
+    bool empty() const { return index_lo == index_hi;}
     SplineMode mode() const { return m_mode;}
 
+    void clear();
+    void erase(index_type i);
+
+    void write_path(PointsArray& path) const
+    {
+        path.insert(path.end(), points.begin()+first(), points.begin()+first()+points_count);
+    }
+};
+
+class SplineLive : public SplinePure
+{
+public:
+
+    explicit SplineLive() : SplinePure(), m_current_node(0) {}
+
+    void evaluate_percent(float t, Vector3 & c);
+
+    void init_path(const Vector3 * controls, const int N, SplineMode m);
+    void init_cyclic_path(const Vector3 * controls, const int N, SplineMode m, int cyclic_point);
+
+    void reset_progress() { m_current_node = first(); }
+
+    void clear()
+    {
+        SplinePure::clear();
+        reset_progress();
+    }
+
+private:
+    index_type computeIndexInBounds(float length, float t) const;
+
+    index_type m_current_node;
 };
 
 }

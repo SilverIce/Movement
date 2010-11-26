@@ -79,26 +79,36 @@ namespace Movement
 
     void PacketBuilder::Spline_PathUpdate(WorldPacket& data) const
     {
-        const MoveSpline& splineInfo = mov.splineInfo;
-        const SplinePure::PointsArray& path = splineInfo.getPath();
-
-        assert(splineInfo.nodes_count());
-
         uint16 opcode = SMSG_MONSTER_MOVE;
         sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
 
+        const MoveSpline& splineInfo = mov.move_spline;
+        const PointsArray& path = splineInfo.getPath();
+
         data.Initialize(opcode, 30);
+
+        // TODO: find more generic way
+        if (path.empty())
+        {
+            data << mov.m_owner->GetPackGUID();
+            data << uint8(0);
+            data << mov.GetPosition3();
+            data << uint32(splineInfo.sequence_Id);
+            data << uint8(MonsterMoveStop);
+            return;
+        }
+
+        const Vector3 * real_path = &path[splineInfo.spline.first()];
+        uint32 last_idx = splineInfo.spline.points_count - 1;
+
         data << mov.m_owner->GetPackGUID();
         data << uint8(0);
-        Vector3 start = mov.position.xyz();
-        data << start;
+        data << real_path[0];
+        data << uint32(splineInfo.sequence_Id);
 
-        data << uint32(splineInfo.sequience_Id);
+        uint32 splineflags = splineInfo.GetSplineFlags();
 
-        uint32 nodes_count = path.size();
-        uint32 splineflags = splineInfo.GetSplineFlags();  // spline flags are here? not sure...
-
-        if(splineflags & SPLINE_MASK_FINAL_FACING)
+        if (splineflags & (SPLINE_MASK_FINAL_FACING | SPLINEFLAG_DONE))
         {
             if (splineflags & SPLINEFLAG_FINAL_TARGET)
             {
@@ -115,6 +125,11 @@ namespace Movement
                 data << uint8(MonsterMoveFacingSpot);
                 data << splineInfo.facing_spot.x << splineInfo.facing_spot.y << splineInfo.facing_spot.z;
             }
+            else if (splineflags & SPLINEFLAG_DONE) // its assumption only
+            {
+                data << uint8(MonsterMoveStop);
+                return;
+            }
             else
                 assert(false);
         }
@@ -122,7 +137,6 @@ namespace Movement
             data << uint8(MonsterMoveNormal);
 
         data << uint32(splineflags & ~SPLINE_MASK_NO_MONSTER_MOVE);
-        data << uint32(nodes_count);
 
         if (splineflags & SPLINEFLAG_ANIMATION)
         {
@@ -130,31 +144,35 @@ namespace Movement
             data << splineInfo.animationTime;
         }
 
-        data << splineInfo.duration;
+        data << uint32(splineInfo.duration);
 
         if (splineflags & SPLINEFLAG_TRAJECTORY)
         {
-            data << splineInfo.z_acceleration;
-            data << splineInfo.duration_mod;
+            data << splineInfo.parabolic.z_acceleration;
+            data << splineInfo.parabolic.time_shift;
         }
 
-        if(splineflags & (SPLINEFLAG_FLYING | SPLINEFLAG_CATMULLROM))
+        data << uint32(last_idx);
+
+        if (splineflags & (SPLINEFLAG_FLYING | SPLINEFLAG_CATMULLROM))
         {
-            for(uint32 i = 0; i < nodes_count; ++i)
-                data << path[i];
+            //for(uint32 i = 1; i <= last_idx; ++i)
+                //data << real_path[i];
+            data.append<Vector3>(&real_path[1], last_idx);
         }
         else
         {
-            const Vector3 &dest = path[nodes_count-1];
-            data << dest;   // destination
+            data << real_path[last_idx];   // destination
 
-            if(nodes_count > 1)
+            if (last_idx > 1)
             {
-                Vector3 vec = (start + dest) / 2;
+                Vector3 middle = (path[0] + path[last_idx]) / 2.f;
+                Vector3 temp;
 
-                for(uint32 i = 0; i < nodes_count - 1; ++i)// "nodes_count-1" because destination point already appended
+                // first and last points already appended
+                for(uint32 i = 1; i < last_idx; ++i)
                 {
-                    Vector3 temp = vec - path[i];
+                    temp = middle - real_path[i];
                     data.appendPackXYZ(temp.x, temp.y, temp.z);
                 }
             }
@@ -204,7 +222,7 @@ namespace Movement
         data << mov.moveFlags;
         data << mov.move_flags2;
 
-        data << mov.last_ms_time_fake;
+        data << mov.last_ms_time;
         data << mov.position;
 
         if (mov.HasMovementFlag(MOVEFLAG_ONTRANSPORT))
@@ -243,8 +261,9 @@ namespace Movement
     {
         WriteClientStatus(data);
 
-        for (int i = SpeedWalk; i < SpeedMaxCount; ++i)
-            data << mov.GetSpeed((SpeedType)i);
+        //for (int i = SpeedWalk; i < SpeedMaxCount; ++i)
+            //data << mov.GetSpeed((SpeedType)i);
+        data.append<float>(&mov.speed[SpeedWalk], SpeedMaxCount - SpeedWalk);
         
         if (mov.HasMovementFlag(MOVEFLAG_SPLINE_ENABLED))
         {
@@ -256,8 +275,8 @@ namespace Movement
 
             static uint32 addit_flags = 0;
 
-            const MoveSpline& splineInfo = mov.splineInfo;
-            uint32 splineFlags = mov.splineInfo.splineflags | addit_flags;
+            const MoveSpline& splineInfo = mov.move_spline;
+            uint32 splineFlags = splineInfo.splineflags | addit_flags;
 
             data << splineFlags;
 
@@ -287,17 +306,18 @@ namespace Movement
             data << splineInfo.duration_mod;            // duration mod?
             data << splineInfo.sync_coeff;              // sync coeff?
 
-            data << unkf3;                              // z_acceleration?
-            data << uint32(0);                          // parabolic time shift?
+            data << splineInfo.parabolic.z_acceleration;// z_acceleration?
+            data << splineInfo.parabolic.time_shift;	// parabolic time shift?
 
-            uint32 nodes = splineInfo.nodes_count();
+            uint32 nodes = splineInfo.getPath().size();
             data << nodes;
-            for (uint32 i = 0; i < nodes; ++i)
+            /*for (uint32 i = 0; i < nodes; ++i)
             {
                 data << splineInfo.getNode(i);
-            }
+            }*/
+            data.append<Vector3>(&splineInfo.getPath()[0], nodes);
 
-            data << uint8(splineInfo.mode());
+            data << uint8(splineInfo.spline.mode());
 
             data << splineInfo.finalDestination;
         }

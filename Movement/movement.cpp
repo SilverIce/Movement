@@ -3,59 +3,22 @@
 #include "WorldPacket.h"
 #include "Object.h"
 
+// seems only MSVC has this include, what about rest of compilers and platforms?
+#include <float.h>
+
 namespace Movement{
 
+// TODO: make it Atomic
+static counter<uint32> MoveSplineCounter;
 
-float MovementState::computeFallElevation( float t_passed, bool _boolean, float start_velocy )
+inline void NewSpline(MoveSpline& move)
 {
-    double termVel;
-    double result;
-
-    if ( _boolean )
-        termVel = terminalVelocity;
-    else
-        // TODO: there should be another terminal velocy
-        termVel = terminalVelocity;
-
-    if ( start_velocy > termVel )
-        start_velocy = termVel;
-
-    if ( gravity * t_passed + start_velocy > termVel )
-    {
-        double dvel = (termVel - start_velocy);
-        result = termVel * (t_passed - dvel/gravity) + (start_velocy * dvel  +  0.5 * dvel * dvel) / gravity;
-    }
-    else
-        result = t_passed * (start_velocy + t_passed * gravity / 2);
-
-    return result;
+    move.Init();
+    move.sequence_Id = MoveSplineCounter.increase();
 }
-
-/*
-void MovementState::Spline_computeElevation( uint32 t_passed, Vector3& position )
-{
-    if (splineInfo.HasSplineFlag(SPLINEFLAG_TRAJECTORY))
-    {
-        splineInfo.parabolic_h(splineInfo.duration, splineInfo.spline_h.time_passed, position);
-        return;
-    }
-
-    if (splineInfo.HasSplineFlag(SPLINEFLAG_FALLING))
-    {
-        float z_now = fallStartElevation - MovementState::computeFallElevation(t_passed, false, 0.f);
-
-        if (z_now < splineInfo.finalDestination.z)
-            position.z = splineInfo.finalDestination.z;
-        else
-            position.z = z_now;
-    }
-}*/
-
 
 float MovementState::CalculateCurrentSpeed( bool is_walking /*= false*/ ) const
 {
-    uint32 splineflags = splineInfo.splineflags;
-
     // g_moveFlags_mask - some global client's moveflag mask
     // TODO: get real value
     static uint32 g_moveFlags_mask = 0xFFFFFFFF;
@@ -64,7 +27,7 @@ float MovementState::CalculateCurrentSpeed( bool is_walking /*= false*/ ) const
     if ( !(g_moveFlags_mask & moveFlags) )
         return 0.0f;
 
-    if ( /*!splineInfo ||*/ splineflags & SPLINEFLAG_NO_SPLINE )
+    if ( /*!move_spline ||*/ move_spline.splineflags & SPLINEFLAG_NO_SPLINE )
     {
         if ( moveFlags & MOVEFLAG_FLYING )
         {
@@ -97,9 +60,9 @@ float MovementState::CalculateCurrentSpeed( bool is_walking /*= false*/ ) const
     }
     else
     {
-        if ( !splineInfo.duration )
+        if ( !move_spline.duration )
             return 0.0f;
-        speed = splineInfo.length() / splineInfo.duration * 1000.0f;
+        speed = move_spline.spline.length() / move_spline.duration * 1000.0f;
     }
     return speed;
 }
@@ -146,60 +109,217 @@ void MovementState::ReCalculateCurrentSpeed()
     speed_obj.current = CalculateCurrentSpeed(false);
 }
 
-void MovementState::MovebyPath( const Vector3* controls, int count, float speed, bool cyclic )
+void MovementState::Initialize( MovControlType controller, const Vector4& pos, uint32 ms_time )
 {
-    speed_obj.current = speed;
-    MovementState::MovebyPath(controls,count,cyclic);
-}
-
-void MovementState::MovebyPath( const Vector3*controls, int count, bool cyclic )
-{
-    AddMovementFlag(MOVEFLAG_SPLINE_ENABLED);
-    splineInfo.init_path(controls, count, speed_obj.current, cyclic);
-}
-
-void MovementState::UpdatePosition( uint32 curr_ms_time, Vector3 & c )
-{
-    if (GetBuilder().GetControl() == MovControlClient)
-        return;
-
-    // amount of time passed since last update call
-    uint32 t_passed = getMSTimeDiff(last_ms_time, curr_ms_time);
-    last_ms_time = curr_ms_time;
-
-    if (HasMovementFlag(MOVEFLAG_SPLINE_ENABLED))
-        splineInfo.handleSpline(t_passed, c);
-
-    if (splineInfo.HasSplineFlag(SPLINEFLAG_TRAJECTORY))
-        splineInfo.handleParabolic(splineInfo.duration, splineInfo.time_passed, c);
-
-    //Spline_computeElevation(t_passed, c);
-}
-
-void MovementState::UpdatePositionWithTickDiff( uint32 t_passed, Vector3 & c )
-{
-    if (GetBuilder().GetControl() == MovControlClient)
-        return;
-
-    // amount of time passed since last update call
-    //last_ms_time = getMSTime();
-
-    if (HasMovementFlag(MOVEFLAG_SPLINE_ENABLED))
-        splineInfo.handleSpline(t_passed, c);
-
-    if (splineInfo.HasSplineFlag(SPLINEFLAG_TRAJECTORY))
-        splineInfo.handleParabolic(splineInfo.duration, splineInfo.time_passed, c);
-
-    //Spline_computeElevation(t_passed, c);
-}
-
-void MovementState::Initialize( MovControlType controller, Vector4& pos, uint32 ms_time )
-{
-    last_ms_time = ms_time;
-
-    position = pos;
+    SetPosition(pos, ms_time);
 
     GetBuilder().SetControl(controller);
 }
+
+MoveSpline& MovementState::NewSpline()
+{
+    move_spline.Init();
+    move_spline.sequence_Id = MoveSplineCounter.increase();
+
+    return move_spline;
+}
+
+// for debugging:
+// i past there was problems with NaN coords
+inline bool _finiteV(const Vector3& v)
+{
+    return _finite(v.x) && _finite(v.y) && _finite(v.z);
+}
+
+void MovementState::SetPosition( const Vector4& v, uint32 ms_time )
+{
+    if (!_finiteV((const Vector3&)v))
+    {
+        movLog.write("MovementState::SetPosition: Nan coord detected");
+        return;
+    }
+
+    position = v;
+    last_ms_time = ms_time;
+}
+
+void MovementState::SetPosition( const Vector3& v, uint32 ms_time )
+{
+    if (!_finiteV(v))
+    {
+        movLog.write("MovementState::SetPosition: Nan coord detected");
+        return;
+    }
+
+    (Vector3&)position = v;
+    last_ms_time = ms_time;
+}
+
+void SplineFace::ResetSplineState()
+{
+    if (SplineEnabled())
+    {
+        UpdateState();
+
+        MoveSpline& move = NewSpline();
+
+        move.reset_state();
+
+        DisableSpline();
+        ResetDirection();
+
+        // TODO: should we send packet directly from here?
+        WorldPacket data;
+        GetBuilder().PathUpdate(data);
+        m_owner->SendMessageToSet(&data, true);
+    }
+}
+
+void SplineFace::UpdateState()
+{
+    if (SplineEnabled())
+    {
+        Vector4 c;
+        uint32 now = getMSTime();
+        move_spline.updateState(now, c);
+        //Spline_computeElevation(t_passed, c);
+        SetPosition(c, now);
+    }
+}
+
+void SplineFace::SendPath()
+{
+    WorldPacket data;
+    GetBuilder().PathUpdate(data);
+    m_owner->SendMessageToSet(&data, true);
+}
+
+#pragma region MoveSplineInit
+
+MoveSplineInit::SecondInit& MoveSplineInit::MovebyPath( const PointsArray& controls )
+{
+    state.EnableSpline();
+    state.SetForwardDirection();
+    // appends current position
+    PointsArray copy(controls.begin(), controls.end());
+    copy.insert(copy.begin(), state.GetPosition3());
+    
+    NewSpline(move);
+    move.init_spline(getMSTime(), copy, state.GetCurrentSpeed(), m_new_flags);
+    return init2;
+}
+
+MoveSplineInit::SecondInit& MoveSplineInit::MovebyCyclicPath( const PointsArray& controls )
+{
+    state.EnableSpline();
+    state.SetForwardDirection();
+    // appends current position
+    PointsArray copy(controls.begin(), controls.end());
+    copy.insert(copy.begin(), state.GetPosition3());
+
+    NewSpline(move);
+    move.init_cyclic_spline(getMSTime(), copy, state.GetCurrentSpeed(), m_new_flags);
+    return init2;
+}
+
+MoveSplineInit::SecondInit& MoveSplineInit::MoveTo( const Vector3& dest )
+{
+    state.EnableSpline();
+    state.SetForwardDirection();
+
+    PointsArray path(2);
+    path[0] = state.GetPosition3();
+    path[1] = dest;
+
+    NewSpline(move);
+    move.init_spline(getMSTime(), path, state.GetCurrentSpeed(), m_new_flags);
+    return init2;
+}
+
+void MoveSplineInit::MoveFall( const Vector3& dest )
+{
+    m_new_flags = SPLINEFLAG_FALLING;
+
+    state.ResetDirection();
+    state.EnableSpline();
+
+    PointsArray path(2);
+    path[0] = state.GetPosition3();
+    path[1] = dest;
+
+    NewSpline(move);
+    move.init_spline(getMSTime(), path, computeFallTime(path[0].z - path[1].z, false), m_new_flags);
+}
+
+MoveSplineInit& MoveSplineInit::SetFly()
+{
+    m_new_flags |= SPLINEFLAG_FLYING;
+    m_new_flags &= ~SPLINEFLAG_CATMULLROM;
+    return *this;
+}
+
+MoveSplineInit& MoveSplineInit::SetWalk()
+{
+    m_new_flags |= SPLINEFLAG_WALKMODE;
+    return *this;
+}
+
+MoveSplineInit& MoveSplineInit::SetSmooth()
+{
+    m_new_flags |= SPLINEFLAG_CATMULLROM;
+    m_new_flags &= ~SPLINEFLAG_FLYING;
+    return *this;
+}
+
+MoveSplineInit& MoveSplineInit::SetVelocy( float velocy )
+{
+    state.speed_obj.current = velocy;
+    return *this;
+}
+
+MoveSplineInit::SecondInit& MoveSplineInit::SecondInit::SetTrajectory( float z_velocy, uint32 time_shift )
+{
+    move.splineflags |= SPLINEFLAG_TRAJECTORY;
+    move.parabolic.z_acceleration = z_velocy;
+    move.parabolic.time_shift = time_shift;
+    return *this;
+}
+
+MoveSplineInit::SecondInit& MoveSplineInit::SecondInit::SetKnockBack( float z_velocy, uint32 time_shift )
+{
+    move.splineflags |= SPLINEFLAG_TRAJECTORY | SPLINEFLAG_KNOCKBACK;
+    move.parabolic.z_acceleration = z_velocy;
+    move.parabolic.time_shift = time_shift;
+    return *this;
+}
+
+MoveSplineInit::SecondInit& MoveSplineInit::SecondInit::SetFacing( uint64 guid )
+{
+    move.facing_target = guid;
+    move.splineflags &= ~SPLINE_MASK_FINAL_FACING;
+    move.splineflags |= SPLINEFLAG_FINAL_TARGET;
+    return *this;
+}
+
+MoveSplineInit::SecondInit& MoveSplineInit::SecondInit::SetFacing( float o )
+{
+    move.facing_angle = o;
+    move.splineflags &= ~SPLINE_MASK_FINAL_FACING;
+    move.splineflags |= SPLINEFLAG_FINAL_ANGLE;
+    return *this;
+}
+
+MoveSplineInit::SecondInit& MoveSplineInit::SecondInit::SetFacing( Vector3 const& spot )
+{
+    move.facing_spot.x = spot.x;
+    move.facing_spot.y = spot.y;
+    move.facing_spot.z = spot.z;
+    move.splineflags &= ~SPLINE_MASK_FINAL_FACING;
+    move.splineflags |= SPLINEFLAG_FINAL_POINT;
+    return *this;
+}
+
+#pragma endregion
+
 
 }
