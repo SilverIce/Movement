@@ -2,6 +2,7 @@
 #include "movement.h"
 #include "WorldPacket.h"
 #include "Object.h"
+#include "outLog.h"
 
 // seems only MSVC has this include, what about rest of compilers and platforms?
 #include <float.h>
@@ -169,9 +170,7 @@ void SplineFace::ResetSplineState()
         ResetDirection();
 
         // TODO: should we send packet directly from here?
-        WorldPacket data;
-        GetBuilder().PathUpdate(data);
-        m_owner->SendMessageToSet(&data, true);
+        SendPath();
     }
 }
 
@@ -179,11 +178,9 @@ void SplineFace::UpdateState()
 {
     if (SplineEnabled())
     {
-        Vector4 c;
         uint32 now = getMSTime();
-        move_spline.updateState(now, c);
-        //Spline_computeElevation(t_passed, c);
-        SetPosition(c, now);
+        move_spline.updateState(now);
+        SetPosition(move_spline.ComputePosition(), now);
     }
 }
 

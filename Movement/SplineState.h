@@ -53,7 +53,7 @@ namespace Movement {
         uint32          sequence_Id;
         uint32          splineflags;
 
-        SplineLive      spline;
+        SplinePure      spline;
 
         uint32          start_move_time;
         uint32          time_passed;
@@ -135,7 +135,8 @@ namespace Movement {
             SetSplineFlags(SPLINEFLAG_WALKMODE);
         }
 
-        void updateState( uint32 ms_time, Vector4& c );
+        void updateState( uint32 ms_time );
+        Vector4 ComputePosition() const;
 
         // helpers
         void setDone() { AddSplineFlag(SPLINEFLAG_DONE); }
