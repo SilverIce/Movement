@@ -67,7 +67,7 @@ namespace Movement
         #pragma endregion
 
         /// Move Modes
-        bool HasMode(MoveMode m) const { return move_mode & (1 << m);}
+        bool HasMode(uint32 m) const { return move_mode & (1 << m);}
         void ApplyMoveMode(MoveMode mode, bool apply);
         /// end of Get-Set methtods
 
@@ -81,7 +81,6 @@ namespace Movement
         void Hover(bool apply) { ApplyMoveMode(MoveModeHover, apply); }
 
         #pragma region fields
-
 
         /// Transport info
         struct TransportInfo
@@ -147,11 +146,7 @@ namespace Movement
         void ReCalculateCurrentSpeed();
         float CalculateCurrentSpeed(bool use_walk_forced) const;
 
-        static float computeFallElevation(float t_passed, bool _boolean, float start_velocy_);
-
         void Initialize(MovControlType controller, const Vector4& position, uint32 ms_time);
-
-        void Spline_computeElevation(float t_passed, Vector3& position);
 
         class SplineFace& GetSplineFace() { return (class SplineFace&)*this; }
 

@@ -25,6 +25,8 @@ public:
     typedef int time_type;
     typedef int index_type;
 
+protected:
+
     PointsArray points;
     std::vector<float> lengths;
     //G3D::Array<Vector3> points;
@@ -44,8 +46,6 @@ public:
     // calculates distance between [i; i+1] points,
     // assumes that index i is in bounds
     float SegLength(index_type i) const;
-
-protected:
 
     void InterpolateLinear(index_type, float, Vector3&) const;
     void InterpolateCatmullRom(index_type, float, Vector3&) const;
@@ -92,6 +92,9 @@ public:
 
     bool empty() const { return index_lo == index_hi;}
     SplineMode mode() const { return m_mode;}
+
+    const PointsArray& getPoints() const { return points;}
+    index_type pointsCount() const { return points_count;}
 
     void clear();
     void erase(index_type i);

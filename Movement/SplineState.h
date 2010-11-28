@@ -144,8 +144,8 @@ namespace Movement {
         bool isCyclic() const { return splineflags & SPLINEFLAG_CYCLIC;}
         bool isSmooth() const { return splineflags & (SPLINEFLAG_FLYING|SPLINEFLAG_CATMULLROM);}
 
-        const Vector3& getNode(uint32 i) const { return spline.points[i];}
-        const PointsArray& getPath() const { return spline.points;}
+        const Vector3& getNode(uint32 i) const { return spline.getPoints()[i];}
+        const PointsArray& getPath() const { return spline.getPoints();}
     };
 }
 

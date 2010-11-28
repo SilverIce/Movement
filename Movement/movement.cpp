@@ -125,7 +125,7 @@ MoveSpline& MovementState::NewSpline()
 }
 
 // for debugging:
-// i past there was problems with NaN coords
+// there were problems with NaN coords in past
 inline bool _finiteV(const Vector3& v)
 {
     return _finite(v.x) && _finite(v.y) && _finite(v.z);
@@ -135,7 +135,7 @@ void MovementState::SetPosition( const Vector4& v, uint32 ms_time )
 {
     if (!_finiteV((const Vector3&)v))
     {
-        movLog.write("MovementState::SetPosition: Nan coord detected");
+        movLog.write("MovementState::SetPosition: NaN coord detected");
         return;
     }
 
@@ -147,7 +147,7 @@ void MovementState::SetPosition( const Vector3& v, uint32 ms_time )
 {
     if (!_finiteV(v))
     {
-        movLog.write("MovementState::SetPosition: Nan coord detected");
+        movLog.write("MovementState::SetPosition: NaN coord detected");
         return;
     }
 

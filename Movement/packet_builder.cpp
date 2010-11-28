@@ -99,7 +99,7 @@ namespace Movement
         }
 
         const Vector3 * real_path = &path[splineInfo.spline.first()];
-        uint32 last_idx = splineInfo.spline.points_count - 1;
+        uint32 last_idx = splineInfo.spline.pointsCount() - 1;
 
         data << mov.m_owner->GetPackGUID();
         data << uint8(0);
