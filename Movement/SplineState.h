@@ -48,6 +48,8 @@ namespace Movement {
     class MoveSpline
     {
         friend class PacketBuilder;
+        friend class MoveSplineInit;
+        friend class /*MoveSplineInit::*/SecondInit;
     public:
 
         uint32          sequence_Id;
@@ -124,10 +126,7 @@ namespace Movement {
         void SetFacing(Vector3 const& point);
         void ResetFacing();
 
-        void init_spline(uint32 StartMoveTime, PointsArray& path, float velocy, uint32 flags);
-        void init_spline(uint32 StartMoveTime, PointsArray& path, uint32 duration, uint32 flags);
-
-        void init_cyclic_spline(uint32 StartMoveTime, PointsArray& path, float velocy, uint32 flags);
+        void init_spline(uint32 StartMoveTime, PointsArray& path, float velocity);
 
         void reset_state()
         {

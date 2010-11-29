@@ -166,48 +166,62 @@ namespace Movement
         void UpdateState();
     };
 
-    /// Initializes movement
+    /// Initializes spline movement
     class MoveSplineInit
     {
     public:
 
         explicit MoveSplineInit(MovementState& m) :
-            state(m), move(m.move_spline), init2(move), m_new_flags(0) {}
+            state(m), init2(*this), velocity(0.f) { }
+
+        // applyes changes you have done to a real spline
+        void Commit();
 
         class SecondInit
         {
             friend class MoveSplineInit;
-            MoveSpline&     move;
-            explicit SecondInit(MoveSpline& m) : move(m) {}
+            MoveSpline&     spline;
+            MoveSplineInit& init1;
+            explicit SecondInit(MoveSplineInit& m) : spline(m.spline), init1(m) {}
 
         public:
-
-            SecondInit& SetKnockBack(float z_acceleration, uint32 start_time);
-            SecondInit& SetTrajectory(float z_acceleration, uint32 start_time);
-            /// sets final facing animation
+            // max_height - the maximum height of parabola, could be negative
+            // start_time - delay between 
+            // you can have only one trajectory animation: previous will be overriden
+            SecondInit& SetKnockBack(float max_height, uint32 start_time);
+            SecondInit& SetTrajectory(float max_height, uint32 start_time);
+            // sets final facing animation
+            // you can have only one final facing animation: previous will be overriden
             SecondInit& SetFacing(uint64 target_guid);
             SecondInit& SetFacing(float angle);
             SecondInit& SetFacing(Vector3 const& point);
+
+            void Commit() { init1.Commit(); }
         };
 
-        SecondInit& MovebyPath(const PointsArray& controls);
-        SecondInit& MovebyCyclicPath(const PointsArray& controls);
+        SecondInit& MovebyPath(const PointsArray& controls, bool is_cyclic_path);
         SecondInit& MoveTo(const Vector3& dest);
-        void MoveFall(const Vector3& dest);
+        SecondInit& MoveFall(const Vector3& dest);
 
         MoveSplineInit& SetFly();
         MoveSplineInit& SetWalk();
         MoveSplineInit& SetSmooth();
-
-        MoveSplineInit& SetVelocy(float velocy);
+        MoveSplineInit& SetVelocity(float velocity);
 
     private:
-        MovementState&  state;
-        MoveSpline&     move;
+        friend class SecondInit;
         SecondInit      init2;
-        uint32          m_new_flags;
 
-        // lets prevent dynamic allocation
+        MovementState&  state;
+        MoveSpline      spline;
+        PointsArray     m_path;
+        // used for custom speed
+        float           velocity;
+        // used for trajectory movement
+        float           max_vertical_height;       
+        //IListener*      listener;
+
+        // lets prevent dynamic allocation: that object should have short lifetime
         void* operator new(size_t);
     };
 

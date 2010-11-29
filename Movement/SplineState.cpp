@@ -99,56 +99,47 @@ Vector4 MoveSpline::ComputePosition() const
     return c;
 }
 
-void MoveSpline::init_spline( uint32 StartMoveTime, PointsArray& path, float curr_speed, uint32 flags )
+void MoveSpline::init_spline( uint32 StartMoveTime, PointsArray& path, float velocity )
 {
     start_move_time = StartMoveTime;
-    splineflags = flags & ~(SPLINEFLAG_CYCLIC | SPLINEFLAG_ENTER_CYCLE);
 
     duration_mod = 1.f;
     sync_coeff   = 1.f;
+    time_passed  = 0;
 
-    if (isSmooth())
-        spline.init_path(&path[0], path.size(), SplineModeCatmullrom);
+    if (isCyclic())
+    {
+        uint32 cyclic_point = 0;
+        if (splineflags & SPLINEFLAG_ENTER_CYCLE)
+            cyclic_point = 1;   // shouldn't be modified, came from client
+        
+        if (isSmooth())
+            spline.init_cyclic_path(&path[0], path.size(), SplineModeCatmullrom, cyclic_point);
+        else
+            spline.init_cyclic_path(&path[0], path.size(), SplineModeLinear, cyclic_point);
+
+        finalDestination = Vector3::zero();
+
+        duration = spline.length(spline.first()+cyclic_point,spline.last()) / velocity * 1000.f;
+    }
     else
-        spline.init_path(&path[0], path.size(), SplineModeLinear);
+    {
+        if (isSmooth())
+            spline.init_path(&path[0], path.size(), SplineModeCatmullrom);
+        else
+            spline.init_path(&path[0], path.size(), SplineModeLinear);
 
-    finalDestination = getPath().back();
+        finalDestination = getPath().back();
 
-    time_passed = 0;
-    duration = spline.length() / curr_speed * 1000.f;
-
+        if (splineflags & SPLINEFLAG_FALLING)
+            duration = computeFallTime(path[0].z - finalDestination.z, false);
+        else
+            duration = spline.length() / velocity * 1000.f;
+    }
+    
     // TODO: where this should be handled?
     if (duration == 0)
-    {
-        movLog.write("Error: null spline duration");
         duration = 1;
-    }
-}
-
-void MoveSpline::init_spline( uint32 StartMoveTime, PointsArray& path, uint32 duration_, uint32 flags )
-{
-    start_move_time = StartMoveTime;
-    splineflags = flags & ~(SPLINEFLAG_CYCLIC | SPLINEFLAG_ENTER_CYCLE);
-
-    duration_mod = 1.f;
-    sync_coeff   = 1.f;
-
-    if (isSmooth())
-        spline.init_path(&path[0], path.size(), SplineModeCatmullrom);
-    else
-        spline.init_path(&path[0], path.size(), SplineModeLinear);
-
-    finalDestination = getPath().back();
-
-    time_passed = 0;
-    duration = duration_;
-
-    // TODO: where this should be handled?
-    if (duration == 0)
-    {
-        movLog.write("Error: null spline duration");
-        duration = 1;
-    }
 }
 
 void MoveSpline::init_cyclic_spline( uint32 StartMoveTime, PointsArray& path, float speed, uint32 flags )

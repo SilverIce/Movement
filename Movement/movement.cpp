@@ -3,6 +3,7 @@
 #include "WorldPacket.h"
 #include "Object.h"
 #include "outLog.h"
+#include <assert.h>
 
 // seems only MSVC has this include, what about rest of compilers and platforms?
 #include <float.h>
@@ -191,132 +192,130 @@ void SplineFace::SendPath()
     m_owner->SendMessageToSet(&data, true);
 }
 
-#pragma region MoveSplineInit
-
-MoveSplineInit::SecondInit& MoveSplineInit::MovebyPath( const PointsArray& controls )
+MoveSplineInit::SecondInit& MoveSplineInit::MovebyPath( const PointsArray& controls, bool is_cyclic )
 {
-    state.EnableSpline();
-    state.SetForwardDirection();
-    // appends current position
-    PointsArray copy(controls.begin(), controls.end());
-    copy.insert(copy.begin(), state.GetPosition3());
+    if (is_cyclic)
+        spline.splineflags |= SPLINEFLAG_CYCLIC | SPLINEFLAG_ENTER_CYCLE;
+    else
+        spline.splineflags &= ~(SPLINEFLAG_CYCLIC | SPLINEFLAG_ENTER_CYCLE);
+
+    m_path.resize(controls.size() + 1);
+    memcpy(&m_path[1], &controls[0], sizeof(PointsArray::value_type) * controls.size());
     
-    NewSpline(move);
-    move.init_spline(getMSTime(), copy, state.GetCurrentSpeed(), m_new_flags);
-    return init2;
-}
-
-MoveSplineInit::SecondInit& MoveSplineInit::MovebyCyclicPath( const PointsArray& controls )
-{
-    state.EnableSpline();
-    state.SetForwardDirection();
-    // appends current position
-    PointsArray copy(controls.begin(), controls.end());
-    copy.insert(copy.begin(), state.GetPosition3());
-
-    NewSpline(move);
-    move.init_cyclic_spline(getMSTime(), copy, state.GetCurrentSpeed(), m_new_flags);
     return init2;
 }
 
 MoveSplineInit::SecondInit& MoveSplineInit::MoveTo( const Vector3& dest )
 {
-    state.EnableSpline();
-    state.SetForwardDirection();
-
-    PointsArray path(2);
-    path[0] = state.GetPosition3();
-    path[1] = dest;
-
-    NewSpline(move);
-    move.init_spline(getMSTime(), path, state.GetCurrentSpeed(), m_new_flags);
+    m_path.resize(2);
+    m_path[1] = dest;
     return init2;
 }
 
-void MoveSplineInit::MoveFall( const Vector3& dest )
+MoveSplineInit::SecondInit& MoveSplineInit::MoveFall( const Vector3& dest )
 {
-    m_new_flags = SPLINEFLAG_FALLING;
+    spline.splineflags = SPLINEFLAG_FALLING;
 
-    state.ResetDirection();
-    state.EnableSpline();
-
-    PointsArray path(2);
-    path[0] = state.GetPosition3();
-    path[1] = dest;
-
-    NewSpline(move);
-    move.init_spline(getMSTime(), path, computeFallTime(path[0].z - path[1].z, false), m_new_flags);
+    m_path.resize(2);
+    m_path[1] = dest;
+    return init2;
 }
 
 MoveSplineInit& MoveSplineInit::SetFly()
 {
-    m_new_flags |= SPLINEFLAG_FLYING;
-    m_new_flags &= ~SPLINEFLAG_CATMULLROM;
+    spline.splineflags |= SPLINEFLAG_FLYING;
+    spline.splineflags &= ~SPLINEFLAG_CATMULLROM;
     return *this;
 }
 
 MoveSplineInit& MoveSplineInit::SetWalk()
 {
-    m_new_flags |= SPLINEFLAG_WALKMODE;
+    spline.splineflags |= SPLINEFLAG_WALKMODE;
     return *this;
 }
 
 MoveSplineInit& MoveSplineInit::SetSmooth()
 {
-    m_new_flags |= SPLINEFLAG_CATMULLROM;
-    m_new_flags &= ~SPLINEFLAG_FLYING;
+    spline.splineflags |= SPLINEFLAG_CATMULLROM;
+    spline.splineflags &= ~SPLINEFLAG_FLYING;
     return *this;
 }
 
-MoveSplineInit& MoveSplineInit::SetVelocy( float velocy )
+MoveSplineInit& MoveSplineInit::SetVelocity( float vel )
 {
-    state.speed_obj.current = velocy;
+    velocity = vel;
     return *this;
 }
 
-MoveSplineInit::SecondInit& MoveSplineInit::SecondInit::SetTrajectory( float z_velocy, uint32 time_shift )
+void MoveSplineInit::Commit()
 {
-    move.splineflags |= SPLINEFLAG_TRAJECTORY;
-    move.parabolic.z_acceleration = z_velocy;
-    move.parabolic.time_shift = time_shift;
+    // update previous state first
+    if (state.SplineEnabled())
+        state.GetSplineFace().UpdateState();
+
+    assert(m_path.size() >= 2);
+
+    if (velocity != 0.f)
+        state.speed_obj.current = velocity;
+
+    m_path[0] = state.GetPosition3();
+    spline.sequence_Id = MoveSplineCounter.increase();
+    spline.init_spline(getMSTime(), m_path, state.speed_obj.current);
+
+    // path initialized, so duration is known and i can compute z_acceleration for parabolic movement
+    if (spline.splineflags & SPLINEFLAG_TRAJECTORY)
+    {
+        spline.parabolic.z_acceleration = max_vertical_height * 8.f / float(spline.duration * spline.duration);
+    }
+
+    state.move_spline = spline;
+
+    state.EnableSpline();
+    state.SetForwardDirection();
+}
+
+MoveSplineInit::SecondInit& MoveSplineInit::SecondInit::SetTrajectory( float max_height, uint32 time_shift )
+{
+    spline.splineflags |= SPLINEFLAG_TRAJECTORY;
+    spline.splineflags &= ~SPLINEFLAG_KNOCKBACK;
+    spline.parabolic.time_shift = time_shift;
+    max_vertical_height = max_height
     return *this;
 }
 
-MoveSplineInit::SecondInit& MoveSplineInit::SecondInit::SetKnockBack( float z_velocy, uint32 time_shift )
+MoveSplineInit::SecondInit& MoveSplineInit::SecondInit::SetKnockBack( float max_height, uint32 time_shift )
 {
-    move.splineflags |= SPLINEFLAG_TRAJECTORY | SPLINEFLAG_KNOCKBACK;
-    move.parabolic.z_acceleration = z_velocy;
-    move.parabolic.time_shift = time_shift;
+    spline.splineflags |= SPLINEFLAG_TRAJECTORY | SPLINEFLAG_KNOCKBACK;
+    spline.parabolic.time_shift = time_shift;
+    max_vertical_height = max_height
     return *this;
 }
 
 MoveSplineInit::SecondInit& MoveSplineInit::SecondInit::SetFacing( uint64 guid )
 {
-    move.facing_target = guid;
-    move.splineflags &= ~SPLINE_MASK_FINAL_FACING;
-    move.splineflags |= SPLINEFLAG_FINAL_TARGET;
+    spline.facing_target = guid;
+    spline.splineflags &= ~SPLINE_MASK_FINAL_FACING;
+    spline.splineflags |= SPLINEFLAG_FINAL_TARGET;
     return *this;
 }
 
 MoveSplineInit::SecondInit& MoveSplineInit::SecondInit::SetFacing( float o )
 {
-    move.facing_angle = o;
-    move.splineflags &= ~SPLINE_MASK_FINAL_FACING;
-    move.splineflags |= SPLINEFLAG_FINAL_ANGLE;
+    spline.facing_angle = o;
+    spline.splineflags &= ~SPLINE_MASK_FINAL_FACING;
+    spline.splineflags |= SPLINEFLAG_FINAL_ANGLE;
     return *this;
 }
 
 MoveSplineInit::SecondInit& MoveSplineInit::SecondInit::SetFacing( Vector3 const& spot )
 {
-    move.facing_spot.x = spot.x;
-    move.facing_spot.y = spot.y;
-    move.facing_spot.z = spot.z;
-    move.splineflags &= ~SPLINE_MASK_FINAL_FACING;
-    move.splineflags |= SPLINEFLAG_FINAL_POINT;
+    spline.facing_spot.x = spot.x;
+    spline.facing_spot.y = spot.y;
+    spline.facing_spot.z = spot.z;
+    spline.splineflags &= ~SPLINE_MASK_FINAL_FACING;
+    spline.splineflags |= SPLINEFLAG_FINAL_POINT;
     return *this;
 }
-
-#pragma endregion
 
 
 }
