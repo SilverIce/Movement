@@ -88,7 +88,7 @@ namespace Movement
         data.Initialize(opcode, 30);
 
         // TODO: find more generic way
-        if (path.empty())
+        if (mov.move_spline.getPath().empty())
         {
             data << mov.m_owner->GetPackGUID();
             data << uint8(0);
@@ -98,8 +98,8 @@ namespace Movement
             return;
         }
 
-        const Vector3 * real_path = &path[splineInfo.spline.first()];
-        uint32 last_idx = splineInfo.spline.pointsCount() - 1;
+        const Vector3 * real_path = splineInfo.spline.getCArray();
+        uint32 last_idx = splineInfo.spline.getCArraySize() - 1;
 
         data << mov.m_owner->GetPackGUID();
         data << uint8(0);
@@ -166,14 +166,14 @@ namespace Movement
 
             if (last_idx > 1)
             {
-                Vector3 middle = (path[0] + path[last_idx]) / 2.f;
-                Vector3 temp;
+                Vector3 middle = (real_path[0] + real_path[last_idx]) / 2.f;
+                Vector3 offset;
 
                 // first and last points already appended
                 for(uint32 i = 1; i < last_idx; ++i)
                 {
-                    temp = middle - real_path[i];
-                    data.appendPackXYZ(temp.x, temp.y, temp.z);
+                    offset = middle - real_path[i];
+                    data.appendPackXYZ(offset.x, offset.y, offset.z);
                 }
             }
         }

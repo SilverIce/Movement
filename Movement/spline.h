@@ -90,6 +90,9 @@ public:
     index_type first() const { return index_lo;}
     index_type last()  const { return index_hi;}
 
+    const Vector3* getCArray() const { return &points[index_lo];}
+    index_type getCArraySize() const { return points_count;}
+
     bool empty() const { return index_lo == index_hi;}
     SplineMode mode() const { return m_mode;}
 
