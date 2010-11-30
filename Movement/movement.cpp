@@ -265,7 +265,8 @@ void MoveSplineInit::Commit()
     // path initialized, so duration is known and i can compute z_acceleration for parabolic movement
     if (spline.splineflags & SPLINEFLAG_TRAJECTORY)
     {
-        spline.parabolic.z_acceleration = max_vertical_height * 8.f / float(spline.duration * spline.duration);
+        float f_duration = spline.duration / 1000.f;
+        spline.parabolic.z_acceleration = max_vertical_height * 8.f / (f_duration * f_duration);
     }
 
     state.move_spline = spline;
