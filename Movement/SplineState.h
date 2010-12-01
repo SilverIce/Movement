@@ -49,7 +49,6 @@ namespace Movement {
     {
         friend class PacketBuilder;
         friend class MoveSplineInit;
-        friend class /*MoveSplineInit::*/SecondInit;
     public:
 
         uint32          sequence_Id;

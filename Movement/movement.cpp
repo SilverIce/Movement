@@ -192,7 +192,7 @@ void SplineFace::SendPath()
     m_owner->SendMessageToSet(&data, true);
 }
 
-MoveSplineInit::SecondInit& MoveSplineInit::MovebyPath( const PointsArray& controls, bool is_cyclic )
+MoveSplineInit& MoveSplineInit::MovebyPath( const PointsArray& controls, bool is_cyclic )
 {
     if (is_cyclic)
         spline.splineflags |= SPLINEFLAG_CYCLIC | SPLINEFLAG_ENTER_CYCLE;
@@ -202,23 +202,23 @@ MoveSplineInit::SecondInit& MoveSplineInit::MovebyPath( const PointsArray& contr
     m_path.resize(controls.size() + 1);
     memcpy(&m_path[1], &controls[0], sizeof(PointsArray::value_type) * controls.size());
     
-    return init2;
+    return *this;
 }
 
-MoveSplineInit::SecondInit& MoveSplineInit::MoveTo( const Vector3& dest )
+MoveSplineInit& MoveSplineInit::MoveTo( const Vector3& dest )
 {
     m_path.resize(2);
     m_path[1] = dest;
-    return init2;
+    return *this;
 }
 
-MoveSplineInit::SecondInit& MoveSplineInit::MoveFall( const Vector3& dest )
+MoveSplineInit& MoveSplineInit::MoveFall( const Vector3& dest )
 {
     spline.splineflags = SPLINEFLAG_FALLING;
 
     m_path.resize(2);
     m_path[1] = dest;
-    return init2;
+    return *this;
 }
 
 MoveSplineInit& MoveSplineInit::SetFly()
@@ -247,7 +247,7 @@ MoveSplineInit& MoveSplineInit::SetVelocity( float vel )
     return *this;
 }
 
-void MoveSplineInit::Commit()
+void MoveSplineInit::Apply()
 {
     // update previous state first
     if (state.SplineEnabled())
@@ -275,24 +275,24 @@ void MoveSplineInit::Commit()
     state.SetForwardDirection();
 }
 
-MoveSplineInit::SecondInit& MoveSplineInit::SecondInit::SetTrajectory( float max_height, uint32 time_shift )
+MoveSplineInit& MoveSplineInit::SetTrajectory( float max_height, uint32 time_shift )
 {
     spline.splineflags |= SPLINEFLAG_TRAJECTORY;
     spline.splineflags &= ~SPLINEFLAG_KNOCKBACK;
     spline.parabolic.time_shift = time_shift;
-    max_vertical_height = max_height
+    max_vertical_height = max_height;
     return *this;
 }
 
-MoveSplineInit::SecondInit& MoveSplineInit::SecondInit::SetKnockBack( float max_height, uint32 time_shift )
+MoveSplineInit& MoveSplineInit::SetKnockBack( float max_height, uint32 time_shift )
 {
     spline.splineflags |= SPLINEFLAG_TRAJECTORY | SPLINEFLAG_KNOCKBACK;
     spline.parabolic.time_shift = time_shift;
-    max_vertical_height = max_height
+    max_vertical_height = max_height;
     return *this;
 }
 
-MoveSplineInit::SecondInit& MoveSplineInit::SecondInit::SetFacing( uint64 guid )
+MoveSplineInit& MoveSplineInit::SetFacing( uint64 guid )
 {
     spline.facing_target = guid;
     spline.splineflags &= ~SPLINE_MASK_FINAL_FACING;
@@ -300,7 +300,7 @@ MoveSplineInit::SecondInit& MoveSplineInit::SecondInit::SetFacing( uint64 guid )
     return *this;
 }
 
-MoveSplineInit::SecondInit& MoveSplineInit::SecondInit::SetFacing( float o )
+MoveSplineInit& MoveSplineInit::SetFacing( float o )
 {
     spline.facing_angle = o;
     spline.splineflags &= ~SPLINE_MASK_FINAL_FACING;
@@ -308,7 +308,7 @@ MoveSplineInit::SecondInit& MoveSplineInit::SecondInit::SetFacing( float o )
     return *this;
 }
 
-MoveSplineInit::SecondInit& MoveSplineInit::SecondInit::SetFacing( Vector3 const& spot )
+MoveSplineInit& MoveSplineInit::SetFacing( Vector3 const& spot )
 {
     spline.facing_spot.x = spot.x;
     spline.facing_spot.y = spot.y;

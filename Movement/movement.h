@@ -166,51 +166,55 @@ namespace Movement
         void UpdateState();
     };
 
-    /// Initializes spline movement
+    /// Initializer for MoveSpline class
     class MoveSplineInit
     {
     public:
 
         explicit MoveSplineInit(MovementState& m) :
-            state(m), init2(*this), velocity(0.f) { }
+            state(m), velocity(0.f) { }
 
-        // applyes changes you have done to a real spline
-        void Commit();
+        // applyes changes that you have done
+        void Apply();
 
-        class SecondInit
-        {
-            friend class MoveSplineInit;
-            MoveSpline&     spline;
-            MoveSplineInit& init1;
-            explicit SecondInit(MoveSplineInit& m) : spline(m.spline), init1(m) {}
+        // Adds movement by parabolic trajectory
+        // max_height - the maximum height of parabola, value could be negative and positive
+        // start_time - delay between movement starting time and beginning to move by parabolic trajectory
+        // you can have only one parabolic motion: previous will be overriden
+        MoveSplineInit& SetKnockBack(float max_height, uint32 start_time);
+        MoveSplineInit& SetTrajectory(float max_height, uint32 start_time);
 
-        public:
-            // max_height - the maximum height of parabola, could be negative
-            // start_time - delay between 
-            // you can have only one trajectory animation: previous will be overriden
-            SecondInit& SetKnockBack(float max_height, uint32 start_time);
-            SecondInit& SetTrajectory(float max_height, uint32 start_time);
-            // sets final facing animation
-            // you can have only one final facing animation: previous will be overriden
-            SecondInit& SetFacing(uint64 target_guid);
-            SecondInit& SetFacing(float angle);
-            SecondInit& SetFacing(Vector3 const& point);
+        // Adds final facing animation
+        // sets unit's facing to specified point/angle/target after all path done
+        // you can have only one final facing: previous will be overriden
+        MoveSplineInit& SetFacing(uint64 target_guid);
+        MoveSplineInit& SetFacing(float angle);
+        MoveSplineInit& SetFacing(Vector3 const& point);
 
-            void Commit() { init1.Commit(); }
-        };
+        // 
+        // controls - array of points, shouldn't be empty
+        // is_cyclic_path - if true, makes spline to be initialized as cyclic
+        MoveSplineInit& MovebyPath(const PointsArray& controls, bool is_cyclic_path);
+        // Initializes spline for simple A to B motion, A is current unit's position, B is destination
+        MoveSplineInit& MoveTo(const Vector3& destination);
+        // Makes spline to be initialized
+        // destination, shold be lower than current unit's position 
+        MoveSplineInit& MoveFall(const Vector3& destination);
 
-        SecondInit& MovebyPath(const PointsArray& controls, bool is_cyclic_path);
-        SecondInit& MoveTo(const Vector3& dest);
-        SecondInit& MoveFall(const Vector3& dest);
-
-        MoveSplineInit& SetFly();
-        MoveSplineInit& SetWalk();
+        // Enables CatmullRom spline interpolation mode(makes path smooth)
+        // if not enabled linear spline mode will be chosen
         MoveSplineInit& SetSmooth();
+        // Enables CatmullRom spline interpolation mode, enables flying animation
+        MoveSplineInit& SetFly();
+        // Enables walk mode
+        MoveSplineInit& SetWalk();
+
+        // Sets the velocity(in case you want to have custom movement velocity)
+        // if no set, speed will be selected based on values from speed table and current movement mode
+        // value shouldn't be negative
         MoveSplineInit& SetVelocity(float velocity);
 
     private:
-        friend class SecondInit;
-        SecondInit      init2;
 
         MovementState&  state;
         MoveSpline      spline;
