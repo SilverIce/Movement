@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ByteBuffer.h"
+#include "WorldPacket.h"
 #include "typedefs.h"
 #include "G3D/Vector3.h"
 #include "G3D/Vector4.h"

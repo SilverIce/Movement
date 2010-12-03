@@ -231,6 +231,10 @@
 			</File>
 		</Filter>
 		<File
+			RelativePath="..\Movement\ByteBuffer.h"
+			>
+		</File>
+		<File
 			RelativePath="..\Movement\ByteBufferExtensions.h"
 			>
 		</File>
