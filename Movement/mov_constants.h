@@ -147,7 +147,7 @@ namespace Movement
         MoveModeSlowfall,
         MoveModeHover,
         MoveModeFly,
-        //SPLINE_MODE      = 7,
+        MoveModeLevitation,
         MoveModeMaxCount
     };
 

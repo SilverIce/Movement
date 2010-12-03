@@ -15,7 +15,7 @@ namespace Movement
         {/*SLOW_FALL_BEGAN,*/   MOVEFLAG_SAFE_FALL},
         {/*HOVER_BEGAN,*/       MOVEFLAG_HOVER},
         {/*FLY_BEGAN, */        MOVEFLAG_FLYING},
-        //{/*SPLINE_BEGAN, */     MOVEFLAG_SPLINE_ENABLED},
+        {                       MOVEFLAG_LEVITATING},
         //{0},
     };
 
@@ -41,6 +41,7 @@ namespace Movement
         {/*SLOW_FALL_BEGAN,*/   SMSG_SPLINE_MOVE_NORMAL_FALL,  SMSG_SPLINE_MOVE_FEATHER_FALL},
         {/*HOVER_BEGAN,*/       SMSG_SPLINE_MOVE_UNSET_HOVER,  SMSG_SPLINE_MOVE_SET_HOVER},
         {/*FLY_BEGAN,*/         SMSG_SPLINE_MOVE_UNSET_FLYING, SMSG_SPLINE_MOVE_SET_FLYING},
+        {0,0},
     };
 
     static const uint16 SetSpeed2Opc_table[][2]=
