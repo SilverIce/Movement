@@ -4,6 +4,7 @@
 #include "mov_constants.h"
 #include "packet_builder.h"
 #include "SplineState.h"
+#include "Movelistener.h"
 
 class WorldObject;
 
@@ -30,6 +31,12 @@ namespace Movement
         const Vector3& GetPosition3() const { return (Vector3&)position;}
 
         WorldObject * m_owner;
+
+
+        void SetListener(IListener * l) { listener = l;}
+        void ResetLisener() { listener = NULL; }
+
+        IListener * listener;
 
         #pragma region field accessors
 

@@ -137,8 +137,8 @@ namespace Movement {
         Vector4 ComputePosition() const;
 
         // helpers
-        void setDone() { AddSplineFlag(SPLINEFLAG_DONE); }
-        bool isDone() const { return splineflags & SPLINEFLAG_DONE; }
+        void Finalize() { splineflags |= SPLINEFLAG_DONE; }
+        bool Finalized() const { return splineflags & SPLINEFLAG_DONE; }
 
         bool isCyclic() const { return splineflags & SPLINEFLAG_CYCLIC;}
         bool isSmooth() const { return splineflags & (SPLINEFLAG_FLYING|SPLINEFLAG_CATMULLROM);}

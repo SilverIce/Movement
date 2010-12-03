@@ -86,6 +86,7 @@ void MovementState::ApplyMoveMode( MoveMode mode, bool apply )
 MovementState::MovementState(WorldObject * owner) : msg_builder(this, MovControlServer)
 {
     m_owner = owner;
+    listener = NULL;
 
     move_mode = 0;
     last_ms_time = 0;
@@ -182,6 +183,15 @@ void SplineFace::UpdateState()
         uint32 now = getMSTime();
         move_spline.updateState(now);
         SetPosition(move_spline.ComputePosition(), now);
+
+        if (move_spline.Finalized())
+        {
+            DisableSpline();
+            ResetDirection();
+
+            if (listener)
+                listener->OnSplineDone();
+        }
     }
 }
 
