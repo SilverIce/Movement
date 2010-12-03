@@ -2,7 +2,7 @@
 #include "movement.h"
 #include "WorldPacket.h"
 #include "Object.h"
-#include "outLog.h"
+
 #include <assert.h>
 
 // seems only MSVC has this include, what about rest of compilers and platforms?
@@ -137,7 +137,7 @@ void MovementState::SetPosition( const Vector4& v, uint32 ms_time )
 {
     if (!_finiteV((const Vector3&)v))
     {
-        movLog.write("MovementState::SetPosition: NaN coord detected");
+        log_write("MovementState::SetPosition: NaN coord detected");
         return;
     }
 
@@ -149,7 +149,7 @@ void MovementState::SetPosition( const Vector3& v, uint32 ms_time )
 {
     if (!_finiteV(v))
     {
-        movLog.write("MovementState::SetPosition: NaN coord detected");
+        log_write("MovementState::SetPosition: NaN coord detected");
         return;
     }
 

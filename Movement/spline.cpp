@@ -1,7 +1,7 @@
 
 #include "spline.h"
 #include "g3d\matrix4.h"
-#include "outLog.h"
+
 #include <assert.h>
 #include <limits>
 
@@ -40,8 +40,6 @@ void SplinePure::evaluate_percent( float t, Vector3 & c ) const
     float u = (length_ - lengths[Index]) / (lengths[Index+1] - lengths[Index]);
 
     (this->*interpolators[m_mode])(Index, u, c);
-
-    movLog.write("%f   %f", c.x, c.y);
 }
 
 SplinePure::index_type SplinePure::computeIndexInBounds( float length, float t ) const

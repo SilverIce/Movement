@@ -29,8 +29,7 @@ namespace Movement
             return new_time - old_time;
     }
 
-    template<class T> inline float ToSeconds(T t) { return 0.001f * t; }
-    //template<class T> inline double ToSeconds(T t) { return 0.001000000047497451 * t; }
+    extern void log_write(const char* fmt, ...);
 
     using G3D::Vector3;
     using G3D::Vector4;

@@ -95,8 +95,10 @@ public:
 
     bool empty() const { return index_lo == index_hi;}
     SplineMode mode() const { return m_mode;}
+    bool isCyclic() const { return cyclic;}
 
     const PointsArray& getPoints() const { return points;}
+    const Vector3& getPoint(index_type i) const { return points[i];}
     index_type pointsCount() const { return points_count;}
 
     void clear();

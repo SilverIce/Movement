@@ -1,5 +1,5 @@
 #include "g3d_based.h"
-#include "outLog.h"
+
 #include "g3d\vector4.h"
 
 using namespace G3D;

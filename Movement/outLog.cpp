@@ -1,53 +1,49 @@
-
-#include "OutLog.h"
-
 #include <stdio.h>
-#include <assert.h>
 #include <stdarg.h>
 
-using namespace Movement;
+namespace Movement{
 
-static bool MOV_LOG_FILE_ENABLED     = false;
-static bool MOV_LOG_CONSOLE_ENABLED  = false;
+    static bool MOV_LOG_FILE_ENABLED     = true;
+    static bool MOV_LOG_CONSOLE_ENABLED  = true;
 
-static FILE* file = NULL;
+    struct __log_init 
+    {
+        __log_init()
+        {
+            file = fopen("movement.log","wb");
+        }
 
-OutLogger::OutLogger()
-{
-    file = fopen("movement.log","wb");
-    assert(file);
+        ~__log_init()
+        {
+            fclose(file);
+        }
 
-    write("    Log file initialized\n");
+        FILE* file;
+
+    } static log;
+    
+    void log_write(const char* str, ...)
+    {
+        va_list ap;
+
+        va_start(ap, str);
+
+        if (MOV_LOG_CONSOLE_ENABLED)
+            vfprintf(stdout, str, ap);
+        if (MOV_LOG_FILE_ENABLED && log.file)
+            vfprintf(log.file, str, ap);
+
+        va_end(ap);
+
+        if (MOV_LOG_FILE_ENABLED && log.file)
+            fprintf(log.file, "\n" );
+
+        if (MOV_LOG_CONSOLE_ENABLED)
+            printf( "\n" );
+
+        fflush(log.file);
+        fflush(stdout);
+    }
 }
 
-OutLogger::~OutLogger()
-{
-    write("\n    Log file closed");
-    if (file)
-        fclose(file);
-    file = NULL;
-}
-
-void OutLogger::write(const char* str, ...)
-{
-    va_list ap;
-
-    va_start(ap, str);
-
-    if (MOV_LOG_CONSOLE_ENABLED)
-        vfprintf(stdout, str, ap);
-    if (MOV_LOG_FILE_ENABLED)
-        vfprintf(file, str, ap);
-
-    va_end(ap);
-
-    if (MOV_LOG_FILE_ENABLED)
-        fprintf(file, "\n" );
-
-    if (MOV_LOG_CONSOLE_ENABLED)
-        printf( "\n" );
-
-    fflush(file);
-    fflush(stdout);
-}
 

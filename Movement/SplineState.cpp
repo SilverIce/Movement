@@ -1,6 +1,6 @@
 
 #include "SplineState.h"
-#include "outLog.h"
+
 
 namespace Movement{
 
@@ -91,7 +91,10 @@ Vector4 MoveSpline::ComputePosition() const
         float z_now = getNode(spline.first()).z - computeFallElevation(time_passed / 1000.f, false, 0.f);
 
         if (z_now < finalDestination.z)
+        {
             c.z = finalDestination.z;
+            log_write("MoveSpline::ComputePosition: z_now < finalDestination.z");
+        }
         else
             c.z = z_now;
     }

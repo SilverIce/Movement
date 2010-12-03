@@ -115,7 +115,7 @@ void test()
     mover.init_path(nodes, sizeof(nodes)/sizeof(Vector3) , SplineModeCatmullrom);
 
     GD3_spline catm;
-    catm.cyclic = mover.cyclic;
+    catm.cyclic = mover.isCyclic();
     for (int i = 0; i < sizeof(nodes)/sizeof(Vector3); ++i)
         catm.append( nodes[i]);
     //catm.finalInterval = mover.finalInterval;
