@@ -1,16 +1,14 @@
 
 #pragma once
 
+#include "MovementBase.h"
 #include "mov_constants.h"
 #include "packet_builder.h"
 #include "SplineState.h"
-#include "Movelistener.h"
-
-class WorldObject;
 
 namespace Movement
 {
-    class MovementState
+    class MovementState : public UnitBase
     {
         friend class PacketBuilder;
 
@@ -26,17 +24,6 @@ namespace Movement
 
         void SetPosition(const Vector4& v, uint32 ms_time);
         void SetPosition(const Vector3& v, uint32 ms_time);
-
-        const Vector4& GetPosition() const { return position;}
-        const Vector3& GetPosition3() const { return (Vector3&)position;}
-
-        WorldObject * m_owner;
-
-
-        void SetListener(IListener * l) { listener = l;}
-        void ResetLisener() { listener = NULL; }
-
-        IListener * listener;
 
         #pragma region field accessors
 

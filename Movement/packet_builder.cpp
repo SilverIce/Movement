@@ -3,7 +3,7 @@
 #include "opcodes.h"
 
 
-#include "Movement.h"
+#include "UnitMovement.h"
 #include <assert.h>
 
 #include "ByteBufferExtensions.h"
@@ -64,7 +64,7 @@ namespace Movement
         sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
 
         data.Initialize(opcode, 8+4);
-        data << mov.m_owner->GetPackGUID();
+        data << mov.m_owner.GetPackGUID();
         data << mov.GetSpeed(type);
     }
 
@@ -74,7 +74,7 @@ namespace Movement
         sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
 
         data.Initialize(opcode, 8);
-        data << mov.m_owner->GetPackGUID();
+        data << mov.m_owner.GetPackGUID();
     }
 
     void PacketBuilder::Spline_PathUpdate(WorldPacket& data) const
@@ -90,7 +90,7 @@ namespace Movement
         // TODO: find more generic way
         if (mov.move_spline.getPath().empty())
         {
-            data << mov.m_owner->GetPackGUID();
+            data << mov.m_owner.GetPackGUID();
             data << uint8(0);
             data << mov.GetPosition3();
             data << uint32(splineInfo.sequence_Id);
@@ -101,7 +101,7 @@ namespace Movement
         const Vector3 * real_path = splineInfo.spline.getCArray();
         uint32 last_idx = splineInfo.spline.getCArraySize() - 1;
 
-        data << mov.m_owner->GetPackGUID();
+        data << mov.m_owner.GetPackGUID();
         data << uint8(0);
         data << real_path[0];
         data << uint32(splineInfo.sequence_Id);

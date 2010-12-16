@@ -1,5 +1,5 @@
 
-#include "movement.h"
+#include "UnitMovement.h"
 #include "WorldPacket.h"
 #include "Object.h"
 
@@ -83,9 +83,8 @@ void MovementState::ApplyMoveMode( MoveMode mode, bool apply )
     }
 }
 
-MovementState::MovementState(WorldObject * owner) : msg_builder(this, MovControlServer)
+MovementState::MovementState(WorldObject * owner) : UnitBase(*owner), msg_builder(this, MovControlServer)
 {
-    m_owner = owner;
     listener = NULL;
 
     move_mode = 0;
@@ -199,7 +198,7 @@ void SplineFace::SendPath()
 {
     WorldPacket data;
     GetBuilder().PathUpdate(data);
-    m_owner->SendMessageToSet(&data, true);
+    m_owner.SendMessageToSet(&data, true);
 }
 
 MoveSplineInit& MoveSplineInit::MovebyPath( const PointsArray& controls, bool is_cyclic )
