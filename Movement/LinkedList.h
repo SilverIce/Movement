@@ -41,7 +41,7 @@ class LinkedList
 public:
 
     typedef LinkedListElement<T> element_type;
-    typedef LinkedListElement<T>* iterator;
+    //typedef LinkedListElement<T>* iterator;
 
     LinkedList() : m_size(0)
     {
@@ -81,9 +81,14 @@ public:
     void delink_all()
     {
         element_type * i = first.next;
+        element_type * i2 = i;
         element_type * end = &last;
-        while( i != &last)
-            delink(*i);
+        while( i != end)
+        {
+            i2 = i;
+            i = i->next;
+            delink(*i2);
+        }
     }
 
     template<class Func>
@@ -91,7 +96,7 @@ public:
     {
         element_type * i = first.next;
         element_type * end = &last;
-        while( i != &last)
+        while( i != end)
         {
             T & t = i->ref();
             i = i->next;
@@ -104,7 +109,7 @@ public:
     {
         element_type * i = first.next;
         element_type * end = &last;
-        while( i != &last)
+        while( i != end)
         {
             T & t = i->ref();
             i = i->next;
@@ -116,11 +121,13 @@ public:
 
     size_t size() const { return m_size;}
 
+/*
     const element_type* begin() const { return first.next; }
     element_type* begin() { return first.next; }
 
     const element_type* end() const { return &last; }
     element_type* end() { return &last; }
+*/
 
 private:
     element_type first;

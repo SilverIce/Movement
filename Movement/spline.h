@@ -40,8 +40,6 @@ protected:
 
     index_type computeIndexInBounds(float length, float t) const;
 
-    void computeIndex(index_type lastIndex, index_type& Index, time_type &X, float &u) const;
-
     // for internal use only!
     // calculates distance between [i; i+1] points,
     // assumes that index i is in bounds
