@@ -14,6 +14,7 @@ namespace Movement
     {
     public:
 
+        explicit MovementBase(WorldObject& owner) : m_owner(owner), listener(NULL) {}
         virtual ~MovementBase() {}
 
         virtual void CleanReferences();
@@ -24,76 +25,120 @@ namespace Movement
         void SetListener(IListener * l) { listener = l;}
         void ResetLisener() { listener = NULL; }
 
-        explicit MovementBase(WorldObject& owner) : m_owner(owner) {}
+    protected:
 
-    //protected:
+        friend class UnitBase;
 
         WorldObject & m_owner;
         IListener * listener;
 
         Vector4 position;
-        Vector4 transport_offset;
 
-        LinkedListElement<MovementBase> m_transport_link;
-        LinkedList<MovementBase> m_targeter_references;
+        LinkedList<MovementBase,MovementBase> m_targeter_references;
     };
 
-    // parent class for unit- and gameobject-transports
-    class TransportBase : public MovementBase
+    class Transportable : public MovementBase
     {
     public:
 
-        void Board(MovementBase& m)
+        virtual ~Transportable() {}
+
+        virtual void Board(Transport& m) = 0;
+        virtual void UnBoard() = 0;
+
+        virtual void CleanReferences()
         {
-            m_passenger_references.link(m.m_transport_link, *this);
+            UnBoard();
+            MovementBase::CleanReferences();
         }
 
-        void UnBoard(MovementBase& m)
+    protected:
+
+        explicit Transportable(WorldObject& owner) : MovementBase(owner)  {}
+
+        LinkedListElement<Transportable,Transport> m_transport_link;
+        Vector4 transport_offset;
+    };
+
+    class Transport
+    {
+        friend class MovementBase;
+        friend class UnitBase;
+    public:
+
+        void UnBoardAll()
         {
-            m_passenger_references.delink(m.m_transport_link);
+            struct _unboard{
+                inline void operator()(Transportable& m) const { m.UnBoard(); }
+            };
+            m_passenger_references.Iterate(_unboard());
         }
 
         void CleanReferences()
         {
-            m_passenger_references.delink_all();
-            MovementBase::CleanReferences();
+            UnBoardAll();
         }
-
-        explicit TransportBase(WorldObject& owner) : MovementBase(owner) {}
 
     protected:
 
-        LinkedList<MovementBase> m_passenger_references;
+        explicit Transport() {}
+
+        LinkedList<Transportable,Transport> m_passenger_references;
     };
 
-    // concrete class for unit's movement
-    class UnitBase : public TransportBase
+
+    /// concretete classes:
+
+    class GameobjectMovement : public Transportable
+    {
+    public:
+
+        explicit GameobjectMovement(WorldObject& owner) : Transportable(owner) {}
+
+        virtual void Board(Transport& m) {}
+        virtual void UnBoard() {}
+    };
+
+    class MO_Transport : public MovementBase, public Transport
+    {
+    public:
+
+        explicit MO_Transport(WorldObject& owner) : MovementBase(owner) {}
+
+    };
+
+    // class for unit's movement
+    class UnitBase : public Transportable, public Transport
     {
     public:
 
         virtual void CleanReferences()
         {
             ResetTarget();
-            TransportBase::CleanReferences();
+            Transport::CleanReferences();
+            Transportable::CleanReferences();
         }
 
         void ResetTarget()
         {
             if (m_target_link)
-                (*m_target_link).m_targeter_references.delink(m_target_link);
+                m_target_link.ref_from().m_targeter_references.delink(m_target_link);
         }
 
         void SetTarget(MovementBase& m)
         {
             ResetTarget();
             // can i target self?
-            m.m_targeter_references.link(m_target_link, m);
+            m.m_targeter_references.link(m_target_link, *this, m);
         }
+
+        virtual void Board(Transport& m);
+        virtual void UnBoard();
 
     protected:
 
-        explicit UnitBase(WorldObject& owner) : TransportBase(owner) {}
+        explicit UnitBase(WorldObject& owner) : Transportable(owner) {}
 
-        LinkedListElement<MovementBase> m_target_link;
+        LinkedListElement<MovementBase,MovementBase> m_target_link;
     };
 }

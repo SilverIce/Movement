@@ -11,15 +11,18 @@
 
 namespace Movement{
 
-template<class T> class LinkedList;
+template<class T, class F> class LinkedList;
 
-template<class T>
+template<class T, class F>
 struct LinkedListElement
 {
-    explicit LinkedListElement() : next(0), prev(0), m_obj(0) {}
+    explicit LinkedListElement() : next(0), prev(0), m_obj(0), m_from(0) {}
 
-    T& ref() { return *m_obj;}
-    const T& ref() const { return *m_obj;}
+    T& ref_to() { return *m_obj;}
+    const T& ref_to() const { return *m_obj;}
+
+    F& ref_from() { return *m_from;}
+    const F& ref_from() const { return *m_from;}
 
     T& operator *() { return *m_obj;}
     const T& operator *() const { return *m_obj;}
@@ -27,21 +30,22 @@ struct LinkedListElement
     operator bool () const { return m_obj;}
 
 private:
-    friend class LinkedList<T>;
+    friend class LinkedList<T,F>;
 
     T * m_obj;
+    F * m_from;
 
     LinkedListElement * next;
     LinkedListElement * prev;
 };
 
-template<class T>
+template<class T, class F>
 class LinkedList
 {
 public:
 
-    typedef LinkedListElement<T> element_type;
-    //typedef LinkedListElement<T>* iterator;
+    typedef LinkedListElement<T,F> element_type;
+    //typedef LinkedListElement<T,F>* iterator;
 
     LinkedList() : m_size(0)
     {
@@ -49,7 +53,7 @@ public:
          last.prev = &first;
     }
 
-    void link(element_type & el, T& obj)
+    void link(element_type & el, T& obj, F& from)
     {
         element_type * prev = last.prev;
         element_type * next = &last;
@@ -60,6 +64,7 @@ public:
         el.prev = prev;
         el.next = next;
         el.m_obj = &obj;
+        el.m_from = &from;
 
         ++m_size;
     }
@@ -74,14 +79,14 @@ public:
 
         el.next = el.prev = NULL;
         el.m_obj = NULL;
+        el.m_from = NULL;
 
         --m_size;
     }
 
     void delink_all()
     {
-        element_type * i = first.next;
-        element_type * i2 = i;
+        element_type * i = first.next, i2;
         element_type * end = &last;
         while( i != end)
         {
@@ -98,7 +103,7 @@ public:
         element_type * end = &last;
         while( i != end)
         {
-            T & t = i->ref();
+            T & t = i->ref_to();
             i = i->next;
             functor(t);
         }
@@ -111,7 +116,7 @@ public:
         element_type * end = &last;
         while( i != end)
         {
-            T & t = i->ref();
+            T & t = i->ref_to();
             i = i->next;
             visitor(t);
         }
