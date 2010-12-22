@@ -157,10 +157,6 @@
 				RelativePath="..\Movement\outLog.cpp"
 				>
 			</File>
-			<File
-				RelativePath="..\Movement\outLog.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="constants"
@@ -191,14 +187,6 @@
 			</File>
 			<File
 				RelativePath="..\Movement\packet_builder.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="trajectory_builder"
-			>
-			<File
-				RelativePath="..\Movement\IPathFinder.h"
 				>
 			</File>
 		</Filter>
