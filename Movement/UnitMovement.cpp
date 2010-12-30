@@ -85,8 +85,6 @@ void MovementState::ApplyMoveMode( MoveMode mode, bool apply )
 
 MovementState::MovementState(WorldObject * owner) : UnitBase(*owner), msg_builder(this, MovControlServer)
 {
-    listener = NULL;
-
     move_mode = 0;
     last_ms_time = 0;
     moveFlags = 0;

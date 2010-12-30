@@ -27,8 +27,6 @@ namespace Movement
 
         #pragma region field accessors
 
-        //WorldObject* wow_object;
-
         /// Get-Set methtods
 
         /// Speed
@@ -61,7 +59,7 @@ namespace Movement
         #pragma endregion
 
         /// Move Modes
-        bool HasMode(uint32 m) const { return move_mode & (1 << m);}
+        bool HasMode(MoveMode m) const { return move_mode & (1 << m);}
         void ApplyMoveMode(MoveMode mode, bool apply);
         /// end of Get-Set methtods
 
@@ -102,7 +100,6 @@ namespace Movement
         };
 
         // time-position pair
-        Vector4         position;
         uint32          last_ms_time;
 
         uint32          move_mode;
