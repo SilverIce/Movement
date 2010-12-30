@@ -86,7 +86,7 @@ public:
 
     void delink_all()
     {
-        element_type * i = first.next, i2;
+        element_type * i = first.next, * i2;
         element_type * end = &last;
         while( i != end)
         {
