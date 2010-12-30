@@ -23,50 +23,39 @@ float MovementState::CalculateCurrentSpeed( bool is_walking /*= false*/ ) const
 {
     // g_moveFlags_mask - some global client's moveflag mask
     // TODO: get real value
-    static uint32 g_moveFlags_mask = 0xFFFFFFFF;
-    float speed = 0.0f;
+    static uint32 g_moveFlags_mask = 0;
 
-    if ( !(g_moveFlags_mask & moveFlags) )
-        return 0.0f;
+    //if ( !(g_moveFlags_mask & moveFlags) )
+        //return 0.0f;
 
-    if ( /*!move_spline ||*/ move_spline.splineflags & SPLINEFLAG_NO_SPLINE )
+    if ( moveFlags & MOVEFLAG_FLYING )
     {
-        if ( moveFlags & MOVEFLAG_FLYING )
-        {
-            if ( moveFlags & MOVEFLAG_BACKWARD && speed_obj.flight >= speed_obj.flight_back )
-                return speed_obj.flight_back;
-            else
-                return speed_obj.flight;
-        }
-        else if ( moveFlags & MOVEFLAG_SWIMMING )
-        {
-            if ( moveFlags & MOVEFLAG_BACKWARD && speed_obj.swim >= speed_obj.swim_back )
-                return speed_obj.swim_back;
-            else
-                return speed_obj.swim;
-        }
+        if ( moveFlags & MOVEFLAG_BACKWARD && speed_obj.flight >= speed_obj.flight_back )
+            return speed_obj.flight_back;
         else
-        {
-            if ( moveFlags & MOVEFLAG_WALK_MODE || is_walking )
-            {
-                if ( speed_obj.run > speed_obj.walk )
-                    return speed_obj.walk;
-            }
-            else
-            {
-                if ( moveFlags & MOVEFLAG_BACKWARD && speed_obj.run >= speed_obj.run_back )
-                    return speed_obj.run_back;
-            }
-            return speed_obj.run;
-        }
+            return speed_obj.flight;
+    }
+    else if ( moveFlags & MOVEFLAG_SWIMMING )
+    {
+        if ( moveFlags & MOVEFLAG_BACKWARD && speed_obj.swim >= speed_obj.swim_back )
+            return speed_obj.swim_back;
+        else
+            return speed_obj.swim;
     }
     else
     {
-        if ( !move_spline.duration )
-            return 0.0f;
-        speed = move_spline.spline.length() / move_spline.duration * 1000.0f;
+        if ( moveFlags & MOVEFLAG_WALK_MODE || is_walking )
+        {
+            if ( speed_obj.run > speed_obj.walk )
+                return speed_obj.walk;
+        }
+        else
+        {
+            if ( moveFlags & MOVEFLAG_BACKWARD && speed_obj.run >= speed_obj.run_back )
+                return speed_obj.run_back;
+        }
+        return speed_obj.run;
     }
-    return speed;
 }
 
 void MovementState::ApplyMoveMode( MoveMode mode, bool apply )
@@ -264,12 +253,14 @@ void MoveSplineInit::Apply()
 
     if (velocity != 0.f)
         state.speed_obj.current = velocity;
+    else
+        state.ReCalculateCurrentSpeed();
 
     m_path[0] = state.GetPosition3();
     spline.sequence_Id = MoveSplineCounter.increase();
     spline.init_spline(getMSTime(), m_path, state.speed_obj.current);
 
-    // path initialized, so duration is known and i can compute z_acceleration for parabolic movement
+    // path initialized, so duration is known and i able to compute z_acceleration for parabolic movement
     if (spline.splineflags & SPLINEFLAG_TRAJECTORY)
     {
         float f_duration = spline.duration / 1000.f;
