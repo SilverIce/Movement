@@ -42,9 +42,8 @@ void MoveSpline::updateState( uint32 ms_time )
 
             if (splineflags & SPLINEFLAG_ENTER_CYCLE)
             {
-                PointsArray path;
-                spline.write_path(path);
-                spline.init_cyclic_path(&path[1],path.size()-1,spline.mode(),0);
+                G3D::Array<Vector3> points(spline.getPoints());
+                spline.init_cyclic_spline(&points[1],points.size()-1,spline.mode(),0);
 
                 RemoveSplineFlag(SPLINEFLAG_ENTER_CYCLE);
 
@@ -117,9 +116,9 @@ void MoveSpline::init_spline( uint32 StartMoveTime, PointsArray& path, float vel
             cyclic_point = 1;   // shouldn't be modified, came from client
         
         if (isSmooth())
-            spline.init_cyclic_path(&path[0], path.size(), SplineModeCatmullrom, cyclic_point);
+            spline.init_cyclic_spline(&path[0], path.size(), SplineModeCatmullrom, cyclic_point);
         else
-            spline.init_cyclic_path(&path[0], path.size(), SplineModeLinear, cyclic_point);
+            spline.init_cyclic_spline(&path[0], path.size(), SplineModeLinear, cyclic_point);
 
         finalDestination = Vector3::zero();
 
@@ -128,11 +127,11 @@ void MoveSpline::init_spline( uint32 StartMoveTime, PointsArray& path, float vel
     else
     {
         if (isSmooth())
-            spline.init_path(&path[0], path.size(), SplineModeCatmullrom);
+            spline.init_spline(&path[0], path.size(), SplineModeCatmullrom);
         else
-            spline.init_path(&path[0], path.size(), SplineModeLinear);
+            spline.init_spline(&path[0], path.size(), SplineModeLinear);
 
-        finalDestination = getPath().back();
+        finalDestination = getPath().last();
 
         if (splineflags & SPLINEFLAG_FALLING)
             duration = computeFallTime(path[0].z - finalDestination.z, false);

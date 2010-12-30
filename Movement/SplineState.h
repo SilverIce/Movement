@@ -144,7 +144,7 @@ namespace Movement {
         bool isSmooth() const { return splineflags & (SPLINEFLAG_FLYING|SPLINEFLAG_CATMULLROM);}
 
         const Vector3& getNode(uint32 i) const { return spline.getPoints()[i];}
-        const PointsArray& getPath() const { return spline.getPoints();}
+        const G3D::Array<Vector3>& getPath() const { return spline.getPoints();}
     };
 }
 

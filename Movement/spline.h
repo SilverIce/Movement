@@ -27,10 +27,8 @@ public:
 
 protected:
 
-    PointsArray points;
-    std::vector<float> lengths;
-    //G3D::Array<Vector3> points;
-    //G3D::Array<float> lengths;
+    G3D::Array<Vector3> points;
+    G3D::Array<float> lengths;
 
     index_type index_lo, index_hi;
     index_type points_count;
@@ -77,8 +75,8 @@ public:
     // 't' - percent of spline's length, assumes that t in range [0, 1]
     void evaluate_percent(float t, Vector3 & c) const;
 
-    void init_path(const Vector3 * controls, const int N, SplineMode m);
-    void init_cyclic_path(const Vector3 * controls, const int N, SplineMode m, int cyclic_point);
+    void init_spline(const Vector3 * controls, const int N, SplineMode m);
+    void init_cyclic_spline(const Vector3 * controls, const int N, SplineMode m, int cyclic_point);
 
     // returns length of the whole spline
     float length() const { return lengths[index_hi];}
@@ -95,17 +93,13 @@ public:
     SplineMode mode() const { return m_mode;}
     bool isCyclic() const { return cyclic;}
 
-    const PointsArray& getPoints() const { return points;}
+    const G3D::Array<Vector3>& getPoints() const { return points;}
     const Vector3& getPoint(index_type i) const { return points[i];}
     index_type pointsCount() const { return points_count;}
 
     void clear();
     void erase(index_type i);
 
-    void write_path(PointsArray& path) const
-    {
-        path.insert(path.end(), points.begin()+first(), points.begin()+first()+points_count);
-    }
 };
 
 class SplineLive : public SplinePure
