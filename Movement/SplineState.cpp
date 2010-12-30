@@ -107,13 +107,13 @@ Vector4 MoveSpline::ComputePosition() const
         }
         else if (splineflags & SPLINEFLAG_FINAL_POINT)
         {
-            c.w = G3D::wrap(atan2(facing_spot.y-c.y, facing_spot.x-c.x), 0.f, G3D::twoPi());
+            c.w = G3D::wrap(atan2(facing_spot.y-c.y, facing_spot.x-c.x), 0.f, (float)G3D::twoPi());
         }
         //nothing to do for SPLINEFLAG_FINAL_TARGET flag
     }
     else
     {
-        c.w = G3D::wrap(atan2(hermite.x, hermite.y), 0.f, G3D::twoPi());
+        c.w = G3D::wrap(atan2(hermite.x, hermite.y), 0.f, (float)G3D::twoPi());
     }
     return c;
 }
