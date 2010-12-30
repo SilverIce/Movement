@@ -218,10 +218,26 @@
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath="..\Movement\ByteBuffer.h"
+		<Filter
+			Name="fake"
 			>
-		</File>
+			<File
+				RelativePath="..\Movement\ByteBuffer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Movement\Object.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Movement\UpdateFields.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Movement\WorldPacket.h"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath="..\Movement\ByteBufferExtensions.h"
 			>
@@ -251,10 +267,6 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="..\Movement\Object.h"
-			>
-		</File>
-		<File
 			RelativePath="..\Movement\Session.h"
 			>
 		</File>
@@ -268,10 +280,6 @@
 		</File>
 		<File
 			RelativePath="..\Movement\UnitMovement.h"
-			>
-		</File>
-		<File
-			RelativePath="..\Movement\WorldPacket.h"
 			>
 		</File>
 	</Files>
