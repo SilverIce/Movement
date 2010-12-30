@@ -79,7 +79,8 @@ Vector4 MoveSpline::ComputePosition() const
         t = float(time_passed) / float(duration_);
     }
 
-    spline.evaluate_percent(t, (Vector3&)c);
+    Vector3 hermite;
+    spline.evaluate_percent_and_hermite(t, (Vector3&)c, hermite);
 
     if (splineflags & SPLINEFLAG_TRAJECTORY)
     {
@@ -98,6 +99,22 @@ Vector4 MoveSpline::ComputePosition() const
             c.z = z_now;
     }
 
+    if (Finalized())
+    {
+        if (splineflags & SPLINEFLAG_FINAL_ANGLE)
+        {
+            c.w = facing_angle;
+        }
+        else if (splineflags & SPLINEFLAG_FINAL_POINT)
+        {
+            c.w = G3D::wrap(atan2(facing_spot.y-c.y, facing_spot.x-c.x), 0.f, G3D::twoPi());
+        }
+        //nothing to do for SPLINEFLAG_FINAL_TARGET flag
+    }
+    else
+    {
+        c.w = G3D::wrap(atan2(hermite.x, hermite.y), 0.f, G3D::twoPi());
+    }
     return c;
 }
 

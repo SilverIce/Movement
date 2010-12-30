@@ -311,7 +311,7 @@ MoveSplineInit& MoveSplineInit::SetFacing( uint64 guid )
 
 MoveSplineInit& MoveSplineInit::SetFacing( float o )
 {
-    spline.facing_angle = o;
+    spline.facing_angle = G3D::wrap(o, 0.f, G3D::twoPi());
     spline.splineflags &= ~SPLINE_MASK_FINAL_FACING;
     spline.splineflags |= SPLINEFLAG_FINAL_ANGLE;
     return *this;
