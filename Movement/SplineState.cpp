@@ -99,7 +99,7 @@ Vector4 MoveSpline::ComputePosition() const
             c.z = z_now;
     }
 
-    if (Finalized())
+    if (Finalized() && (splineflags & SPLINE_MASK_FINAL_FACING))
     {
         if (splineflags & SPLINEFLAG_FINAL_ANGLE)
         {
@@ -113,7 +113,7 @@ Vector4 MoveSpline::ComputePosition() const
     }
     else
     {
-        c.w = G3D::wrap(atan2(hermite.x, hermite.y), 0.f, (float)G3D::twoPi());
+        c.w = G3D::wrap(atan2(hermite.y, hermite.x), 0.f, (float)G3D::twoPi());
     }
     return c;
 }
