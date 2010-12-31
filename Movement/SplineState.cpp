@@ -160,33 +160,4 @@ void MoveSpline::init_spline( uint32 StartMoveTime, PointsArray& path, float vel
     if (duration == 0)
         duration = 1;
 }
-
-void MoveSpline::init_cyclic_spline( uint32 StartMoveTime, PointsArray& path, float speed, uint32 flags )
-{
-    start_move_time = StartMoveTime;
-    splineflags = flags | (SPLINEFLAG_CYCLIC | SPLINEFLAG_ENTER_CYCLE);
-
-    duration_mod = 1.f;
-    sync_coeff   = 1.f;
-
-    uint32 cyclic_point = 1u;   // shouldn't be modified, came from client
-    if (isSmooth())
-        spline.init_cyclic_path(&path[0], path.size(), SplineModeCatmullrom, cyclic_point);
-    else
-        spline.init_cyclic_path(&path[0], path.size(), SplineModeLinear, cyclic_point);
-
-    finalDestination = Vector3::zero();
-
-    time_passed = 0;
-    duration = spline.length(spline.first()+cyclic_point,spline.last()) / speed * 1000.f;
-
-    // TODO: where this should be handled?
-    if (duration == 0)
-    {
-        movLog.write("Error: null spline duration");
-        duration = 1;
-    }
-}
-
-
 }
