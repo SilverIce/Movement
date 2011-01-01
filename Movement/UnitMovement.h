@@ -87,7 +87,6 @@ namespace Movement
 
         struct SpeedInfo
         {
-            float current;
             float walk;
             float run;
             float run_back;
@@ -97,6 +96,7 @@ namespace Movement
             float flight_back;
             float turn;
             float pitch;
+            float current;
         };
 
         // time-position pair

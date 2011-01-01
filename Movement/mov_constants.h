@@ -155,19 +155,17 @@ namespace Movement
     {
         SpeedNone           =-1,
 
-        SpeedCurrent        = 0,
-        SpeedWalk           = 1,
-        SpeedRun            = 2,
-        SpeedSwimBack       = 3,
-        SpeedSwim           = 4,
-        SpeedRunBack        = 5,
-        SpeedFlight         = 6,
-        SpeedFlightBack     = 7,
+        SpeedWalk           = 0,
+        SpeedRun            = 1,
+        SpeedSwimBack       = 2,
+        SpeedSwim           = 3,
+        SpeedRunBack        = 4,
+        SpeedFlight         = 5,
+        SpeedFlightBack     = 6,
+        SpeedTurn           = 7,
+        SpeedPitch          = 8,
 
-        SpeedTurn           = 8,
-        SpeedPitch          = 9,
-
-        SpeedMaxCount       = 10,
+        SpeedMaxCount       = 9,
     };
 
     extern const double gravity;

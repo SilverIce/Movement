@@ -64,7 +64,7 @@ namespace Movement
         sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
 
         data.Initialize(opcode, 8+4);
-        data << mov.m_owner.GetPackGUID();
+        data << mov.GetOwner().GetPackGUID();
         data << mov.GetSpeed(type);
     }
 
@@ -74,7 +74,7 @@ namespace Movement
         sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
 
         data.Initialize(opcode, 8);
-        data << mov.m_owner.GetPackGUID();
+        data << mov.GetOwner().GetPackGUID();
     }
 
     void PacketBuilder::Spline_PathUpdate(WorldPacket& data) const
@@ -83,14 +83,13 @@ namespace Movement
         sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
 
         const MoveSpline& splineInfo = mov.move_spline;
-        const PointsArray& path = splineInfo.getPath();
 
         data.Initialize(opcode, 30);
 
         // TODO: find more generic way
         if (mov.move_spline.getPath().empty())
         {
-            data << mov.m_owner.GetPackGUID();
+            data << mov.GetOwner().GetPackGUID();
             data << uint8(0);
             data << mov.GetPosition3();
             data << uint32(splineInfo.sequence_Id);
@@ -101,7 +100,7 @@ namespace Movement
         const Vector3 * real_path = splineInfo.spline.getCArray();
         uint32 last_idx = splineInfo.spline.getCArraySize() - 1;
 
-        data << mov.m_owner.GetPackGUID();
+        data << mov.GetOwner().GetPackGUID();
         data << uint8(0);
         data << real_path[0];
         data << uint32(splineInfo.sequence_Id);
@@ -193,7 +192,7 @@ namespace Movement
         sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
 
         //data.Initialize(opcode, 10); 
-        //data << mov.m_owner->GetPackGUID();
+        //data << mov.GetOwner().GetPackGUID();
 
         //if(!forced)
         //{
@@ -263,7 +262,7 @@ namespace Movement
 
         //for (int i = SpeedWalk; i < SpeedMaxCount; ++i)
             //data << mov.GetSpeed((SpeedType)i);
-        data.append<float>(&mov.speed[SpeedWalk], SpeedMaxCount - SpeedWalk);
+        data.append<float>(&mov.speed[SpeedWalk], SpeedMaxCount);
         
         if (mov.HasMovementFlag(MOVEFLAG_SPLINE_ENABLED))
         {
