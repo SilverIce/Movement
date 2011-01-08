@@ -1,7 +1,5 @@
 
 #include "spline.h"
-#include "g3d\matrix4.h"
-
 #include <assert.h>
 #include <limits>
 
@@ -99,7 +97,7 @@ void SplinePure::computeIndex(float t, index_type& index, float& u) const
     float length_ = t * length();
     index = computeIndexInBounds(length_, t);
     assert(index < index_hi);
-    u = (length_ - lengths[index]) / (lengths[index+1] - lengths[index]);
+    u = (length_ - length(index)) / segment_length(index);
 }
 
 SplinePure::index_type SplinePure::computeIndexInBounds( float t ) const
@@ -202,7 +200,7 @@ inline void C_Evaluate_Hermite(const Vector3 *vertice, float t, const float (&ma
 
 void SplinePure::EvaluateLinear(index_type Idx, float u, Vector3& result) const
 {
-    assert(Index >= 0 && Index+1 < points.size());
+    assert(Idx >= 0 && Idx+1 < points.size());
     result = points[Idx] + (points[Idx+1] - points[Idx]) * u;
 }
 
@@ -239,7 +237,7 @@ void SplinePure::EvaluateHermiteBezier3(index_type Index, float t, Vector3& resu
 
 float SplinePure::SegLengthLinear(index_type i) const
 {
-    assert(Index >= 0 && Index+1 < points.size());
+    assert(i >= 0 && i+1 < points.size());
     return (points[i] - points[i+1]).length();
 }
 
@@ -433,37 +431,8 @@ void SplinePure::erase( index_type i )
 */
 }
 
-SplineLive::index_type SplineLive::computeIndexInBounds( float length, float t ) const
 {
-    index_type i = m_current_node;
-    index_type N = index_hi;
-    while (i+1 < N && lengths[i+1] < length)
-        ++i;
-    return i;
-}
 
-void SplineLive::evaluate_percent( float t, Vector3 & c )
-{
-    assert(t >= 0.f && t <= 1.f);
-    float length_ = t * length();
-    m_current_node = computeIndexInBounds(length_, t);
-    assert(Index < index_hi);
-
-    float u = (length_ - lengths[m_current_node]) / (lengths[m_current_node+1] - lengths[m_current_node]);
-
-    (this->*interpolators[m_mode])(m_current_node, u, c);
-}
-
-void SplineLive::init_path( const Vector3 * controls, const int N, SplineMode m )
-{
-    SplinePure::init_path(controls, N, m);
-    reset_progress();
-}
-
-void SplineLive::init_cyclic_path( const Vector3 * controls, const int N, SplineMode m, int cyclic_point )
-{
-    SplinePure::init_cyclic_path(controls, N, m, cyclic_point);
-    reset_progress();
 }
 
 }

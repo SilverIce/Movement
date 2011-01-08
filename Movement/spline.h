@@ -98,49 +98,23 @@ public:
     float length() const { return lengths[index_hi];}
     // returns length between given nodes
     float length(index_type first, index_type last) const { return lengths[last]-lengths[first];}
+    float length(index_type Idx) const { return lengths[Idx];}
+    float segment_length(index_type Idx) const { return lengths[Idx+1]-lengths[Idx];}
 
     index_type first() const { return index_lo;}
     index_type last()  const { return index_hi;}
-
-    const Vector3* getCArray() const { return &points[index_lo];}
-    index_type getCArraySize() const { return points_count;}
 
     bool empty() const { return index_lo == index_hi;}
     SplineMode mode() const { return m_mode;}
     bool isCyclic() const { return cyclic;}
 
-    const G3D::Array<Vector3>& getPoints() const { return points;}
+    const PointsArray& getPoints() const { return points;}
     const Vector3& getPoint(index_type i) const { return points[i];}
     index_type pointsCount() const { return points_count;}
 
     void clear();
     void erase(index_type i);
 
-};
-
-class SplineLive : public SplinePure
-{
-public:
-
-    explicit SplineLive() : SplinePure(), m_current_node(0) {}
-
-    void evaluate_percent(float t, Vector3 & c);
-
-    void init_path(const Vector3 * controls, const int N, SplineMode m);
-    void init_cyclic_path(const Vector3 * controls, const int N, SplineMode m, int cyclic_point);
-
-    void reset_progress() { m_current_node = first(); }
-
-    void clear()
-    {
-        SplinePure::clear();
-        reset_progress();
-    }
-
-private:
-    index_type computeIndexInBounds(float length, float t) const;
-
-    index_type m_current_node;
 };
 
 }
