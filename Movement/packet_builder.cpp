@@ -303,10 +303,10 @@ namespace Movement
             data << splineInfo.sequence_Id;
 
             data << splineInfo.duration_mod;            // duration mod?
-            data << splineInfo.sync_coeff;              // sync coeff?
+            data << splineInfo.duration_mod_next;              // sync coeff?
 
-            data << splineInfo.parabolic.z_acceleration;// z_acceleration?
-            data << splineInfo.parabolic.time_shift;	// parabolic time shift?
+            data << splineInfo.parabolic_acceleration;// z_acceleration?
+            data << splineInfo.parabolic_time;	// parabolic time shift?
 
             uint32 nodes = splineInfo.getPath().size();
             data << nodes;

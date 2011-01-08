@@ -10,14 +10,7 @@
 
 namespace Movement{
 
-// TODO: make it Atomic
-static counter<uint32> MoveSplineCounter;
 
-inline void NewSpline(MoveSpline& move)
-{
-    move.Init();
-    move.sequence_Id = MoveSplineCounter.increase();
-}
 
 float MovementState::CalculateCurrentSpeed( bool is_walking /*= false*/ ) const
 {
@@ -105,13 +98,6 @@ void MovementState::Initialize( MovControlType controller, const Vector4& pos, u
     GetBuilder().SetControl(controller);
 }
 
-MoveSpline& MovementState::NewSpline()
-{
-    move_spline.Init();
-    move_spline.sequence_Id = MoveSplineCounter.increase();
-
-    return move_spline;
-}
 
 // for debugging:
 // there were problems with NaN coords in past
@@ -150,9 +136,7 @@ void SplineFace::ResetSplineState()
     {
         UpdateState();
 
-        MoveSpline& move = NewSpline();
 
-        move.reset_state();
 
         DisableSpline();
         ResetDirection();
@@ -257,15 +241,8 @@ void MoveSplineInit::Apply()
         state.ReCalculateCurrentSpeed();
 
     m_path[0] = state.GetPosition3();
-    spline.sequence_Id = MoveSplineCounter.increase();
-    spline.init_spline(getMSTime(), m_path, state.speed_obj.current);
 
-    // path initialized, so duration is known and i able to compute z_acceleration for parabolic movement
-    if (spline.splineflags & SPLINEFLAG_TRAJECTORY)
-    {
-        float f_duration = spline.duration / 1000.f;
-        spline.parabolic.z_acceleration = max_vertical_height * 8.f / (f_duration * f_duration);
-    }
+        spline.partial_initialize(m_path, state.speed_obj.current, max_vertical_height);
 
     state.move_spline = spline;
 
@@ -277,7 +254,7 @@ MoveSplineInit& MoveSplineInit::SetTrajectory( float max_height, uint32 time_shi
 {
     spline.splineflags |= SPLINEFLAG_TRAJECTORY;
     spline.splineflags &= ~SPLINEFLAG_KNOCKBACK;
-    spline.parabolic.time_shift = time_shift;
+    spline.parabolic_time = time_shift;
     max_vertical_height = max_height;
     return *this;
 }
@@ -285,7 +262,7 @@ MoveSplineInit& MoveSplineInit::SetTrajectory( float max_height, uint32 time_shi
 MoveSplineInit& MoveSplineInit::SetKnockBack( float max_height, uint32 time_shift )
 {
     spline.splineflags |= SPLINEFLAG_TRAJECTORY | SPLINEFLAG_KNOCKBACK;
-    spline.parabolic.time_shift = time_shift;
+    spline.parabolic_time = time_shift;
     max_vertical_height = max_height;
     return *this;
 }

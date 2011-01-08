@@ -4,18 +4,10 @@
 
 namespace Movement{
 
-void ParabolicHandler::handleParabolic( uint32 t_duration, uint32 t_passed, Vector3& position ) const
-{
-    if (t_passed <= time_shift)
-        return;
+// TODO: make it Atomic
+counter<uint32> MoveSplineCounter;
 
-    float t_passedf = (t_passed - time_shift) / 1000.f;
-    float t_durationf = (t_duration - time_shift) / 1000.f;
 
-    // -a*x*x + bx + c:
-    //(dur * v3->z_acceleration * dt)/2 - (v3->z_acceleration * dt * dt)/2 + Z;
-    position.z += (t_durationf - t_passedf) * 0.5f * z_acceleration * t_passedf;
-}
 
 void MoveSpline::updateState( uint32 ms_time )
 {
@@ -26,7 +18,7 @@ void MoveSpline::updateState( uint32 ms_time )
     }
 
     time_passed = getMSTimeDiff(start_move_time, ms_time);
-    uint32 duration_ = float(duration) * duration_mod + 0.5f;
+    uint32 duration_ = modifiedDuration();
 
     if (duration_ == 0)
         return;
@@ -53,10 +45,10 @@ void MoveSpline::updateState( uint32 ms_time )
                 RemoveSplineFlag(SPLINEFLAG_TRAJECTORY);
             }
 
-            //spline.reset_progress();
+            duration_mod = this->duration_mod_next;
+            duration_mod_next = 1.f;
 
-            duration_mod = this->sync_coeff;
-            sync_coeff = 1.f;
+            duration_ = modifiedDuration();
         }
         else
             Finalize();
@@ -65,9 +57,7 @@ void MoveSpline::updateState( uint32 ms_time )
 
 Vector4 MoveSpline::ComputePosition() const
 {
-    Vector4 c;
-
-    uint32 duration_ = float(duration) * duration_mod + 0.5f;
+    uint32 duration_ = modifiedDuration();
 
     float t = 0.f;
     if (Finalized())
@@ -79,12 +69,21 @@ Vector4 MoveSpline::ComputePosition() const
         t = float(time_passed) / float(duration_);
     }
 
+    Vector4 c; 
     Vector3 hermite;
     spline.evaluate_percent_and_hermite(t, (Vector3&)c, hermite);
 
     if (splineflags & SPLINEFLAG_TRAJECTORY)
     {
-        parabolic.handleParabolic(duration_, time_passed, (Vector3&)c);
+        if (time_passed > parabolic_time)
+        {
+            float t_passedf = (time_passed - parabolic_time) / 1000.f;
+            float t_durationf = (duration - parabolic_time) / 1000.f; //client use not modified duration here
+
+            // -a*x*x + bx + c:
+            //(dur * v3->z_acceleration * dt)/2 - (v3->z_acceleration * dt * dt)/2 + Z;
+            c.z += (t_durationf - t_passedf) * 0.5f * parabolic_acceleration * t_passedf;
+        }
     }
     else if (splineflags & SPLINEFLAG_FALLING)
     {
@@ -118,13 +117,10 @@ Vector4 MoveSpline::ComputePosition() const
     return c;
 }
 
-void MoveSpline::init_spline( uint32 StartMoveTime, PointsArray& path, float velocity )
+void MoveSpline::partial_initialize(const PointsArray& path, float velocity, float max_parabolic_heigth)
 {
+    static SplineMode modes[2] = {SplineModeLinear,SplineModeCatmullrom};
     start_move_time = StartMoveTime;
-
-    duration_mod = 1.f;
-    sync_coeff   = 1.f;
-    time_passed  = 0;
 
     if (isCyclic())
     {
@@ -132,10 +128,7 @@ void MoveSpline::init_spline( uint32 StartMoveTime, PointsArray& path, float vel
         if (splineflags & SPLINEFLAG_ENTER_CYCLE)
             cyclic_point = 1;   // shouldn't be modified, came from client
         
-        if (isSmooth())
-            spline.init_cyclic_spline(&path[0], path.size(), SplineModeCatmullrom, cyclic_point);
-        else
-            spline.init_cyclic_spline(&path[0], path.size(), SplineModeLinear, cyclic_point);
+        spline.init_cyclic_spline(&path[0], path.size(), modes[isSmooth()], cyclic_point);
 
         finalDestination = Vector3::zero();
 
@@ -143,12 +136,9 @@ void MoveSpline::init_spline( uint32 StartMoveTime, PointsArray& path, float vel
     }
     else
     {
-        if (isSmooth())
-            spline.init_spline(&path[0], path.size(), SplineModeCatmullrom);
-        else
-            spline.init_spline(&path[0], path.size(), SplineModeLinear);
+        spline.init_spline(&path[0], path.size(),  modes[isSmooth()]);
 
-        finalDestination = getPath().last();
+        finalDestination = spline.getPoint(spline.last());
 
         if (splineflags & SPLINEFLAG_FALLING)
             duration = computeFallTime(path[0].z - finalDestination.z, false);
@@ -159,5 +149,12 @@ void MoveSpline::init_spline( uint32 StartMoveTime, PointsArray& path, float vel
     // TODO: where this should be handled?
     if (duration == 0)
         duration = 1;
+
+    // path initialized, duration is known and i able to compute z_acceleration for parabolic movement
+    if (splineflags & SPLINEFLAG_TRAJECTORY)
+    {
+        float f_duration = (duration - parabolic_time) / 1000.f;
+        parabolic_acceleration = max_parabolic_heigth * 8.f / (f_duration * f_duration);
+    }
 }
 }

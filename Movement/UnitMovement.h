@@ -140,8 +140,6 @@ namespace Movement
         void Initialize(MovControlType controller, const Vector4& position, uint32 ms_time);
 
         class SplineFace& GetSplineFace() { return (class SplineFace&)*this; }
-
-        MoveSpline& NewSpline();
     };
 
 
