@@ -6,36 +6,36 @@
 using namespace G3D;
 namespace Movement{
 
-SplinePure::EvaluationMethtod SplinePure::evaluators[SplineModeCount] =
+Spline::EvaluationMethtod Spline::evaluators[Spline::ModesCount] =
 {
-    &SplinePure::EvaluateLinear,
-    &SplinePure::EvaluateCatmullRom,
-    &SplinePure::EvaluateBezier3,
+    &Spline::EvaluateLinear,
+    &Spline::EvaluateCatmullRom,
+    &Spline::EvaluateBezier3,
 };
 
-SplinePure::EvaluationMethtod SplinePure::hermite_evaluators[SplineModeCount] =
+Spline::EvaluationMethtod Spline::hermite_evaluators[Spline::ModesCount] =
 {
-    &SplinePure::EvaluateHermiteLinear,
-    &SplinePure::EvaluateHermiteCatmullRom,
-    &SplinePure::EvaluateHermiteBezier3,
+    &Spline::EvaluateHermiteLinear,
+    &Spline::EvaluateHermiteCatmullRom,
+    &Spline::EvaluateHermiteBezier3,
 };
 
-SplinePure::SegLenghtMethtod SplinePure::seglengths[SplineModeCount] =
+Spline::SegLenghtMethtod Spline::seglengths[Spline::ModesCount] =
 {
-    &SplinePure::SegLengthLinear,
-    &SplinePure::SegLengthCatmullRom,
-    &SplinePure::SegLengthBezier3,
+    &Spline::SegLengthLinear,
+    &Spline::SegLengthCatmullRom,
+    &Spline::SegLengthBezier3,
 };
 
-SplinePure::InitMethtod SplinePure::initializers[SplineModeCount] =
+Spline::InitMethtod Spline::initializers[Spline::ModesCount] =
 {
-    //&SplinePure::InitLinear,
-    &SplinePure::InitCatmullRom,    // we should use catmullrom initializer even for linear mode! (client's internal structure limitation) 
-    &SplinePure::InitCatmullRom,
-    &SplinePure::InitBezier3,
+    //&Spline::InitLinear,
+    &Spline::InitCatmullRom,    // we should use catmullrom initializer even for linear mode! (client's internal structure limitation) 
+    &Spline::InitCatmullRom,
+    &Spline::InitBezier3,
 };
 
-void SplinePure::evaluate_percent( float t, Vector3 & c ) const
+void Spline::evaluate_percent( float t, Vector3 & c ) const
 {
     index_type Index;
     float u;
@@ -44,7 +44,7 @@ void SplinePure::evaluate_percent( float t, Vector3 & c ) const
     (this->*evaluators[m_mode])(Index, u, c);
 }
 
-void SplinePure::evaluate_hermite(float t, Vector3& hermite) const
+void Spline::evaluate_hermite(float t, Vector3& hermite) const
 {
     index_type Index;
     float u;
@@ -53,7 +53,7 @@ void SplinePure::evaluate_hermite(float t, Vector3& hermite) const
     (this->*hermite_evaluators[m_mode])(Index, u, hermite);
 }
 
-void SplinePure::evaluate_percent_and_hermite(float t, Vector3 & c, Vector3& hermite) const
+void Spline::evaluate_percent_and_hermite(float t, Vector3 & c, Vector3& hermite) const
 {
     index_type Index;
     float u;
@@ -63,7 +63,7 @@ void SplinePure::evaluate_percent_and_hermite(float t, Vector3 & c, Vector3& her
     (this->*hermite_evaluators[m_mode])(Index, u, hermite);
 }
 
-SplinePure::index_type SplinePure::computeIndexInBounds( float length_, float t ) const
+Spline::index_type Spline::computeIndexInBounds( float length_, float t ) const
 {
 // Temporary disabled: causes infinite loop with t = 1.f
 /*
@@ -90,7 +90,7 @@ SplinePure::index_type SplinePure::computeIndexInBounds( float length_, float t 
     return i;
 }
 
-void SplinePure::computeIndex(float t, index_type& index, float& u) const
+void Spline::computeIndex(float t, index_type& index, float& u) const
 {
     assert(t >= 0.f && t <= 1.f);
 
@@ -100,7 +100,7 @@ void SplinePure::computeIndex(float t, index_type& index, float& u) const
     u = (length_ - length(index)) / segment_length(index);
 }
 
-SplinePure::index_type SplinePure::computeIndexInBounds( float t ) const
+Spline::index_type Spline::computeIndexInBounds( float t ) const
 {
     float length_ = t * length();
     index_type i = index_lo;
@@ -111,7 +111,7 @@ SplinePure::index_type SplinePure::computeIndexInBounds( float t ) const
     return i;
 }
 
-float SplinePure::SegLength( index_type Index ) const
+float Spline::SegLength( index_type Index ) const
 {
     return (this->*seglengths[m_mode])(Index);
 }
@@ -198,50 +198,50 @@ inline void C_Evaluate_Hermite(const Vector3 *vertice, float t, const float (&ma
         vertice[2].z*coeff_diffs[2] + vertice[3].z*coeff_diffs[3];
 }
 
-void SplinePure::EvaluateLinear(index_type Idx, float u, Vector3& result) const
+void Spline::EvaluateLinear(index_type Idx, float u, Vector3& result) const
 {
     assert(Idx >= 0 && Idx+1 < points.size());
     result = points[Idx] + (points[Idx+1] - points[Idx]) * u;
 }
 
-void SplinePure::EvaluateCatmullRom( index_type Index, float t, Vector3& result) const
+void Spline::EvaluateCatmullRom( index_type Index, float t, Vector3& result) const
 {
     assert(Index-1 >= 0 && Index+2 < points.size());
     C_Evaluate(&points[Index - 1], t, s_catmullRomCoeffs, result);
 }
 
-void SplinePure::EvaluateBezier3(index_type Index, float t, Vector3& result) const
+void Spline::EvaluateBezier3(index_type Index, float t, Vector3& result) const
 {
     Index *= 3u;
     assert(Index >= 0 && Index+3 < points.size());
     C_Evaluate(&points[Index], t, s_Bezier3Coeffs, result);
 }
 
-void SplinePure::EvaluateHermiteLinear(index_type Index, float, Vector3& result) const
+void Spline::EvaluateHermiteLinear(index_type Index, float, Vector3& result) const
 {
     assert(Index >= 0 && Index+1 < points.size());
     result = points[Index+1] - points[Index];
 }
 
-void SplinePure::EvaluateHermiteCatmullRom(index_type Index, float t, Vector3& result) const
+void Spline::EvaluateHermiteCatmullRom(index_type Index, float t, Vector3& result) const
 {
     assert(Index-1 >= 0 && Index+2 < points.size());
     C_Evaluate_Hermite(&points[Index - 1], t, s_catmullRomCoeffs, result); 
 }
 
-void SplinePure::EvaluateHermiteBezier3(index_type Index, float t, Vector3& result) const
+void Spline::EvaluateHermiteBezier3(index_type Index, float t, Vector3& result) const
 {
     assert(Index-1 >= 0 && Index+2 < points.size());
     C_Evaluate_Hermite(&points[Index - 1], t, s_Bezier3Coeffs, result); 
 }
 
-float SplinePure::SegLengthLinear(index_type i) const
+float Spline::SegLengthLinear(index_type i) const
 {
     assert(i >= 0 && i+1 < points.size());
     return (points[i] - points[i+1]).length();
 }
 
-float SplinePure::SegLengthCatmullRom( index_type Index ) const
+float Spline::SegLengthCatmullRom( index_type Index ) const
 {
     assert(Index-1 >= 0 && Index+2 < points.size());
 
@@ -261,7 +261,7 @@ float SplinePure::SegLengthCatmullRom( index_type Index ) const
     return length;
 }
 
-float SplinePure::SegLengthBezier3(index_type Index) const
+float Spline::SegLengthBezier3(index_type Index) const
 {
     Index *= 3u;
     assert(Index >= 0 && Index+3 < points.size());
@@ -285,14 +285,11 @@ float SplinePure::SegLengthBezier3(index_type Index) const
 }
 #pragma endregion
 
-SplinePure::SplinePure() : m_mode(SplineModeLinear)
+Spline::Spline() : m_mode(ModeLinear), index_lo(0), index_hi(0), points_count(0), cyclic(false)
 {
-    index_lo = 0;
-    index_hi = 0;
-    points_count = 0;
 }
 
-void SplinePure::init_spline( const Vector3 * controls, const int count, SplineMode m )
+void Spline::init_spline( const Vector3 * controls, const int count, EvaluationMode m )
 {
     m_mode = m;
     points_count = count;
@@ -302,7 +299,7 @@ void SplinePure::init_spline( const Vector3 * controls, const int count, SplineM
     cacheLengths();
 }
 
-void SplinePure::init_cyclic_spline( const Vector3 * controls, const int count, SplineMode m, int cyclic_point )
+void Spline::init_cyclic_spline( const Vector3 * controls, const int count, EvaluationMode m, int cyclic_point )
 {
     m_mode = m;
     points_count = count;
@@ -312,7 +309,7 @@ void SplinePure::init_cyclic_spline( const Vector3 * controls, const int count, 
     cacheLengths();
 }
 
-void SplinePure::InitLinear( const Vector3* controls, const int count, bool cyclic, int cyclic_point )
+void Spline::InitLinear( const Vector3* controls, const int count, bool cyclic, int cyclic_point )
 {
     assert(count >= 2);
     const int real_size = count + 1;
@@ -333,7 +330,7 @@ void SplinePure::InitLinear( const Vector3* controls, const int count, bool cycl
     index_hi = cyclic ? count : (count - 1);
 }
 
-void SplinePure::InitCatmullRom( const Vector3* controls, const int count, bool cyclic, int cyclic_point )
+void Spline::InitCatmullRom( const Vector3* controls, const int count, bool cyclic, int cyclic_point )
 {
     const int real_size = count + (cyclic ? (1+2) : (1+1));
 
@@ -367,7 +364,7 @@ void SplinePure::InitCatmullRom( const Vector3* controls, const int count, bool 
     index_hi = high_idx + (cyclic ? 1 : 0);
 }
 
-void SplinePure::InitBezier3( const Vector3* controls, const int count, bool cyclic, int cyclic_point )
+void Spline::InitBezier3( const Vector3* controls, const int count, bool cyclic, int cyclic_point )
 {
     index_type c = count / 3u * 3u;
     index_type t = c / 3u;
@@ -381,7 +378,7 @@ void SplinePure::InitBezier3( const Vector3* controls, const int count, bool cyc
     //assert(points.size() % 3 == 0);
 }
 
-void SplinePure::cacheLengths()
+void Spline::cacheLengths()
 {
     index_type i = index_lo;
     double length = 0;
@@ -391,7 +388,7 @@ void SplinePure::cacheLengths()
 
         // little trick:
         // there are some paths provided by DB where all points have same coords!
-        // as a result - SplinePure interpolates position with NaN coords
+        // as a result - Spline interpolates position with NaN coords
         if ( l == 0.f )
             l = std::numeric_limits<float>::min();
 
@@ -401,7 +398,7 @@ void SplinePure::cacheLengths()
     }
 }
 
-void SplinePure::clear()
+void Spline::clear()
 {
     index_lo = 0;
     index_hi = 0;
@@ -411,9 +408,9 @@ void SplinePure::clear()
     lengths.clear();
 }
 
-void SplinePure::erase( index_type i )
+void Spline::erase( index_type i )
 {
-    assert(false && "SplinePure::erase is in dev. state, it shouldn't be used");
+    assert(false && "Spline::erase is in dev. state, it shouldn't be used");
     assert(index_lo >= i && i <= index_hi);
 
 /*

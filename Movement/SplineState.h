@@ -36,7 +36,7 @@ namespace Movement {
         friend class MoveSplineInit;
     public:
 
-        SplinePure      spline;
+        Spline          spline;
         uint32          start_move_time;
 
         Vector3         finalDestination;

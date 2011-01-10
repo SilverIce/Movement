@@ -8,33 +8,34 @@
 
 namespace Movement {
 
-enum SplineMode
-{
-    SplineModeLinear,
-    SplineModeCatmullrom,
-    SplineModeBezier3_Unused,
-    SplineModeCount,
-};
 
 typedef std::vector<Vector3> PointsArray;
 
-class SplinePure
+class Spline
 {
 public:
 
     typedef int time_type;
     typedef int index_type;
 
+    enum EvaluationMode
+    {
+        ModeLinear,
+        ModeCatmullrom,
+        ModeBezier3_Unused,
+        ModesCount,
+    };
+
 protected:
 
-    G3D::Array<Vector3> points;
+    PointsArray points;
     G3D::Array<float> lengths;
 
     index_type index_lo;
     index_type index_hi;
     index_type points_count;
 
-    SplineMode m_mode;
+    EvaluationMode m_mode;
     bool cyclic;
 
     // for internal use only!
@@ -52,25 +53,25 @@ protected:
     void EvaluateLinear(index_type, float, Vector3&) const;
     void EvaluateCatmullRom(index_type, float, Vector3&) const;
     void EvaluateBezier3(index_type, float, Vector3&) const;
-    typedef void (SplinePure::*EvaluationMethtod)(index_type,float,Vector3&) const;
-    static EvaluationMethtod evaluators[SplineModeCount];
+    typedef void (Spline::*EvaluationMethtod)(index_type,float,Vector3&) const;
+    static EvaluationMethtod evaluators[ModesCount];
 
     void EvaluateHermiteLinear(index_type, float, Vector3&) const;
     void EvaluateHermiteCatmullRom(index_type, float, Vector3&) const;
     void EvaluateHermiteBezier3(index_type, float, Vector3&) const;
-    static EvaluationMethtod hermite_evaluators[SplineModeCount];
+    static EvaluationMethtod hermite_evaluators[ModesCount];
 
     float SegLengthLinear(index_type) const;
     float SegLengthCatmullRom(index_type) const;
     float SegLengthBezier3(index_type) const;
-    typedef float (SplinePure::*SegLenghtMethtod)(index_type) const;
-    static SegLenghtMethtod seglengths[SplineModeCount];
+    typedef float (Spline::*SegLenghtMethtod)(index_type) const;
+    static SegLenghtMethtod seglengths[ModesCount];
 
     void InitLinear(const Vector3*, const int, bool, int);
     void InitCatmullRom(const Vector3*, const int, bool, int);
     void InitBezier3(const Vector3*, const int, bool, int);
-    typedef void (SplinePure::*InitMethtod)(const Vector3*, const int, bool, int);
-    static InitMethtod initializers[SplineModeCount];
+    typedef void (Spline::*InitMethtod)(const Vector3*, const int, bool, int);
+    static InitMethtod initializers[ModesCount];
 
     enum{
         // could be modified, affects segment length evaluation precision
@@ -82,7 +83,7 @@ protected:
 
 public:
 
-    explicit SplinePure();
+    explicit Spline();
 
     // 't' - percent of spline's length, assumes that t in range [0, 1]
     void evaluate_percent(float t, Vector3 & c) const;
@@ -91,8 +92,8 @@ public:
 
     index_type computeIndexInBounds(float t) const;
 
-    void init_spline(const Vector3 * controls, const int N, SplineMode m);
-    void init_cyclic_spline(const Vector3 * controls, const int N, SplineMode m, int cyclic_point);
+    void init_spline(const Vector3 * controls, const int N, EvaluationMode m);
+    void init_cyclic_spline(const Vector3 * controls, const int N, EvaluationMode m, int cyclic_point);
 
     // returns length of the whole spline
     float length() const { return lengths[index_hi];}
@@ -105,7 +106,7 @@ public:
     index_type last()  const { return index_hi;}
 
     bool empty() const { return index_lo == index_hi;}
-    SplineMode mode() const { return m_mode;}
+    EvaluationMode mode() const { return m_mode;}
     bool isCyclic() const { return cyclic;}
 
     const PointsArray& getPoints() const { return points;}

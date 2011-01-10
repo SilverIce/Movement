@@ -119,8 +119,8 @@ Vector4 MoveSpline::ComputePosition() const
 
 void MoveSpline::partial_initialize(const PointsArray& path, float velocity, float max_parabolic_heigth)
 {
-    static SplineMode modes[2] = {SplineModeLinear,SplineModeCatmullrom};
     start_move_time = StartMoveTime;
+    static Spline::EvaluationMode modes[2] = {Spline::ModeLinear,Spline::ModeCatmullrom};
 
     if (isCyclic())
     {
