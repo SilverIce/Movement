@@ -51,26 +51,27 @@ namespace Movement {
         };
 
         uint32          sequence_Id;
-        uint32          splineflags;
+
+        union{
+            uint8       animation_type;
+            uint32      splineflags;
+        };
+
         uint32          time_passed;
         uint32          duration;
         float           duration_mod;
         float           duration_mod_next;
         float           parabolic_acceleration;
-        uint32          parabolic_time;
-
-        // SPLINEFLAG_ANIMATION
-        uint32          animationTime;
-        uint8           animationType;
+        union{
+            uint32      parabolic_time;
+            uint32      animation_time;
+        };
 
     protected:
 
         void init_fields()
         {
             splineflags = 0;
-
-            animationType = 0;
-            animationTime = 0;
 
             spline.clear();
 

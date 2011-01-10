@@ -139,8 +139,8 @@ namespace Movement
 
         if (splineflags & SPLINEFLAG_ANIMATION)
         {
-            data << splineInfo.animationType;
-            data << splineInfo.animationTime;
+            data << splineInfo.animation_type;
+            data << splineInfo.animation_time;
         }
 
         data << uint32(splineInfo.duration);

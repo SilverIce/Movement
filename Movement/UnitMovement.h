@@ -170,8 +170,12 @@ namespace Movement
         // max_height - the maximum height of parabola, value could be negative and positive
         // start_time - delay between movement starting time and beginning to move by parabolic trajectory
         // you can have only one parabolic motion: previous will be overriden
+        // can't be combined with final animation
         MoveSplineInit& SetKnockBack(float max_height, uint32 start_time);
         MoveSplineInit& SetTrajectory(float max_height, uint32 start_time);
+        // Plays animation after start_time delay passed (delay since movement starting time)
+        // can't be combined with parabolic movement
+        MoveSplineInit& SetAnimation(AnimType anim, uint32 start_time);
 
         // Adds final facing animation
         // sets unit's facing to specified point/angle/target after all path done
@@ -191,7 +195,7 @@ namespace Movement
         MoveSplineInit& MoveFall(const Vector3& destination);
 
         // Enables CatmullRom spline interpolation mode(makes path smooth)
-        // if not enabled linear spline mode will be chosen
+        // if not enabled linear spline mode will be choosen
         MoveSplineInit& SetSmooth();
         // Enables CatmullRom spline interpolation mode, enables flying animation
         MoveSplineInit& SetFly();

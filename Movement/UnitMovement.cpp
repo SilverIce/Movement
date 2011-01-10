@@ -253,7 +253,7 @@ void MoveSplineInit::Apply()
 MoveSplineInit& MoveSplineInit::SetTrajectory( float max_height, uint32 time_shift )
 {
     spline.splineflags |= SPLINEFLAG_TRAJECTORY;
-    spline.splineflags &= ~SPLINEFLAG_KNOCKBACK;
+    spline.splineflags &= ~(SPLINEFLAG_KNOCKBACK | SPLINEFLAG_ANIMATION);
     spline.parabolic_time = time_shift;
     max_vertical_height = max_height;
     return *this;
@@ -261,9 +261,8 @@ MoveSplineInit& MoveSplineInit::SetTrajectory( float max_height, uint32 time_shi
 
 MoveSplineInit& MoveSplineInit::SetKnockBack( float max_height, uint32 time_shift )
 {
-    spline.splineflags |= SPLINEFLAG_TRAJECTORY | SPLINEFLAG_KNOCKBACK;
-    spline.parabolic_time = time_shift;
-    max_vertical_height = max_height;
+    SetTrajectory(max_height, time_shift);
+    spline.splineflags |= SPLINEFLAG_KNOCKBACK;
     return *this;
 }
 
@@ -293,5 +292,13 @@ MoveSplineInit& MoveSplineInit::SetFacing( Vector3 const& spot )
     return *this;
 }
 
+MoveSplineInit& MoveSplineInit::SetAnimation(AnimType anim, uint32 anim_time)
+{
+    spline.splineflags &= ~(SPLINEFLAG_TRAJECTORY|SPLINEFLAG_KNOCKBACK);
+    spline.splineflags |= SPLINEFLAG_ANIMATION;
+    spline.animationType = uint8(anim);
+    spline.animationTime = anim_time;
+    return *this;
+}
 
 }
