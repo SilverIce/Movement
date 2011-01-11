@@ -65,14 +65,12 @@ void MovementState::ApplyMoveMode( MoveMode mode, bool apply )
     }
 }
 
-MovementState::MovementState(WorldObject * owner) : UnitBase(*owner), msg_builder(this, MovControlServer)
+MovementState::MovementState(WorldObject * owner) : UnitBase(*owner), msg_builder(*this, MovControlServer)
 {
     move_mode = 0;
     last_ms_time = 0;
     moveFlags = 0;
     move_flags2 = 0;
-
-    last_ms_time = 0;
 
     memcpy(&speed, BaseSpeed, sizeof BaseSpeed);
 
@@ -93,8 +91,9 @@ void MovementState::ReCalculateCurrentSpeed()
 
 void MovementState::Initialize( MovControlType controller, const Vector4& pos, uint32 ms_time )
 {
-    SetPosition(pos, ms_time);
+    last_ms_time = ms_time;
 
+    SetPosition(pos);
     GetBuilder().SetControl(controller);
 }
 
@@ -106,19 +105,18 @@ inline bool _finiteV(const Vector3& v)
     return _finite(v.x) && _finite(v.y) && _finite(v.z);
 }
 
-void MovementState::SetPosition( const Vector4& v, uint32 ms_time )
+void MovementState::SetPosition(const Vector4& v)
 {
-    if (!_finiteV((const Vector3&)v))
+    if (!_finiteV((Vector3&)v))
     {
         log_write("MovementState::SetPosition: NaN coord detected");
         return;
     }
 
     position = v;
-    last_ms_time = ms_time;
 }
 
-void MovementState::SetPosition( const Vector3& v, uint32 ms_time )
+void MovementState::SetPosition(const Vector3& v)
 {
     if (!_finiteV(v))
     {
@@ -127,7 +125,6 @@ void MovementState::SetPosition( const Vector3& v, uint32 ms_time )
     }
 
     (Vector3&)position = v;
-    last_ms_time = ms_time;
 }
 
 void SplineFace::ResetSplineState()

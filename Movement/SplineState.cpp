@@ -34,8 +34,8 @@ void MoveSpline::updateState( uint32 ms_time )
 
             if (splineflags & SPLINEFLAG_ENTER_CYCLE)
             {
-                G3D::Array<Vector3> points(spline.getPoints());
-                spline.init_cyclic_spline(&points[1],points.size()-1,spline.mode(),0);
+                PointsArray points(spline.getPoints());
+                spline.init_cyclic_spline(&points[spline.first()+1],spline.pointsCount()-1,spline.mode(),0);
 
                 RemoveSplineFlag(SPLINEFLAG_ENTER_CYCLE);
 

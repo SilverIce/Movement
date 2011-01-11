@@ -408,28 +408,4 @@ void Spline::clear()
     lengths.clear();
 }
 
-void Spline::erase( index_type i )
-{
-    assert(false && "Spline::erase is in dev. state, it shouldn't be used");
-    assert(index_lo >= i && i <= index_hi);
-
-/*
-    PointsArray copy;
-    copy.reserve(points_count-1);
-
-    std::vector<Vector3>::iterator it = points.begin()+index_lo;
-    copy.insert(copy.end(), it, it + i);
-    copy.insert(copy.end(), it + i, it + points_count);
-
-
-    --points_count;
-    (this->*initializers[m_mode])(&copy[0], copy.size(), cyclic, 0);
-    cacheLengths();
-*/
-}
-
-{
-
-}
-
 }

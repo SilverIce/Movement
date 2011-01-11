@@ -19,7 +19,7 @@ namespace Movement
 
     class PacketBuilder
     {
-        const MovementState& mov;
+        MovementState& mov;
         MovControlType mode;
 
         void Client_SpeedUpdate(SpeedType type, WorldPacket&) const;

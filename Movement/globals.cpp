@@ -59,7 +59,6 @@ namespace Movement
 
     static const float BaseSpeed[SpeedMaxCount] =
     {
-        7.0f,                                                   // SpeedCurrent
         2.5f,                                                   // SpeedWalk
         7.0f,                                                   // SpeedRun
         4.5f,                                                   // SpeedSwimBack

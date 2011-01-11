@@ -11,8 +11,8 @@
 
 namespace Movement
 {
-    PacketBuilder::PacketBuilder(MovementState *const dat, MovControlType c)
-        : mode(c), mov(*dat)
+    PacketBuilder::PacketBuilder(MovementState &state, MovControlType c)
+        : mode(c), mov(state)
     {
     }
 
@@ -61,7 +61,6 @@ namespace Movement
     void PacketBuilder::Spline_SpeedUpdate(SpeedType type, WorldPacket& data) const
     {
         uint16 opcode = S_Speed2Opc_table[type];
-        sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
 
         data.Initialize(opcode, 8+4);
         data << mov.GetOwner().GetPackGUID();
@@ -71,7 +70,6 @@ namespace Movement
     void PacketBuilder::Spline_MoveModeUpdate(MoveMode mode, WorldPacket& data) const
     {
         uint16 opcode = S_Mode2Opc_table[mode][mov.HasMode(mode)];
-        sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
 
         data.Initialize(opcode, 8);
         data << mov.GetOwner().GetPackGUID();
@@ -80,7 +78,6 @@ namespace Movement
     void PacketBuilder::Spline_PathUpdate(WorldPacket& data) const
     {
         uint16 opcode = SMSG_MONSTER_MOVE;
-        sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
 
         const MoveSpline& splineInfo = mov.move_spline;
 
@@ -189,7 +186,6 @@ namespace Movement
 
         //WorldObject *m = mov.wow_object;
         uint16 opcode = SetSpeed2Opc_table[ty][forced];
-        sLog.write("PacketBuilder:  created %s message", OpcodeName(opcode));
 
         //data.Initialize(opcode, 10); 
         //data << mov.GetOwner().GetPackGUID();
@@ -260,8 +256,6 @@ namespace Movement
     {
         WriteClientStatus(data);
 
-        //for (int i = SpeedWalk; i < SpeedMaxCount; ++i)
-            //data << mov.GetSpeed((SpeedType)i);
         data.append<float>(&mov.speed[SpeedWalk], SpeedMaxCount);
         
         if (mov.HasMovementFlag(MOVEFLAG_SPLINE_ENABLED))
@@ -310,10 +304,6 @@ namespace Movement
 
             uint32 nodes = splineInfo.getPath().size();
             data << nodes;
-            /*for (uint32 i = 0; i < nodes; ++i)
-            {
-                data << splineInfo.getNode(i);
-            }*/
             data.append<Vector3>(&splineInfo.getPath()[0], nodes);
 
             data << uint8(splineInfo.spline.mode());

@@ -11,6 +11,6 @@ namespace Movement
 {
     class MovementState;
     class MoveSpline;
-    class SplinePure;
+    class Spline;
     class PacketBuilder;
 }

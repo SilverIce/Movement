@@ -20,10 +20,11 @@ namespace Movement
         }
 
         PacketBuilder& GetBuilder() { return msg_builder; }
+        const PacketBuilder& GetBuilder() const { return msg_builder; }
         PacketBuilder msg_builder;
 
-        void SetPosition(const Vector4& v, uint32 ms_time);
-        void SetPosition(const Vector3& v, uint32 ms_time);
+        void SetPosition(const Vector4& v);
+        void SetPosition(const Vector3& v);
 
         #pragma region field accessors
 
@@ -99,9 +100,7 @@ namespace Movement
             float current;
         };
 
-        // time-position pair
         uint32          last_ms_time;
-
         uint32          move_mode;
 
         union {
@@ -132,7 +131,6 @@ namespace Movement
         #pragma endregion
 
 
-        /// Some client's formulas:
 
         void ReCalculateCurrentSpeed();
         float CalculateCurrentSpeed(bool use_walk_forced) const;
