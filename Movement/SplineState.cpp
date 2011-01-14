@@ -83,8 +83,8 @@ Vector4 MoveSpline::ComputePosition() const
     {
         if (time_passed > parabolic_time)
         {
-            float t_passedf = (time_passed - parabolic_time) / 1000.f;
-            float t_durationf = (duration - parabolic_time) / 1000.f; //client use not modified duration here
+            float t_passedf = MSToSec(time_passed - parabolic_time);
+            float t_durationf = MSToSec(duration - parabolic_time); //client use not modified duration here
 
             // -a*x*x + bx + c:
             //(dur * v3->z_acceleration * dt)/2 - (v3->z_acceleration * dt * dt)/2 + Z;
@@ -93,7 +93,7 @@ Vector4 MoveSpline::ComputePosition() const
     }
     else if (splineflags & SPLINEFLAG_FALLING)
     {
-        float z_now = getNode(spline.first()).z - computeFallElevation(time_passed / 1000.f, false, 0.f);
+        float z_now = spline.getPoint(spline.first()).z - computeFallElevation(MSToSec(time_passed), false, 0.f);
 
         if (z_now < finalDestination.z)
         {
@@ -123,9 +123,15 @@ Vector4 MoveSpline::ComputePosition() const
     return c;
 }
 
+inline uint32 computeDuration(float length, float velocity)
+{
+    assert(velocity > 0.f);
+    return std::max<uint32>(SecToMS(length / velocity), 1);
+}
+
 void MoveSpline::Initialize(const MoveSplineInitArgs& args)
 {
-    sequence_Id = movespline_counter.NewId();
+    m_Id = movespline_counter.NewId();
 
     splineflags = args.flags;
     facing = args.facing;
@@ -156,7 +162,7 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
         spline.init_cyclic_spline(&args.path[0], args.path.size(), modes[isSmooth()], cyclic_point);
         finalDestination = Vector3::zero();
 
-        duration = spline.length(spline.first()+cyclic_point,spline.last()) / args.velocity * 1000.f;
+        duration = computeDuration(spline.length(spline.first()+cyclic_point,spline.last()),args.velocity);
     }
     else
     {
@@ -166,13 +172,10 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
         if (splineflags & SPLINEFLAG_FALLING)
             duration = computeFallTime(args.path[0].z - finalDestination.z, false);
         else
-            duration = spline.length() / args.velocity * 1000.f;
+            duration = computeDuration(spline.length(),args.velocity);
     }
-    
-    // TODO: where this should be handled?
-    if (duration == 0)
-        duration = 1;
 
+    segment_Idx = spline.first();
 
     // path initialized, duration is known and i able to compute parabolic acceleration
     if (splineflags & (SPLINEFLAG_TRAJECTORY|SPLINEFLAG_ANIMATION))
@@ -180,7 +183,7 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
         parabolic_time = duration * args.time_perc;
         if (splineflags & SPLINEFLAG_TRAJECTORY)
         {
-            float f_duration = (duration - parabolic_time) / 1000.f;
+            float f_duration = MSToSec(duration - parabolic_time);
             parabolic_acceleration = args.parabolic_heigth * 8.f / (f_duration * f_duration);
         }
     }

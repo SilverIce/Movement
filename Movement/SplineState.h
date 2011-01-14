@@ -16,7 +16,7 @@ namespace Movement {
 
         T NewId()
         {
-            if (m_counter == std::numeric_limits<T>::max)
+            if (m_counter == std::numeric_limits<T>::max())
                 init();
             else
                 ++m_counter;

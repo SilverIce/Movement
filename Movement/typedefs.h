@@ -29,6 +29,16 @@ namespace Movement
             return new_time - old_time;
     }
 
+    inline uint32 SecToMS(float sec)
+    {
+        return static_cast<uint32>(sec * 1000.f);
+    }
+
+    inline float MSToSec(uint32 ms)
+    {
+        return ms / 1000.f;
+    }
+
     extern void log_write(const char* fmt, ...);
 
     using G3D::Vector3;
