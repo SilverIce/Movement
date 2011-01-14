@@ -84,23 +84,24 @@ namespace Movement
         data.Initialize(opcode, 30);
 
         // TODO: find more generic way
-        if (mov.move_spline.getPath().empty())
+        if (!mov.SplineEnabled())
         {
             data << mov.GetOwner().GetPackGUID();
             data << uint8(0);
             data << mov.GetPosition3();
-            data << uint32(splineInfo.sequence_Id);
+            data << splineInfo.GetId();
             data << uint8(MonsterMoveStop);
             return;
         }
 
-        const Vector3 * real_path = splineInfo.spline.getCArray();
-        uint32 last_idx = splineInfo.spline.getCArraySize() - 1;
+        const Spline& spline = splineInfo.spline;
+        const Vector3 * real_path = &spline.getPoint(spline.first());
+        uint32 last_idx = spline.pointsCount() - 1;
 
         data << mov.GetOwner().GetPackGUID();
         data << uint8(0);
         data << real_path[0];
-        data << uint32(splineInfo.sequence_Id);
+        data << splineInfo.GetId();
 
         uint32 splineflags = splineInfo.GetSplineFlags();
 
@@ -140,20 +141,18 @@ namespace Movement
             data << splineInfo.animation_time;
         }
 
-        data << uint32(splineInfo.duration);
+        data << uint32(splineInfo.modifiedDuration());
 
         if (splineflags & SPLINEFLAG_TRAJECTORY)
         {
-            data << splineInfo.parabolic.z_acceleration;
-            data << splineInfo.parabolic.time_shift;
+            data << splineInfo.parabolic_acceleration;
+            data << splineInfo.parabolic_time;
         }
 
         data << uint32(last_idx);
 
         if (splineflags & (SPLINEFLAG_FLYING | SPLINEFLAG_CATMULLROM))
         {
-            //for(uint32 i = 1; i <= last_idx; ++i)
-                //data << real_path[i];
             data.append<Vector3>(&real_path[1], last_idx);
         }
         else
@@ -294,13 +293,13 @@ namespace Movement
 
             data << uint32(splineInfo.time_passed);
             data << uint32(splineInfo.duration);
-            data << splineInfo.sequence_Id;
+            data << splineInfo.GetId();
 
-            data << splineInfo.duration_mod;            // duration mod?
-            data << splineInfo.duration_mod_next;              // sync coeff?
+            data << splineInfo.duration_mod;
+            data << splineInfo.duration_mod_next;
 
-            data << splineInfo.parabolic_acceleration;// z_acceleration?
-            data << splineInfo.parabolic_time;	// parabolic time shift?
+            data << splineInfo.parabolic_acceleration;
+            data << splineInfo.parabolic_time;
 
             uint32 nodes = splineInfo.getPath().size();
             data << nodes;

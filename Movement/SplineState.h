@@ -48,7 +48,7 @@ namespace Movement {
             float   facing_angle;
         };
 
-        uint32          sequence_Id;
+        uint32          m_Id;
 
         union{
             uint8       animation_type;
@@ -68,28 +68,11 @@ namespace Movement {
 
     protected:
 
-        void init_fields()
-        {
-            splineflags = 0;
-
-            spline.clear();
-
-            time_passed  = 0;
-            duration     = 1;
-            duration_mod = 1.f;
-            duration_mod_next = 1.f;
-            parabolic_acceleration = 0.f;
-            parabolic_time = 0;
-        }
-
         void partial_initialize(const PointsArray& path, float velocity, float max_parabolic_heigth);
 
     public:
 
-        explicit MoveSpline() : sequence_Id(++MoveSplineCounter)
-        {
-            init_fields();
-        }
+        explicit MoveSpline();
 
         void updateState( int32 ms_time_diff );
         Vector4 ComputePosition() const;
@@ -99,7 +82,7 @@ namespace Movement {
         bool isCyclic() const { return splineflags & SPLINEFLAG_CYCLIC;}
         bool isSmooth() const { return splineflags & (SPLINEFLAG_FLYING|SPLINEFLAG_CATMULLROM);}
         uint32 GetSplineFlags() const { return splineflags;}
-        uint32 GetId() const { return sequence_Id;}
+        uint32 GetId() const { return m_Id;}
 
         int32 modifiedDuration() const { return duration_mod * duration + 0.5f;}
         int32 timeElapsed() const { return modifiedDuration() - time_passed;}

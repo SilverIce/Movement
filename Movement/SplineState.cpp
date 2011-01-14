@@ -172,4 +172,9 @@ std::string MoveSpline::ToString() const
     return str.str();
 }
 
+MoveSpline::MoveSpline() : m_Id(0), splineflags(0),
+    time_passed(0), duration(0), duration_mod(1.f), duration_mod_next(1.f),
+    parabolic_acceleration(1.f), parabolic_time(0)
+{
+}
 }
