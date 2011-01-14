@@ -108,6 +108,8 @@ namespace Movement {
         const Vector3& getNode(uint32 i) const { return spline.getPoints()[i];}
         const PointsArray& getPath() const { return spline.getPoints();}
 
+        std::string ToString() const;
+
     private:
         void Finalize() { splineflags |= SPLINEFLAG_DONE; }
         void RemoveSplineFlag(uint32 f) { splineflags &= ~f;}

@@ -2,6 +2,7 @@
 #include "spline.h"
 #include <assert.h>
 #include <limits>
+#include <sstream>
 
 using namespace G3D;
 namespace Movement{
@@ -406,6 +407,18 @@ void Spline::clear()
 
     points.clear();
     lengths.clear();
+}
+
+std::string Spline::ToString() const
+{
+    std::stringstream str;
+
+    index_type count = this->points.size();
+    str << "points count: " << count << std::endl;
+    for (index_type i = 0; i < count; ++i)
+        str << "point " << i << " : " << points[i].toString() << std::endl;
+
+    return str.str();
 }
 
 }

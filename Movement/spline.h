@@ -114,6 +114,8 @@ public:
     index_type pointsCount() const { return points_count;}
 
     void clear();
+
+    std::string ToString() const;
 };
 
 }

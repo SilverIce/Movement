@@ -1,5 +1,6 @@
 
 #include "SplineState.h"
+#include <sstream>
 
 
 namespace Movement{
@@ -157,4 +158,18 @@ void MoveSpline::partial_initialize(const PointsArray& path, float velocity, flo
         parabolic_acceleration = max_parabolic_heigth * 8.f / (f_duration * f_duration);
     }
 }
+
+std::string MoveSpline::ToString() const
+{
+    std::stringstream str;
+
+    str << "MoveSpline" << std::endl;
+    str << "spline Id:    " << GetId() << std::endl;
+    str << "spline flags: " << GetSplineFlags() << std::endl;
+    str << "duration:     " << duration << std::endl;
+    str << "time passed:  " << time_passed << std::endl;
+    str << spline.ToString();
+    return str.str();
+}
+
 }
