@@ -169,52 +169,52 @@ void SplineFace::SendPath()
     m_owner.SendMessageToSet(&data, true);
 }
 
-MoveSplineInit& MoveSplineInit::MovebyPath( const PointsArray& controls, bool is_cyclic )
 {
-    if (is_cyclic)
-        spline.splineflags |= SPLINEFLAG_CYCLIC | SPLINEFLAG_ENTER_CYCLE;
-    else
-        spline.splineflags &= ~(SPLINEFLAG_CYCLIC | SPLINEFLAG_ENTER_CYCLE);
 
-    m_path.resize(controls.size() + 1);
-    memcpy(&m_path[1], &controls[0], sizeof(PointsArray::value_type) * controls.size());
-    
+MoveSplineInit& MoveSplineInit::MovebyPath( const PointsArray& controls )
+{
+    path.resize(controls.size() + 1);
+    memcpy(&path[1], &controls[0], sizeof(PointsArray::value_type) * controls.size());
     return *this;
 }
 
 MoveSplineInit& MoveSplineInit::MoveTo( const Vector3& dest )
 {
-    m_path.resize(2);
-    m_path[1] = dest;
-    return *this;
-}
-
-MoveSplineInit& MoveSplineInit::MoveFall( const Vector3& dest )
-{
-    spline.splineflags = SPLINEFLAG_FALLING;
-
-    m_path.resize(2);
-    m_path[1] = dest;
+    path.resize(2);
+    path[1] = dest;
     return *this;
 }
 
 MoveSplineInit& MoveSplineInit::SetFly()
 {
-    spline.splineflags |= SPLINEFLAG_FLYING;
-    spline.splineflags &= ~SPLINEFLAG_CATMULLROM;
+    flags |= SPLINEFLAG_FLYING;
+    flags &= ~SPLINEFLAG_CATMULLROM;
     return *this;
 }
 
 MoveSplineInit& MoveSplineInit::SetWalk()
 {
-    spline.splineflags |= SPLINEFLAG_WALKMODE;
+    flags |= SPLINEFLAG_WALKMODE;
     return *this;
 }
 
 MoveSplineInit& MoveSplineInit::SetSmooth()
 {
-    spline.splineflags |= SPLINEFLAG_CATMULLROM;
-    spline.splineflags &= ~SPLINEFLAG_FLYING;
+    flags |= SPLINEFLAG_CATMULLROM;
+    flags &= ~SPLINEFLAG_FLYING;
+    return *this;
+}
+
+MoveSplineInit& MoveSplineInit::SetCyclic()
+{
+    flags |= SPLINEFLAG_CYCLIC | SPLINEFLAG_ENTER_CYCLE;
+    return *this;
+}
+
+MoveSplineInit& MoveSplineInit::SetFall()
+{
+    flags |= SPLINEFLAG_FALLING;
+    flags &= ~SPLINEFLAG_TRAJECTORY;
     return *this;
 }
 
@@ -235,66 +235,78 @@ void MoveSplineInit::Apply()
     if (velocity != 0.f)
         state.speed_obj.current = velocity;
     else
+    {
         state.ReCalculateCurrentSpeed();
+        velocity = state.speed_obj.current;
+    }
 
-    m_path[0] = state.GetPosition3();
+    // no sense to move unit
+    // TODO: find more elegant way (maybe just set current_speed to some minimal value)
+    if (state.speed_obj.current > 0.f)
+    {
+        path[0] = state.GetPosition3();
 
-        spline.partial_initialize(m_path, state.speed_obj.current, max_vertical_height);
+        MoveSpline& spline = state.move_spline;
+        spline.Initialize(*this);
 
-    state.move_spline = spline;
+        state.EnableSpline();
+        state.SetForwardDirection();
 
-    state.EnableSpline();
-    state.SetForwardDirection();
+
+    }
 }
 
-MoveSplineInit& MoveSplineInit::SetTrajectory( float max_height, uint32 time_shift )
+MoveSplineInit& MoveSplineInit::SetTrajectory( float max_height, float time_shift )
 {
-    spline.splineflags |= SPLINEFLAG_TRAJECTORY;
-    spline.splineflags &= ~(SPLINEFLAG_KNOCKBACK | SPLINEFLAG_ANIMATION);
-    spline.parabolic_time = time_shift;
-    max_vertical_height = max_height;
+    flags |= SPLINEFLAG_TRAJECTORY;
+    flags &= ~(SPLINEFLAG_KNOCKBACK | SPLINEFLAG_ANIMATION);
+    time_perc = time_shift;
+    parabolic_heigth = max_height;
     return *this;
 }
 
-MoveSplineInit& MoveSplineInit::SetKnockBack( float max_height, uint32 time_shift )
+MoveSplineInit& MoveSplineInit::SetKnockBack( float max_height, float time_shift )
 {
     SetTrajectory(max_height, time_shift);
-    spline.splineflags |= SPLINEFLAG_KNOCKBACK;
+    flags |= SPLINEFLAG_KNOCKBACK;
     return *this;
 }
 
-MoveSplineInit& MoveSplineInit::SetFacing( uint64 guid )
+MoveSplineInit& MoveSplineInit::SetFacing( uint64 t )
 {
-    spline.facing_target = guid;
-    spline.splineflags &= ~SPLINE_MASK_FINAL_FACING;
-    spline.splineflags |= SPLINEFLAG_FINAL_TARGET;
+    facing.target = t;
+    flags &= ~SPLINE_MASK_FINAL_FACING;
+    flags |= SPLINEFLAG_FINAL_TARGET;
     return *this;
 }
 
 MoveSplineInit& MoveSplineInit::SetFacing( float o )
 {
-    spline.facing_angle = G3D::wrap(o, 0.f, (float)G3D::twoPi());
-    spline.splineflags &= ~SPLINE_MASK_FINAL_FACING;
-    spline.splineflags |= SPLINEFLAG_FINAL_ANGLE;
+    facing.angle = G3D::wrap(o, 0.f, (float)G3D::twoPi());
+    flags &= ~SPLINE_MASK_FINAL_FACING;
+    flags |= SPLINEFLAG_FINAL_ANGLE;
     return *this;
 }
 
 MoveSplineInit& MoveSplineInit::SetFacing( Vector3 const& spot )
 {
-    spline.facing_spot.x = spot.x;
-    spline.facing_spot.y = spot.y;
-    spline.facing_spot.z = spot.z;
-    spline.splineflags &= ~SPLINE_MASK_FINAL_FACING;
-    spline.splineflags |= SPLINEFLAG_FINAL_POINT;
+    facing.spot.x = spot.x;
+    facing.spot.y = spot.y;
+    facing.spot.z = spot.z;
+    flags &= ~SPLINE_MASK_FINAL_FACING;
+    flags |= SPLINEFLAG_FINAL_POINT;
     return *this;
 }
 
-MoveSplineInit& MoveSplineInit::SetAnimation(AnimType anim, uint32 anim_time)
+MoveSplineInit::MoveSplineInit(MovementState& m) : state(m)
 {
-    spline.splineflags &= ~(SPLINEFLAG_TRAJECTORY|SPLINEFLAG_KNOCKBACK);
-    spline.splineflags |= SPLINEFLAG_ANIMATION;
-    spline.animationType = uint8(anim);
-    spline.animationTime = anim_time;
+}
+
+MoveSplineInit& MoveSplineInit::SetAnimation(AnimType anim, float anim_time)
+{
+    flags &= ~(SPLINEFLAG_TRAJECTORY|SPLINEFLAG_KNOCKBACK);
+    flags = flags & ~0xFF | uint8(anim) | SPLINEFLAG_ANIMATION;
+    time_perc = anim_time;
     return *this;
 }
 

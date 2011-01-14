@@ -108,11 +108,11 @@ Vector4 MoveSpline::ComputePosition() const
     {
         if (splineflags & SPLINEFLAG_FINAL_ANGLE)
         {
-            c.w = facing_angle;
+            c.w = facing.angle;
         }
         else if (splineflags & SPLINEFLAG_FINAL_POINT)
         {
-            c.w = G3D::wrap(atan2(facing_spot.y-c.y, facing_spot.x-c.x), 0.f, (float)G3D::twoPi());
+            c.w = G3D::wrap(atan2(facing.spot.y-c.y, facing.spot.x-c.x), 0.f, (float)G3D::twoPi());
         }
         //nothing to do for SPLINEFLAG_FINAL_TARGET flag
     }
@@ -123,8 +123,28 @@ Vector4 MoveSpline::ComputePosition() const
     return c;
 }
 
-void MoveSpline::partial_initialize(const PointsArray& path, float velocity, float max_parabolic_heigth)
+void MoveSpline::Initialize(const MoveSplineInitArgs& args)
 {
+    sequence_Id = movespline_counter.NewId();
+
+    splineflags = args.flags;
+    facing = args.facing;
+    time_passed  = 0;
+    duration_mod = 1.f;
+    duration_mod_next = 1.f;
+    parabolic_acceleration = 0.f;
+    parabolic_time = 0;
+
+    /*  checks spline flags, removes not compartible
+    if (splineflags & SPLINEFLAG_CYCLIC && !(isSmooth()))
+        splineflags &= ~SPLINEFLAG_CYCLIC;
+
+    if (splineflags & SPLINEFLAG_ANIMATION)
+        splineflags &= ~(SPLINEFLAG_TRAJECTORY|SPLINEFLAG_FALLING|SPLINEFLAG_KNOCKBACK);
+    else if (splineflags & SPLINEFLAG_TRAJECTORY)
+        splineflags &= ~SPLINEFLAG_FALLING;
+    */
+
     static Spline::EvaluationMode modes[2] = {Spline::ModeLinear,Spline::ModeCatmullrom};
 
     if (isCyclic())
@@ -132,34 +152,37 @@ void MoveSpline::partial_initialize(const PointsArray& path, float velocity, flo
         uint32 cyclic_point = 0;
         if (splineflags & SPLINEFLAG_ENTER_CYCLE)
             cyclic_point = 1;   // shouldn't be modified, came from client
-        
-        spline.init_cyclic_spline(&path[0], path.size(), modes[isSmooth()], cyclic_point);
 
+        spline.init_cyclic_spline(&args.path[0], args.path.size(), modes[isSmooth()], cyclic_point);
         finalDestination = Vector3::zero();
 
-        duration = spline.length(spline.first()+cyclic_point,spline.last()) / velocity * 1000.f;
+        duration = spline.length(spline.first()+cyclic_point,spline.last()) / args.velocity * 1000.f;
     }
     else
     {
-        spline.init_spline(&path[0], path.size(),  modes[isSmooth()]);
-
+        spline.init_spline(&args.path[0], args.path.size(), modes[isSmooth()]);
         finalDestination = spline.getPoint(spline.last());
 
         if (splineflags & SPLINEFLAG_FALLING)
-            duration = computeFallTime(path[0].z - finalDestination.z, false);
+            duration = computeFallTime(args.path[0].z - finalDestination.z, false);
         else
-            duration = spline.length() / velocity * 1000.f;
+            duration = spline.length() / args.velocity * 1000.f;
     }
     
     // TODO: where this should be handled?
     if (duration == 0)
         duration = 1;
 
-    // path initialized, duration is known and i able to compute z_acceleration for parabolic movement
-    if (splineflags & SPLINEFLAG_TRAJECTORY)
+
+    // path initialized, duration is known and i able to compute parabolic acceleration
+    if (splineflags & (SPLINEFLAG_TRAJECTORY|SPLINEFLAG_ANIMATION))
     {
-        float f_duration = (duration - parabolic_time) / 1000.f;
-        parabolic_acceleration = max_parabolic_heigth * 8.f / (f_duration * f_duration);
+        parabolic_time = duration * args.time_perc;
+        if (splineflags & SPLINEFLAG_TRAJECTORY)
+        {
+            float f_duration = (duration - parabolic_time) / 1000.f;
+            parabolic_acceleration = args.parabolic_heigth * 8.f / (f_duration * f_duration);
+        }
     }
 }
 
@@ -176,9 +199,10 @@ std::string MoveSpline::ToString() const
     return str.str();
 }
 
-MoveSpline::MoveSpline() : m_Id(0), splineflags(0),
+MoveSpline::MoveSpline() : m_Id(MoveSplineCounter::Lower_limit), splineflags(0),
     time_passed(0), duration(0), duration_mod(1.f), duration_mod_next(1.f),
     parabolic_acceleration(1.f), parabolic_time(0)
 {
 }
+
 }

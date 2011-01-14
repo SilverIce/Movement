@@ -110,17 +110,17 @@ namespace Movement
             if (splineflags & SPLINEFLAG_FINAL_TARGET)
             {
                 data << uint8(MonsterMoveFacingTarget);
-                data << splineInfo.facing_target;
+                data << splineInfo.facing.target;
             }
             else if(splineflags & SPLINEFLAG_FINAL_ANGLE)
             {
                 data << uint8(MonsterMoveFacingAngle);
-                data << splineInfo.facing_angle;
+                data << splineInfo.facing.angle;
             }
             else if(splineflags & SPLINEFLAG_FINAL_POINT)
             {
                 data << uint8(MonsterMoveFacingSpot);
-                data << splineInfo.facing_spot.x << splineInfo.facing_spot.y << splineInfo.facing_spot.z;
+                data << splineInfo.facing.spot.x << splineInfo.facing.spot.y << splineInfo.facing.spot.z;
             }
             else if (splineflags & SPLINEFLAG_DONE) // its assumption only
             {
@@ -274,19 +274,19 @@ namespace Movement
 
             if(splineFlags & SPLINEFLAG_FINAL_ANGLE)
             {
-                data << splineInfo.facing_angle;
+                data << splineInfo.facing.angle;
             }
             else
             {
                 if(splineFlags & SPLINEFLAG_FINAL_TARGET)
                 {
-                    data << splineInfo.facing_target;
+                    data << splineInfo.facing.target;
                 }
                 else
                 {
                     if(splineFlags & SPLINEFLAG_FINAL_POINT)
                     {
-                        data << splineInfo.facing_spot.x << splineInfo.facing_spot.y << splineInfo.facing_spot.z;
+                        data << splineInfo.facing.spot.x << splineInfo.facing.spot.y << splineInfo.facing.spot.z;
                     }
                 }
             }

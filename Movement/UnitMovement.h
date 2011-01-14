@@ -154,12 +154,11 @@ namespace Movement
     };
 
     /// Initializer for MoveSpline class
-    class MoveSplineInit
+    class MoveSplineInit : private MoveSplineInitArgs
     {
     public:
 
-        explicit MoveSplineInit(MovementState& m) :
-            state(m), velocity(0.f) { }
+        explicit MoveSplineInit(MovementState& m);
 
         // applyes changes that you have done
         void Apply();
@@ -169,11 +168,11 @@ namespace Movement
         // start_time - delay between movement starting time and beginning to move by parabolic trajectory
         // you can have only one parabolic motion: previous will be overriden
         // can't be combined with final animation
-        MoveSplineInit& SetKnockBack(float max_height, uint32 start_time);
-        MoveSplineInit& SetTrajectory(float max_height, uint32 start_time);
+        MoveSplineInit& SetKnockBack(float max_height, float start_time);
+        MoveSplineInit& SetTrajectory(float max_height, float start_time);
         // Plays animation after start_time delay passed (delay since movement starting time)
         // can't be combined with parabolic movement
-        MoveSplineInit& SetAnimation(AnimType anim, uint32 start_time);
+        MoveSplineInit& SetAnimation(AnimType anim, float start_time);
 
         // Adds final facing animation
         // sets unit's facing to specified point/angle/target after all path done
@@ -184,13 +183,9 @@ namespace Movement
 
         // 
         // controls - array of points, shouldn't be empty
-        // is_cyclic_path - if true, makes spline to be initialized as cyclic
-        MoveSplineInit& MovebyPath(const PointsArray& controls, bool is_cyclic_path);
+        MoveSplineInit& MovebyPath(const PointsArray& controls, uint32 path_offset=0);
         // Initializes spline for simple A to B motion, A is current unit's position, B is destination
         MoveSplineInit& MoveTo(const Vector3& destination);
-        // Makes spline to be initialized
-        // destination, shold be lower than current unit's position 
-        MoveSplineInit& MoveFall(const Vector3& destination);
 
         // Enables CatmullRom spline interpolation mode(makes path smooth)
         // if not enabled linear spline mode will be choosen
@@ -199,6 +194,10 @@ namespace Movement
         MoveSplineInit& SetFly();
         // Enables walk mode
         MoveSplineInit& SetWalk();
+        // Makes movement cyclic
+        MoveSplineInit& SetCyclic();
+        // Enables falling mode
+        MoveSplineInit& SetFall();
 
         // Sets the velocity(in case you want to have custom movement velocity)
         // if no set, speed will be selected based on values from speed table and current movement mode
@@ -208,13 +207,6 @@ namespace Movement
     private:
 
         MovementState&  state;
-        MoveSpline      spline;
-        PointsArray     m_path;
-        // used for custom speed
-        float           velocity;
-        // used for trajectory movement
-        float           max_vertical_height;       
-        //IListener*      listener;
 
         // lets prevent dynamic allocation: that object should have short lifetime
         void* operator new(size_t);
@@ -229,7 +221,4 @@ namespace Movement
         void Hover(bool on);
         void CanFly(bool on);
     };
-
-
-
 }

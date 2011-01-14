@@ -35,23 +35,43 @@ namespace Movement {
     typedef counter<uint32, 0> MoveSplineCounter;
     extern MoveSplineCounter movespline_counter;
 
+    union FacingInfo
+    {
+        struct Point{
+            float x,y,z;
+        }       spot;
+        uint64  target;
+        float   angle;
+
+        FacingInfo(const Point& p) : spot(p){}
+        FacingInfo(float o) : angle(o) {}
+        FacingInfo(uint64 t) : target(t) {}
+        FacingInfo() {}
+    };
+
+    struct MoveSplineInitArgs 
+    {
+        MoveSplineInitArgs() : flags(0), path_Idx_offset(0),
+            velocity(0.f), parabolic_heigth(0.f), time_perc(0.f)   {}
+
+        PointsArray path;
+        FacingInfo facing;
+        uint32 flags;
+        int32 path_Idx_offset;
+        float velocity;
+        float parabolic_heigth;
+        float time_perc;
+    };
+
     class MoveSpline
     {
         friend class PacketBuilder;
-        friend class MoveSplineInit;
-    public:
-
+    private:
+        #pragma region fields
         Spline          spline;
         Vector3         finalDestination;
 
-        union
-        {
-            struct Point{
-                float x,y,z;
-            }       facing_spot;
-            uint64  facing_target;
-            float   facing_angle;
-        };
+        FacingInfo      facing;
 
         uint32          m_Id;
 
@@ -70,13 +90,10 @@ namespace Movement {
             uint32      parabolic_time;
             uint32      animation_time;
         };
-
-    protected:
-
-        void partial_initialize(const PointsArray& path, float velocity, float max_parabolic_heigth);
-
+        #pragma endregion
     public:
 
+        void Initialize(const MoveSplineInitArgs&);
         bool Initialized() const { return GetId()!= MoveSplineCounter::Lower_limit;}
 
         explicit MoveSpline();
