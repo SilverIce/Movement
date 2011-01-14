@@ -10,7 +10,7 @@ counter<uint32> MoveSplineCounter;
 
 
 
-void MoveSpline::updateState( uint32 ms_time )
+void MoveSpline::updateState( int32 ms_time_diff )
 {
     if (splineflags & SPLINEFLAG_UNKNOWN4)
     {
@@ -18,7 +18,8 @@ void MoveSpline::updateState( uint32 ms_time )
         return;
     }
 
-    time_passed = getMSTimeDiff(start_move_time, ms_time);
+    //time_passed = getMSTimeDiff(start_move_time, ms_time);
+    time_passed += ms_time_diff;
     uint32 duration_ = modifiedDuration();
 
     if (duration_ == 0)
@@ -31,7 +32,7 @@ void MoveSpline::updateState( uint32 ms_time )
             time_passed = time_passed % duration_;
             // FIXME: will overflow if time_passed > ms_time
             // not sure that its possible
-            start_move_time = ms_time - time_passed;
+            //start_move_time = ms_time - time_passed;
 
             if (splineflags & SPLINEFLAG_ENTER_CYCLE)
             {
@@ -120,7 +121,6 @@ Vector4 MoveSpline::ComputePosition() const
 
 void MoveSpline::partial_initialize(const PointsArray& path, float velocity, float max_parabolic_heigth)
 {
-    start_move_time = StartMoveTime;
     static Spline::EvaluationMode modes[2] = {Spline::ModeLinear,Spline::ModeCatmullrom};
 
     if (isCyclic())

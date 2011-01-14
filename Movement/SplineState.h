@@ -37,8 +37,6 @@ namespace Movement {
     public:
 
         Spline          spline;
-        uint32          start_move_time;
-
         Vector3         finalDestination;
 
         union
@@ -57,6 +55,7 @@ namespace Movement {
             uint32      splineflags;
         };
 
+        //uint32          start_move_time;
         uint32          time_passed;
         uint32          duration;
         float           duration_mod;
@@ -75,7 +74,6 @@ namespace Movement {
 
             spline.clear();
 
-            start_move_time = 0;
             time_passed  = 0;
             duration     = 1;
             duration_mod = 1.f;
@@ -93,7 +91,7 @@ namespace Movement {
             init_fields();
         }
 
-        void updateState( uint32 ms_time );
+        void updateState( int32 ms_time_diff );
         Vector4 ComputePosition() const;
 
         // helpers
