@@ -6,12 +6,14 @@
 namespace Movement{
 
 // TODO: make it Atomic
-counter<uint32> MoveSplineCounter;
+MoveSplineCounter movespline_counter;
 
 
 
 void MoveSpline::updateState( int32 ms_time_diff )
 {
+    assert(Initialized());
+
     if (splineflags & SPLINEFLAG_UNKNOWN4)
     {
         Finalize();
@@ -59,6 +61,8 @@ void MoveSpline::updateState( int32 ms_time_diff )
 
 Vector4 MoveSpline::ComputePosition() const
 {
+    assert(Initialized());
+
     uint32 duration_ = modifiedDuration();
 
     float t = 0.f;
