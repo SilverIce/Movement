@@ -104,7 +104,7 @@ namespace Movement
         SPLINEFLAG_CYCLIC       = 0x00080000,           // movement by cycled spline 
         SPLINEFLAG_ENTER_CYCLE  = 0x00100000,           // everytime appears with cyclic flag in monster move packet
         SPLINEFLAG_ANIMATION    = 0x00200000,           // animationId (0...3), uint32 time, not compartible with trajectory and fall movement
-        SPLINEFLAG_UNKNOWN4     = 0x00400000,           // disables movement by path
+        SPLINEFLAG_INSTANT      = 0x00400000,           // finalizes movement, forces unit to arrive to end of the path
         SPLINEFLAG_UNKNOWN5     = 0x00800000,
         SPLINEFLAG_UNKNOWN6     = 0x01000000,
         SPLINEFLAG_UNKNOWN7     = 0x02000000,

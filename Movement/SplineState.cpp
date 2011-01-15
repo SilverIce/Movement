@@ -14,7 +14,7 @@ void MoveSpline::updateState( int32 ms_time_diff )
 {
     assert(Initialized());
 
-    if (splineflags & SPLINEFLAG_UNKNOWN4)
+    if (splineflags & SPLINEFLAG_INSTANT)
     {
         Finalize();
         return;
@@ -47,6 +47,9 @@ void MoveSpline::updateState( int32 ms_time_diff )
                 // in simple words: parabolic movement can be used with cyclic movement but there will be little visual bug on client side
                 // i decided remove remove trajectory flag
                 RemoveSplineFlag(SPLINEFLAG_TRAJECTORY);
+                // client resets duration mods
+                duration_mod = 1.f;
+                duration_mod_next = 1.f;
             }
 
             duration_mod = this->duration_mod_next;
