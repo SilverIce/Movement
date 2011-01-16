@@ -4,7 +4,7 @@
 #include "MovementBase.h"
 #include "mov_constants.h"
 #include "packet_builder.h"
-#include "SplineState.h"
+#include "MoveSpline.h"
 
 namespace Movement
 {

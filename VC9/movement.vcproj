@@ -209,14 +209,6 @@
 				RelativePath="..\Movement\spline.h"
 				>
 			</File>
-			<File
-				RelativePath="..\Movement\SplineState.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\Movement\SplineState.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="fake"
@@ -255,6 +247,13 @@
 			>
 		</File>
 		<File
+			RelativePath="..\Movement\MoveSpline.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\Movement\MoveSpline.h"
+			>
+		</File>
 			RelativePath="..\Movement\movestates.h"
 			>
 			<FileConfiguration
