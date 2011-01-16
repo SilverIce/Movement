@@ -138,15 +138,15 @@ namespace Movement
         if (splineflags & SPLINEFLAG_ANIMATION)
         {
             data << splineInfo.animation_type;
-            data << splineInfo.animation_time;
+            data << splineInfo.spec_effect_time;
         }
 
         data << uint32(splineInfo.modifiedDuration());
 
         if (splineflags & SPLINEFLAG_TRAJECTORY)
         {
-            data << splineInfo.parabolic_acceleration;
-            data << splineInfo.parabolic_time;
+            data << splineInfo.vertical_acceleration;
+            data << splineInfo.spec_effect_time;
         }
 
         data << uint32(last_idx);
@@ -298,8 +298,8 @@ namespace Movement
             data << float(1.f);//splineInfo.duration_mod;
             data << float(1.f);//splineInfo.duration_mod_next;
 
-            data << splineInfo.parabolic_acceleration;
-            data << splineInfo.parabolic_time;
+            data << splineInfo.vertical_acceleration;
+            data << splineInfo.spec_effect_time;
 
             uint32 nodes = splineInfo.getPath().size();
             data << nodes;

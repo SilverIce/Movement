@@ -86,11 +86,8 @@ namespace Movement {
         // currently duration mods are unused, but its _currentty_ 
         //float           duration_mod;
         //float           duration_mod_next;
-        float           parabolic_acceleration;
-        union{
-            uint32      parabolic_time;
-            uint32      animation_time;
-        };
+        float           vertical_acceleration;
+        uint32          spec_effect_time;
         #pragma endregion
     public:
 

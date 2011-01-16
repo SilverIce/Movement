@@ -84,14 +84,14 @@ Vector4 MoveSpline::ComputePosition() const
 
     if (splineflags & SPLINEFLAG_TRAJECTORY)
     {
-        if (time_passed > parabolic_time)
+        if (time_passed > spec_effect_time)
         {
-            float t_passedf = MSToSec(time_passed - parabolic_time);
-            float t_durationf = MSToSec(duration - parabolic_time); //client use not modified duration here
+            float t_passedf = MSToSec(time_passed - spec_effect_time);
+            float t_durationf = MSToSec(duration - spec_effect_time); //client use not modified duration here
 
             // -a*x*x + bx + c:
             //(dur * v3->z_acceleration * dt)/2 - (v3->z_acceleration * dt * dt)/2 + Z;
-            c.z += (t_durationf - t_passedf) * 0.5f * parabolic_acceleration * t_passedf;
+            c.z += (t_durationf - t_passedf) * 0.5f * vertical_acceleration * t_passedf;
         }
     }
     else if (splineflags & SPLINEFLAG_FALLING)
@@ -144,8 +144,8 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
     time_passed  = 0;
     //duration_mod = 1.f;
     //duration_mod_next = 1.f;
-    parabolic_acceleration = 0.f;
-    parabolic_time = 0;
+    vertical_acceleration = 0.f;
+    spec_effect_time = 0;
 
     /*  checks spline flags, removes not compartible
     if (splineflags & SPLINEFLAG_CYCLIC && !(isSmooth()))
@@ -186,11 +186,11 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
     // path initialized, duration is known and i able to compute parabolic acceleration
     if (splineflags & (SPLINEFLAG_TRAJECTORY|SPLINEFLAG_ANIMATION))
     {
-        parabolic_time = duration * args.time_perc;
+        spec_effect_time = duration * args.time_perc;
         if (splineflags & SPLINEFLAG_TRAJECTORY)
         {
-            float f_duration = MSToSec(duration - parabolic_time);
-            parabolic_acceleration = args.parabolic_heigth * 8.f / (f_duration * f_duration);
+            float f_duration = MSToSec(duration - spec_effect_time);
+            vertical_acceleration = args.parabolic_heigth * 8.f / (f_duration * f_duration);
         }
     }
 
