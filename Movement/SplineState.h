@@ -83,8 +83,9 @@ namespace Movement {
         //uint32          start_move_time;
         uint32          time_passed;
         uint32          duration;
-        float           duration_mod;
-        float           duration_mod_next;
+        // currently duration mods are unused, but its _currentty_ 
+        //float           duration_mod;
+        //float           duration_mod_next;
         float           parabolic_acceleration;
         union{
             uint32      parabolic_time;
@@ -108,7 +109,7 @@ namespace Movement {
         uint32 GetSplineFlags() const { return splineflags;}
         uint32 GetId() const { return m_Id;}
 
-        int32 modifiedDuration() const { return duration_mod * duration + 0.5f;}
+        int32 modifiedDuration() const { return /*duration_mod **/ duration /*+ 0.5f*/;}
         int32 timeElapsed() const { return modifiedDuration() - time_passed;}
         const Vector3& getNode(uint32 i) const { return spline.getPoints()[i];}
         const PointsArray& getPath() const { return spline.getPoints();}

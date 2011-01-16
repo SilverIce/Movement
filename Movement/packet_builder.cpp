@@ -295,8 +295,8 @@ namespace Movement
             data << uint32(splineInfo.duration);
             data << splineInfo.GetId();
 
-            data << splineInfo.duration_mod;
-            data << splineInfo.duration_mod_next;
+            data << float(1.f);//splineInfo.duration_mod;
+            data << float(1.f);//splineInfo.duration_mod_next;
 
             data << splineInfo.parabolic_acceleration;
             data << splineInfo.parabolic_time;

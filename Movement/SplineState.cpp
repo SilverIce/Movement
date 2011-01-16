@@ -48,13 +48,13 @@ void MoveSpline::updateState( int32 ms_time_diff )
                 // i decided remove remove trajectory flag
                 RemoveSplineFlag(SPLINEFLAG_TRAJECTORY);
                 // client resets duration mods
-                duration_mod = 1.f;
-                duration_mod_next = 1.f;
+                //duration_mod = 1.f;
+                //duration_mod_next = 1.f;
             }
 
-            duration_mod = this->duration_mod_next;
-            duration_mod_next = 1.f;
 
+            //duration_mod = this->duration_mod_next;
+            //duration_mod_next = 1.f;
             duration_ = modifiedDuration();
         }
         else
@@ -139,8 +139,8 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
     splineflags = args.flags;
     facing = args.facing;
     time_passed  = 0;
-    duration_mod = 1.f;
-    duration_mod_next = 1.f;
+    //duration_mod = 1.f;
+    //duration_mod_next = 1.f;
     parabolic_acceleration = 0.f;
     parabolic_time = 0;
 
@@ -206,7 +206,7 @@ std::string MoveSpline::ToString() const
 }
 
 MoveSpline::MoveSpline() : m_Id(MoveSplineCounter::Lower_limit), splineflags(0),
-    time_passed(0), duration(0), duration_mod(1.f), duration_mod_next(1.f),
+    time_passed(0), duration(0), //duration_mod(1.f), duration_mod_next(1.f),
     parabolic_acceleration(1.f), parabolic_time(0)
 {
 }
