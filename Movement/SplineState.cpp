@@ -134,10 +134,13 @@ inline uint32 computeDuration(float length, float velocity)
 
 void MoveSpline::Initialize(const MoveSplineInitArgs& args)
 {
-    m_Id = movespline_counter.NewId();
+    assert(!args.path.empty());
+    assert(args.velocity > 0.f);
+    assert(args.time_perc >= 0.f && args.time_perc <= 1.f);
 
     splineflags = args.flags;
     facing = args.facing;
+
     time_passed  = 0;
     //duration_mod = 1.f;
     //duration_mod_next = 1.f;
@@ -190,6 +193,8 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
             parabolic_acceleration = args.parabolic_heigth * 8.f / (f_duration * f_duration);
         }
     }
+
+    m_Id = movespline_counter.NewId();
 }
 
 std::string MoveSpline::ToString() const

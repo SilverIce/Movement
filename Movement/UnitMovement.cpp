@@ -230,7 +230,6 @@ void MoveSplineInit::Apply()
     if (state.SplineEnabled())
         state.GetSplineFace().UpdateState();
 
-    assert(m_path.size() >= 2);
 
     if (velocity != 0.f)
         state.speed_obj.current = velocity;
