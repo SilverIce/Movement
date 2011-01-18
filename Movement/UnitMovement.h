@@ -128,12 +128,13 @@ namespace Movement
 
         MoveSpline      move_spline;
 
+        SpeedType       speed_type;
         #pragma endregion
 
 
 
         void ReCalculateCurrentSpeed();
-        float CalculateCurrentSpeed(bool use_walk_forced) const;
+        SpeedType SelectSpeedType(bool use_walk_forced) const;
 
         void Initialize(MovControlType controller, const Vector4& position, uint32 ms_time);
 

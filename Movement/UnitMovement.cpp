@@ -12,7 +12,7 @@ namespace Movement{
 
 
 
-float MovementState::CalculateCurrentSpeed( bool is_walking /*= false*/ ) const
+SpeedType MovementState::SelectSpeedType( bool is_walking /*= false*/ ) const
 {
     // g_moveFlags_mask - some global client's moveflag mask
     // TODO: get real value
@@ -23,31 +23,31 @@ float MovementState::CalculateCurrentSpeed( bool is_walking /*= false*/ ) const
 
     if ( moveFlags & MOVEFLAG_FLYING )
     {
-        if ( moveFlags & MOVEFLAG_BACKWARD && speed_obj.flight >= speed_obj.flight_back )
-            return speed_obj.flight_back;
+        if ( moveFlags & MOVEFLAG_BACKWARD /*&& speed_obj.flight >= speed_obj.flight_back*/ )
+            return SpeedFlightBack;
         else
-            return speed_obj.flight;
+            return SpeedFlight;
     }
     else if ( moveFlags & MOVEFLAG_SWIMMING )
     {
-        if ( moveFlags & MOVEFLAG_BACKWARD && speed_obj.swim >= speed_obj.swim_back )
-            return speed_obj.swim_back;
+        if ( moveFlags & MOVEFLAG_BACKWARD /*&& speed_obj.swim >= speed_obj.swim_back*/ )
+            return SpeedSwimBack;
         else
-            return speed_obj.swim;
+            return SpeedSwim;
     }
     else
     {
         if ( moveFlags & MOVEFLAG_WALK_MODE || is_walking )
         {
-            if ( speed_obj.run > speed_obj.walk )
-                return speed_obj.walk;
+            //if ( speed_obj.run > speed_obj.walk )
+                return SpeedWalk;
         }
         else
         {
-            if ( moveFlags & MOVEFLAG_BACKWARD && speed_obj.run >= speed_obj.run_back )
-                return speed_obj.run_back;
+            if ( moveFlags & MOVEFLAG_BACKWARD /*&& speed_obj.run >= speed_obj.run_back*/ )
+                return SpeedRunBack;
         }
-        return speed_obj.run;
+        return SpeedRun;
     }
 }
 
@@ -73,6 +73,7 @@ MovementState::MovementState(WorldObject * owner) : UnitBase(*owner), msg_builde
     move_flags2 = 0;
 
     memcpy(&speed, BaseSpeed, sizeof BaseSpeed);
+    speed_obj.current = BaseSpeed[SpeedRun];
 
     s_pitch = 0.f;
     // last fall time
@@ -82,11 +83,13 @@ MovementState::MovementState(WorldObject * owner) : UnitBase(*owner), msg_builde
     j_velocity = j_sinAngle = j_cosAngle = j_xy_velocy = 0.f;
 
     u_unk1 = 0.f;
+    speed_type = SpeedRun;
 }
 
 void MovementState::ReCalculateCurrentSpeed()
 {
-    speed_obj.current = CalculateCurrentSpeed(false);
+    speed_type = SelectSpeedType(false);
+    speed_obj.current = speed[speed_type];
 }
 
 void MovementState::Initialize( MovControlType controller, const Vector4& pos, uint32 ms_time )
@@ -232,16 +235,19 @@ void MoveSplineInit::Apply()
 
 
     if (velocity != 0.f)
+    {
         state.speed_obj.current = velocity;
+        state.speed_type = SpeedNotStandart;
+    }
     else
     {
         state.ReCalculateCurrentSpeed();
-        velocity = state.speed_obj.current;
+        velocity = state.GetCurrentSpeed();
     }
 
     // no sense to move unit
     // TODO: find more elegant way (maybe just set current_speed to some minimal value)
-    if (state.speed_obj.current > 0.f)
+    if (velocity > 0.f)
     {
         path[0] = state.GetPosition3();
 
