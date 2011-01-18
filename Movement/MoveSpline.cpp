@@ -10,7 +10,7 @@ MoveSplineCounter movespline_counter;
 
 
 
-void MoveSpline::updateState( int32 ms_time_diff )
+void MoveSpline::updateState( uint32 ms_time_diff )
 {
     assert(Initialized());
 
@@ -128,7 +128,6 @@ Vector4 MoveSpline::ComputePosition() const
 
 inline uint32 computeDuration(float length, float velocity)
 {
-    assert(velocity > 0.f);
     return std::max<uint32>(SecToMS(length / velocity), 1);
 }
 
@@ -212,7 +211,7 @@ std::string MoveSpline::ToString() const
 
 MoveSpline::MoveSpline() : m_Id(MoveSplineCounter::Lower_limit), splineflags(0),
     time_passed(0), duration(0), //duration_mod(1.f), duration_mod_next(1.f),
-    parabolic_acceleration(1.f), parabolic_time(0)
+    vertical_acceleration(1.f), spec_effect_time(0)
 {
 }
 

@@ -96,7 +96,7 @@ namespace Movement {
 
         explicit MoveSpline();
 
-        void updateState( int32 ms_time_diff );
+        void updateState( uint32 ms_time_diff );
         Vector4 ComputePosition() const;
 
         // helpers

@@ -31,6 +31,11 @@ public:
     void appendPackXYZ(float,float,float)
     {
     }
+
+    bool empty() const { return true;}
+
+    template<class T>
+    ByteBuffer& read_skip() { return *this;}
 };
 
 #endif
