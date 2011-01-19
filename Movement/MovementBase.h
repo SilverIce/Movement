@@ -22,6 +22,10 @@ namespace Movement
         const Vector4& GetPosition() const { return position;}
         const Vector3& GetPosition3() const { return (Vector3&)position;}
 
+        // should be protected?
+        void SetPosition(const Vector4& v);
+        void SetPosition(const Vector3& v);
+
         void SetListener(IListener * l) { listener = l;}
         void ResetLisener() { listener = NULL; }
 

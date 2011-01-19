@@ -76,8 +76,8 @@ namespace Movement {
         uint32          m_Id;
 
         union{
-            uint8       animation_type;
             uint32      splineflags;
+            uint8       animation_type;
         };
 
         //uint32          start_move_time;

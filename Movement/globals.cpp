@@ -97,7 +97,7 @@ namespace Movement
                 time = sqrtf(2.f * path_length/gravity);
         }
 
-        return uint32(time * 1000.f);
+        return SecToMS(time);
     }
 
     float computeFallElevation( float t_passed, bool isSafeFall, float start_velocy )

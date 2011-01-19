@@ -5,9 +5,6 @@
 
 #include <assert.h>
 
-// seems only MSVC has this include, what about rest of compilers and platforms?
-#include <float.h>
-
 namespace Movement{
 
 
@@ -101,33 +98,18 @@ void MovementState::Initialize( MovControlType controller, const Vector4& pos, u
 }
 
 
-// for debugging:
-// there were problems with NaN coords in past
-inline bool _finiteV(const Vector3& v)
 {
-    return _finite(v.x) && _finite(v.y) && _finite(v.z);
 }
 
-void MovementState::SetPosition(const Vector4& v)
 {
-    if (!_finiteV((Vector3&)v))
     {
-        log_write("MovementState::SetPosition: NaN coord detected");
-        return;
-    }
 
-    position = v;
 }
 
-void MovementState::SetPosition(const Vector3& v)
 {
-    if (!_finiteV(v))
     {
-        log_write("MovementState::SetPosition: NaN coord detected");
-        return;
     }
 
-    (Vector3&)position = v;
 }
 
 void SplineFace::ResetSplineState()
@@ -227,7 +209,7 @@ MoveSplineInit& MoveSplineInit::SetVelocity( float vel )
     return *this;
 }
 
-void MoveSplineInit::Apply()
+void MoveSplineInit::Launch()
 {
     // update previous state first
     if (state.SplineEnabled())

@@ -128,7 +128,7 @@ Vector4 MoveSpline::ComputePosition() const
 
 inline uint32 computeDuration(float length, float velocity)
 {
-    return std::max<uint32>(SecToMS(length / velocity), 1);
+    return SecToMS(length / velocity);
 }
 
 void MoveSpline::Initialize(const MoveSplineInitArgs& args)
@@ -179,6 +179,9 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
         else
             duration = computeDuration(spline.length(),args.velocity);
     }
+
+    if (!duration)
+        duration = 1;
 
     segment_Idx = spline.first();
 

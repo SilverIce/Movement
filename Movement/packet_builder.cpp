@@ -105,33 +105,24 @@ namespace Movement
 
         uint32 splineflags = splineInfo.GetSplineFlags();
 
-        if (splineflags & (SPLINE_MASK_FINAL_FACING | SPLINEFLAG_DONE))
+        switch(splineflags & SPLINE_MASK_FINAL_FACING)
         {
-            if (splineflags & SPLINEFLAG_FINAL_TARGET)
-            {
-                data << uint8(MonsterMoveFacingTarget);
-                data << splineInfo.facing.target;
-            }
-            else if(splineflags & SPLINEFLAG_FINAL_ANGLE)
-            {
-                data << uint8(MonsterMoveFacingAngle);
-                data << splineInfo.facing.angle;
-            }
-            else if(splineflags & SPLINEFLAG_FINAL_POINT)
-            {
-                data << uint8(MonsterMoveFacingSpot);
-                data << splineInfo.facing.spot.x << splineInfo.facing.spot.y << splineInfo.facing.spot.z;
-            }
-            else if (splineflags & SPLINEFLAG_DONE) // its assumption only
-            {
-                data << uint8(MonsterMoveStop);
-                return;
-            }
-            else
-                assert(false);
-        }
-        else
+        default:
             data << uint8(MonsterMoveNormal);
+            break;
+        case SPLINEFLAG_FINAL_TARGET:
+            data << uint8(MonsterMoveFacingTarget);
+            data << splineInfo.facing.target;
+            break;
+        case SPLINEFLAG_FINAL_ANGLE:
+            data << uint8(MonsterMoveFacingAngle);
+            data << splineInfo.facing.angle;
+            break;
+        case SPLINEFLAG_FINAL_POINT:
+            data << uint8(MonsterMoveFacingSpot);
+            data << splineInfo.facing.spot.x << splineInfo.facing.spot.y << splineInfo.facing.spot.z;
+            break;
+        }
 
         data << uint32(splineflags & ~SPLINE_MASK_NO_MONSTER_MOVE);
 

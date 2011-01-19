@@ -23,9 +23,6 @@ namespace Movement
         const PacketBuilder& GetBuilder() const { return msg_builder; }
         PacketBuilder msg_builder;
 
-        void SetPosition(const Vector4& v);
-        void SetPosition(const Vector3& v);
-
         #pragma region field accessors
 
         /// Get-Set methtods
@@ -104,8 +101,8 @@ namespace Movement
         uint32          move_mode;
 
         union {
-            uint8       direction_flags;
             uint32      moveFlags;
+            uint8       direction_flags;
         };
         uint16          move_flags2;
 
@@ -161,8 +158,8 @@ namespace Movement
 
         explicit MoveSplineInit(MovementState& m);
 
-        // applyes changes that you have done
-        void Apply();
+        // launches initialized movement
+        void Launch();
 
         // Adds movement by parabolic trajectory
         // max_height - the maximum height of parabola, value could be negative and positive
