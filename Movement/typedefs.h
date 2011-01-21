@@ -43,4 +43,12 @@ namespace Movement
 
     using G3D::Vector3;
     using G3D::Vector4;
+
+    template<bool> struct _assert_fail;
+    template<> struct _assert_fail<true> { enum{value = 1}; };
+
+    #define static_assert(B)\
+        enum {\
+            static_assert_enum##__LINE__ = sizeof(_assert_fail<(bool)(B)>)\
+        }
 }
