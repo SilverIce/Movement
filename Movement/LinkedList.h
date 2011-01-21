@@ -9,89 +9,130 @@
 #endif
 #endif
 
-namespace Movement{
-
-template<class T, class F> class LinkedList;
-
-template<class T, class F>
-struct LinkedListElement
+namespace Movement
 {
-    explicit LinkedListElement() : next(0), prev(0), m_obj(0), m_from(0) {}
-
-    T& ref_to() { return *m_obj;}
-    const T& ref_to() const { return *m_obj;}
-
-    F& ref_from() { return *m_from;}
-    const F& ref_from() const { return *m_from;}
-
-    T& operator *() { return *m_obj;}
-    const T& operator *() const { return *m_obj;}
-
-    operator bool () const { return m_obj;}
-
+class LinkedListElementBase
+{
 private:
-    friend class LinkedList<T,F>;
+    LinkedListElementBase(const LinkedListElementBase&);
+    LinkedListElementBase& operator = (const LinkedListElementBase&);
 
-    T * m_obj;
-    F * m_from;
+protected:
 
-    LinkedListElement * next;
-    LinkedListElement * prev;
+    LinkedListElementBase() : next(0), prev(0) {}
+
+    LinkedListElementBase * next;
+    LinkedListElementBase * prev;
+
+    bool linked() const { return next && prev;}
+
+    void delink()
+    {
+        next->prev = prev;
+        prev->next = next;
+
+        next = NULL;
+        prev = NULL;
+    }
+
+    static void insert_between(LinkedListElementBase& prev, LinkedListElementBase& el, LinkedListElementBase& next)
+    {
+        el.next = &next;
+        el.prev = &prev;
+
+        prev.next = &el;
+        next.prev = &el;
+    }
+
+    static void connect(LinkedListElementBase& el_1, LinkedListElementBase& el_2)
+    {
+        el_1.next = &el_2;
+        el_2.prev = &el_1;
+    }
+
+    // inserts element 'el' before 'me' element
+    static void insert_before(LinkedListElementBase& me, LinkedListElementBase& el)
+    {
+        insert_between(*me.prev, el, me);
+    }
+
+    // inserts element 'el' after 'me' element
+    static void insert_after(LinkedListElementBase& me, LinkedListElementBase& el)
+    {
+        insert_between(me, el, *me.next);
+    }
 };
 
-template<class T, class F>
+template<class T> class LinkedList;
+
+template<class T>
+struct LinkedListElement : public LinkedListElementBase
+{
+    typedef typename T value_type;
+    typedef LinkedListElement element_type;
+
+    explicit LinkedListElement() {}
+
+    ~LinkedListElement()
+    {
+        // delink();
+    }
+
+    T Value;
+
+    T& operator *() { return Value;}
+    const T& operator *() const { return Value;}
+
+    operator bool () const { return linked();}
+
+    void delink()
+    {
+        if (linked())
+        {
+            //Value.clean();
+            LinkedListElementBase::delink();
+        }
+    }
+
+private:
+
+    friend class LinkedList<T>;
+
+    element_type* Next() { return (element_type*)next;}
+    element_type* Prev() { return (element_type*)prev;}
+};
+
+template<class T>
 class LinkedList
 {
 public:
 
-    typedef LinkedListElement<T,F> element_type;
-    //typedef LinkedListElement<T,F>* iterator;
+    typedef LinkedListElement<T> element_type;
+    typedef typename element_type::value_type value_type;
 
-    LinkedList() : m_size(0)
+    LinkedList()
     {
-         first.next = &last;
-         last.prev = &first;
+        element_type::connect(first, last);
     }
 
-    void link(element_type & el, T& obj, F& from)
+    void link(element_type & el)
     {
-        element_type * prev = last.prev;
-        element_type * next = &last;
-
-        prev->next = &el;
-        next->prev = &el;
-
-        el.prev = prev;
-        el.next = next;
-        el.m_obj = &obj;
-        el.m_from = &from;
-
-        ++m_size;
+        element_type::insert_before(last, el);
     }
 
     void delink(element_type & el)
     {
-        element_type * next = el.next;
-        element_type * prev = el.prev;
-
-        prev->next = next;
-        next->prev = prev;
-
-        el.next = el.prev = NULL;
-        el.m_obj = NULL;
-        el.m_from = NULL;
-
-        --m_size;
+        el.delink();
     }
 
     void delink_all()
     {
-        element_type * i = first.next, * i2;
+        element_type * i = first.Next(), * i2;
         element_type * end = &last;
         while( i != end)
         {
             i2 = i;
-            i = i->next;
+            i = i->Next();
             delink(*i2);
         }
     }
@@ -99,45 +140,30 @@ public:
     template<class Func>
     void Iterate(Func functor)
     {
-        element_type * i = first.next;
-        element_type * end = &last;
-        while( i != end)
-        {
-            T & t = i->ref_to();
-            i = i->next;
-            functor(t);
-        }
+        Visit<Func>(functor);
     }
 
     template<class Visitor>
     void Visit(Visitor& visitor)
     {
-        element_type * i = first.next;
+        element_type * i = first.Next();
         element_type * end = &last;
         while( i != end)
         {
-            T & t = i->ref_to();
-            i = i->next;
+            value_type & t = i->Value;
+            i = i->Next();
             visitor(t);
         }
     }
 
-    bool empty() const { return m_size == 0;}
-
-    size_t size() const { return m_size;}
-
-/*
-    const element_type* begin() const { return first.next; }
-    element_type* begin() { return first.next; }
-
-    const element_type* end() const { return &last; }
-    element_type* end() { return &last; }
-*/
+    bool empty() const { return first.Next() == &last;}
 
 private:
     element_type first;
     element_type last;
-    size_t m_size;
+
+    LinkedList& operator = (LinkedList&);
+    LinkedList(LinkedList&);
 };
 
 }
