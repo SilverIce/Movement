@@ -28,38 +28,35 @@ protected:
 
     void delink()
     {
-        next->prev = prev;
-        prev->next = next;
-
+        connect(*prev, *next);
         next = NULL;
         prev = NULL;
     }
 
     static void insert_between(LinkedListElementBase& prev, LinkedListElementBase& el, LinkedListElementBase& next)
     {
-        el.next = &next;
-        el.prev = &prev;
-
-        prev.next = &el;
-        next.prev = &el;
+        connect(prev, el);
+        connect(el, next);
     }
 
-    static void connect(LinkedListElementBase& el_1, LinkedListElementBase& el_2)
+    static void connect(LinkedListElementBase& left, LinkedListElementBase& right)
     {
-        el_1.next = &el_2;
-        el_2.prev = &el_1;
+        left.next = &right;
+        right.prev = &left;
     }
 
     // inserts element 'el' before 'me' element
     static void insert_before(LinkedListElementBase& me, LinkedListElementBase& el)
     {
-        insert_between(*me.prev, el, me);
+        connect(*me.prev, el);
+        connect(el, me);
     }
 
     // inserts element 'el' after 'me' element
     static void insert_after(LinkedListElementBase& me, LinkedListElementBase& el)
     {
-        insert_between(me, el, *me.next);
+        connect(me, el);
+        connect(el, *me.next);
     }
 };
 
@@ -162,8 +159,8 @@ private:
     element_type first;
     element_type last;
 
-    LinkedList& operator = (LinkedList&);
-    LinkedList(LinkedList&);
+    LinkedList& operator = (const LinkedList&);
+    LinkedList(const LinkedList&);
 };
 
 }
