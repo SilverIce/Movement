@@ -80,7 +80,7 @@ protected:
         // client's value is 20, blizzs use 2-3 steps to compute length
         STEPS_PER_SEGMENT = 2,
     };
-
+    static_assert(STEPS_PER_SEGMENT > 0);
 public:
 
     explicit Spline();
