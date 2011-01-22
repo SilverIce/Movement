@@ -11,7 +11,7 @@ namespace Movement{
     void UnitBase::Board( Transport& m )
     {
         m_transport_link.Value = TransportLink(&m, this); 
-        m.m_passenger_references.link(m_transport_link);
+        m._link_transportable(m_transport_link);
     }
 
     void UnitBase::UnBoard()
@@ -26,7 +26,7 @@ namespace Movement{
     void GameobjectMovement::Board( Transport& m )
     {
         m_transport_link.Value = TransportLink(&m, this); 
-        m.m_passenger_references.link(m_transport_link);
+        m._link_transportable(m_transport_link);
     }
 
     void GameobjectMovement::UnBoard()

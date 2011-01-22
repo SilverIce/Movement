@@ -45,14 +45,16 @@ namespace Movement
         WorldObject& GetOwner() { return m_owner;}
         const WorldObject& GetOwner() const { return m_owner;}
 
-    protected:
 
-        friend class UnitBase;
+        void _link_targeter(LinkedListElement<TargetLink>& t) { m_targeter_references.link(t);}
+
+    protected:
+        Vector4 position;
+        IListener * listener;
+    private:
 
         LinkedList<TargetLink> m_targeter_references;
-        Vector4 position;
         WorldObject & m_owner;
-        IListener * listener;
     };
 
     class Transport;
@@ -97,9 +99,6 @@ namespace Movement
 
     class Transport
     {
-        friend class MovementBase;
-        friend class UnitBase;
-        friend class GameobjectMovement;
     public:
 
         void UnBoardAll()
@@ -117,7 +116,9 @@ namespace Movement
 
         explicit Transport() {}
 
-    protected:
+        void _link_transportable(LinkedListElement<TransportLink>& t) { m_passenger_references.link(t);}
+
+    private:
 
         LinkedList<TransportLink> m_passenger_references;
     };
@@ -176,7 +177,7 @@ namespace Movement
             UnbindOrientation();
             // can i target self?
             m_target_link.Value = TargetLink(&m, this);
-            m.m_targeter_references.link(m_target_link);
+            m._link_targeter(m_target_link);
         }
 
         bool IsOrientationBinded() const { return m_target_link; }
@@ -190,6 +191,7 @@ namespace Movement
 
         explicit UnitBase(WorldObject& owner) : Transportable(owner) {}
 
+    private:
         Transport m_transport;
         LinkedListElement<TargetLink> m_target_link;
     };
