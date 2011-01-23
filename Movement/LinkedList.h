@@ -97,6 +97,8 @@ private:
 
     element_type* Next() { return (element_type*)next;}
     element_type* Prev() { return (element_type*)prev;}
+    const element_type* Next() const { return (const element_type*)next;}
+    const element_type* Prev() const { return (const element_type*)prev;}
 };
 
 template<class T>

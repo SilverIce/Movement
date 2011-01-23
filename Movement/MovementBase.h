@@ -55,6 +55,9 @@ namespace Movement
 
         LinkedList<TargetLink> m_targeter_references;
         WorldObject & m_owner;
+
+        MovementBase(const MovementBase&);
+        MovementBase& operator = (const MovementBase&);
     };
 
     class Transport;
@@ -86,6 +89,7 @@ namespace Movement
             MovementBase::CleanReferences();
         }
 
+        bool IsBoarded() const { return m_transport_link;}
         Transport* GetTransport() { return m_transport_link.Value.transport;}
         const Transport* GetTransport() const { return m_transport_link.Value.transport;}
 
@@ -115,6 +119,8 @@ namespace Movement
         }
 
         explicit Transport() {}
+
+        bool HavePassengers() const { return !m_passenger_references.empty();}
 
         void _link_transportable(LinkedListElement<TransportLink>& t) { m_passenger_references.link(t);}
 
@@ -181,8 +187,8 @@ namespace Movement
         }
 
         bool IsOrientationBinded() const { return m_target_link; }
-        MovementBase* Target() { return m_target_link.Value.target;}
-        const MovementBase* Target() const { return m_target_link.Value.target;}
+        MovementBase* GetTarget() { return m_target_link.Value.target;}
+        const MovementBase* GetTarget() const { return m_target_link.Value.target;}
 
         virtual void Board(Transport& m);
         virtual void UnBoard();
