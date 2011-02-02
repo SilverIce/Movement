@@ -15,6 +15,11 @@ namespace Movement
         MovControlCount,
     };
 
+    struct MsgDeliverMethtod
+    {
+        virtual void operator()(WorldPacket&){}
+    };
+
     class MovementState;
 
     class PacketBuilder
@@ -37,9 +42,9 @@ namespace Movement
         PacketBuilder(MovementState *const dat, MovControlType c);
         ~PacketBuilder();
 
-        void SpeedUpdate(SpeedType type, WorldPacket& ) const;
-        void MoveModeUpdate(MoveMode mode, WorldPacket& ) const;
-        void PathUpdate(WorldPacket& ) const;
+        void SpeedUpdate(SpeedType type, MsgDeliverMethtod&) const;
+        void MoveModeUpdate(MoveMode mode, MsgDeliverMethtod&) const;
+        void PathUpdate(MsgDeliverMethtod&) const;
         void FullUpdate(ByteBuffer& ) const;
 
         void SetControl(MovControlType c) { mode = c; }

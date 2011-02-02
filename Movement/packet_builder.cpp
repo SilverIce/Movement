@@ -23,7 +23,7 @@ namespace Movement
     typedef void (PacketBuilder::*MoveModePtr)(MoveMode,WorldPacket&) const;
     typedef void (PacketBuilder::*PathPtr)(WorldPacket&) const;
 
-    void PacketBuilder::SpeedUpdate(SpeedType type, WorldPacket& p) const
+    void PacketBuilder::SpeedUpdate(SpeedType type, MsgDeliverMethtod& broadcast) const
     {
         static const SpeedPtr speed_ptrs[MovControlCount] =
         {
@@ -31,10 +31,14 @@ namespace Movement
             &PacketBuilder::Spline_SpeedUpdate,
         };
 
-        (this->*speed_ptrs[mode])(type, p);
+        WorldPacket data;
+        (this->*speed_ptrs[mode])(type, data);
+
+        if (!data.empty())  // currently it's can be empty
+            broadcast(data);
     }
 
-    void PacketBuilder::MoveModeUpdate(MoveMode move_mode, WorldPacket& p) const
+    void PacketBuilder::MoveModeUpdate(MoveMode move_mode, MsgDeliverMethtod& broadcast) const
     {
         static const MoveModePtr move_mode_ptrs[MovControlCount] =
         {
@@ -42,10 +46,14 @@ namespace Movement
             &PacketBuilder::Spline_MoveModeUpdate,
         };
 
-        (this->*move_mode_ptrs[mode])(move_mode, p);
+        WorldPacket data;
+        (this->*move_mode_ptrs[mode])(move_mode, data);
+
+        if (!data.empty())
+            broadcast(data);
     }
 
-    void PacketBuilder::PathUpdate(WorldPacket& p) const
+    void PacketBuilder::PathUpdate(MsgDeliverMethtod& broadcast) const
     {
         static const PathPtr path_update_ptrs[MovControlCount] =
         {
@@ -53,9 +61,13 @@ namespace Movement
             &PacketBuilder::Spline_PathUpdate,
         };
 
-        (this->*path_update_ptrs[mode])(p);
     }
+        WorldPacket data;
+        (this->*path_update_ptrs[mode])(data);
 
+        if (!data.empty())
+            broadcast(data);
+    }
 
     void PacketBuilder::Spline_SpeedUpdate(SpeedType type, WorldPacket& data) const
     {
