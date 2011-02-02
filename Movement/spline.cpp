@@ -3,8 +3,8 @@
 #include <assert.h>
 #include <limits>
 #include <sstream>
+#include "G3D\Matrix4.h"
 
-using namespace G3D;
 namespace Movement{
 
 Spline::EvaluationMethtod Spline::evaluators[Spline::ModesCount] =
@@ -120,25 +120,26 @@ float Spline::SegLength( index_type Index ) const
 ///////////
 #pragma region evaluation methtods
 
-static const float s_catmullRomCoeffs[4][4]={
+using G3D::Matrix4;
+static const Matrix4 s_catmullRomCoeffs(
     -0.5f, 1.5f,-1.5f, 0.5f,
     1.f, -2.5f, 2.f, -0.5f,
     -0.5f, 0.f,  0.5f, 0.f,
-    0.f,  1.f,  0.f,  0.f};
+    0.f,  1.f,  0.f,  0.f);
 
-static const float s_Bezier3Coeffs[4][4]={
+static const Matrix4 s_Bezier3Coeffs(
     -1.f,  3.f, -3.f, 1.f,
     3.f, -6.f,  3.f, 0.f,
     -3.f,  3.f,  0.f, 0.f,
-    1.f,  0.f,  0.f, 0.f};
+    1.f,  0.f,  0.f, 0.f);
 
-static const float g3d_catmullrom_basis[4][4]={
+static const Matrix4 g3d_catmullrom_basis(
     0.5f, 2.f, -2.f, 0.5f,
     -1.f, -3.f, 3.f, -0.5f,
     0.5f, 0.f, 0.f, 0.f,
-    -0.f, 1.f, 0.f, 0.f};
+    -0.f, 1.f, 0.f, 0.f);
 
-/*
+/*  classic view:
 inline void C_Evaluate(const Vector3 *vertice, float t, const float (&matrix)[4][4], Vector3 &position)
 {
     Vector3 tvec(t*t*t, t*t, t);
@@ -162,41 +163,24 @@ inline void C_Evaluate(const Vector3 *vertice, float t, const float (&matrix)[4]
     position.z = z;
 }*/
 
-inline void C_Evaluate(const Vector3 *vertice, float t, const float (&matr)[4][4], Vector3 &result)
+using G3D::Matrix4;
+
+inline void C_Evaluate(const Vector3 *vertice, float t, const Matrix4& matr, Vector3 &result)
 {
-    float tvec[] = {t*t*t, t*t, t/*, 1.f*/};
+    Vector4 tvec(t*t*t, t*t, t, 1.f);
+    Vector4 weights(tvec * matr);
 
-    double matrix[4] = {
-        matr[0][0]*tvec[0] + matr[1][0]*tvec[1] + matr[2][0]*tvec[2] + matr[3][0],
-        matr[0][1]*tvec[0] + matr[1][1]*tvec[1] + matr[2][1]*tvec[2] + matr[3][1],
-        matr[0][2]*tvec[0] + matr[1][2]*tvec[1] + matr[2][2]*tvec[2] + matr[3][2],
-        matr[0][3]*tvec[0] + matr[1][3]*tvec[1] + matr[2][3]*tvec[2] + matr[3][3]
-    };
-
-    result.x = matrix[0]*vertice[0].x + matrix[1]*vertice[1].x + matrix[2]*vertice[2].x + matrix[3]*vertice[3].x;
-    result.y = matrix[0]*vertice[0].y + matrix[1]*vertice[1].y + matrix[2]*vertice[2].y + matrix[3]*vertice[3].y;
-    result.z = matrix[0]*vertice[0].z + matrix[1]*vertice[1].z + matrix[2]*vertice[2].z + matrix[3]*vertice[3].z;
+    result = vertice[0] * weights[0] + vertice[1] * weights[1]
+           + vertice[2] * weights[2] + vertice[3] * weights[3];
 }
 
-inline void C_Evaluate_Hermite(const Vector3 *vertice, float t, const float (&matr)[4][4], Vector3 &result)
+inline void C_Evaluate_Hermite(const Vector3 *vertice, float t, const Matrix4& matr, Vector3 &result)
 {
-    float tvec[] = {3.f*t*t, 2.f*t/*, 1.f, 0.f*/};
+    Vector4 tvec(3.f*t*t, 2.f*t, 1.f, 0.f);
+    Vector4 weights(tvec * matr);
 
-    double coeff_diffs[4] = {
-        matr[0][0]*tvec[0] + matr[1][0]*tvec[1] + matr[2][0],
-        matr[0][1]*tvec[0] + matr[1][1]*tvec[1] + matr[2][1],
-        matr[0][2]*tvec[0] + matr[1][2]*tvec[1] + matr[2][2],
-        matr[0][3]*tvec[0] + matr[1][3]*tvec[1] + matr[2][3]
-    };
-
-    result.x = vertice[0].x*coeff_diffs[0] + vertice[1].x*coeff_diffs[1] +
-        vertice[2].x*coeff_diffs[2] + vertice[3].x*coeff_diffs[3];
-
-    result.y = vertice[0].y*coeff_diffs[0] + vertice[1].y*coeff_diffs[1] +
-        vertice[2].y*coeff_diffs[2] + vertice[3].y*coeff_diffs[3];
-
-    result.z = vertice[0].z*coeff_diffs[0] + vertice[1].z*coeff_diffs[1] +
-        vertice[2].z*coeff_diffs[2] + vertice[3].z*coeff_diffs[3];
+    result = vertice[0] * weights[0] + vertice[1] * weights[1]
+           + vertice[2] * weights[2] + vertice[3] * weights[3];
 }
 
 void Spline::EvaluateLinear(index_type Idx, float u, Vector3& result) const
