@@ -94,28 +94,11 @@ void MovementState::Initialize( MovControlType controller, const Vector4& pos, u
     GetBuilder().SetControl(controller);
 }
 
-
-{
-}
-
-{
-    {
-
-}
-
-{
-    {
-    }
-
-}
-
 void SplineFace::ResetSplineState()
 {
     if (SplineEnabled())
     {
         UpdateState();
-
-
 
         DisableSpline();
         ResetDirection();
@@ -150,8 +133,6 @@ void SplineFace::SendPath()
     GetBuilder().PathUpdate(data);
     m_owner.SendMessageToSet(&data, true);
 }
-
-{
 
 MoveSplineInit& MoveSplineInit::MovebyPath( const PointsArray& controls )
 {
@@ -235,8 +216,6 @@ void MoveSplineInit::Launch()
 
         state.EnableSpline();
         state.SetForwardDirection();
-
-
     }
 }
 
