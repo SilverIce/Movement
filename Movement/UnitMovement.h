@@ -149,8 +149,7 @@ namespace Movement
     class SplineFace : public MovementState
     {
     public:
-        // set spline to default state - disabled
-        void ResetSplineState();
+        void ForceStop();
 
         inline void SendPath()
         {

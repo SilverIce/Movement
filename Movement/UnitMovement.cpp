@@ -94,18 +94,9 @@ void MovementState::Initialize( MovControlType controller, const Vector4& pos, u
     GetBuilder().SetControl(controller);
 }
 
-void SplineFace::ResetSplineState()
+void SplineFace::ForceStop()
 {
-    if (SplineEnabled())
-    {
-        UpdateState();
-
-        DisableSpline();
-        ResetDirection();
-
-        // TODO: should we send packet directly from here?
-        SendPath();
-    }
+    MoveSplineInit(*this).MoveTo(GetPosition3()).Launch();
 }
 
 void SplineFace::UpdateState()
