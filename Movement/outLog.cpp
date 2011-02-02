@@ -44,6 +44,16 @@ namespace Movement{
         fflush(log.file);
         fflush(stdout);
     }
+
+    void log_console(const char* str, ...)
+    {
+        va_list ap;
+        va_start(ap, str);
+        vfprintf(stdout, str, ap);
+        va_end(ap);
+        printf( "\n" );
+        fflush(stdout);
+    }
 }
 
 

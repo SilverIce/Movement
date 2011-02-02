@@ -40,6 +40,7 @@ namespace Movement
     }
 
     extern void log_write(const char* fmt, ...);
+    extern void log_console(const char* str, ...);
 
     using G3D::Vector3;
     using G3D::Vector4;
