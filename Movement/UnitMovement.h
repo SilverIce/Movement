@@ -128,6 +128,7 @@ namespace Movement
         SpeedType       speed_type;
         #pragma endregion
 
+        virtual void UpdateState();
 
 
         void ReCalculateCurrentSpeed();
@@ -156,7 +157,6 @@ namespace Movement
             GetBuilder().PathUpdate(MsgBroadcast(GetOwner()));
         }
 
-        void UpdateState();
     };
 
     /// Initializer for MoveSpline class

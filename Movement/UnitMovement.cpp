@@ -99,13 +99,16 @@ void SplineFace::ForceStop()
     MoveSplineInit(*this).MoveTo(GetPosition3()).Launch();
 }
 
-void SplineFace::UpdateState()
+void MovementState::UpdateState()
 {
+    uint32 now = getMSTime();
+    int32 difftime = getMSTimeDiff(last_ms_time, now);
+    last_ms_time = now;
+
     if (SplineEnabled())
     {
-        uint32 now = getMSTime();
-        move_spline.updateState(now);
-        SetPosition(move_spline.ComputePosition(), now);
+        move_spline.updateState(difftime);
+        SetPosition(move_spline.ComputePosition());
 
         if (move_spline.Finalized())
         {
