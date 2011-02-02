@@ -138,6 +138,12 @@ namespace Movement
         class SplineFace& GetSplineFace() { return (class SplineFace&)*this; }
     };
 
+    struct MsgBroadcast : public MsgDeliverMethtod
+    {
+        explicit MsgBroadcast( WorldObject& owner) : m_owner(owner) {}
+        virtual void operator()(WorldPacket& data);
+        WorldObject& m_owner;
+    };
 
 
     class SplineFace : public MovementState

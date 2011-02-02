@@ -273,4 +273,9 @@ MoveSplineInit& MoveSplineInit::SetAnimation(AnimType anim, float anim_time)
     return *this;
 }
 
+void MsgBroadcast::operator ()(WorldPacket& data)
+{
+    m_owner.SendMessageToSet(&data, true);
+}
+
 }
