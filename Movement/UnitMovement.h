@@ -152,7 +152,10 @@ namespace Movement
         // set spline to default state - disabled
         void ResetSplineState();
 
-        void SendPath();
+        inline void SendPath()
+        {
+            GetBuilder().PathUpdate(MsgBroadcast(GetOwner()));
+        }
 
         void UpdateState();
     };

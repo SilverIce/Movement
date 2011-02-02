@@ -127,13 +127,6 @@ void SplineFace::UpdateState()
     }
 }
 
-void SplineFace::SendPath()
-{
-    WorldPacket data;
-    GetBuilder().PathUpdate(data);
-    m_owner.SendMessageToSet(&data, true);
-}
-
 MoveSplineInit& MoveSplineInit::MovebyPath( const PointsArray& controls )
 {
     path.resize(controls.size() + 1);
