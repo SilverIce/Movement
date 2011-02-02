@@ -3,11 +3,8 @@
 #include "WorldPacket.h"
 #include "Object.h"
 
-#include <assert.h>
 
 namespace Movement{
-
-
 
 SpeedType MovementState::SelectSpeedType( bool is_walking /*= false*/ ) const
 {

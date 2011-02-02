@@ -4,7 +4,6 @@
 
 
 #include "UnitMovement.h"
-#include <assert.h>
 
 #include "ByteBufferExtensions.h"
 #include "Object.h"

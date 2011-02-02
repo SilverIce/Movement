@@ -8,6 +8,9 @@ namespace G3D
 
 extern unsigned int getMSTime();
 
+#include <assert.h>
+#define mov_assert(exp) assert(exp)
+
 namespace Movement
 {
     typedef signed char     int8;

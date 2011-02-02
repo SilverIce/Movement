@@ -1,6 +1,5 @@
 
 #include "spline.h"
-#include <assert.h>
 #include <limits>
 #include <sstream>
 #include "G3D\Matrix4.h"
@@ -93,11 +92,11 @@ Spline::index_type Spline::computeIndexInBounds( float length_, float t ) const
 
 void Spline::computeIndex(float t, index_type& index, float& u) const
 {
-    assert(t >= 0.f && t <= 1.f);
+    mov_assert(t >= 0.f && t <= 1.f);
 
     float length_ = t * length();
     index = computeIndexInBounds(length_, t);
-    assert(index < index_hi);
+    mov_assert(index < index_hi);
     u = (length_ - length(index)) / segment_length(index);
 }
 
@@ -185,50 +184,50 @@ inline void C_Evaluate_Hermite(const Vector3 *vertice, float t, const Matrix4& m
 
 void Spline::EvaluateLinear(index_type Idx, float u, Vector3& result) const
 {
-    assert(Idx >= 0 && Idx+1 < points.size());
+    mov_assert(Idx >= 0 && Idx+1 < points.size());
     result = points[Idx] + (points[Idx+1] - points[Idx]) * u;
 }
 
 void Spline::EvaluateCatmullRom( index_type Index, float t, Vector3& result) const
 {
-    assert(Index-1 >= 0 && Index+2 < points.size());
+    mov_assert(Index-1 >= 0 && Index+2 < points.size());
     C_Evaluate(&points[Index - 1], t, s_catmullRomCoeffs, result);
 }
 
 void Spline::EvaluateBezier3(index_type Index, float t, Vector3& result) const
 {
     Index *= 3u;
-    assert(Index >= 0 && Index+3 < points.size());
+    mov_assert(Index >= 0 && Index+3 < points.size());
     C_Evaluate(&points[Index], t, s_Bezier3Coeffs, result);
 }
 
 void Spline::EvaluateHermiteLinear(index_type Index, float, Vector3& result) const
 {
-    assert(Index >= 0 && Index+1 < points.size());
+    mov_assert(Index >= 0 && Index+1 < points.size());
     result = points[Index+1] - points[Index];
 }
 
 void Spline::EvaluateHermiteCatmullRom(index_type Index, float t, Vector3& result) const
 {
-    assert(Index-1 >= 0 && Index+2 < points.size());
-    C_Evaluate_Hermite(&points[Index - 1], t, s_catmullRomCoeffs, result); 
+    mov_assert(Index-1 >= 0 && Index+2 < points.size());
+    C_Evaluate_Hermite(&points[Index - 1], t, s_catmullRomCoeffs, result);
 }
 
 void Spline::EvaluateHermiteBezier3(index_type Index, float t, Vector3& result) const
 {
-    assert(Index-1 >= 0 && Index+2 < points.size());
-    C_Evaluate_Hermite(&points[Index - 1], t, s_Bezier3Coeffs, result); 
+    mov_assert(Index-1 >= 0 && Index+2 < points.size());
+    C_Evaluate_Hermite(&points[Index - 1], t, s_Bezier3Coeffs, result);
 }
 
 float Spline::SegLengthLinear(index_type i) const
 {
-    assert(i >= 0 && i+1 < points.size());
+    mov_assert(i >= 0 && i+1 < points.size());
     return (points[i] - points[i+1]).length();
 }
 
 float Spline::SegLengthCatmullRom( index_type Index ) const
 {
-    assert(Index-1 >= 0 && Index+2 < points.size());
+    mov_assert(Index-1 >= 0 && Index+2 < points.size());
 
     Vector3 curPos, nextPos;
     const Vector3 * p = &points[Index - 1];
@@ -249,7 +248,7 @@ float Spline::SegLengthCatmullRom( index_type Index ) const
 float Spline::SegLengthBezier3(index_type Index) const
 {
     Index *= 3u;
-    assert(Index >= 0 && Index+3 < points.size());
+    mov_assert(Index >= 0 && Index+3 < points.size());
 
     Vector3 curPos, nextPos;
     const Vector3 * p = &points[Index];
@@ -296,7 +295,7 @@ void Spline::init_cyclic_spline( const Vector3 * controls, const int count, Eval
 
 void Spline::InitLinear( const Vector3* controls, const int count, bool cyclic, int cyclic_point )
 {
-    assert(count >= 2);
+    mov_assert(count >= 2);
     const int real_size = count + 1;
 
     points.resize(real_size);
@@ -360,7 +359,7 @@ void Spline::InitBezier3( const Vector3* controls, const int count, bool cyclic,
 
     index_lo = 0;
     index_hi = t-1;
-    //assert(points.size() % 3 == 0);
+    //mov_assert(points.size() % 3 == 0);
 }
 
 void Spline::cacheLengths()

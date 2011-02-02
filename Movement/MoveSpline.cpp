@@ -12,7 +12,7 @@ MoveSplineCounter movespline_counter;
 
 void MoveSpline::updateState( uint32 ms_time_diff )
 {
-    assert(Initialized());
+    mov_assert(Initialized());
 
     if (splineflags & SPLINEFLAG_INSTANT)
     {
@@ -64,7 +64,7 @@ void MoveSpline::updateState( uint32 ms_time_diff )
 
 Vector4 MoveSpline::ComputePosition() const
 {
-    assert(Initialized());
+    mov_assert(Initialized());
 
     uint32 duration_ = modifiedDuration();
 
@@ -133,9 +133,9 @@ inline uint32 computeDuration(float length, float velocity)
 
 void MoveSpline::Initialize(const MoveSplineInitArgs& args)
 {
-    assert(!args.path.empty());
-    assert(args.velocity > 0.f);
-    assert(args.time_perc >= 0.f && args.time_perc <= 1.f);
+    mov_assert(!args.path.empty());
+    mov_assert(args.velocity > 0.f);
+    mov_assert(args.time_perc >= 0.f && args.time_perc <= 1.f);
 
     splineflags = args.flags;
     facing = args.facing;
