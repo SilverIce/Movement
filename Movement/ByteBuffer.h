@@ -48,6 +48,8 @@ public:
         return *this;
     }
 
+    size_t size() const { return 0;}
+
     size_t w_pos;
     size_t r_pos;
 };

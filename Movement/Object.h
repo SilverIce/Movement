@@ -39,6 +39,8 @@ public:
     uint64 GetGUID() const { return 0; }
 
     ByteBuffer m_packGuid;
+
+    const char* GetName() const { return "<fake WorldObject>";}
 };
 
 #endif
