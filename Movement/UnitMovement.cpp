@@ -248,6 +248,9 @@ void MoveSplineInit::Launch()
 
         state.EnableSpline();
         state.SetForwardDirection();
+
+        // shall MoveSpline initializer care about packet broadcasting?
+        state.GetBuilder().PathUpdate(MsgBroadcast(state.GetOwner()));
     }
 }
 
