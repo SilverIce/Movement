@@ -126,10 +126,15 @@ namespace Movement
         MoveSpline      move_spline;
 
         SpeedType       speed_type;
+
+        void updateRotation();
+
         #pragma endregion
 
         virtual void UpdateState();
 
+        void BindOrientationTo(MovementBase& target);
+        void UnbindOrientation();
 
         void ReCalculateCurrentSpeed();
         SpeedType SelectSpeedType(bool use_walk_forced) const;
@@ -183,7 +188,7 @@ namespace Movement
         // Adds final facing animation
         // sets unit's facing to specified point/angle/target after all path done
         // you can have only one final facing: previous will be overriden
-        MoveSplineInit& SetFacing(uint64 target_guid);
+        MoveSplineInit& SetFacing(MovementBase& target);
         MoveSplineInit& SetFacing(float angle);
         MoveSplineInit& SetFacing(Vector3 const& point);
 
@@ -213,6 +218,7 @@ namespace Movement
     private:
 
         MovementState&  state;
+        MovementBase*   target;
 
         // lets prevent dynamic allocation: that object should have short lifetime
         void* operator new(size_t);

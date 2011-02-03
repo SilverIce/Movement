@@ -94,6 +94,46 @@ void MovementState::Initialize( MovControlType controller, const Vector4& pos, u
     GetBuilder().SetControl(controller);
 }
 
+void MovementState::updateRotation(/*uint32 ms_time_diff*/)
+{
+    if (!IsOrientationBinded())
+        return;
+
+    const Vector3& t_pos = GetTarget()->GetPosition3();
+
+    position.w = G3D::wrap(atan2(t_pos.y - position.y, t_pos.x - position.x), 0.f, (float)G3D::twoPi());
+
+    // code below calculates facing angle base on turn speed, but seems this not needed:
+    // server-side rotation have instant speed, i.e. units are everytimes facing to their targets
+/*
+    float limit_angle = G3D::wrap(atan2(t_pos.y - position.y, t_pos.x - position.x), 0.f, (float)G3D::twoPi());
+    float total_angle_diff = fabs(position.w - limit_angle);
+
+    if (total_angle_diff > 10.f/180.f * G3D::pi())
+    {
+        float passed_angle_diff = ms_time_diff / 1000.f * speed_obj.turn;
+        passed_angle_diff = std::min(passed_angle_diff, total_angle_diff);
+
+        position.w += passed_angle_diff;
+
+        if (position.w > G3D::twoPi())
+            position.w -= G3D::twoPi();
+    }
+*/
+}
+
+void MovementState::BindOrientationTo(MovementBase& target)
+{
+    UnitBase::BindOrientationTo(target);
+    GetOwner().SetUInt64Value(UNIT_FIELD_TARGET, target.GetOwner().GetGUID());
+}
+
+void MovementState::UnbindOrientation()
+{
+    UnitBase::UnbindOrientation();
+    GetOwner().SetUInt64Value(UNIT_FIELD_TARGET, 0);
+}
+
 void SplineFace::ForceStop()
 {
     MoveSplineInit(*this).MoveTo(GetPosition3()).Launch();
@@ -119,6 +159,9 @@ void MovementState::UpdateState()
                 listener->OnSplineDone();
         }
     }
+
+    if (!SplineEnabled())
+        updateRotation();
 }
 
 MoveSplineInit& MoveSplineInit::MovebyPath( const PointsArray& controls )
@@ -176,10 +219,12 @@ MoveSplineInit& MoveSplineInit::SetVelocity( float vel )
 
 void MoveSplineInit::Launch()
 {
-    // update previous state first
-    if (state.SplineEnabled())
-        state.GetSplineFace().UpdateState();
+    state.UpdateState();
 
+    if (target)
+        state.BindOrientationTo(*target);
+    else
+        state.UnbindOrientation();
 
     if (velocity != 0.f)
     {
@@ -222,11 +267,13 @@ MoveSplineInit& MoveSplineInit::SetKnockBack( float max_height, float time_shift
     return *this;
 }
 
-MoveSplineInit& MoveSplineInit::SetFacing( uint64 t )
+MoveSplineInit& MoveSplineInit::SetFacing( MovementBase& t )
 {
-    facing.target = t;
+    facing.target = t.GetOwner().GetGUID();
     flags &= ~SPLINE_MASK_FINAL_FACING;
     flags |= SPLINEFLAG_FINAL_TARGET;
+
+    target = &t;
     return *this;
 }
 
@@ -248,7 +295,7 @@ MoveSplineInit& MoveSplineInit::SetFacing( Vector3 const& spot )
     return *this;
 }
 
-MoveSplineInit::MoveSplineInit(MovementState& m) : state(m)
+MoveSplineInit::MoveSplineInit(MovementState& m) : state(m), target(NULL)
 {
 }
 
