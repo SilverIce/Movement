@@ -219,8 +219,6 @@ MoveSplineInit& MoveSplineInit::SetVelocity( float vel )
 
 void MoveSplineInit::Launch()
 {
-    state.UpdateState();
-
     if (target)
         state.BindOrientationTo(*target);
     else
@@ -300,6 +298,7 @@ MoveSplineInit& MoveSplineInit::SetFacing( Vector3 const& spot )
 
 MoveSplineInit::MoveSplineInit(MovementState& m) : state(m), target(NULL)
 {
+    state.UpdateState();
 }
 
 MoveSplineInit& MoveSplineInit::SetAnimation(AnimType anim, float anim_time)
