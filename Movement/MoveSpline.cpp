@@ -133,7 +133,7 @@ inline uint32 computeDuration(float length, float velocity)
 
 void MoveSpline::Initialize(const MoveSplineInitArgs& args)
 {
-    mov_assert(!args.path.empty());
+    mov_assert(args.path.size() > 1);
     mov_assert(args.velocity > 0.f);
     mov_assert(args.time_perc >= 0.f && args.time_perc <= 1.f);
 
