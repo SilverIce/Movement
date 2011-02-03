@@ -153,7 +153,7 @@ namespace Movement
 
     enum SpeedType
     {
-        SpeedNone           =-1,
+        SpeedNotStandart    =-1,
 
         SpeedWalk           = 0,
         SpeedRun            = 1,

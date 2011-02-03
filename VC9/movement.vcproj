@@ -235,6 +235,10 @@
 			>
 		</File>
 		<File
+			RelativePath="..\Movement\LinkedList.h"
+			>
+		</File>
+		<File
 			RelativePath="..\Movement\movement_lib.h"
 			>
 		</File>
@@ -253,17 +257,6 @@
 		<File
 			RelativePath="..\Movement\MoveSpline.h"
 			>
-		</File>
-			RelativePath="..\Movement\movestates.h"
-			>
-			<FileConfiguration
-				Name="Debug|Win32"
-				ExcludedFromBuild="true"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-				/>
-			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="..\Movement\Session.h"

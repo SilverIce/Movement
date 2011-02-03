@@ -194,7 +194,7 @@ namespace Movement
 
         // 
         // controls - array of points, shouldn't be empty
-        MoveSplineInit& MovebyPath(const PointsArray& controls, uint32 path_offset=0);
+        MoveSplineInit& MovebyPath(const PointsArray& controls);
         // Initializes spline for simple A to B motion, A is current unit's position, B is destination
         MoveSplineInit& MoveTo(const Vector3& destination);
 

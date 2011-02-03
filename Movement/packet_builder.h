@@ -39,7 +39,7 @@ namespace Movement
         void WriteClientStatus(ByteBuffer&) const;
 
     public:
-        PacketBuilder(MovementState *const dat, MovControlType c);
+        PacketBuilder(MovementState& dat, MovControlType c);
         ~PacketBuilder();
 
         void SpeedUpdate(SpeedType type, MsgDeliverMethtod&) const;

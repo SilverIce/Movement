@@ -61,7 +61,6 @@ namespace Movement
             &PacketBuilder::Spline_PathUpdate,
         };
 
-    }
         WorldPacket data;
         (this->*path_update_ptrs[mode])(data);
 

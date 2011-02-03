@@ -48,6 +48,12 @@ namespace Movement
     using G3D::Vector3;
     using G3D::Vector4;
 
+    template<typename T, size_t N>
+    inline size_t CountOf(const T (&t)[N])
+    {
+        return N;
+    }
+
     template<bool> struct _assert_fail;
     template<> struct _assert_fail<true> { enum{value = 1}; };
 

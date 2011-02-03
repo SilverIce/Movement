@@ -183,8 +183,6 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
     if (!duration)
         duration = 1;
 
-    segment_Idx = spline.first();
-
     // path initialized, duration is known and i able to compute parabolic acceleration
     if (splineflags & (SPLINEFLAG_TRAJECTORY|SPLINEFLAG_ANIMATION))
     {

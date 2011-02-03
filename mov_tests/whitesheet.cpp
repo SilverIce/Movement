@@ -1,11 +1,13 @@
 #pragma once
 
-#include "movement.h"
 #include "simpleworld.h"
 #include "g3d_based.h"
-#include "outLog.h"
 #include "spline.h"
-#include "IPathFinder.h"
+#include "UnitMovement.h"
+#include "ByteBuffer.h"
+#include "movelistener.h"
+
+#include "AllocationStatistic.h"
 
 static G3D::Matrix4 g3d_catmullrom_basis2(
     0.5f, 2.f, -2.f, 0.5f,
@@ -29,7 +31,7 @@ Speed5: 7
 Speed6: 4.5
 Speed7: 3.141593
 Speed8: 3.141593
-Spline Flags: WALKMODE, FLYING, UNKNOWN1
+Spline Flags: WALKMODE, FLYING, CYCLIC
 Spline CurrTime: 619
 Spline FullTime: 16420
 Spline Unk: 0000043C
@@ -80,7 +82,7 @@ Vector3 nodes[] =
 Vector3 nodes2[] =
 {
     //Vector3(-3982.866,	950.2649,	58.96975),
-/*1*/    Vector3(-4000.046,	985.8019,	61.02531),
+    /*1*/    Vector3(-4000.046,	985.8019,	61.02531),
     Vector3(-3981.982,	1017.846,	58.96975),
     Vector3(-3949.962,	1033.053,	56.85864),
     Vector3(-3918.825,	1014.746,	58.33086),
@@ -89,55 +91,97 @@ Vector3 nodes2[] =
     Vector3(-3950.793,	934.2088,	58.96975),
 
     Vector3(-3982.866,	950.2649,	58.96975),
-/*9*/    //Vector3(-4000.046,	985.8019,	61.02531),
+    /*9*/    //Vector3(-4000.046,	985.8019,	61.02531),
     //Vector3(-3981.982,	1017.846,	58.96975),
 };
 
 
+
+struct Coords3
+{
+    float x, y, z;
+};
+
+
+Coords3 tt[] =
+{
+    {1, 0, 0},
+    {10, 0, 0},
+    {20, 0, 0},
+    {40, 0, 0},
+};
+
+struct WP_test : public TestArea, public IListener 
+{
+    void OnEvent(int eventId, int data)
+    {
+        log_write("OnEvent: eventId %d, point %d", eventId, data);
+        log_write("current position: %s", st.GetPosition3().toString().c_str());
+        log_write("");
+    }
+    void OnSplineDone()
+    {
+        log_write("SplineDone");
+        log_write("");
+
+        //move();
+    }
+
+    WorldObject * fake;
+    MovementState st;
+
+    WP_test() : st(fake)
+    {
+        st.SetListener(this);
+        st.SetPosition(nodes2[0]);
+
+        move();
+    }
+
+    void move()
+    {
+        PointsArray path;
+        for (int i = 0; i < CountOf(nodes2); ++i)
+            path.push_back(nodes2[i]);
+
+        MoveSplineInit(st).MovebyPath(path).SetVelocity(15).SetCyclic().Launch();
+    }
+
+    void Update(const uint32 diff)
+    {
+        st.UpdateState();
+    }
+};
+
+void test_list();
+
 void test()
 {
+    sWorld.Run();
+}
 
-    SplinePure spline;
-    spline.init_path(nodes, sizeof(nodes)/sizeof(Vector3),
-        SplineModeLinear);
-
-    float N = 20;
-    float dur = 1.5, part = 1/N;
-    for (float i = 0; i <= dur; i += part )
+void test_list()
+{
+    LinkedListElement<int> elements[10];
+    LinkedList<int> list;
+    for (int i = 0; i < CountOf(elements); ++i)
     {
-        Vector3 c;
-        spline.evaluate_percent(i, c);
+        elements[i].Value = i;
+        list.link(elements[i]);
     }
-    return;
 
-
-    SplinePure mover;
-    mover.init_path(nodes, sizeof(nodes)/sizeof(Vector3) , SplineModeCatmullrom);
-
-    GD3_spline catm;
-    catm.cyclic = mover.isCyclic();
-    for (int i = 0; i < sizeof(nodes)/sizeof(Vector3); ++i)
-        catm.append( nodes[i]);
-    //catm.finalInterval = mover.finalInterval;
-
-    dur = catm.duration(), part = dur/N;
-//     sLog.write("G3D spline:");
-//     for (float i = 0; i <= dur; i += part )
-//     {
-//         Vector3 c;
-//         catm.evaluate(i, c, g3d_catmullrom_basis2);
-//         sLog.write("%f   %f", c.x, c.y);
-//     }
-
-    movLog.write("\nMine spline:");
-    dur = 1, part = 1/N;
-    for (float i = 0; i <= dur; i += part )
+    struct _counter
     {
-        Vector3 v;
-        mover.evaluate_percent(i, v);
-    }
+        int count;
+        _counter() : count(0) {}
+        void operator()(int& i) {++count;}
+    };
+
+    _counter cc;
+    list.Visit(cc);
 }
 
 void World::InitWorld()
 {
+    new WP_test();
 }
