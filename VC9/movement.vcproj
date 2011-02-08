@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\G3D.lib\include\"
+				AdditionalIncludeDirectories="..\dep\g3dlite\include\"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;USE_FAKE_CLASSES"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -110,7 +110,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="false"
 				WholeProgramOptimization="false"
-				AdditionalIncludeDirectories="..\G3D.lib\include\"
+				AdditionalIncludeDirectories="..\dep\g3dlite\include\"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;USE_FAKE_CLASSES"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"

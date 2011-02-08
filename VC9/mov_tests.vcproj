@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\Movement;..\G3D.lib\include\"
+				AdditionalIncludeDirectories="..\Movement;..\dep\g3dlite\include\"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -121,7 +121,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="false"
 				WholeProgramOptimization="false"
-				AdditionalIncludeDirectories="..\Movement;..\G3D.lib\include\"
+				AdditionalIncludeDirectories="..\Movement;..\dep\g3dlite\include\"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -140,6 +140,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalOptions="/LTCG"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="1"
