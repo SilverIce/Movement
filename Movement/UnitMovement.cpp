@@ -59,8 +59,9 @@ void MovementState::ApplyMoveMode( MoveMode mode, bool apply )
     }
 }
 
-MovementState::MovementState(WorldObject * owner) : UnitBase(*owner), msg_builder(*this, MovControlServer)
+MovementState::MovementState(WorldObject * owner) : UnitBase(*owner)
 {
+    control_mode = MovControlServer;
     move_mode = 0;
     last_ms_time = 0;
     moveFlags = 0;
@@ -88,10 +89,10 @@ void MovementState::ReCalculateCurrentSpeed()
 
 void MovementState::Initialize( MovControlType controller, const Vector4& pos, uint32 ms_time )
 {
-    last_ms_time = ms_time;
-
     SetPosition(pos);
-    GetBuilder().SetControl(controller);
+
+    last_ms_time = ms_time;
+    control_mode = controller;
 }
 
 void MovementState::updateRotation(/*uint32 ms_time_diff*/)
@@ -248,7 +249,7 @@ void MoveSplineInit::Launch()
         state.SetForwardDirection();
 
         // shall MoveSpline initializer care about packet broadcasting?
-        state.GetBuilder().PathUpdate(MsgBroadcast(state.GetOwner()));
+        PacketBuilder::PathUpdate(state, MsgBroadcast(state));
     }
 }
 

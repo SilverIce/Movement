@@ -19,9 +19,8 @@ namespace Movement
         {
         }
 
-        PacketBuilder& GetBuilder() { return msg_builder; }
-        const PacketBuilder& GetBuilder() const { return msg_builder; }
-        PacketBuilder msg_builder;
+        void SetControl(MovControlType c) { control_mode = c; }
+        MovControlType GetControl() const { return control_mode; }
 
         #pragma region field accessors
 
@@ -97,6 +96,8 @@ namespace Movement
             float current;
         };
 
+        MovControlType  control_mode;
+
         uint32          last_ms_time;
         uint32          move_mode;
 
@@ -146,7 +147,9 @@ namespace Movement
 
     struct MsgBroadcast : public MsgDeliverMethtod
     {
-        explicit MsgBroadcast( WorldObject& owner) : m_owner(owner) {}
+        explicit MsgBroadcast(WorldObject& owner) : m_owner(owner) {}
+        explicit MsgBroadcast(MovementBase* m) : m_owner(m->GetOwner()) {}
+        explicit MsgBroadcast(MovementBase& m) : m_owner(m.GetOwner()) {}
         virtual void operator()(WorldPacket& data);
         WorldObject& m_owner;
     };
@@ -157,9 +160,9 @@ namespace Movement
     public:
         void ForceStop();
 
-        inline void SendPath()
+        void SendPath()
         {
-            GetBuilder().PathUpdate(MsgBroadcast(GetOwner()));
+            PacketBuilder::PathUpdate(impl, MsgBroadcast(&impl));
         }
 
     };

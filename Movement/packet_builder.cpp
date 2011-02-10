@@ -2,7 +2,6 @@
 #include "packet_builder.h"
 #include "opcodes.h"
 
-
 #include "UnitMovement.h"
 
 #include "ByteBufferExtensions.h"
@@ -10,20 +9,11 @@
 
 namespace Movement
 {
-    PacketBuilder::PacketBuilder(MovementState &state, MovControlType c)
-        : mode(c), mov(state)
-    {
-    }
+    typedef void (*SpeedPtr)(const MovementState&,SpeedType,WorldPacket&);
+    typedef void (*MoveModePtr)(const MovementState&,MoveMode,WorldPacket&);
+    typedef void (*PathPtr)(const MovementState&,WorldPacket&);
 
-    PacketBuilder::~PacketBuilder()
-    {
-    }
-
-    typedef void (PacketBuilder::*SpeedPtr)(SpeedType,WorldPacket&) const;
-    typedef void (PacketBuilder::*MoveModePtr)(MoveMode,WorldPacket&) const;
-    typedef void (PacketBuilder::*PathPtr)(WorldPacket&) const;
-
-    void PacketBuilder::SpeedUpdate(SpeedType type, MsgDeliverMethtod& broadcast) const
+    void PacketBuilder::SpeedUpdate(const MovementState& mov, SpeedType type, MsgDeliverMethtod& broadcast)
     {
         static const SpeedPtr speed_ptrs[MovControlCount] =
         {
@@ -32,13 +22,13 @@ namespace Movement
         };
 
         WorldPacket data;
-        (this->*speed_ptrs[mode])(type, data);
+        speed_ptrs[mov.GetControl()](mov, type, data);
 
         if (!data.empty())  // currently it's can be empty
             broadcast(data);
     }
 
-    void PacketBuilder::MoveModeUpdate(MoveMode move_mode, MsgDeliverMethtod& broadcast) const
+    void PacketBuilder::MoveModeUpdate(const MovementState& mov, MoveMode move_mode, MsgDeliverMethtod& broadcast)
     {
         static const MoveModePtr move_mode_ptrs[MovControlCount] =
         {
@@ -47,13 +37,13 @@ namespace Movement
         };
 
         WorldPacket data;
-        (this->*move_mode_ptrs[mode])(move_mode, data);
+        move_mode_ptrs[mov.GetControl()](mov, move_mode, data);
 
         if (!data.empty())
             broadcast(data);
     }
 
-    void PacketBuilder::PathUpdate(MsgDeliverMethtod& broadcast) const
+    void PacketBuilder::PathUpdate(const MovementState& mov, MsgDeliverMethtod& broadcast)
     {
         static const PathPtr path_update_ptrs[MovControlCount] =
         {
@@ -62,13 +52,13 @@ namespace Movement
         };
 
         WorldPacket data;
-        (this->*path_update_ptrs[mode])(data);
+        path_update_ptrs[mov.GetControl()](mov, data);
 
         if (!data.empty())
             broadcast(data);
     }
 
-    void PacketBuilder::Spline_SpeedUpdate(SpeedType type, WorldPacket& data) const
+    void PacketBuilder::Spline_SpeedUpdate(const MovementState& mov, SpeedType type, WorldPacket& data)
     {
         uint16 opcode = S_Speed2Opc_table[type];
 
@@ -77,7 +67,7 @@ namespace Movement
         data << mov.GetSpeed(type);
     }
 
-    void PacketBuilder::Spline_MoveModeUpdate(MoveMode mode, WorldPacket& data) const
+    void PacketBuilder::Spline_MoveModeUpdate(const MovementState& mov, MoveMode mode, WorldPacket& data)
     {
         uint16 opcode = S_Mode2Opc_table[mode][mov.HasMode(mode)];
 
@@ -85,13 +75,13 @@ namespace Movement
         data << mov.GetOwner().GetPackGUID();
     }
 
-    void PacketBuilder::Spline_PathUpdate(WorldPacket& data) const
+    void PacketBuilder::Spline_PathUpdate(const MovementState& mov, WorldPacket& data) const
     {
         uint16 opcode = SMSG_MONSTER_MOVE;
 
         const MoveSpline& splineInfo = mov.move_spline;
 
-        data.Initialize(opcode, 30);
+        data.Initialize(opcode, 60);
 
         // TODO: find more generic way
         if (!mov.SplineEnabled())
@@ -175,89 +165,46 @@ namespace Movement
         }
     }
 
-    void PacketBuilder::Client_MoveModeUpdate(MoveMode /*type*/, WorldPacket& data) const
+    void PacketBuilder::Client_MoveModeUpdate(const MovementState& mov, MoveMode /*type*/, WorldPacket& data)
     {
-        //WriteClientStatus(data);
+        WriteClientStatus(mov, data);
     }
 
-    void PacketBuilder::Client_SpeedUpdate(SpeedType ty, WorldPacket& data) const
+    void PacketBuilder::Client_SpeedUpdate(const MovementState& mov, SpeedType ty, WorldPacket& data)
     {
-        bool forced = true;
+        bool forced = false;
 
-        //WorldObject *m = mov.wow_object;
         uint16 opcode = SetSpeed2Opc_table[ty][forced];
 
-        //data.Initialize(opcode, 10); 
-        //data << mov.GetOwner().GetPackGUID();
+        data.Initialize(opcode, 30);
+        data << mov.GetOwner().GetPackGUID();
 
-        //if(!forced)
-        //{
-        //    WriteClientStatus(data);
-        //}
-        //else
-        //{
-        //    if(m->GetTypeId() == TYPEID_PLAYER)
-        //        ++((Player*)this)->m_forced_speed_changes[ty];
-        //    data << (uint32)0;                                  // moveEvent, NUM_PMOVE_EVTS = 0x39
-        //    if (ty == MOVE_RUN)
-        //        data << uint8(0);                               // new 2.1.0
-        //}
+        if(!forced)
+        {
+            WriteClientStatus(mov,data);
+        }
+        else
+        {
+            data << (uint32)0;                                  // moveEvent, NUM_PMOVE_EVTS = 0x39
+            if (ty == SpeedRun)
+                data << uint8(0);                               // new 2.1.0
+        }
 
-        //data << mov.GetSpeed(ty);
+        data << mov.GetSpeed(ty);
     }
 
-    void PacketBuilder::Client_PathUpdate(WorldPacket& data) const
+    void PacketBuilder::Client_PathUpdate(const MovementState& mov, WorldPacket& data)
     {
         //WriteClientStatus(data);
         // do nothing
     }
 
-    void PacketBuilder::WriteClientStatus( ByteBuffer& data ) const
+    void PacketBuilder::FullUpdate(const MovementState& mov, ByteBuffer& data)
     {
-        data << mov.moveFlags;
-        data << mov.move_flags2;
-
-        data << mov.last_ms_time;
-        data << mov.position;
-
-        if (mov.HasMovementFlag(MOVEFLAG_ONTRANSPORT))
-        {
-            data << mov.m_transport.t_guid;
-            data << mov.m_transport.t_offset;
-            data << mov.m_transport.t_time;
-            data << mov.m_transport.t_seat;
-
-            if (mov.move_flags2 & MOVEFLAG2_INTERP_MOVE)
-                data << mov.m_transport.t_time2;
-        }
-
-        if (mov.HasMovementFlag(MOVEFLAG_SWIMMING | MOVEFLAG_FLYING) || (mov.move_flags2 & MOVEFLAG2_ALLOW_PITCHING))
-        {
-            data << mov.s_pitch;
-        }
-
-        data << mov.fallTime;
-
-        if (mov.HasMovementFlag(MOVEFLAG_FALLING))
-        {
-            data << mov.j_velocity;
-            data << mov.j_sinAngle;
-            data << mov.j_cosAngle;
-            data << mov.j_xy_velocy;
-        }
-
-        if (mov.HasMovementFlag(MOVEFLAG_SPLINE_ELEVATION))
-        {
-            data << mov.u_unk1;
-        }
-    }
-
-    void PacketBuilder::FullUpdate( ByteBuffer& data) const
-    {
-        WriteClientStatus(data);
+        WriteClientStatus(mov,data);
 
         data.append<float>(&mov.speed[SpeedWalk], SpeedMaxCount);
-        
+
         if (mov.HasMovementFlag(MOVEFLAG_SPLINE_ENABLED))
         {
             // for debugging
@@ -309,6 +256,86 @@ namespace Movement
             data << uint8(splineInfo.spline.mode());
 
             data << splineInfo.finalDestination;
+        }
+    }
+
+    void PacketBuilder::ReadClientStatus(MovementState& mov, ByteBuffer& data)
+    {
+        data >> mov.moveFlags;
+        data >> mov.move_flags2;
+
+        data.read_skip<uint32>();// >> mov.last_ms_time;
+        data >> mov.position;
+
+        if (mov.HasMovementFlag(MOVEFLAG_ONTRANSPORT))
+        {
+            data >> mov.m_transport.t_guid;
+            data >> mov.transport_offset;
+            data >> mov.m_transport.t_time;
+            data >> mov.m_transport.t_seat;
+
+            if (mov.move_flags2 & MOVEFLAG2_INTERP_MOVE)
+                data >> mov.m_transport.t_time2;
+        }
+
+        if (mov.HasMovementFlag(MOVEFLAG_SWIMMING | MOVEFLAG_FLYING) || (mov.move_flags2 & MOVEFLAG2_ALLOW_PITCHING))
+        {
+            data >> mov.s_pitch;
+        }
+
+        data >> mov.fallTime;
+
+        if (mov.HasMovementFlag(MOVEFLAG_FALLING))
+        {
+            data >> mov.j_velocity;
+            data >> mov.j_sinAngle;
+            data >> mov.j_cosAngle;
+            data >> mov.j_xy_velocy;
+        }
+
+        if (mov.HasMovementFlag(MOVEFLAG_SPLINE_ELEVATION))
+        {
+            data >> mov.u_unk1;
+        }
+    }
+
+    void PacketBuilder::WriteClientStatus(const MovementState& mov, ByteBuffer& data)
+    {
+        data << mov.moveFlags;
+        data << mov.move_flags2;
+
+        data << sMoveUpdater.TickCount();
+        data << mov.position;
+
+        if (mov.HasMovementFlag(MOVEFLAG_ONTRANSPORT))
+        {
+            data << mov.m_transport.t_guid;
+            data << mov.transport_offset;
+            data << mov.m_transport.t_time;
+            data << mov.m_transport.t_seat;
+
+            if (mov.move_flags2 & MOVEFLAG2_INTERP_MOVE)
+                data << mov.m_transport.t_time2;
+        }
+
+        if (mov.HasMovementFlag(MOVEFLAG_SWIMMING | MOVEFLAG_FLYING) || (mov.move_flags2 & MOVEFLAG2_ALLOW_PITCHING))
+        {
+            data << mov.s_pitch;
+        }
+
+        data << mov.fallTime;
+
+        if (mov.HasMovementFlag(MOVEFLAG_FALLING))
+        {
+            data << mov.j_velocity;
+            data << mov.j_sinAngle;
+            data << mov.j_cosAngle;
+            data << mov.j_xy_velocy;
+        }
+
+        if (mov.HasMovementFlag(MOVEFLAG_SPLINE_ELEVATION))
+        {
+            data << mov.u_unk1;
         }
     }
 }

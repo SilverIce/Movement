@@ -168,6 +168,13 @@ namespace Movement
         SpeedMaxCount       = 9,
     };
 
+    enum MovControlType
+    {
+        MovControlClient,
+        MovControlServer,
+        MovControlCount,
+    };
+
     extern const double gravity;
     extern const float terminalVelocity;
 

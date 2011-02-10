@@ -8,13 +8,6 @@ class WorldPacket;
 
 namespace Movement
 {
-    enum MovControlType
-    {
-        MovControlClient,
-        MovControlServer,
-        MovControlCount,
-    };
-
     struct MsgDeliverMethtod
     {
         virtual void operator()(WorldPacket&){}
@@ -24,30 +17,22 @@ namespace Movement
 
     class PacketBuilder
     {
-        MovementState& mov;
-        MovControlType mode;
+        static void Client_SpeedUpdate(const MovementState& mov, SpeedType type, WorldPacket&);
+        static void Client_MoveModeUpdate(const MovementState& mov, MoveMode mode, WorldPacket&);
+        static void Client_PathUpdate(const MovementState& mov, WorldPacket&);
 
-        void Client_SpeedUpdate(SpeedType type, WorldPacket&) const;
-        void Client_MoveModeUpdate(MoveMode mode, WorldPacket&) const;
-        void Client_PathUpdate(WorldPacket&) const;
-
-        void Spline_SpeedUpdate(SpeedType type, WorldPacket&) const;
-        void Spline_MoveModeUpdate(MoveMode mode, WorldPacket&) const;
-        void Spline_PathUpdate(WorldPacket&) const;
-
-        // helpers
-        void WriteClientStatus(ByteBuffer&) const;
+        static void Spline_SpeedUpdate(const MovementState& mov, SpeedType type, WorldPacket&);
+        static void Spline_MoveModeUpdate(const MovementState& mov, MoveMode mode, WorldPacket&);
+        static void Spline_PathUpdate(const MovementState& mov, WorldPacket&);
 
     public:
-        PacketBuilder(MovementState& dat, MovControlType c);
-        ~PacketBuilder();
 
-        void SpeedUpdate(SpeedType type, MsgDeliverMethtod&) const;
-        void MoveModeUpdate(MoveMode mode, MsgDeliverMethtod&) const;
-        void PathUpdate(MsgDeliverMethtod&) const;
-        void FullUpdate(ByteBuffer& ) const;
+        static void SpeedUpdate(const MovementState& mov, SpeedType type, MsgDeliverMethtod&);
+        static void MoveModeUpdate(const MovementState& mov, MoveMode mode, MsgDeliverMethtod&);
+        static void PathUpdate(const MovementState& mov, MsgDeliverMethtod&);
+        static void FullUpdate(const MovementState& mov, ByteBuffer& );
 
-        void SetControl(MovControlType c) { mode = c; }
-        MovControlType GetControl() const { return mode; }
+        static void WriteClientStatus(const MovementState& mov, ByteBuffer& data);
+        static void ReadClientStatus(MovementState& mov, ByteBuffer& data);
     };
 }
