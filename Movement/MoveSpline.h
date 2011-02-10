@@ -61,6 +61,10 @@ namespace Movement {
         float velocity;
         float parabolic_heigth;
         float time_perc;
+
+        bool Validate() const;
+    private:
+        bool _checkPathBounds() const;
     };
 
     class MoveSpline

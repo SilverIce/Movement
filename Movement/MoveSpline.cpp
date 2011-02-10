@@ -133,9 +133,7 @@ inline uint32 computeDuration(float length, float velocity)
 
 void MoveSpline::Initialize(const MoveSplineInitArgs& args)
 {
-    mov_assert(args.path.size() > 1);
-    mov_assert(args.velocity > 0.f);
-    mov_assert(args.time_perc >= 0.f && args.time_perc <= 1.f);
+    mov_assert(args.Validate());
 
     splineflags = args.flags;
     facing = args.facing;
@@ -214,6 +212,35 @@ MoveSpline::MoveSpline() : m_Id(MoveSplineCounter::Lower_limit), splineflags(0),
     time_passed(0), duration(0), //duration_mod(1.f), duration_mod_next(1.f),
     vertical_acceleration(1.f), spec_effect_time(0)
 {
+}
+
+/// ============================================================================================
+
+bool MoveSplineInitArgs::Validate() const
+{
+    return path.size() > 1 && velocity > 0.f &&
+        time_perc >= 0.f && time_perc <= 1.f && _checkPathBounds();
+}
+
+// MONSTER_MOVE packet format limitation for not CatmullRom movement:
+// extent of path vertices should fit inside 255x255x255 bounding box
+bool MoveSplineInitArgs::_checkPathBounds() const
+{
+    if (!(flags & MoveSplineFlag::Mask_CatmullRom) && path.size() > 2)
+    {
+        Vector3 middle = (path.front()+path.back()) / 2;
+        Vector3 offset;
+        for (uint32 i = 1; i < path.size()-1; ++i)
+        {
+            offset = path[i] - middle;
+            if (fabs(offset.x) >= 255 || fabs(offset.y) >= 255 || fabs(offset.z) >= 255)
+            {
+                log_console("MoveSplineInitArgs::_checkPathBounds check failed");
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 }
