@@ -30,7 +30,7 @@ Spline::SegLenghtMethtod Spline::seglengths[Spline::ModesCount] =
 Spline::InitMethtod Spline::initializers[Spline::ModesCount] =
 {
     //&Spline::InitLinear,
-    &Spline::InitCatmullRom,    // we should use catmullrom initializer even for linear mode! (client's internal structure limitation) 
+    &Spline::InitCatmullRom,    // we should use catmullrom initializer even for linear mode! (client's internal structure limitation)
     &Spline::InitCatmullRom,
     &Spline::InitBezier3,
 };
@@ -40,8 +40,7 @@ void Spline::evaluate_percent( float t, Vector3 & c ) const
     index_type Index;
     float u;
     computeIndex(t, Index, u);
-
-    (this->*evaluators[m_mode])(Index, u, c);
+    evaluate_percent(Index, u, c);
 }
 
 void Spline::evaluate_hermite(float t, Vector3& hermite) const
@@ -49,8 +48,7 @@ void Spline::evaluate_hermite(float t, Vector3& hermite) const
     index_type Index;
     float u;
     computeIndex(t, Index, u);
-
-    (this->*hermite_evaluators[m_mode])(Index, u, hermite);
+    evaluate_hermite(Index, u, hermite);
 }
 
 void Spline::evaluate_percent_and_hermite(float t, Vector3 & c, Vector3& hermite) const
@@ -322,7 +320,7 @@ void Spline::InitCatmullRom( const Vector3* controls, const int count, bool cycl
     lengths.resize(real_size,0.f);
 
     int lo_idx = 1;
-    int high_idx = lo_idx + count - 1; 
+    int high_idx = lo_idx + count - 1;
 
     memcpy(&points[lo_idx],controls, sizeof(Vector3) * count);
 

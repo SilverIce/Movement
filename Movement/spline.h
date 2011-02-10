@@ -26,6 +26,7 @@ public:
         ModesCount,
     };
 
+    #pragma region fields
 protected:
 
     PointsArray points;
@@ -46,7 +47,6 @@ protected:
     void cacheLengths();
 
     index_type computeIndexInBounds(float length, float t) const;
-    void computeIndex(float t, index_type& , float& u) const;
 
 protected:
 
@@ -81,6 +81,7 @@ protected:
         STEPS_PER_SEGMENT = 2,
     };
     static_assert(STEPS_PER_SEGMENT > 0);
+    #pragma endregion
 public:
 
     explicit Spline();
@@ -88,9 +89,19 @@ public:
     // 't' - percent of spline's length, assumes that t in range [0, 1]
     void evaluate_percent(float t, Vector3 & c) const;
     void evaluate_hermite(float t, Vector3& hermite) const;
+    void evaluate_percent(index_type Idx, float u, Vector3& c) const
+    {
+        (this->*evaluators[m_mode])(Idx,u,c);
+    }
+    void evaluate_hermite(index_type Idx, float u, Vector3& hermite) const
+    {
+        (this->*hermite_evaluators[m_mode])(Idx,u,hermite);
+    }
+
     void evaluate_percent_and_hermite(float t, Vector3 & c, Vector3& hermite) const;
 
     index_type computeIndexInBounds(float t) const;
+    void computeIndex(float t, index_type& , float& u) const;
 
     void init_spline(const Vector3 * controls, const int N, EvaluationMode m);
     void init_cyclic_spline(const Vector3 * controls, const int N, EvaluationMode m, int cyclic_point);
