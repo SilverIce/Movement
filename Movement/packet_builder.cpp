@@ -24,7 +24,7 @@ namespace Movement
         WorldPacket data;
         speed_ptrs[mov.GetControl()](mov, type, data);
 
-        if (!data.empty())  // currently it's can be empty
+        if (!data.empty())  // currently it can be empty
             broadcast(data);
     }
 
@@ -75,7 +75,7 @@ namespace Movement
         data << mov.GetOwner().GetPackGUID();
     }
 
-    void PacketBuilder::Spline_PathUpdate(const MovementState& mov, WorldPacket& data) const
+    void PacketBuilder::Spline_PathUpdate(const MovementState& mov, WorldPacket& data)
     {
         uint16 opcode = SMSG_MONSTER_MOVE;
 
