@@ -1,115 +1,40 @@
 
 #include "spline.h"
-#include <limits>
 #include <sstream>
 #include "G3D\Matrix4.h"
 
 namespace Movement{
 
-Spline::EvaluationMethtod Spline::evaluators[Spline::ModesCount] =
+SplineBase::EvaluationMethtod SplineBase::evaluators[SplineBase::ModesCount] =
 {
-    &Spline::EvaluateLinear,
-    &Spline::EvaluateCatmullRom,
-    &Spline::EvaluateBezier3,
+    &SplineBase::EvaluateLinear,
+    &SplineBase::EvaluateCatmullRom,
+    &SplineBase::EvaluateBezier3,
 };
 
-Spline::EvaluationMethtod Spline::hermite_evaluators[Spline::ModesCount] =
+SplineBase::EvaluationMethtod SplineBase::hermite_evaluators[SplineBase::ModesCount] =
 {
-    &Spline::EvaluateHermiteLinear,
-    &Spline::EvaluateHermiteCatmullRom,
-    &Spline::EvaluateHermiteBezier3,
+    &SplineBase::EvaluateHermiteLinear,
+    &SplineBase::EvaluateHermiteCatmullRom,
+    &SplineBase::EvaluateHermiteBezier3,
 };
 
-Spline::SegLenghtMethtod Spline::seglengths[Spline::ModesCount] =
+SplineBase::SegLenghtMethtod SplineBase::seglengths[SplineBase::ModesCount] =
 {
-    &Spline::SegLengthLinear,
-    &Spline::SegLengthCatmullRom,
-    &Spline::SegLengthBezier3,
+    &SplineBase::SegLengthLinear,
+    &SplineBase::SegLengthCatmullRom,
+    &SplineBase::SegLengthBezier3,
 };
 
-Spline::InitMethtod Spline::initializers[Spline::ModesCount] =
+SplineBase::InitMethtod SplineBase::initializers[SplineBase::ModesCount] =
 {
-    //&Spline::InitLinear,
-    &Spline::InitCatmullRom,    // we should use catmullrom initializer even for linear mode! (client's internal structure limitation)
-    &Spline::InitCatmullRom,
-    &Spline::InitBezier3,
+    //&SplineOrigin::InitLinear,
+    &SplineBase::InitCatmullRom,    // we should use catmullrom initializer even for linear mode! (client's internal structure limitation)
+    &SplineBase::InitCatmullRom,
+    &SplineBase::InitBezier3,
 };
 
-void Spline::evaluate_percent( float t, Vector3 & c ) const
-{
-    index_type Index;
-    float u;
-    computeIndex(t, Index, u);
-    evaluate_percent(Index, u, c);
-}
-
-void Spline::evaluate_hermite(float t, Vector3& hermite) const
-{
-    index_type Index;
-    float u;
-    computeIndex(t, Index, u);
-    evaluate_hermite(Index, u, hermite);
-}
-
-void Spline::evaluate_percent_and_hermite(float t, Vector3 & c, Vector3& hermite) const
-{
-    index_type Index;
-    float u;
-    computeIndex(t, Index, u);
-
-    (this->*evaluators[m_mode])(Index, u, c);
-    (this->*hermite_evaluators[m_mode])(Index, u, hermite);
-}
-
-Spline::index_type Spline::computeIndexInBounds( float length_, float t ) const
-{
-// Temporary disabled: causes infinite loop with t = 1.f
-/*
-    index_type hi = index_hi;
-    index_type lo = index_lo;
-
-    index_type i = lo + (float)(hi - lo) * t;
-
-    while ((lengths[i] > length) || (lengths[i + 1] <= length))
-    {
-        if (lengths[i] > length)
-            hi = i - 1; // too big
-        else if (lengths[i + 1] <= length)
-            lo = i + 1; // too small
-
-        i = (hi + lo) / 2;
-    }*/
-
-    index_type i = index_lo;
-    index_type N = index_hi;
-    while (i+1 < N && lengths[i+1] < length_)
-        ++i;
-
-    return i;
-}
-
-void Spline::computeIndex(float t, index_type& index, float& u) const
-{
-    mov_assert(t >= 0.f && t <= 1.f);
-
-    float length_ = t * length();
-    index = computeIndexInBounds(length_, t);
-    mov_assert(index < index_hi);
-    u = (length_ - length(index)) / segment_length(index);
-}
-
-Spline::index_type Spline::computeIndexInBounds( float t ) const
-{
-    float length_ = t * length();
-    index_type i = index_lo;
-    index_type N = index_hi;
-    while (i+1 < N && lengths[i+1] < length_)
-        ++i;
-
-    return i;
-}
-
-float Spline::SegLength( index_type Index ) const
+float SplineBase::SegLength( index_type Index ) const
 {
     return (this->*seglengths[m_mode])(Index);
 }
@@ -180,50 +105,50 @@ inline void C_Evaluate_Hermite(const Vector3 *vertice, float t, const Matrix4& m
            + vertice[2] * weights[2] + vertice[3] * weights[3];
 }
 
-void Spline::EvaluateLinear(index_type Idx, float u, Vector3& result) const
+void SplineBase::EvaluateLinear(index_type Idx, float u, Vector3& result) const
 {
     mov_assert(Idx >= 0 && Idx+1 < points.size());
     result = points[Idx] + (points[Idx+1] - points[Idx]) * u;
 }
 
-void Spline::EvaluateCatmullRom( index_type Index, float t, Vector3& result) const
+void SplineBase::EvaluateCatmullRom( index_type Index, float t, Vector3& result) const
 {
     mov_assert(Index-1 >= 0 && Index+2 < points.size());
     C_Evaluate(&points[Index - 1], t, s_catmullRomCoeffs, result);
 }
 
-void Spline::EvaluateBezier3(index_type Index, float t, Vector3& result) const
+void SplineBase::EvaluateBezier3(index_type Index, float t, Vector3& result) const
 {
     Index *= 3u;
     mov_assert(Index >= 0 && Index+3 < points.size());
     C_Evaluate(&points[Index], t, s_Bezier3Coeffs, result);
 }
 
-void Spline::EvaluateHermiteLinear(index_type Index, float, Vector3& result) const
+void SplineBase::EvaluateHermiteLinear(index_type Index, float, Vector3& result) const
 {
     mov_assert(Index >= 0 && Index+1 < points.size());
     result = points[Index+1] - points[Index];
 }
 
-void Spline::EvaluateHermiteCatmullRom(index_type Index, float t, Vector3& result) const
+void SplineBase::EvaluateHermiteCatmullRom(index_type Index, float t, Vector3& result) const
 {
     mov_assert(Index-1 >= 0 && Index+2 < points.size());
     C_Evaluate_Hermite(&points[Index - 1], t, s_catmullRomCoeffs, result);
 }
 
-void Spline::EvaluateHermiteBezier3(index_type Index, float t, Vector3& result) const
+void SplineBase::EvaluateHermiteBezier3(index_type Index, float t, Vector3& result) const
 {
     mov_assert(Index-1 >= 0 && Index+2 < points.size());
     C_Evaluate_Hermite(&points[Index - 1], t, s_Bezier3Coeffs, result);
 }
 
-float Spline::SegLengthLinear(index_type i) const
+float SplineBase::SegLengthLinear(index_type i) const
 {
     mov_assert(i >= 0 && i+1 < points.size());
     return (points[i] - points[i+1]).length();
 }
 
-float Spline::SegLengthCatmullRom( index_type Index ) const
+float SplineBase::SegLengthCatmullRom( index_type Index ) const
 {
     mov_assert(Index-1 >= 0 && Index+2 < points.size());
 
@@ -243,7 +168,7 @@ float Spline::SegLengthCatmullRom( index_type Index ) const
     return length;
 }
 
-float Spline::SegLengthBezier3(index_type Index) const
+float SplineBase::SegLengthBezier3(index_type Index) const
 {
     Index *= 3u;
     mov_assert(Index >= 0 && Index+3 < points.size());
@@ -267,37 +192,34 @@ float Spline::SegLengthBezier3(index_type Index) const
 }
 #pragma endregion
 
-Spline::Spline() : m_mode(ModeLinear), index_lo(0), index_hi(0), points_count(0), cyclic(false)
+SplineBase::SplineBase() : m_mode(ModeLinear), index_lo(0), index_hi(0), points_count(0), cyclic(false)
 {
 }
 
-void Spline::init_spline( const Vector3 * controls, const int count, EvaluationMode m )
+void SplineBase::init_spline(const Vector3 * controls, const int count, EvaluationMode m)
 {
     m_mode = m;
     points_count = count;
     cyclic = false;
 
     (this->*initializers[m_mode])(controls, count, cyclic, 0);
-    cacheLengths();
 }
 
-void Spline::init_cyclic_spline( const Vector3 * controls, const int count, EvaluationMode m, int cyclic_point )
+void SplineBase::init_cyclic_spline(const Vector3 * controls, const int count, EvaluationMode m, int cyclic_point)
 {
     m_mode = m;
     points_count = count;
     cyclic = true;
 
     (this->*initializers[m_mode])(controls, count, cyclic, cyclic_point);
-    cacheLengths();
 }
 
-void Spline::InitLinear( const Vector3* controls, const int count, bool cyclic, int cyclic_point )
+void SplineBase::InitLinear(const Vector3* controls, const int count, bool cyclic, int cyclic_point)
 {
     mov_assert(count >= 2);
     const int real_size = count + 1;
 
     points.resize(real_size);
-    lengths.resize(real_size,0.f);
 
     memcpy(&points[0],controls, sizeof(Vector3) * count);
 
@@ -312,12 +234,11 @@ void Spline::InitLinear( const Vector3* controls, const int count, bool cyclic, 
     index_hi = cyclic ? count : (count - 1);
 }
 
-void Spline::InitCatmullRom( const Vector3* controls, const int count, bool cyclic, int cyclic_point )
+void SplineBase::InitCatmullRom(const Vector3* controls, const int count, bool cyclic, int cyclic_point)
 {
     const int real_size = count + (cyclic ? (1+2) : (1+1));
 
     points.resize(real_size);
-    lengths.resize(real_size,0.f);
 
     int lo_idx = 1;
     int high_idx = lo_idx + count - 1;
@@ -346,13 +267,12 @@ void Spline::InitCatmullRom( const Vector3* controls, const int count, bool cycl
     index_hi = high_idx + (cyclic ? 1 : 0);
 }
 
-void Spline::InitBezier3( const Vector3* controls, const int count, bool cyclic, int cyclic_point )
+void SplineBase::InitBezier3(const Vector3* controls, const int count, bool cyclic, int cyclic_point)
 {
     index_type c = count / 3u * 3u;
     index_type t = c / 3u;
 
     points.resize(c);
-    lengths.resize(t,0.f);
     memcpy(&points[0],controls, sizeof(Vector3) * c);
 
     index_lo = 0;
@@ -360,37 +280,16 @@ void Spline::InitBezier3( const Vector3* controls, const int count, bool cyclic,
     //mov_assert(points.size() % 3 == 0);
 }
 
-void Spline::cacheLengths()
-{
-    index_type i = index_lo;
-    double length = 0;
-    while(i < index_hi )
-    {
-        float l = SegLength(i);
-
-        // little trick:
-        // there are some paths provided by DB where all points have same coords!
-        // as a result - Spline interpolates position with NaN coords
-        if ( l == 0.f )
-            l = std::numeric_limits<float>::min();
-
-        length += l;
-        lengths[i+1] = length;
-        ++i;
-    }
-}
-
-void Spline::clear()
+void SplineBase::clear()
 {
     index_lo = 0;
     index_hi = 0;
     points_count = 0;
 
     points.clear();
-    lengths.clear();
 }
 
-std::string Spline::ToString() const
+std::string SplineBase::ToString() const
 {
     std::stringstream str;
 

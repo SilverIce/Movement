@@ -209,6 +209,10 @@
 				RelativePath="..\Movement\spline.h"
 				>
 			</File>
+			<File
+				RelativePath="..\Movement\spline.impl.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="fake"

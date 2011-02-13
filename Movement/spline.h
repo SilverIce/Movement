@@ -11,10 +11,9 @@ namespace Movement {
 
 typedef std::vector<Vector3> PointsArray;
 
-class Spline
+class SplineBase
 {
 public:
-
     typedef int time_type;
     typedef int index_type;
 
@@ -28,9 +27,7 @@ public:
 
     #pragma region fields
 protected:
-
     PointsArray points;
-    G3D::Array<float> lengths;
 
     index_type index_lo;
     index_type index_hi;
@@ -39,21 +36,11 @@ protected:
     EvaluationMode m_mode;
     bool cyclic;
 
-    // for internal use only!
-    // calculates distance between [i; i+1] points,
-    // assumes that index i is in bounds
-    float SegLength(index_type i) const;
-
-    void cacheLengths();
-
-    index_type computeIndexInBounds(float length, float t) const;
-
 protected:
-
     void EvaluateLinear(index_type, float, Vector3&) const;
     void EvaluateCatmullRom(index_type, float, Vector3&) const;
     void EvaluateBezier3(index_type, float, Vector3&) const;
-    typedef void (Spline::*EvaluationMethtod)(index_type,float,Vector3&) const;
+    typedef void (SplineBase::*EvaluationMethtod)(index_type,float,Vector3&) const;
     static EvaluationMethtod evaluators[ModesCount];
 
     void EvaluateHermiteLinear(index_type, float, Vector3&) const;
@@ -64,13 +51,13 @@ protected:
     float SegLengthLinear(index_type) const;
     float SegLengthCatmullRom(index_type) const;
     float SegLengthBezier3(index_type) const;
-    typedef float (Spline::*SegLenghtMethtod)(index_type) const;
+    typedef float (SplineBase::*SegLenghtMethtod)(index_type) const;
     static SegLenghtMethtod seglengths[ModesCount];
 
     void InitLinear(const Vector3*, const int, bool, int);
     void InitCatmullRom(const Vector3*, const int, bool, int);
     void InitBezier3(const Vector3*, const int, bool, int);
-    typedef void (Spline::*InitMethtod)(const Vector3*, const int, bool, int);
+    typedef void (SplineBase::*InitMethtod)(const Vector3*, const int, bool, int);
     static InitMethtod initializers[ModesCount];
 
     enum{
@@ -84,34 +71,17 @@ protected:
     #pragma endregion
 public:
 
-    explicit Spline();
+    explicit SplineBase();
 
-    // 't' - percent of spline's length, assumes that t in range [0, 1]
-    void evaluate_percent(float t, Vector3 & c) const;
-    void evaluate_hermite(float t, Vector3& hermite) const;
-    void evaluate_percent(index_type Idx, float u, Vector3& c) const
-    {
-        (this->*evaluators[m_mode])(Idx,u,c);
-    }
-    void evaluate_hermite(index_type Idx, float u, Vector3& hermite) const
-    {
-        (this->*hermite_evaluators[m_mode])(Idx,u,hermite);
-    }
+    // Caclulates the position for given segment Idx, and percent of segment length t
+    // t - percent of segment length, assumes that t in range [0, 1]
+    // Idx - spline segment index, should be in range [first, last)
+    void evaluate_percent(index_type Idx, float u, Vector3& c) const {(this->*evaluators[m_mode])(Idx,u,c);}
 
-    void evaluate_percent_and_hermite(float t, Vector3 & c, Vector3& hermite) const;
-
-    index_type computeIndexInBounds(float t) const;
-    void computeIndex(float t, index_type& , float& u) const;
-
-    void init_spline(const Vector3 * controls, const int N, EvaluationMode m);
-    void init_cyclic_spline(const Vector3 * controls, const int N, EvaluationMode m, int cyclic_point);
-
-    // returns length of the whole spline
-    float length() const { return lengths[index_hi];}
-    // returns length between given nodes
-    float length(index_type first, index_type last) const { return lengths[last]-lengths[first];}
-    float length(index_type Idx) const { return lengths[Idx];}
-    float segment_length(index_type Idx) const { return lengths[Idx+1]-lengths[Idx];}
+    // Caclulates Vector3(dx/dt, dy/dt, dz/dt) for index Idx, and percent of segment length t
+    // Idx - spline segment index, should be in range [first, last)
+    // t  - percent of spline segment length, assumes that t in range [0, 1]
+    void evaluate_hermite(index_type Idx, float u, Vector3& hermite) const {(this->*hermite_evaluators[m_mode])(Idx,u,hermite);}
 
     index_type first() const { return index_lo;}
     index_type last()  const { return index_hi;}
@@ -124,10 +94,70 @@ public:
     const Vector3& getPoint(index_type i) const { return points[i];}
     index_type pointsCount() const { return points_count;}
 
+    void init_spline(const Vector3 * controls, const int N, EvaluationMode m);
+    void init_cyclic_spline(const Vector3 * controls, const int N, EvaluationMode m, int cyclic_point);
     void clear();
+
+    // calculates distance between [i; i+1] points,
+    // assumes that index i is in bounds
+    float SegLength(index_type i) const;
 
     std::string ToString() const;
 };
 
+template<typename length_type>
+class Spline : public SplineBase
+{
+    #pragma region fields
+protected:
+
+    std::vector<length_type> lengths;
+
+    void cacheLengths(float length_factor);
+    index_type computeIndexInBounds(length_type length, float t) const;
+    #pragma endregion
+public:
+
+    explicit Spline(){}
+
+    // Caclulates the position for given t
+    // t - percent of spline's length, assumes that t in range [0, 1]
+    // t = partial_length / whole_spline_length
+    void evaluate_percent(float t, Vector3 & c) const;
+
+    // Caclulates Vector3(dx/dt, dy/dt, dz/dt) for given t
+    // t - percent of spline's length, assumes that t in range [0, 1]
+    void evaluate_hermite(float t, Vector3& hermite) const;
+
+    void evaluate_percent_and_hermite(float t, Vector3 & c, Vector3& hermite) const;
+
+    // Caclulates the position for given segment Idx, and percent of segment length t
+    // t - percent of segment length, assumes that t in range [0, 1]
+    // t = partial_segment_length / whole_segment_length
+    // Idx - spline segment index, should be in range [first, last)
+    void evaluate_percent(index_type Idx, float u, Vector3& c) const { SplineBase::evaluate_percent(Idx,u,c);}
+
+    // Caclulates Vector3(dx/dt, dy/dt, dz/dt) at for index Idx, and percent of segment length t
+    // Idx - spline segment index, should be in range [first, last)
+    // t  - percent of spline segment length, assumes that t in range [0, 1]
+    void evaluate_hermite(index_type Idx, float u, Vector3& c) const { SplineBase::evaluate_hermite(Idx,u,c);}
+
+    // Assumes that t in range [0, 1]
+    index_type computeIndexInBounds(float t) const;
+    void computeIndex(float t, index_type& , float& u) const;
+
+    void init_spline(const Vector3 * controls, const int N, EvaluationMode m, float length_factor);
+    void init_cyclic_spline(const Vector3 * controls, const int N, EvaluationMode m, float length_factor, int cyclic_point);
+
+    // returns length of the whole spline
+    length_type length() const { return lengths[index_hi];}
+    // returns length between given nodes
+    length_type length(index_type first, index_type last) const { return lengths[last]-lengths[first];}
+    length_type length(index_type Idx) const { return lengths[Idx];}
+
+    void clear();
+};
+
 }
 
+#include "spline.impl.h"
