@@ -69,9 +69,9 @@ namespace Movement {
 
     class MoveSpline
     {
-        friend class PacketBuilder;
-    private:
         #pragma region fields
+        friend class PacketBuilder;
+    protected:
         Spline          spline;
         Vector3         finalDestination;
 
@@ -80,18 +80,35 @@ namespace Movement {
         uint32          m_Id;
 
         union{
-            uint32      splineflags;
             uint8       animation_type;
+            uint32      splineflags;
         };
 
-        //uint32          start_move_time;
         uint32          time_passed;
         uint32          duration;
-        // currently duration mods are unused, but its _currentty_ 
+        // currently duration mods are unused, but its _currently_
         //float           duration_mod;
         //float           duration_mod_next;
         float           vertical_acceleration;
         uint32          spec_effect_time;
+
+    protected:
+        bool isCyclic() const { return splineflags & SPLINEFLAG_CYCLIC;}
+        bool isSmooth() const { return splineflags & (SPLINEFLAG_FLYING|SPLINEFLAG_CATMULLROM);}
+        void Finalize() { splineflags |= SPLINEFLAG_DONE; }
+        void RemoveSplineFlag(uint32 f) { splineflags &= ~f;}
+        uint32 GetSplineFlags() const { return splineflags;}
+
+        int32 timeElapsed() const { return Duration() - time_passed;}
+
+        const PointsArray& getPath() const { return spline.getPoints();}
+        void computeParabolicElevation(float& el) const;
+        void computeFallElevation(float& el) const;
+
+        void OnArrived();
+
+        Vector4 _ComputePosition(Spline::index_type Idx, float u) const;
+
         #pragma endregion
     public:
 
@@ -101,25 +118,17 @@ namespace Movement {
         explicit MoveSpline();
 
         void updateState( uint32 ms_time_diff );
+        void updateState( int32 ms_time_diff );
         Vector4 ComputePosition() const;
 
-        // helpers
         bool Finalized() const { return splineflags & SPLINEFLAG_DONE; }
-        bool isCyclic() const { return splineflags & SPLINEFLAG_CYCLIC;}
-        bool isSmooth() const { return splineflags & (SPLINEFLAG_FLYING|SPLINEFLAG_CATMULLROM);}
-        uint32 GetSplineFlags() const { return splineflags;}
         uint32 GetId() const { return m_Id;}
+        int32 Duration() const { return /*duration_mod **/ duration /*+ 0.5f*/;}
+        const Vector3& FinalDestination() const { return finalDestination;}
 
-        int32 modifiedDuration() const { return /*duration_mod **/ duration /*+ 0.5f*/;}
-        int32 timeElapsed() const { return modifiedDuration() - time_passed;}
-        const Vector3& getNode(uint32 i) const { return spline.getPoints()[i];}
-        const PointsArray& getPath() const { return spline.getPoints();}
 
         std::string ToString() const;
 
-    private:
-        void Finalize() { splineflags |= SPLINEFLAG_DONE; }
-        void RemoveSplineFlag(uint32 f) { splineflags &= ~f;}
     };
 }
 

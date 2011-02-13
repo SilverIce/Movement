@@ -132,7 +132,7 @@ namespace Movement
             data << splineInfo.spec_effect_time;
         }
 
-        data << uint32(splineInfo.modifiedDuration());
+        data << uint32(splineInfo.Duration());
 
         if (splineflags & SPLINEFLAG_TRAJECTORY)
         {
