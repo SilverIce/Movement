@@ -179,6 +179,8 @@ namespace Movement {
 
         int32 currentPathSegment() const { return point_Idx_offset + point_Idx - spline.first();}
         int32 currentSplineSegment() const { return point_Idx;}
+
+        std::string ToString() const;
     };
 
     typedef MoveSplineSegmented MoveSplineUsed;

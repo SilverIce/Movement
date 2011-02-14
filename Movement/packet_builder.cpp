@@ -304,7 +304,7 @@ namespace Movement
         data << mov.moveFlags;
         data << mov.move_flags2;
 
-        data << sMoveUpdater.TickCount();
+        data << mov.last_ms_time;
         data << mov.position;
 
         if (mov.HasMovementFlag(MOVEFLAG_ONTRANSPORT))

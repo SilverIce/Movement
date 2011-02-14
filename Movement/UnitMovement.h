@@ -26,11 +26,6 @@ namespace Movement
 
         /// Get-Set methtods
 
-        /// Speed
-        void SetSpeed(SpeedType type, float s) { speed[type] = s; }
-        float GetSpeed(SpeedType type) const { return speed[type]; }
-        float GetCurrentSpeed() const { return speed_obj.current; }
-
         /// Movement flags
         void AddMovementFlag(uint32 f) { moveFlags |= f; }
         void RemoveMovementFlag(uint32 f) { moveFlags &= ~f; }
@@ -140,12 +135,17 @@ namespace Movement
         void BindOrientationTo(MovementBase& target);
         void UnbindOrientation();
 
+        /// Speed
+        void SetSpeed(SpeedType type, float s) { speed[type] = s; }
+        float GetSpeed(SpeedType type) const { return speed[type]; }
+        float GetCurrentSpeed() const { return speed_obj.current; }
+        SpeedType getCurrentSpeedType() const { return speed_type; }
         void ReCalculateCurrentSpeed();
         SpeedType SelectSpeedType(bool use_walk_forced) const;
 
         void Initialize(MovControlType controller, const Vector4& position, uint32 ms_time);
 
-        class SplineFace& GetSplineFace() { return (class SplineFace&)*this; }
+        friend class Scketches;
     };
 
     struct MsgBroadcast : public MsgDeliverMethtod
@@ -157,10 +157,13 @@ namespace Movement
         WorldObject& m_owner;
     };
 
-
-    class SplineFace : public MovementState
+    class Scketches
     {
+        MovementState& impl;
     public:
+
+        Scketches(MovementState* m) : impl(*m) {}
+
         void ForceStop();
 
         void SendPath()

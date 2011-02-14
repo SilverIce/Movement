@@ -10,7 +10,4 @@ namespace G3D
 namespace Movement
 {
     class MovementState;
-    class MoveSpline;
-    class Spline;
-    class PacketBuilder;
 }

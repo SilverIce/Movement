@@ -135,9 +135,9 @@ void MovementState::UnbindOrientation()
     GetOwner().SetUInt64Value(UNIT_FIELD_TARGET, 0);
 }
 
-void SplineFace::ForceStop()
+void Scketches::ForceStop()
 {
-    MoveSplineInit(*this).MoveTo(GetPosition3()).Launch();
+    MoveSplineInit(impl).MoveTo(impl.GetPosition3()).Launch();
 }
 
 void MovementState::UpdateState()
