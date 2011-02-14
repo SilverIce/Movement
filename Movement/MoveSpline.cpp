@@ -315,7 +315,7 @@ G3D::Vector4 MoveSplineSegmented::ComputePosition() const
 
     int32 seg_time = spline.length(point_Idx,point_Idx+1);
     if (seg_time > 0)
-        u = time_passed - spline.length(point_Idx) / (float)seg_time;
+        u = (time_passed - spline.length(point_Idx)) / (float)seg_time;
 
     return _ComputePosition(point_Idx, u);
 }
