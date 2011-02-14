@@ -79,7 +79,7 @@ namespace Movement
     {
         uint16 opcode = SMSG_MONSTER_MOVE;
 
-        const MoveSpline& splineInfo = mov.move_spline;
+        const MoveSplineUsed& splineInfo = mov.move_spline;
 
         data.Initialize(opcode, 60);
 
@@ -94,7 +94,7 @@ namespace Movement
             return;
         }
 
-        const Spline& spline = splineInfo.spline;
+        const MoveSplineUsed::MySpline& spline = splineInfo.spline;
         const Vector3 * real_path = &spline.getPoint(spline.first());
         uint32 last_idx = spline.pointsCount() - 1;
 
@@ -215,7 +215,7 @@ namespace Movement
 
             static uint32 addit_flags = 0;
 
-            const MoveSpline& splineInfo = mov.move_spline;
+            const MoveSplineUsed& splineInfo = mov.move_spline;
             uint32 splineFlags = splineInfo.splineflags | addit_flags;
 
             data << splineFlags;
@@ -239,8 +239,8 @@ namespace Movement
                 }
             }
 
-            data << uint32(splineInfo.time_passed);
-            data << uint32(splineInfo.duration);
+            data << splineInfo.timePassed();
+            data << splineInfo.Duration();
             data << splineInfo.GetId();
 
             data << float(1.f);//splineInfo.duration_mod;

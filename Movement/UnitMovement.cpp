@@ -148,8 +148,32 @@ void MovementState::UpdateState()
 
     if (SplineEnabled())
     {
-        move_spline.updateState(difftime);
-        SetPosition(move_spline.ComputePosition());
+        MoveSpline::UpdateResult result;
+        uint32 loops = 0;
+        do
+        {
+            result = move_spline.updateState(difftime);
+            SetPosition(move_spline.ComputePosition());
+
+            if (++loops > 80)
+            {
+                log_console("MovementState::UpdateState: deadloop?");
+                break;
+            }
+
+            switch (result & ~MoveSpline::Result_StopUpdate)
+            {
+            case MoveSpline::Result_NextSegment:
+                log_console("MovementState::UpdateState: segment %d is on hold", move_spline.currentSplineSegment());
+                // do something
+                break;
+            case MoveSpline::Result_Arrived:
+                log_console("MovementState::UpdateState: spline done");
+                // do something
+                break;
+           }
+        }
+        while(!(result & MoveSpline::Result_StopUpdate));
 
         if (move_spline.Finalized())
         {
@@ -201,7 +225,7 @@ MoveSplineInit& MoveSplineInit::SetSmooth()
 
 MoveSplineInit& MoveSplineInit::SetCyclic()
 {
-    flags |= SPLINEFLAG_CYCLIC | SPLINEFLAG_ENTER_CYCLE;
+    flags |= SPLINEFLAG_CYCLIC/* | SPLINEFLAG_ENTER_CYCLE*/;
     return *this;
 }
 
@@ -242,7 +266,7 @@ void MoveSplineInit::Launch()
     {
         path[0] = state.GetPosition3();
 
-        MoveSpline& spline = state.move_spline;
+        MoveSplineUsed& spline = state.move_spline;
         spline.Initialize(*this);
 
         state.EnableSpline();

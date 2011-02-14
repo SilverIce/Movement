@@ -124,13 +124,16 @@ namespace Movement
             float       speed[SpeedMaxCount];
         };
 
-        MoveSpline      move_spline;
 
         SpeedType       speed_type;
 
         void updateRotation();
 
         #pragma endregion
+
+    public:
+
+        MoveSplineUsed  move_spline;
 
         virtual void UpdateState();
 

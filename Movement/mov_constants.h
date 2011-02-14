@@ -101,7 +101,7 @@ namespace Movement
         SPLINEFLAG_FINAL_TARGET = 0x00010000,
         SPLINEFLAG_FINAL_ANGLE  = 0x00020000,
         SPLINEFLAG_CATMULLROM   = 0x00040000,           // used CatmullRom interpolation mode
-        SPLINEFLAG_CYCLIC       = 0x00080000,           // movement by cycled spline 
+        SPLINEFLAG_CYCLIC       = 0x00080000,           // movement by cycled spline
         SPLINEFLAG_ENTER_CYCLE  = 0x00100000,           // everytime appears with cyclic flag in monster move packet
         SPLINEFLAG_ANIMATION    = 0x00200000,           // animationId (0...3), uint32 time, not compartible with trajectory and fall movement
         SPLINEFLAG_INSTANT      = 0x00400000,           // finalizes movement, forces unit to arrive to end of the path
@@ -184,6 +184,6 @@ namespace Movement
     extern const uint16 SetSpeed2Opc_table[][2];
     extern const float  BaseSpeed[SpeedMaxCount];
 
-    uint32 computeFallTime(float path_length, bool isSafeFall);
+    float computeFallTime(float path_length, bool isSafeFall);
     float computeFallElevation(float t_passed, bool isSafeFall, float start_velocy);
 }

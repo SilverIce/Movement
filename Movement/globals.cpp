@@ -76,7 +76,7 @@ namespace Movement
 
     const float savefallVelocity = 7.f;
 
-    uint32 computeFallTime(float path_length, bool isSafeFall)
+    float computeFallTime(float path_length, bool isSafeFall)
     {
         static const float terminal_length = (terminalVelocity * terminalVelocity) / (2.f * gravity);
         static const float safe_terminal_length = (savefallVelocity * savefallVelocity) / (2.f * gravity);
@@ -97,7 +97,7 @@ namespace Movement
                 time = sqrtf(2.f * path_length/gravity);
         }
 
-        return SecToMS(time);
+        return time;
     }
 
     float computeFallElevation( float t_passed, bool isSafeFall, float start_velocy )
