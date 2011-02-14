@@ -205,34 +205,31 @@ MoveSplineInit& MoveSplineInit::MoveTo( const Vector3& dest )
 
 MoveSplineInit& MoveSplineInit::SetFly()
 {
-    flags |= SPLINEFLAG_FLYING;
-    flags &= ~SPLINEFLAG_CATMULLROM;
+    flags.EnableFlying();
     return *this;
 }
 
 MoveSplineInit& MoveSplineInit::SetWalk()
 {
-    flags |= SPLINEFLAG_WALKMODE;
+    flags.walkmode = true;
     return *this;
 }
 
 MoveSplineInit& MoveSplineInit::SetSmooth()
 {
-    flags |= SPLINEFLAG_CATMULLROM;
-    flags &= ~SPLINEFLAG_FLYING;
+    flags.EnableCatmullRom();
     return *this;
 }
 
 MoveSplineInit& MoveSplineInit::SetCyclic()
 {
-    flags |= SPLINEFLAG_CYCLIC/* | SPLINEFLAG_ENTER_CYCLE*/;
+    flags.cyclic = true;
     return *this;
 }
 
 MoveSplineInit& MoveSplineInit::SetFall()
 {
-    flags |= SPLINEFLAG_FALLING;
-    flags &= ~SPLINEFLAG_TRAJECTORY;
+    flags.EnableFalling();
     return *this;
 }
 
@@ -279,35 +276,31 @@ void MoveSplineInit::Launch()
 
 MoveSplineInit& MoveSplineInit::SetTrajectory( float max_height, float time_shift )
 {
-    flags |= SPLINEFLAG_TRAJECTORY;
-    flags &= ~(SPLINEFLAG_KNOCKBACK | SPLINEFLAG_ANIMATION);
     time_perc = time_shift;
     parabolic_heigth = max_height;
+    flags.EnableParabolic();
     return *this;
 }
 
 MoveSplineInit& MoveSplineInit::SetKnockBack( float max_height, float time_shift )
 {
     SetTrajectory(max_height, time_shift);
-    flags |= SPLINEFLAG_KNOCKBACK;
+    flags.knockback = true;
     return *this;
 }
 
 MoveSplineInit& MoveSplineInit::SetFacing( MovementBase& t )
 {
     facing.target = t.GetOwner().GetGUID();
-    flags &= ~SPLINE_MASK_FINAL_FACING;
-    flags |= SPLINEFLAG_FINAL_TARGET;
-
     target = &t;
+    flags.EnableFacingTarget();
     return *this;
 }
 
 MoveSplineInit& MoveSplineInit::SetFacing( float o )
 {
     facing.angle = G3D::wrap(o, 0.f, (float)G3D::twoPi());
-    flags &= ~SPLINE_MASK_FINAL_FACING;
-    flags |= SPLINEFLAG_FINAL_ANGLE;
+    flags.EnableFacingAngle();
     return *this;
 }
 
@@ -316,8 +309,7 @@ MoveSplineInit& MoveSplineInit::SetFacing( Vector3 const& spot )
     facing.spot.x = spot.x;
     facing.spot.y = spot.y;
     facing.spot.z = spot.z;
-    flags &= ~SPLINE_MASK_FINAL_FACING;
-    flags |= SPLINEFLAG_FINAL_POINT;
+    flags.EnableFacingPoint();
     return *this;
 }
 
@@ -328,9 +320,8 @@ MoveSplineInit::MoveSplineInit(MovementState& m) : state(m), target(NULL)
 
 MoveSplineInit& MoveSplineInit::SetAnimation(AnimType anim, float anim_time)
 {
-    flags &= ~(SPLINEFLAG_TRAJECTORY|SPLINEFLAG_KNOCKBACK);
-    flags = flags & ~0xFF | uint8(anim) | SPLINEFLAG_ANIMATION;
     time_perc = anim_time;
+    flags.EnableAnimation(anim);
     return *this;
 }
 

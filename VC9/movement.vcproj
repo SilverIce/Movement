@@ -263,6 +263,10 @@
 			>
 		</File>
 		<File
+			RelativePath="..\Movement\MoveSplineFlag.h"
+			>
+		</File>
+		<File
 			RelativePath="..\Movement\Session.h"
 			>
 		</File>

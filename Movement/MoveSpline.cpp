@@ -46,18 +46,18 @@ Vector4 MoveSpline::_ComputePosition(SplineBase::index_type seg_Idx, float u) co
     spline.evaluate_percent(seg_Idx,u, (Vector3&)c);
     spline.evaluate_hermite(seg_Idx,u, hermite);
 
-    if (splineflags & SPLINEFLAG_ANIMATION)
+    if (splineflags.animation)
         ;// SPLINEFLAG_ANIMATION disables falling or parabolic movement
-    else if (splineflags & SPLINEFLAG_TRAJECTORY)
+    else if (splineflags.parabolic)
         computeParabolicElevation(c.z);
-    else if (splineflags & SPLINEFLAG_FALLING)
+    else if (splineflags.falling)
         computeFallElevation(c.z);
 
-    if (Finalized() && (splineflags & SPLINE_MASK_FINAL_FACING))
+    if (splineflags.done && (splineflags & MoveSplineFlag::Mask_Final_Facing))
     {
-        if (splineflags & SPLINEFLAG_FINAL_ANGLE)
+        if (splineflags.final_angle)
             c.w = facing.angle;
-        else if (splineflags & SPLINEFLAG_FINAL_POINT)
+        else if (splineflags.final_point)
             c.w = G3D::wrap(atan2(facing.spot.y-c.y, facing.spot.x-c.x), 0.f, (float)G3D::twoPi());
         //nothing to do for SPLINEFLAG_FINAL_TARGET flag
     }
@@ -139,7 +139,7 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
     {
         spline.init_spline(&args.path[0], args.path.size(), modes[isSmooth()], 1000.f / args.velocity);
 
-        if (splineflags & SPLINEFLAG_FALLING)
+        if (splineflags.falling)
         {
             class SplineExt : private MySpline
             {
@@ -160,10 +160,10 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
     }
 
     // path initialized, duration is known and i able to compute parabolic acceleration
-    if (splineflags & (SPLINEFLAG_TRAJECTORY|SPLINEFLAG_ANIMATION))
+    if (splineflags & (MoveSplineFlag::Parabolic | MoveSplineFlag::Animation))
     {
         spec_effect_time = Duration() * args.time_perc;
-        if (splineflags & SPLINEFLAG_TRAJECTORY)
+        if (splineflags.parabolic)
         {
             float f_duration = MSToSec(Duration() - spec_effect_time);
             vertical_acceleration = args.parabolic_heigth * 8.f / (f_duration * f_duration);
@@ -186,8 +186,7 @@ std::string MoveSpline::ToString() const
     return str.str();
 }
 
-MoveSpline::MoveSpline() : m_Id(MoveSplineCounter::Lower_limit), splineflags(0),
-    time_passed(0), //duration(0), duration_mod(1.f), duration_mod_next(1.f),
+MoveSpline::MoveSpline() : m_Id(MoveSplineCounter::Lower_limit), time_passed(0),
     vertical_acceleration(1.f), spec_effect_time(0)
 {
 }

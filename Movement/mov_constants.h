@@ -79,47 +79,6 @@ namespace Movement
         MOVEFLAG2_INTERP_MASK       = MOVEFLAG2_INTERP_MOVE | MOVEFLAG2_INTERP_TURNING | MOVEFLAG2_INTERP_PITCHING
     };
 
-    enum SplineFlags
-    {
-        SPLINEFLAG_NONE         = 0x00000000,
-        SPLINEFLAG_FORWARD      = 0x00000001,
-        SPLINEFLAG_BACKWARD     = 0x00000002,
-        SPLINEFLAG_STRAFE_LEFT  = 0x00000004,
-        SPLINEFLAG_STRAFE_RIGHT = 0x00000008,
-        SPLINEFLAG_LEFT         = 0x00000010,
-        SPLINEFLAG_RIGHT        = 0x00000020,
-        SPLINEFLAG_PITCH_UP     = 0x00000040,
-        SPLINEFLAG_PITCH_DOWN   = 0x00000080,
-        SPLINEFLAG_DONE         = 0x00000100,
-        SPLINEFLAG_FALLING      = 0x00000200,           // not compartible with trajectory movement
-        SPLINEFLAG_NO_SPLINE    = 0x00000400,
-        SPLINEFLAG_TRAJECTORY   = 0x00000800,           // not compartible with fall movement
-        SPLINEFLAG_WALKMODE     = 0x00001000,
-        SPLINEFLAG_FLYING       = 0x00002000,           // smooth movement(CatmullRom interpolation mode), flying animation
-        SPLINEFLAG_KNOCKBACK    = 0x00004000,           // model orientation fixed
-        SPLINEFLAG_FINAL_POINT  = 0x00008000,
-        SPLINEFLAG_FINAL_TARGET = 0x00010000,
-        SPLINEFLAG_FINAL_ANGLE  = 0x00020000,
-        SPLINEFLAG_CATMULLROM   = 0x00040000,           // used CatmullRom interpolation mode
-        SPLINEFLAG_CYCLIC       = 0x00080000,           // movement by cycled spline
-        SPLINEFLAG_ENTER_CYCLE  = 0x00100000,           // everytime appears with cyclic flag in monster move packet
-        SPLINEFLAG_ANIMATION    = 0x00200000,           // animationId (0...3), uint32 time, not compartible with trajectory and fall movement
-        SPLINEFLAG_INSTANT      = 0x00400000,           // finalizes movement, forces unit to arrive to end of the path
-        SPLINEFLAG_UNKNOWN5     = 0x00800000,
-        SPLINEFLAG_UNKNOWN6     = 0x01000000,
-        SPLINEFLAG_UNKNOWN7     = 0x02000000,
-        SPLINEFLAG_UNKNOWN8     = 0x04000000,
-        SPLINEFLAG_UNKNOWN9     = 0x08000000,           // appears with walkmode flag, nodes = 1, handles orientation
-        SPLINEFLAG_UNKNOWN10    = 0x10000000,
-        SPLINEFLAG_UNKNOWN11    = 0x20000000,
-        SPLINEFLAG_UNKNOWN12    = 0x40000000,
-
-        // Masks
-        SPLINE_MASK_FINAL_FACING = SPLINEFLAG_FINAL_POINT | SPLINEFLAG_FINAL_TARGET | SPLINEFLAG_FINAL_ANGLE,
-        // flags that shouldn't be appended into SMSG_MONSTER_MOVE\SMSG_MONSTER_MOVE_TRANSPORT packet, should be more probably
-        SPLINE_MASK_NO_MONSTER_MOVE = SPLINE_MASK_FINAL_FACING | DIRECTIONS_MASK | SPLINEFLAG_DONE,
-    };
-
     enum MonsterMoveType
     {
         MonsterMoveNormal       = 0,

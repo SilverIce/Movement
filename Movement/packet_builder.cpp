@@ -103,38 +103,38 @@ namespace Movement
         data << real_path[0];
         data << splineInfo.GetId();
 
-        uint32 splineflags = splineInfo.GetSplineFlags();
+        MoveSplineFlag splineflags = splineInfo.splineflags;
 
-        switch(splineflags & SPLINE_MASK_FINAL_FACING)
+        switch(splineflags & MoveSplineFlag::Mask_Final_Facing)
         {
         default:
             data << uint8(MonsterMoveNormal);
             break;
-        case SPLINEFLAG_FINAL_TARGET:
+        case MoveSplineFlag::Final_Target:
             data << uint8(MonsterMoveFacingTarget);
             data << splineInfo.facing.target;
             break;
-        case SPLINEFLAG_FINAL_ANGLE:
+        case MoveSplineFlag::Final_Angle:
             data << uint8(MonsterMoveFacingAngle);
             data << splineInfo.facing.angle;
             break;
-        case SPLINEFLAG_FINAL_POINT:
+        case MoveSplineFlag::Final_Point:
             data << uint8(MonsterMoveFacingSpot);
             data << splineInfo.facing.spot.x << splineInfo.facing.spot.y << splineInfo.facing.spot.z;
             break;
         }
 
-        data << uint32(splineflags & ~SPLINE_MASK_NO_MONSTER_MOVE);
+        data << uint32(splineflags & ~MoveSplineFlag::Mask_No_Monster_Move);
 
-        if (splineflags & SPLINEFLAG_ANIMATION)
+        if (splineflags.animation)
         {
-            data << splineInfo.animation_type;
+            data << (uint8)splineflags.animId;
             data << splineInfo.spec_effect_time;
         }
 
         data << uint32(splineInfo.Duration());
 
-        if (splineflags & SPLINEFLAG_TRAJECTORY)
+        if (splineflags.parabolic)
         {
             data << splineInfo.vertical_acceleration;
             data << splineInfo.spec_effect_time;
@@ -142,7 +142,7 @@ namespace Movement
 
         data << uint32(last_idx);
 
-        if (splineflags & (SPLINEFLAG_FLYING | SPLINEFLAG_CATMULLROM))
+        if (splineflags & MoveSplineFlag::Mask_CatmullRom)
         {
             data.append<Vector3>(&real_path[1], last_idx);
         }
@@ -216,23 +216,23 @@ namespace Movement
             static uint32 addit_flags = 0;
 
             const MoveSplineUsed& splineInfo = mov.move_spline;
-            uint32 splineFlags = splineInfo.splineflags | addit_flags;
+            const MoveSplineFlag& splineFlags = mov.move_spline.splineflags;
 
-            data << splineFlags;
+            data << splineFlags.raw;
 
-            if(splineFlags & SPLINEFLAG_FINAL_ANGLE)
+            if (splineFlags.final_angle)
             {
                 data << splineInfo.facing.angle;
             }
             else
             {
-                if(splineFlags & SPLINEFLAG_FINAL_TARGET)
+                if (splineFlags.final_target)
                 {
                     data << splineInfo.facing.target;
                 }
                 else
                 {
-                    if(splineFlags & SPLINEFLAG_FINAL_POINT)
+                    if(splineFlags.final_point)
                     {
                         data << splineInfo.facing.spot.x << splineInfo.facing.spot.y << splineInfo.facing.spot.z;
                     }

@@ -3,6 +3,7 @@
 #include "mov_constants.h"
 #include "spline.h"
 #include "G3D/Vector4.h"
+#include "MoveSplineFlag.h"
 
 #include <limits>
 
@@ -51,12 +52,12 @@ namespace Movement {
 
     struct MoveSplineInitArgs
     {
-        MoveSplineInitArgs() : flags(0), path_Idx_offset(0),
+        MoveSplineInitArgs() : path_Idx_offset(0),
             velocity(0.f), parabolic_heigth(0.f), time_perc(0.f)   {}
 
         PointsArray path;
         FacingInfo facing;
-        uint32 flags;
+        MoveSplineFlag flags;
         int32 path_Idx_offset;
         float velocity;
         float parabolic_heigth;
@@ -81,10 +82,7 @@ namespace Movement {
 
         uint32          m_Id;
 
-        union{
-            uint8       animation_type;
-            uint32      splineflags;
-        };
+        MoveSplineFlag  splineflags;
 
         int32          time_passed;
         // currently duration mods are unused, but its _currently_
@@ -94,11 +92,11 @@ namespace Movement {
         uint32          spec_effect_time;
 
     protected:
-        bool isCyclic() const { return splineflags & SPLINEFLAG_CYCLIC;}
-        bool isSmooth() const { return splineflags & (SPLINEFLAG_FLYING|SPLINEFLAG_CATMULLROM);}
-        void Finalize() { splineflags |= SPLINEFLAG_DONE; }
+        bool isCyclic() const { return splineflags.cyclic;}
+        bool isSmooth() const { return splineflags.isSmooth();}
+        void Finalize() { splineflags.done = true; }
         void RemoveSplineFlag(uint32 f) { splineflags &= ~f;}
-        uint32 GetSplineFlags() const { return splineflags;}
+        uint32 GetSplineFlags() const { return splineflags.raw;}
 
         const PointsArray& getPath() const { return spline.getPoints();}
         void computeParabolicElevation(float& el) const;
@@ -128,7 +126,7 @@ namespace Movement {
         Vector4 ComputePosition() const;
 
         uint32 GetId() const { return m_Id;}
-        bool Finalized() const { return splineflags & SPLINEFLAG_DONE; }
+        bool Finalized() const { return splineflags.done; }
         int32 Duration() const { return spline.length();}
         int32 timeElapsed() const { return Duration() - time_passed;}
         int32 timePassed() const { return time_passed;}
@@ -161,7 +159,7 @@ namespace Movement {
         explicit MoveSplineSegmented();
 
         /** Just a little example of 'How to update':
-         ** int32 difftime = 5000;
+         ** int32 ms_time_diff = 5000;
          ** UpdateResult result;
          ** do {
          **     UpdateResult result = move_spline.updateState(ms_time_diff);
