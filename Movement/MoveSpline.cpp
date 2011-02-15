@@ -187,7 +187,7 @@ std::string MoveSpline::ToString() const
 }
 
 MoveSpline::MoveSpline() : m_Id(MoveSplineCounter::Lower_limit), time_passed(0),
-    vertical_acceleration(1.f), spec_effect_time(0)
+    vertical_acceleration(0.f), spec_effect_time(0)
 {
 }
 
