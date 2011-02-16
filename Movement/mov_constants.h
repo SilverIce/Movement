@@ -1,3 +1,11 @@
+
+/**
+  file:         mov_constants.h
+  author:       SilverIce
+  email:        slifeleaf@gmail.com
+  created:      16:2:2011
+*/
+
 #pragma once
 
 #include "typedefs.h"

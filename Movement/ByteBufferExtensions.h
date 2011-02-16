@@ -1,3 +1,11 @@
+
+/**
+  file:         ByteBufferExtensions.h
+  author:       SilverIce
+  email:        slifeleaf@gmail.com
+  created:      16:2:2011
+*/
+
 #pragma once
 
 #include "WorldPacket.h"

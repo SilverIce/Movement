@@ -243,6 +243,10 @@
 			>
 		</File>
 		<File
+			RelativePath="..\Movement\MoveListener.h"
+			>
+		</File>
+		<File
 			RelativePath="..\Movement\movement_lib.h"
 			>
 		</File>
