@@ -97,7 +97,7 @@ namespace Movement {
         //float           duration_mod;
         //float           duration_mod_next;
         float           vertical_acceleration;
-        uint32          spec_effect_time;
+        int32          spec_effect_time;
 
     protected:
         bool isCyclic() const { return splineflags.cyclic;}
@@ -118,7 +118,7 @@ namespace Movement {
     public:
 
         void Initialize(const MoveSplineInitArgs&);
-        bool Initialized() const { return GetId()!= MoveSplineCounter::Lower_limit;}
+        bool Initialized() const { return !spline.empty();}
 
         explicit MoveSpline();
 
@@ -159,8 +159,6 @@ namespace Movement {
     protected:
         UpdateResult _updateState( int32 ms_time_diff );
         int32 segment_timestamp() const { return spline.length(point_Idx+1);}
-        void init_segment(int32 seg);
-
         #pragma endregion
     public:
 

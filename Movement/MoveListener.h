@@ -18,7 +18,7 @@ namespace Movement
 
         virtual void OnSplineDone() {}
 
-        virtual void OnEvent(int eventId) {};
+        virtual void OnEvent(int eventId, int data) {};
     };
 
 }

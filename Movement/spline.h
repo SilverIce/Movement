@@ -9,20 +9,12 @@
 #pragma once
 
 #include "typedefs.h"
-#include "G3D/Vector3.h"
-#include "G3D/Array.h"
-
-#include <vector>
 
 namespace Movement {
-
-
-typedef std::vector<Vector3> PointsArray;
 
 class SplineBase
 {
 public:
-    typedef int time_type;
     typedef int index_type;
 
     enum EvaluationMode

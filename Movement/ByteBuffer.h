@@ -2,6 +2,18 @@
 
 #ifdef USE_FAKE_CLASSES
 
+#include "typedefs.h"
+
+using Movement::int8;
+using Movement::uint8;
+using Movement::int16;
+using Movement::uint16;
+using Movement::int32;
+using Movement::uint32;
+
+using Movement::uint64;
+using Movement::int64;
+
 class ByteBuffer
 {
 public:
@@ -37,6 +49,17 @@ public:
     void appendPackXYZ(float,float,float)
     {
         w_pos += 4;
+    }
+
+    template<class T>
+    void appendPackGUID(const T&)
+    {
+        w_pos += 8;
+    }
+
+    uint64 readPackGUID()
+    {
+        r_pos += 8;
     }
 
     bool empty() const { return true;}

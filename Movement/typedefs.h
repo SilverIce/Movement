@@ -8,6 +8,12 @@
 
 #pragma once
 
+// do not commit that assert redefinition!
+#include "G3D/debugAssert.h"
+#include "G3D/Vector3.h"
+
+#define mov_assert(exp) alwaysAssertM(exp, "")
+
 namespace G3D
 {
     class Vector3;
@@ -16,13 +22,14 @@ namespace G3D
 
 extern unsigned int getMSTime();
 
-#include <assert.h>
-#define mov_assert(exp) assert(exp)
-
 namespace Movement
 {
+    using G3D::Vector3;
+    using G3D::Vector4;
+    typedef std::vector<Vector3> PointsArray;
+
     typedef signed char     int8;
-    typedef unsigned char	uint8;
+    typedef unsigned char   uint8;
     typedef short           int16;
     typedef unsigned short  uint16;
     typedef int             int32;
@@ -52,9 +59,6 @@ namespace Movement
 
     extern void log_write(const char* fmt, ...);
     extern void log_console(const char* str, ...);
-
-    using G3D::Vector3;
-    using G3D::Vector4;
 
     template<typename T, size_t N>
     inline size_t CountOf(const T (&t)[N])

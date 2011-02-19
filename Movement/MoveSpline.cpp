@@ -5,7 +5,7 @@
 namespace Movement{
 
 // TODO: make it Atomic
-MoveSplineCounter movespline_counter;
+counter<uint32, 0> movespline_counter;
 
 MoveSpline::UpdateResult MoveSpline::updateState( int32 ms_time_diff )
 {
@@ -186,7 +186,7 @@ std::string MoveSpline::ToString() const
     return str.str();
 }
 
-MoveSpline::MoveSpline() : m_Id(MoveSplineCounter::Lower_limit), time_passed(0),
+MoveSpline::MoveSpline() : m_Id(0), time_passed(0),
     vertical_acceleration(0.f), spec_effect_time(0)
 {
 }

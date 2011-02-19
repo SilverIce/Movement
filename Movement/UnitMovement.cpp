@@ -76,7 +76,6 @@ MovementState::MovementState(WorldObject * owner) : UnitBase(*owner)
     fallStartElevation = 0.f;
     // jumping
     j_velocity = j_sinAngle = j_cosAngle = j_xy_velocy = 0.f;
-
     u_unk1 = 0.f;
     speed_type = SpeedRun;
 }
@@ -179,9 +178,6 @@ void MovementState::UpdateState()
         {
             DisableSpline();
             ResetDirection();
-
-            if (listener)
-                listener->OnSplineDone();
         }
     }
 

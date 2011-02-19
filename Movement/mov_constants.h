@@ -142,9 +142,6 @@ namespace Movement
         MovControlCount,
     };
 
-    extern const double gravity;
-    extern const float terminalVelocity;
-
     extern const uint32 Mode2Flag_table[];
     extern const uint16 S_Speed2Opc_table[];
     extern const uint16 S_Mode2Opc_table[MoveModeMaxCount][2];
