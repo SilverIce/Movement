@@ -16,6 +16,8 @@
 
 namespace Movement
 {
+    class MoveSplineSegmented;
+
     class MovementState : public UnitBase
     {
         friend class PacketBuilder;

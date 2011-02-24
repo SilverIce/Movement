@@ -160,7 +160,5 @@ namespace Movement {
 
         std::string ToString() const;
     };
-
-    typedef MoveSplineSegmented MoveSplineUsed;
 }
 

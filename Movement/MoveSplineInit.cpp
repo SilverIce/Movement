@@ -1,12 +1,14 @@
 #include "MoveSplineInit.h"
 #include "UnitMovement.h"
+#include "MoveSpline.h"
 
 namespace Movement
 {
-    MoveSplineInit& MoveSplineInit::MovebyPath( PointsArray& controls, uint32 path_offset )
+    MoveSplineInit& MoveSplineInit::MovebyPath(const PointsArray& controls, uint32 path_offset)
     {
         args.path_Idx_offset = path_offset - 1;
-        args.path.swap(controls);
+        args.path.resize(controls.size()+1);
+        memcpy(&args.path[1], &controls[0], controls.size() * sizeof(PointsArray::value_type));
         return *this;
     }
 
@@ -56,11 +58,10 @@ namespace Movement
 
     void MoveSplineInit::Launch()
     {
-        if (target)
-            state.BindOrientationTo(*target);
-        else
-            state.UnbindOrientation();
+        //correct first vertex
+        args.path[0] = state.GetPosition3();
 
+        // select velocity
         if (args.velocity != 0.f)
         {
             state.speed_obj.current = args.velocity;
@@ -72,13 +73,16 @@ namespace Movement
             args.velocity = state.GetCurrentSpeed();
         }
 
+        if (target)
+            state.BindOrientationTo(*target);
+        else
+            state.UnbindOrientation();
+
         // no sense to move unit
         // TODO: find more elegant way (maybe just set current_speed to some minimal value)
         if (args.velocity > 0.f)
         {
-            args.path[0] = state.GetPosition3();
-
-            MoveSplineUsed& spline = state.move_spline;
+            MoveSplineSegmented& spline = state.move_spline;
             spline.Initialize(args);
 
             state.EnableSpline();
