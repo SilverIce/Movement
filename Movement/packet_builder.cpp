@@ -7,6 +7,7 @@
 #include "ByteBufferExtensions.h"
 #include "Object.h"
 #include "moveupdater.h"
+#include "ClientMoveStatus.h"
 
 namespace Movement
 {
@@ -206,7 +207,7 @@ namespace Movement
 
         data.append<float>(&mov.speed[SpeedWalk], SpeedMaxCount);
 
-        if (mov.HasMovementFlag(MOVEFLAG_SPLINE_ENABLED))
+        if (mov.moveFlags.spline_enabled)
         {
             // for debugging
             static float unkf1 = 1.f;
@@ -225,19 +226,13 @@ namespace Movement
             {
                 data << splineInfo.facing.angle;
             }
-            else
+            else if (splineFlags.final_target)
             {
-                if (splineFlags.final_target)
-                {
-                    data << splineInfo.facing.target;
-                }
-                else
-                {
-                    if(splineFlags.final_point)
-                    {
-                        data << splineInfo.facing.spot.x << splineInfo.facing.spot.y << splineInfo.facing.spot.z;
-                    }
-                }
+                data << splineInfo.facing.target;
+            }
+            else if(splineFlags.final_point)
+            {
+                data << splineInfo.facing.spot.x << splineInfo.facing.spot.y << splineInfo.facing.spot.z;
             }
 
             data << splineInfo.timePassed();
@@ -260,33 +255,35 @@ namespace Movement
         }
     }
 
-    void PacketBuilder::ReadClientStatus(MovementState& mov, ByteBuffer& data)
+    void PacketBuilder::ReadClientStatus(ClientMoveState& mov, ByteBuffer& data)
     {
-        data >> mov.moveFlags;
-        data >> mov.move_flags2;
+        data >> mov.moveFlags.raw;
+        data >> mov.moveFlags2.raw;
 
         data.read_skip<uint32>();// >> mov.last_ms_time;
-        data >> mov.position;
+        data >> mov.position3;
+        data >> mov.orientation;
 
-        if (mov.HasMovementFlag(MOVEFLAG_ONTRANSPORT))
+        if (mov.moveFlags & MOVEFLAG_ONTRANSPORT)
         {
-            data >> mov.m_transport.t_guid;
-            data >> mov.transport_offset;
-            data >> mov.m_transport.t_time;
-            data >> mov.m_transport.t_seat;
+            data >> mov.transport.t_guid;
+            data >> mov.transport.position;
+            data >> mov.transport.orientation;
+            data >> mov.transport.t_time;
+            data >> mov.transport.t_seat;
 
-            if (mov.move_flags2 & MOVEFLAG2_INTERP_MOVE)
-                data >> mov.m_transport.t_time2;
+            if (mov.moveFlags2 & MOVEFLAG2_INTERP_MOVE)
+                data >> mov.transport.t_time2;
         }
 
-        if (mov.HasMovementFlag(MOVEFLAG_SWIMMING | MOVEFLAG_FLYING) || (mov.move_flags2 & MOVEFLAG2_ALLOW_PITCHING))
+        if ((mov.moveFlags & (MOVEFLAG_SWIMMING | MOVEFLAG_FLYING)) || (mov.moveFlags2 & MOVEFLAG2_ALLOW_PITCHING))
         {
-            data >> mov.s_pitch;
+            data >> mov.pitch;
         }
 
         data >> mov.fallTime;
 
-        if (mov.HasMovementFlag(MOVEFLAG_FALLING))
+        if (mov.moveFlags & MOVEFLAG_FALLING)
         {
             data >> mov.j_velocity;
             data >> mov.j_sinAngle;
@@ -294,7 +291,7 @@ namespace Movement
             data >> mov.j_xy_velocy;
         }
 
-        if (mov.HasMovementFlag(MOVEFLAG_SPLINE_ELEVATION))
+        if (mov.moveFlags & MOVEFLAG_SPLINE_ELEVATION)
         {
             data >> mov.u_unk1;
         }
@@ -302,31 +299,31 @@ namespace Movement
 
     void PacketBuilder::WriteClientStatus(const MovementState& mov, ByteBuffer& data)
     {
-        data << mov.moveFlags;
-        data << mov.move_flags2;
+        data << mov.moveFlags.raw;
+        data << mov.moveFlags2.raw;
 
         data << sMoveUpdater.TickCount();
         data << mov.position;
 
-        if (mov.HasMovementFlag(MOVEFLAG_ONTRANSPORT))
+        if (mov.moveFlags.ontransport)
         {
-            data << mov.m_transport.t_guid;
+            data << PackedGuid(mov.m_transport.t_guid);
             data << mov.transport_offset;
             data << mov.m_transport.t_time;
             data << mov.m_transport.t_seat;
 
-            if (mov.move_flags2 & MOVEFLAG2_INTERP_MOVE)
+            if (mov.moveFlags2.interp_move)
                 data << mov.m_transport.t_time2;
         }
 
-        if (mov.HasMovementFlag(MOVEFLAG_SWIMMING | MOVEFLAG_FLYING) || (mov.move_flags2 & MOVEFLAG2_ALLOW_PITCHING))
+        if (mov.moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying) || mov.moveFlags2.allow_pitching)
         {
-            data << mov.s_pitch;
+            data << mov.pitch;
         }
 
         data << mov.fallTime;
 
-        if (mov.HasMovementFlag(MOVEFLAG_FALLING))
+        if (mov.moveFlags.falling)
         {
             data << mov.j_velocity;
             data << mov.j_sinAngle;
@@ -334,7 +331,7 @@ namespace Movement
             data << mov.j_xy_velocy;
         }
 
-        if (mov.HasMovementFlag(MOVEFLAG_SPLINE_ELEVATION))
+        if (mov.moveFlags.spline_elevation)
         {
             data << mov.u_unk1;
         }

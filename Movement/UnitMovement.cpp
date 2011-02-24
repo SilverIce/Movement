@@ -15,30 +15,30 @@ SpeedType MovementState::SelectSpeedType( bool is_walking /*= false*/ ) const
     //if ( !(g_moveFlags_mask & moveFlags) )
         //return 0.0f;
 
-    if ( moveFlags & MOVEFLAG_FLYING )
+    if ( moveFlags.flying )
     {
         if ( moveFlags & MOVEFLAG_BACKWARD /*&& speed_obj.flight >= speed_obj.flight_back*/ )
             return SpeedFlightBack;
         else
             return SpeedFlight;
     }
-    else if ( moveFlags & MOVEFLAG_SWIMMING )
+    else if ( moveFlags.swimming )
     {
-        if ( moveFlags & MOVEFLAG_BACKWARD /*&& speed_obj.swim >= speed_obj.swim_back*/ )
+        if ( moveFlags.backward /*&& speed_obj.swim >= speed_obj.swim_back*/ )
             return SpeedSwimBack;
         else
             return SpeedSwim;
     }
     else
     {
-        if ( moveFlags & MOVEFLAG_WALK_MODE || is_walking )
+        if ( moveFlags.walk_mode || is_walking )
         {
             //if ( speed_obj.run > speed_obj.walk )
                 return SpeedWalk;
         }
         else
         {
-            if ( moveFlags & MOVEFLAG_BACKWARD /*&& speed_obj.run >= speed_obj.run_back*/ )
+            if ( moveFlags.backward /*&& speed_obj.run >= speed_obj.run_back*/ )
                 return SpeedRunBack;
         }
         return SpeedRun;
@@ -49,12 +49,12 @@ void MovementState::ApplyMoveMode( MoveMode mode, bool apply )
 {
     if (apply)
     {
-        AddMovementFlag(Mode2Flag_table[mode]);
+        moveFlags |= Mode2Flag_table[mode];
         move_mode |= (1 << mode);
     }
     else
     {
-        RemoveMovementFlag(Mode2Flag_table[mode]);
+        moveFlags &= ~Mode2Flag_table[mode];
         move_mode &= ~(1 << mode);
     }
 }
@@ -64,13 +64,11 @@ MovementState::MovementState(WorldObject * owner) : UnitBase(*owner)
     control_mode = MovControlServer;
     move_mode = 0;
     last_ms_time = 0;
-    moveFlags = 0;
-    move_flags2 = 0;
 
     memcpy(&speed, BaseSpeed, sizeof BaseSpeed);
     speed_obj.current = BaseSpeed[SpeedRun];
 
-    s_pitch = 0.f;
+    pitch = 0.f;
     // last fall time
     fallTime = 0;
     fallStartElevation = 0.f;
@@ -93,6 +91,24 @@ void MovementState::Initialize( MovControlType controller, const Location& pos)
 
     control_mode = controller;
     last_ms_time = sMoveUpdater.TickCount();
+}
+
+void MovementState::ApplyState(const ClientMoveState& mov)
+{
+    moveFlags = mov.moveFlags;
+    moveFlags2 = mov.moveFlags2;
+    //last_ms_time = mov.ms_time;
+    SetPosition(mov.position3);
+    position.orientation = mov.orientation;
+
+    m_transport = mov.transport;
+    pitch = mov.pitch;
+    fallTime = mov.fallTime;
+    j_velocity = mov.j_velocity;
+    j_sinAngle = mov.j_sinAngle;
+    j_cosAngle = mov.j_cosAngle;
+    j_xy_velocy = mov.j_xy_velocy;
+    u_unk1 = mov.u_unk1;
 }
 
 void MovementState::updateRotation(/*uint32 ms_time_diff*/)

@@ -20,6 +20,7 @@ namespace Movement
     };
 
     class MovementState;
+    struct ClientMoveState;
 
     class PacketBuilder
     {
@@ -39,6 +40,6 @@ namespace Movement
         static void FullUpdate(const MovementState& mov, ByteBuffer& );
 
         static void WriteClientStatus(const MovementState& mov, ByteBuffer& data);
-        static void ReadClientStatus(MovementState& mov, ByteBuffer& data);
+        static void ReadClientStatus(ClientMoveState& state, ByteBuffer& data);
     };
 }
