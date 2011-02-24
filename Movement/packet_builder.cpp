@@ -264,7 +264,7 @@ namespace Movement
         data >> mov.position3;
         data >> mov.orientation;
 
-        if (mov.moveFlags & MOVEFLAG_ONTRANSPORT)
+        if (mov.moveFlags.ontransport)
         {
             data >> mov.transport.t_guid;
             data >> mov.transport.position;
@@ -272,18 +272,18 @@ namespace Movement
             data >> mov.transport.t_time;
             data >> mov.transport.t_seat;
 
-            if (mov.moveFlags2 & MOVEFLAG2_INTERP_MOVE)
+            if (mov.moveFlags2.interp_move)
                 data >> mov.transport.t_time2;
         }
 
-        if ((mov.moveFlags & (MOVEFLAG_SWIMMING | MOVEFLAG_FLYING)) || (mov.moveFlags2 & MOVEFLAG2_ALLOW_PITCHING))
+        if (mov.moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying) || mov.moveFlags2.allow_pitching)
         {
             data >> mov.pitch;
         }
 
         data >> mov.fallTime;
 
-        if (mov.moveFlags & MOVEFLAG_FALLING)
+        if (mov.moveFlags.falling)
         {
             data >> mov.j_velocity;
             data >> mov.j_sinAngle;
@@ -291,7 +291,7 @@ namespace Movement
             data >> mov.j_xy_velocy;
         }
 
-        if (mov.moveFlags & MOVEFLAG_SPLINE_ELEVATION)
+        if (mov.moveFlags.spline_elevation)
         {
             data >> mov.u_unk1;
         }
