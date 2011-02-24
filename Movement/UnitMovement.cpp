@@ -60,7 +60,7 @@ void MovementState::ApplyMoveMode( MoveMode mode, bool apply )
     }
 }
 
-MovementState::MovementState(WorldObject * owner) : UnitBase(*owner)
+MovementState::MovementState(WorldObject * owner) : UnitBase(*owner), move_spline(*new MoveSplineSegmented())
 {
     control_mode = MovControlServer;
     move_mode = 0;
@@ -77,6 +77,11 @@ MovementState::MovementState(WorldObject * owner) : UnitBase(*owner)
     j_velocity = j_sinAngle = j_cosAngle = j_xy_velocy = 0.f;
     u_unk1 = 0.f;
     speed_type = SpeedRun;
+}
+
+MovementState::~MovementState()
+{
+    delete &move_spline;
 }
 
 void MovementState::ReCalculateCurrentSpeed()

@@ -11,7 +11,6 @@
 #include "MovementBase.h"
 #include "mov_constants.h"
 #include "packet_builder.h"
-#include "MoveSpline.h"
 #include "MoveSplineInit.h"
 //#include "UnitMoveFlags.h"
 #include "ClientMoveStatus.h"
@@ -28,9 +27,7 @@ namespace Movement
     public:
         MovementState(WorldObject * owner);
 
-        ~MovementState()
-        {
-        }
+        ~MovementState();
 
         void SetControl(MovControlType c) { control_mode = c; }
         MovControlType GetControl() const { return control_mode; }
@@ -111,7 +108,7 @@ namespace Movement
 
     public:
 
-        MoveSplineSegmented  move_spline;
+        MoveSplineSegmented&  move_spline;
 
         virtual void UpdateState();
 
