@@ -77,6 +77,7 @@ MovementState::MovementState(WorldObject * owner) : UnitBase(*owner), move_splin
     j_velocity = j_sinAngle = j_cosAngle = j_xy_velocy = 0.f;
     u_unk1 = 0.f;
     speed_type = SpeedRun;
+    dbg_flags = 0;
 }
 
 MovementState::~MovementState()

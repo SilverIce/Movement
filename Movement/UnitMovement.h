@@ -101,6 +101,7 @@ namespace Movement
 
 
         SpeedType       speed_type;
+        uint8           dbg_flags;
 
         void updateRotation();
 
