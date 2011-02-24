@@ -111,7 +111,7 @@ namespace Movement
 
     public:
 
-        MoveSplineUsed  move_spline;
+        MoveSplineSegmented  move_spline;
 
         virtual void UpdateState();
 

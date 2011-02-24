@@ -191,7 +191,7 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="spline"
+			Name="Spline"
 			>
 			<File
 				RelativePath="..\Movement\g3d_based.cpp"
@@ -257,6 +257,18 @@
 				RelativePath="..\Movement\MoveSplineFlag.h"
 				>
 			</File>
+			<File
+				RelativePath="..\Movement\MoveSplineInit.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Movement\MoveSplineInit.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Movement\MoveSplineInitArgs.h"
+				>
+			</File>
 		</Filter>
 		<File
 			RelativePath="..\Movement\ByteBufferExtensions.h"
@@ -288,6 +300,10 @@
 		</File>
 		<File
 			RelativePath="..\Movement\typedefs.h"
+			>
+		</File>
+		<File
+			RelativePath="..\Movement\UnitMoveFlags.h"
 			>
 		</File>
 		<File

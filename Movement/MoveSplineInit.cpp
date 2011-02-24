@@ -1,6 +1,7 @@
-#include "MoveSplineInit.h"
 #include "UnitMovement.h"
+#include "MoveSplineInit.h"
 #include "MoveSpline.h"
+#include "Object.h"
 
 namespace Movement
 {

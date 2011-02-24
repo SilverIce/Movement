@@ -71,8 +71,9 @@ protected:
 template<class T> class LinkedList;
 
 template<class T>
-struct LinkedListElement : public LinkedListElementBase
+class LinkedListElement : public LinkedListElementBase
 {
+public:
     typedef typename T value_type;
     typedef LinkedListElement element_type;
 

@@ -13,6 +13,8 @@
 #include "LinkedList.h"
 #include "G3D/Vector3.h"
 
+class WorldObject;
+
 namespace Movement
 {
     class MoveUpdater;

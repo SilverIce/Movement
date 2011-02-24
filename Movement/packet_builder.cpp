@@ -1,9 +1,9 @@
 
-#include "packet_builder.h"
 #include "opcodes.h"
 
 #include "UnitMovement.h"
-
+#include "packet_builder.h"
+#include "MoveSpline.h"
 #include "ByteBufferExtensions.h"
 #include "Object.h"
 #include "moveupdater.h"
@@ -307,7 +307,7 @@ namespace Movement
 
         if (mov.moveFlags.ontransport)
         {
-            data << PackedGuid(mov.m_transport.t_guid);
+            data.appendPackGUID(mov.m_transport.t_guid);
             data << mov.transport_offset;
             data << mov.m_transport.t_time;
             data << mov.m_transport.t_seat;

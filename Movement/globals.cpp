@@ -1,5 +1,6 @@
 #pragma once
 
+#include "UnitMoveFlags.h"
 #include "mov_constants.h"
 #include "opcodes.h"
 #include <math.h>
@@ -8,14 +9,14 @@ namespace Movement
 {
     static const uint32 Mode2Flag_table[]=
     {
-        {/*WALK_BEGAN,*/        MOVEFLAG_WALK_MODE},
-        {/*ROOT_BEGAN,*/        MOVEFLAG_ROOT},
-        {/*SWIM_BEGAN,*/        MOVEFLAG_SWIMMING},
-        {/*WATERWALK_MODE,*/    MOVEFLAG_WATERWALKING},
-        {/*SLOW_FALL_BEGAN,*/   MOVEFLAG_SAFE_FALL},
-        {/*HOVER_BEGAN,*/       MOVEFLAG_HOVER},
-        {/*FLY_BEGAN, */        MOVEFLAG_FLYING},
-        {                       MOVEFLAG_LEVITATING},
+        {/*WALK_BEGAN,*/        UnitMoveFlag::Walk_Mode},
+        {/*ROOT_BEGAN,*/        UnitMoveFlag::Root},
+        {/*SWIM_BEGAN,*/        UnitMoveFlag::Swimming},
+        {/*WATERWALK_MODE,*/    UnitMoveFlag::Waterwalking},
+        {/*SLOW_FALL_BEGAN,*/   UnitMoveFlag::Safe_Fall},
+        {/*HOVER_BEGAN,*/       UnitMoveFlag::Hover},
+        {/*FLY_BEGAN, */        UnitMoveFlag::Flying},
+        {                       UnitMoveFlag::Levitating},
         //{0},
     };
 

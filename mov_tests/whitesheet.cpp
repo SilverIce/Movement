@@ -1,20 +1,12 @@
 #pragma once
 
 #include "simpleworld.h"
-#include "g3d_based.h"
-#include "spline.h"
 #include "UnitMovement.h"
-#include "ByteBuffer.h"
+#include "MoveSplineInit.h"
 #include "movelistener.h"
 
 #include "AllocationStatistic.h"
 #include "MoveUpdater.h"
-
-static G3D::Matrix4 g3d_catmullrom_basis2(
-    0.5f, 2.f, -2.f, 0.5f,
-    -1.f, -3.f, 3.f, -0.5f,
-    0.5f, 0.f, 0.f, 0.f,
-    -0.f, 1.f, 0.f, 0.f);
 
 /*
 Update Flags: UPDATEFLAG_HIGHGUID, UPDATEFLAG_LIVING, UPDATEFLAG_HAS_POSITION

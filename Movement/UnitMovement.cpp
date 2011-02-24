@@ -3,6 +3,7 @@
 #include "WorldPacket.h"
 #include "Object.h"
 #include "moveupdater.h"
+#include "MoveSpline.h"
 
 namespace Movement{
 
@@ -17,7 +18,7 @@ SpeedType MovementState::SelectSpeedType( bool is_walking /*= false*/ ) const
 
     if ( moveFlags.flying )
     {
-        if ( moveFlags & MOVEFLAG_BACKWARD /*&& speed_obj.flight >= speed_obj.flight_back*/ )
+        if ( moveFlags.backward /*&& speed_obj.flight >= speed_obj.flight_back*/ )
             return SpeedFlightBack;
         else
             return SpeedFlight;
