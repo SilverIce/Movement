@@ -6,6 +6,7 @@
 
 #include "ByteBufferExtensions.h"
 #include "Object.h"
+#include "moveupdater.h"
 
 namespace Movement
 {
@@ -304,7 +305,7 @@ namespace Movement
         data << mov.moveFlags;
         data << mov.move_flags2;
 
-        data << mov.last_ms_time;
+        data << sMoveUpdater.TickCount();
         data << mov.position;
 
         if (mov.HasMovementFlag(MOVEFLAG_ONTRANSPORT))

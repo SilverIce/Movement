@@ -2,7 +2,7 @@
 #include "UnitMovement.h"
 #include "WorldPacket.h"
 #include "Object.h"
-
+#include "moveupdater.h"
 
 namespace Movement{
 
@@ -88,10 +88,11 @@ void MovementState::ReCalculateCurrentSpeed()
 
 void MovementState::Initialize( MovControlType controller, const Vector4& pos, uint32 ms_time )
 {
+    SetUpdater(sMoveUpdater);
     SetPosition(pos);
 
-    last_ms_time = ms_time;
     control_mode = controller;
+    last_ms_time = sMoveUpdater.TickCount();
 }
 
 void MovementState::updateRotation(/*uint32 ms_time_diff*/)
@@ -141,7 +142,7 @@ void Scketches::ForceStop()
 
 void MovementState::UpdateState()
 {
-    uint32 now = getMSTime();
+    uint32 now = sMoveUpdater.TickCount();
     int32 difftime = getMSTimeDiff(last_ms_time, now);
     last_ms_time = now;
 
@@ -178,6 +179,7 @@ void MovementState::UpdateState()
         {
             DisableSpline();
             ResetDirection();
+            UnSheduleUpdate();
         }
     }
 

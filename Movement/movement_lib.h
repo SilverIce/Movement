@@ -1,6 +1,8 @@
 
 // This is should be main movement library's header file 
 
+#pragma once
+
 namespace G3D
 {
 	class Vector3;
@@ -9,5 +11,8 @@ namespace G3D
 
 namespace Movement
 {
+    class MovementBase;
+    class GameobjectMovement;
+    class MO_Transport;
     class MovementState;
 }

@@ -8,6 +8,7 @@
 #include "movelistener.h"
 
 #include "AllocationStatistic.h"
+#include "MoveUpdater.h"
 
 static G3D::Matrix4 g3d_catmullrom_basis2(
     0.5f, 2.f, -2.f, 0.5f,
@@ -129,11 +130,13 @@ struct WP_test : public TestArea, public IListener
 
     WorldObject * fake;
     MovementState st;
+    MoveUpdater updater;
 
     WP_test() : st(fake)
     {
         st.SetListener(this);
         st.SetPosition(nodes2[0]);
+        st.SetUpdater(updater);
 
         move();
     }
@@ -149,7 +152,7 @@ struct WP_test : public TestArea, public IListener
 
     void Update(const uint32 diff)
     {
-        st.UpdateState();
+        updater.update();
     }
 };
 

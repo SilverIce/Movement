@@ -73,4 +73,12 @@ namespace Movement
         enum {\
             static_assert_enum##__LINE__ = sizeof(_assert_fail<(bool)(B)>)\
         }
+
+    /// Declarations:
+    struct UpdaterLink;
+
+    template<class T> class LinkedListElement;
+    template<class T> class LinkedList;
+    typedef LinkedList<UpdaterLink> MovementBaseList;
+    typedef LinkedListElement<UpdaterLink> MovementBaseLink;
 }

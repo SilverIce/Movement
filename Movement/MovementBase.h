@@ -18,9 +18,11 @@ class WorldObject;
 
 namespace Movement
 {
+    class MoveUpdater;
     class MovementBase;
+    class Transportable;
 
-    struct TargetLink 
+    struct TargetLink
     {
         TargetLink() : target(0), targeter(0) {}
 
@@ -31,11 +33,28 @@ namespace Movement
         MovementBase* targeter;
     };
 
+    struct UpdaterLink
+    {
+        UpdaterLink() : updatable(0), updater(0) {}
+
+        UpdaterLink(MovementBase* updatable_, MoveUpdater* updater_)
+            : updatable(updatable_), updater(updater_) {}
+
+        MovementBase* updatable;
+        MoveUpdater* updater;
+    };
+    typedef LinkedList<UpdaterLink> MovementBaseList;
+    typedef LinkedListElement<UpdaterLink> MovementBaseLink;
+
     class MovementBase
     {
     public:
 
-        explicit MovementBase(WorldObject& owner) : m_owner(owner), listener(NULL) {}
+        explicit MovementBase(WorldObject& owner) : m_owner(owner), listener(NULL), delay(0)
+        {
+            updater_link.Value = UpdaterLink(this, NULL);
+        }
+
         virtual ~MovementBase() {}
 
         virtual void CleanReferences();
@@ -53,6 +72,17 @@ namespace Movement
         WorldObject& GetOwner() { return m_owner;}
         const WorldObject& GetOwner() const { return m_owner;}
 
+        /// Updates
+        virtual void UpdateState() {}
+
+        bool IsUpdateSheduled() const { return updater_link;}
+        void SheduleUpdate(int32 delay);
+        void UnSheduleUpdate();
+        bool Initialized() const { return updater_link.Value.updater;}
+        // should be protected?
+        void SetUpdater(MoveUpdater& upd) { updater_link.Value.updater = &upd;}
+
+        int32 delay;
 
         void _link_targeter(LinkedListElement<TargetLink>& t) { m_targeter_references.link(t);}
 
@@ -63,6 +93,7 @@ namespace Movement
 
         LinkedList<TargetLink> m_targeter_references;
         WorldObject & m_owner;
+        MovementBaseLink updater_link;
 
         MovementBase(const MovementBase&);
         MovementBase& operator = (const MovementBase&);
@@ -70,8 +101,7 @@ namespace Movement
 
     class Transport;
     class Transportable;
-
-    struct TransportLink 
+    struct TransportLink
     {
         TransportLink() : transport(0), transportable(0) {}
 
@@ -105,6 +135,8 @@ namespace Movement
 
         explicit Transportable(WorldObject& owner) : MovementBase(owner)  {}
 
+        void _board(Transport& m);
+        void _unboard();
         LinkedListElement<TransportLink> m_transport_link;
         Vector4 transport_offset;
     };

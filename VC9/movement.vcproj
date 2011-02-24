@@ -222,6 +222,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Movement\MoveUpdater.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Movement\MoveUpdater.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Movement\Object.h"
 				>
 			</File>
