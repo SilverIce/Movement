@@ -15,4 +15,7 @@ namespace Movement
     class GameobjectMovement;
     class MO_Transport;
     class MovementState;
+    class Location;
 }
+
+using Movement::Location;

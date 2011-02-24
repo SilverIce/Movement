@@ -1,5 +1,6 @@
 
 #include "MoveSpline.h"
+#include "mov_constants.h"
 #include <sstream>
 
 namespace Movement{
@@ -27,7 +28,7 @@ MoveSpline::UpdateResult MoveSpline::updateState( int32 ms_time_diff )
     return result;
 }
 
-Vector4 MoveSpline::ComputePosition() const
+Location MoveSpline::ComputePosition() const
 {
     SplineBase::index_type seg_Idx;
     float u, t = 1.f;
@@ -37,13 +38,13 @@ Vector4 MoveSpline::ComputePosition() const
     return _ComputePosition(seg_Idx, u);
 }
 
-Vector4 MoveSpline::_ComputePosition(SplineBase::index_type seg_Idx, float u) const
+Location MoveSpline::_ComputePosition(SplineBase::index_type seg_Idx, float u) const
 {
     mov_assert(Initialized());
 
-    Vector4 c;
+    Location c;
     Vector3 hermite;
-    spline.evaluate_percent(seg_Idx,u, (Vector3&)c);
+    spline.evaluate_percent(seg_Idx,u, c);
     spline.evaluate_hermite(seg_Idx,u, hermite);
 
     if (splineflags.animation)
@@ -56,13 +57,13 @@ Vector4 MoveSpline::_ComputePosition(SplineBase::index_type seg_Idx, float u) co
     if (splineflags.done && (splineflags & MoveSplineFlag::Mask_Final_Facing))
     {
         if (splineflags.final_angle)
-            c.w = facing.angle;
+            c.orientation = facing.angle;
         else if (splineflags.final_point)
-            c.w = G3D::wrap(atan2(facing.spot.y-c.y, facing.spot.x-c.x), 0.f, (float)G3D::twoPi());
+            c.orientation = G3D::wrap(atan2(facing.spot.y-c.y, facing.spot.x-c.x), 0.f, (float)G3D::twoPi());
         //nothing to do for SPLINEFLAG_FINAL_TARGET flag
     }
     else
-        c.w = G3D::wrap(atan2(hermite.y, hermite.x), 0.f, (float)G3D::twoPi());
+        c.orientation = G3D::wrap(atan2(hermite.y, hermite.x), 0.f, (float)G3D::twoPi());
     return c;
 }
 
@@ -308,7 +309,7 @@ MoveSpline::UpdateResult MoveSplineSegmented::updateState(int32& ms_time_diff)
     return result;
 }
 
-G3D::Vector4 MoveSplineSegmented::ComputePosition() const
+Location MoveSplineSegmented::ComputePosition() const
 {
     float u = 1.f;
 

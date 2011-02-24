@@ -8,10 +8,9 @@
 
 #pragma once
 
-#include "mov_constants.h"
 #include "spline.h"
-#include "G3D/Vector4.h"
 #include "MoveSplineInitArgs.h"
+#include "MovementBase.h"
 
 #include <limits>
 
@@ -84,7 +83,7 @@ namespace Movement {
 
         void OnArrived();
 
-        Vector4 _ComputePosition(MySpline::index_type Idx, float u) const;
+        Location _ComputePosition(MySpline::index_type Idx, float u) const;
 
         #pragma endregion
     public:
@@ -103,7 +102,7 @@ namespace Movement {
         };
 
         UpdateResult updateState( int32 ms_time_diff );
-        Vector4 ComputePosition() const;
+        Location ComputePosition() const;
 
         uint32 GetId() const { return m_Id;}
         bool Finalized() const { return splineflags.done; }
@@ -151,7 +150,7 @@ namespace Movement {
          ** } while(!(result & Result_StopUpdate))
         */
         UpdateResult updateState(int32& ms_time_diff);
-        Vector4 ComputePosition() const;
+        Location ComputePosition() const;
 
         void Initialize(const MoveSplineInitArgs&);
 

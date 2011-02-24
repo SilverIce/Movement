@@ -12,9 +12,6 @@
 #include "MoveListener.h"
 #include "LinkedList.h"
 #include "G3D/Vector3.h"
-#include "G3D/Vector4.h"
-
-class WorldObject;
 
 namespace Movement
 {
@@ -46,6 +43,15 @@ namespace Movement
     typedef LinkedList<UpdaterLink> MovementBaseList;
     typedef LinkedListElement<UpdaterLink> MovementBaseLink;
 
+    class Location : public Vector3
+    {
+    public:
+        Location() : orientation(0) {}
+        Location(float x, float y, float z, float o) : Vector3(x,y,z), orientation(0) {}
+
+        float orientation;
+    };
+
     class MovementBase
     {
     public:
@@ -59,11 +65,11 @@ namespace Movement
 
         virtual void CleanReferences();
 
-        const Vector4& GetPosition() const { return position;}
-        const Vector3& GetPosition3() const { return (Vector3&)position;}
+        const Location& GetPosition() const { return position;}
+        const Vector3& GetPosition3() const { return position;}
 
         // should be protected?
-        void SetPosition(const Vector4& v);
+        void SetPosition(const Location& v);
         void SetPosition(const Vector3& v);
 
         void SetListener(IListener * l) { listener = l;}
@@ -87,7 +93,7 @@ namespace Movement
         void _link_targeter(LinkedListElement<TargetLink>& t) { m_targeter_references.link(t);}
 
     protected:
-        Vector4 position;
+        Location position;
         IListener * listener;
     private:
 
@@ -137,8 +143,9 @@ namespace Movement
 
         void _board(Transport& m);
         void _unboard();
+
         LinkedListElement<TransportLink> m_transport_link;
-        Vector4 transport_offset;
+        Location transport_offset;
     };
 
     class Transport

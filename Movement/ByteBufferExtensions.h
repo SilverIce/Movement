@@ -21,9 +21,9 @@ namespace Movement
         return b;
     }
 
-    inline ByteBuffer& operator << (ByteBuffer& b, const Vector4& v)
+    inline ByteBuffer& operator << (ByteBuffer& b, const Location& v)
     {
-        b << v.x << v.y << v.z << v.w;
+        b << v.x << v.y << v.z << v.orientation;
         return b;
     }
 
@@ -33,9 +33,9 @@ namespace Movement
         return b;
     }
 
-    inline ByteBuffer& operator >> (ByteBuffer& b, Vector4& v)
+    inline ByteBuffer& operator >> (ByteBuffer& b, Location& v)
     {
-        b >> v.x >> v.y >> v.z >> v.w;
+        b >> v.x >> v.y >> v.z >> v.orientation;
         return b;
     }
 }

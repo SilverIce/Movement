@@ -8,9 +8,12 @@
 #pragma once
 
 #include "MoveSplineFlag.h"
+#include "G3D/Vector3.h"
 
 namespace Movement
 {
+    typedef std::vector<Vector3> PointsArray;
+
     union FacingInfo
     {
         struct Point{

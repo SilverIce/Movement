@@ -10,8 +10,6 @@
 
 // do not commit that assert redefinition!
 #include "G3D/debugAssert.h"
-#include "G3D/Vector3.h"
-
 #define mov_assert(exp) alwaysAssertM(exp, "")
 
 namespace G3D
@@ -26,7 +24,6 @@ namespace Movement
 {
     using G3D::Vector3;
     using G3D::Vector4;
-    typedef std::vector<Vector3> PointsArray;
 
     typedef signed char     int8;
     typedef unsigned char   uint8;

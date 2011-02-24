@@ -153,7 +153,7 @@ namespace Movement
         void ReCalculateCurrentSpeed();
         SpeedType SelectSpeedType(bool use_walk_forced) const;
 
-        void Initialize(MovControlType controller, const Vector4& position, uint32 ms_time);
+        void Initialize(MovControlType controller, const Location& position);
 
         friend class Scketches;
     };

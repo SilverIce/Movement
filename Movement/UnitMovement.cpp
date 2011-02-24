@@ -86,7 +86,7 @@ void MovementState::ReCalculateCurrentSpeed()
     speed_obj.current = speed[speed_type];
 }
 
-void MovementState::Initialize( MovControlType controller, const Vector4& pos, uint32 ms_time )
+void MovementState::Initialize( MovControlType controller, const Location& pos)
 {
     SetUpdater(sMoveUpdater);
     SetPosition(pos);
@@ -102,7 +102,7 @@ void MovementState::updateRotation(/*uint32 ms_time_diff*/)
 
     const Vector3& t_pos = GetTarget()->GetPosition3();
 
-    position.w = G3D::wrap(atan2(t_pos.y - position.y, t_pos.x - position.x), 0.f, (float)G3D::twoPi());
+    position.orientation = G3D::wrap(atan2(t_pos.y - position.y, t_pos.x - position.x), 0.f, (float)G3D::twoPi());
 
     // code below calculates facing angle base on turn speed, but seems this not needed:
     // server-side rotation have instant speed, i.e. units are everytimes facing to their targets

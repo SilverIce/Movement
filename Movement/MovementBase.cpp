@@ -59,7 +59,7 @@ namespace Movement{
         return _finite(v.x) && _finite(v.y) && _finite(v.z);
     }
 
-    void MovementBase::SetPosition(const Vector4& v)
+    void MovementBase::SetPosition(const Location& v)
     {
         if (!_finiteV((Vector3&)v))
             log_write("MovementBase::SetPosition: NaN coord detected");
