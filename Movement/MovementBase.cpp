@@ -1,5 +1,6 @@
 #include "MovementBase.h"
 #include "MoveUpdater.h"
+#include "UnitMovement.h"
 #include <float.h>
 
 namespace Movement{
@@ -29,17 +30,6 @@ namespace Movement{
     {
         if (updater_link.linked())
             updater_link.Value.updater->Unregister(updater_link);
-    }
-
-    void UnitBase::Board( Transport& m )
-    {
-        // TODO: add unit specific code here
-        _board(m);
-    }
-
-    void UnitBase::UnBoard()
-    {
-        _unboard();
     }
 
     void GameobjectMovement::Board( Transport& m )
