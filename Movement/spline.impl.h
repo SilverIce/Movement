@@ -20,17 +20,7 @@ template<typename length_type> void Spline<length_type>::evaluate_hermite(float 
     evaluate_hermite(Index, u, hermite);
 }
 
-template<typename length_type> void Spline<length_type>::evaluate_percent_and_hermite(float t, Vector3 & c, Vector3& hermite) const
-{
-    index_type Index;
-    float u;
-    computeIndex(t, Index, u);
-
-    (this->*evaluators[m_mode])(Index, u, c);
-    (this->*hermite_evaluators[m_mode])(Index, u, hermite);
-}
-
-template<typename length_type> SplineBase::index_type Spline<length_type>::computeIndexInBounds( length_type length_, float t ) const
+template<typename length_type> SplineBase::index_type Spline<length_type>::computeIndexInBounds(length_type length_) const
 {
 // Temporary disabled: causes infinite loop with t = 1.f
 /*
@@ -60,34 +50,16 @@ template<typename length_type> SplineBase::index_type Spline<length_type>::compu
 template<typename length_type> void Spline<length_type>::computeIndex(float t, index_type& index, float& u) const
 {
     mov_assert(t >= 0.f && t <= 1.f);
-
     length_type length_ = t * length();
-    index = computeIndexInBounds(length_, t);
+    index = computeIndexInBounds(length_);
     mov_assert(index < index_hi);
     u = (length_ - length(index)) / (float)length(index, index+1);
 }
 
 template<typename length_type> SplineBase::index_type Spline<length_type>::computeIndexInBounds( float t ) const
 {
-    length_type length_ = t * length();
-    index_type i = index_lo;
-    index_type N = index_hi;
-    while (i+1 < N && lengths[i+1] < length_)
-        ++i;
-
-    return i;
-}
-
-template<typename length_type> void Spline<length_type>::init_spline(const Vector3 * controls, const int count, EvaluationMode m, float length_factor)
-{
-    SplineBase::init_spline(controls, count, m);
-    cacheLengths(length_factor);
-}
-
-template<typename length_type> void Spline<length_type>::init_cyclic_spline(const Vector3 * controls, const int count, EvaluationMode m, float length_factor, int cyclic_point)
-{
-    SplineBase::init_cyclic_spline(controls, count, m, cyclic_point);
-    cacheLengths(length_factor);
+    mov_assert(t >= 0.f && t <= 1.f);
+    return computeIndexInBounds(t * length());
 }
 
 template<typename length_type> void Spline<length_type>::cacheLengths(float length_factor)
