@@ -103,6 +103,65 @@ inline uint32 computeDuration(float length, float velocity)
     return SecToMS(length / velocity);
 }
 
+struct FallInitializer
+{
+    FallInitializer(float _start_elevation) : start_elevation(_start_elevation) {}
+    float start_elevation;
+    inline int32 operator()(Spline<int32>& s, int32 i)
+    {
+        return Movement::computeFallTime(start_elevation - s.getPoint(i+1).z,false) * 1000.f;
+    }
+};
+
+enum{
+    minimal_duration = 1,
+};
+
+struct CommonInitializer
+{
+    CommonInitializer(float _velocity) : velocityInv(1000.f/_velocity), time(minimal_duration) {}
+    float velocityInv;
+    int32 time;
+    inline int32 operator()(Spline<int32>& s, int32 i)
+    {
+        time += (s.SegLength(i) * velocityInv);
+        return time;
+    }
+};
+
+void MoveSpline::init_spline(const MoveSplineInitArgs& args)
+{
+    const SplineBase::EvaluationMode modes[2] = {SplineBase::ModeLinear,SplineBase::ModeCatmullrom};
+    if (args.flags.cyclic)
+    {
+        uint32 cyclic_point = 0;
+        // MoveSplineFlag::Enter_Cycle support dropped
+        //if (splineflags & SPLINEFLAG_ENTER_CYCLE)
+        //cyclic_point = 1;   // shouldn't be modified, came from client
+        spline.init_cyclic_spline(&args.path[0], args.path.size(), modes[args.flags.isSmooth()], cyclic_point);
+        finalDestination = Vector3::zero();
+    }
+    else
+    {
+        spline.init_spline(&args.path[0], args.path.size(), modes[args.flags.isSmooth()]);
+        finalDestination = spline.getPoint(spline.last());
+    }
+
+    // init spline timestamps
+    if (splineflags.falling)
+        spline.initLengths( FallInitializer(spline.getPoint(spline.first()).z) );
+    else
+        spline.initLengths(CommonInitializer(args.velocity));
+
+    // TODO: what to do in such cases? problem is in input data (all points are at same coords)
+    // critical only for cyclic movement
+    if (spline.isCyclic() && spline.length() <= minimal_duration)
+    {
+        log_write("MoveSpline::init_spline: Zero length spline");
+        spline.set_length(spline.last(), 1000);
+    }
+}
+
 void MoveSpline::Initialize(const MoveSplineInitArgs& args)
 {
     mov_assert(args.Validate());
@@ -116,54 +175,7 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
     vertical_acceleration = 0.f;
     spec_effect_time = 0;
 
-    /*  checks spline flags, removes not compartible
-    if (splineflags & SPLINEFLAG_CYCLIC && !(isSmooth()))
-        splineflags &= ~SPLINEFLAG_CYCLIC;
-
-    if (splineflags & SPLINEFLAG_ANIMATION)
-        splineflags &= ~(SPLINEFLAG_TRAJECTORY|SPLINEFLAG_FALLING|SPLINEFLAG_KNOCKBACK);
-    else if (splineflags & SPLINEFLAG_TRAJECTORY)
-        splineflags &= ~SPLINEFLAG_FALLING;
-    */
-
-    const SplineBase::EvaluationMode modes[2] = {SplineBase::ModeLinear,SplineBase::ModeCatmullrom};
-
-    if (isCyclic())
-    {
-        uint32 cyclic_point = 0;
-        // SPLINEFLAG_ENTER_CYCLE support dropped
-        //if (splineflags & SPLINEFLAG_ENTER_CYCLE)
-            //cyclic_point = 1;   // shouldn't be modified, came from client
-
-        spline.init_cyclic_spline(&args.path[0], args.path.size(), modes[isSmooth()], 1000.f / args.velocity, cyclic_point);
-        finalDestination = Vector3::zero();
-
-        int32 duration = spline.length(spline.first()+cyclic_point,spline.last());
-        mov_assert(duration != 0 && "posssible division by zero in OnArrived call");
-    }
-    else
-    {
-        spline.init_spline(&args.path[0], args.path.size(), modes[isSmooth()], 1000.f / args.velocity);
-
-        if (splineflags.falling)
-        {
-            class SplineExt : private MySpline
-            {
-            public:
-                void modify_lengths(float coeff)
-                {
-                    index_type i = first();
-                    while(i <= last())
-                        lengths[i++] *= coeff;
-                }
-            };
-
-            float fall_time_ms = 1000.f * computeFallTime(args.path[0].z - finalDestination.z, false);
-            ((SplineExt&)spline).modify_lengths( spline.length() / fall_time_ms );
-        }
-
-        finalDestination = spline.getPoint(spline.last());
-    }
+    init_spline(args);
 
     // path initialized, duration is known and i able to compute parabolic acceleration
     if (splineflags & (MoveSplineFlag::Parabolic | MoveSplineFlag::Animation))

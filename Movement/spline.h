@@ -107,6 +107,14 @@ public:
     /**	Initializes spline. Don't call other methods while spline not initialized. */
     void init_spline(const Vector3 * controls, index_type count, EvaluationMode m);
     void init_cyclic_spline(const Vector3 * controls, index_type count, EvaluationMode m, index_type cyclic_point);
+
+    /** As i can see there are a lot of ways how spline can be initialized
+        would be no harm to have some custom initializers. */
+    template<class Init> inline void init_spline(Init& initializer)
+    {
+        initializer(m_mode,cyclic,points,index_lo,index_hi);
+    }
+
     void clear();
 
     /** Calculates distance between [i; i+1] points, assumes that index i is in bounds. */
@@ -126,7 +134,6 @@ protected:
 
     LengthArray lengths;
 
-    void cacheLengths(float length_factor);
     index_type computeIndexInBounds(length_type length) const;
     #pragma endregion
 public:
@@ -156,8 +163,28 @@ public:
     void computeIndex(float t, index_type& out_idx, float& out_u) const;
 
     /**	Initializes spline. Don't call other methods while spline not initialized. */
-    void init_spline(const Vector3 * controls, const int N, EvaluationMode m, float length_factor);
-    void init_cyclic_spline(const Vector3 * controls, const int N, EvaluationMode m, float length_factor, int cyclic_point);
+    void init_spline(const Vector3 * controls, index_type count, EvaluationMode m) { SplineBase::init_spline(controls,count,m);}
+    void init_cyclic_spline(const Vector3 * controls, index_type count, EvaluationMode m, index_type cyclic_point) { SplineBase::init_cyclic_spline(controls,count,m,cyclic_point);}
+
+    /**  Initializes lengths with SplineBase::SegLength method. */    
+    void initLengths();
+
+    /** Initializes lengths in some custom way
+        Note that value returned by cacher must be greater or equal to previous value. */
+    template<class T> inline void initLengths(T& cacher)
+    {
+        index_type i = index_lo;
+        lengths.resize(index_hi+1);
+        length_type prev_length = 0, new_length = 0;
+        while(i < index_hi)
+        {
+            new_length = cacher(*this, i);
+            lengths[++i] = new_length;
+
+            mov_assert(prev_length <= new_length);
+            prev_length = new_length;
+        }
+    }
 
     /** Returns length of the whole spline. */
     length_type length() const { return lengths[index_hi];}
@@ -165,6 +192,7 @@ public:
     length_type length(index_type first, index_type last) const { return lengths[last]-lengths[first];}
     length_type length(index_type Idx) const { return lengths[Idx];}
 
+    void set_length(index_type i, length_type length) { lengths[i] = length;}
     void clear();
 };
 

@@ -70,6 +70,7 @@ namespace Movement {
         float           vertical_acceleration;
         int32           spec_effect_time;
 
+        void init_spline(const MoveSplineInitArgs& args);
     protected:
         bool isCyclic() const { return splineflags.cyclic;}
         bool isSmooth() const { return splineflags.isSmooth();}

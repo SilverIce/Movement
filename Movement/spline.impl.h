@@ -62,36 +62,15 @@ template<typename length_type> SplineBase::index_type Spline<length_type>::compu
     return computeIndexInBounds(t * length());
 }
 
-template<typename length_type> void Spline<length_type>::init_spline(const Vector3 * controls, const int count, EvaluationMode m, float length_factor)
-{
-    SplineBase::init_spline(controls, count, m);
-    cacheLengths(length_factor);
-}
-
-template<typename length_type> void Spline<length_type>::init_cyclic_spline(const Vector3 * controls, const int count, EvaluationMode m, float length_factor, int cyclic_point)
-{
-    SplineBase::init_cyclic_spline(controls, count, m, cyclic_point);
-    cacheLengths(length_factor);
-}
-
-template<typename length_type> void Spline<length_type>::cacheLengths(float length_factor)
+template<typename length_type> void Spline<length_type>::initLengths()
 {
     index_type i = index_lo;
     length_type length = 0;
     lengths.resize(index_hi+1);
     while(i < index_hi )
     {
-        float l = SegLength(i);
-
-        // little trick:
-        // there are some paths provided by DB where all points have same coords!
-        // as a result - Spline interpolates position with NaN coords
-        if ( l == 0.f )
-            l = std::numeric_limits<float>::min();
-
-        length += l * length_factor;
-        lengths[i+1] = length;
-        ++i;
+        length += SegLength(i);
+        lengths[++i] = length;
     }
 }
 
