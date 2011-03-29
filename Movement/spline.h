@@ -155,6 +155,7 @@ public:
     index_type computeIndexInBounds(float t) const;
     void computeIndex(float t, index_type& out_idx, float& out_u) const;
 
+    /**	Initializes spline. Don't call other methods while spline not initialized. */
     void init_spline(const Vector3 * controls, const int N, EvaluationMode m, float length_factor);
     void init_cyclic_spline(const Vector3 * controls, const int N, EvaluationMode m, float length_factor, int cyclic_point);
 

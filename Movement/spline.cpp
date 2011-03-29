@@ -84,8 +84,6 @@ inline void C_Evaluate(const Vector3 *vertice, float t, const float (&matrix)[4]
     position.z = z;
 }*/
 
-using G3D::Matrix4;
-
 inline void C_Evaluate(const Vector3 *vertice, float t, const Matrix4& matr, Vector3 &result)
 {
     Vector4 tvec(t*t*t, t*t, t, 1.f);
@@ -104,55 +102,56 @@ inline void C_Evaluate_Hermite(const Vector3 *vertice, float t, const Matrix4& m
            + vertice[2] * weights[2] + vertice[3] * weights[3];
 }
 
-void SplineBase::EvaluateLinear(index_type Idx, float u, Vector3& result) const
+void SplineBase::EvaluateLinear(index_type index, float u, Vector3& result) const
 {
-    mov_assert(Idx >= 0 && Idx+1 < points.size());
-    result = points[Idx] + (points[Idx+1] - points[Idx]) * u;
+    mov_assert(index >= index_lo && index < index_hi);
+    result = points[index] + (points[index+1] - points[index]) * u;
 }
 
-void SplineBase::EvaluateCatmullRom( index_type Index, float t, Vector3& result) const
+void SplineBase::EvaluateCatmullRom( index_type index, float t, Vector3& result) const
 {
-    mov_assert(Index-1 >= 0 && Index+2 < points.size());
-    C_Evaluate(&points[Index - 1], t, s_catmullRomCoeffs, result);
+    mov_assert(index >= index_lo && index < index_hi);
+    C_Evaluate(&points[index - 1], t, s_catmullRomCoeffs, result);
 }
 
-void SplineBase::EvaluateBezier3(index_type Index, float t, Vector3& result) const
+void SplineBase::EvaluateBezier3(index_type index, float t, Vector3& result) const
 {
-    Index *= 3u;
-    mov_assert(Index >= 0 && Index+3 < points.size());
-    C_Evaluate(&points[Index], t, s_Bezier3Coeffs, result);
+    index *= 3u;
+    mov_assert(index >= index_lo && index < index_hi);
+    C_Evaluate(&points[index], t, s_Bezier3Coeffs, result);
 }
 
-void SplineBase::EvaluateHermiteLinear(index_type Index, float, Vector3& result) const
+void SplineBase::EvaluateHermiteLinear(index_type index, float, Vector3& result) const
 {
-    mov_assert(Index >= 0 && Index+1 < points.size());
-    result = points[Index+1] - points[Index];
+    mov_assert(index >= index_lo && index < index_hi);
+    result = points[index+1] - points[index];
 }
 
-void SplineBase::EvaluateHermiteCatmullRom(index_type Index, float t, Vector3& result) const
+void SplineBase::EvaluateHermiteCatmullRom(index_type index, float t, Vector3& result) const
 {
-    mov_assert(Index-1 >= 0 && Index+2 < points.size());
-    C_Evaluate_Hermite(&points[Index - 1], t, s_catmullRomCoeffs, result);
+    mov_assert(index >= index_lo && index < index_hi);
+    C_Evaluate_Hermite(&points[index - 1], t, s_catmullRomCoeffs, result);
 }
 
-void SplineBase::EvaluateHermiteBezier3(index_type Index, float t, Vector3& result) const
+void SplineBase::EvaluateHermiteBezier3(index_type index, float t, Vector3& result) const
 {
-    mov_assert(Index-1 >= 0 && Index+2 < points.size());
-    C_Evaluate_Hermite(&points[Index - 1], t, s_Bezier3Coeffs, result);
+    index *= 3u;
+    mov_assert(index >= index_lo && index < index_hi);
+    C_Evaluate_Hermite(&points[index], t, s_Bezier3Coeffs, result);
 }
 
-float SplineBase::SegLengthLinear(index_type i) const
+float SplineBase::SegLengthLinear(index_type index) const
 {
-    mov_assert(i >= 0 && i+1 < points.size());
-    return (points[i] - points[i+1]).length();
+    mov_assert(index >= index_lo && index < index_hi);
+    return (points[index] - points[index+1]).length();
 }
 
-float SplineBase::SegLengthCatmullRom( index_type Index ) const
+float SplineBase::SegLengthCatmullRom( index_type index ) const
 {
-    mov_assert(Index-1 >= 0 && Index+2 < points.size());
+    mov_assert(index >= index_lo && index < index_hi);
 
     Vector3 curPos, nextPos;
-    const Vector3 * p = &points[Index - 1];
+    const Vector3 * p = &points[index - 1];
     curPos = nextPos = p[1];
 
     index_type i = 1;
@@ -167,13 +166,13 @@ float SplineBase::SegLengthCatmullRom( index_type Index ) const
     return length;
 }
 
-float SplineBase::SegLengthBezier3(index_type Index) const
+float SplineBase::SegLengthBezier3(index_type index) const
 {
-    Index *= 3u;
-    mov_assert(Index >= 0 && Index+3 < points.size());
+    index *= 3u;
+    mov_assert(index >= index_lo && index < index_hi);
 
     Vector3 curPos, nextPos;
-    const Vector3 * p = &points[Index];
+    const Vector3 * p = &points[index];
 
     C_Evaluate(p, 0.f, s_Bezier3Coeffs, nextPos);
     curPos = nextPos;
@@ -191,7 +190,7 @@ float SplineBase::SegLengthBezier3(index_type Index) const
 }
 #pragma endregion
 
-void SplineBase::init_spline(const Vector3 * controls, const int count, EvaluationMode m)
+void SplineBase::init_spline(const Vector3 * controls, index_type count, EvaluationMode m)
 {
     m_mode = m;
     points_count = count;
@@ -200,7 +199,7 @@ void SplineBase::init_spline(const Vector3 * controls, const int count, Evaluati
     (this->*initializers[m_mode])(controls, count, cyclic, 0);
 }
 
-void SplineBase::init_cyclic_spline(const Vector3 * controls, const int count, EvaluationMode m, int cyclic_point)
+void SplineBase::init_cyclic_spline(const Vector3 * controls, index_type count, EvaluationMode m, index_type cyclic_point)
 {
     m_mode = m;
     points_count = count;
@@ -209,7 +208,7 @@ void SplineBase::init_cyclic_spline(const Vector3 * controls, const int count, E
     (this->*initializers[m_mode])(controls, count, cyclic, cyclic_point);
 }
 
-void SplineBase::InitLinear(const Vector3* controls, const int count, bool cyclic, int cyclic_point)
+void SplineBase::InitLinear(const Vector3* controls, index_type count, bool cyclic, index_type cyclic_point)
 {
     mov_assert(count >= 2);
     const int real_size = count + 1;
@@ -229,16 +228,16 @@ void SplineBase::InitLinear(const Vector3* controls, const int count, bool cycli
     index_hi = cyclic ? count : (count - 1);
 }
 
-void SplineBase::InitCatmullRom(const Vector3* controls, const int count, bool cyclic, int cyclic_point)
+void SplineBase::InitCatmullRom(const Vector3* controls, index_type count, bool cyclic, index_type cyclic_point)
 {
     const int real_size = count + (cyclic ? (1+2) : (1+1));
 
     points.resize(real_size);
 
-    int lo_idx = 1;
-    int high_idx = lo_idx + count - 1;
+    int lo_index = 1;
+    int high_index = lo_index + count - 1;
 
-    memcpy(&points[lo_idx],controls, sizeof(Vector3) * count);
+    memcpy(&points[lo_index],controls, sizeof(Vector3) * count);
 
     // first and last two indexes are space for special 'virtual points'
     // these points are required for proper C_Evaluate and C_Evaluate_Hermite methtod work
@@ -247,22 +246,22 @@ void SplineBase::InitCatmullRom(const Vector3* controls, const int count, bool c
         if (cyclic_point == 0)
             points[0] = controls[count-1];
         else
-            points[0] = controls[0];
+            points[0] = controls[0].lerp(controls[1], -1);
 
-        points[high_idx+1] = controls[cyclic_point];
-        points[high_idx+2] = controls[cyclic_point+1];
+        points[high_index+1] = controls[cyclic_point];
+        points[high_index+2] = controls[cyclic_point+1];
     }
     else
     {
-        points[0] = controls[0];
-        points[high_idx+1] = controls[count-1];
+        points[0] = controls[0].lerp(controls[1], -1);
+        points[high_index+1] = controls[count-1];
     }
 
-    index_lo = lo_idx;
-    index_hi = high_idx + (cyclic ? 1 : 0);
+    index_lo = lo_index;
+    index_hi = high_index + (cyclic ? 1 : 0);
 }
 
-void SplineBase::InitBezier3(const Vector3* controls, const int count, bool cyclic, int cyclic_point)
+void SplineBase::InitBezier3(const Vector3* controls, index_type count, bool cyclic, index_type cyclic_point)
 {
     index_type c = count / 3u * 3u;
     index_type t = c / 3u;
@@ -287,8 +286,10 @@ void SplineBase::clear()
 std::string SplineBase::ToString() const
 {
     std::stringstream str;
+    const char * mode_str[ModesCount] = {"Linear", "CatmullRom", "Bezier3", "Uninitialized"};
 
     index_type count = this->points.size();
+    str << "mode: " << mode_str[mode()] << std::endl;
     str << "points count: " << count << std::endl;
     for (index_type i = 0; i < count; ++i)
         str << "point " << i << " : " << points[i].toString() << std::endl;
