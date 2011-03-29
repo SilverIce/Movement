@@ -46,6 +46,19 @@ SpeedType UnitMovement::SelectSpeedType( bool is_walking /*= false*/ ) const
     }
 }
 
+static const uint32 Mode2Flag_table[]=
+{
+    {/*WALK_BEGAN,*/        UnitMoveFlag::Walk_Mode},
+    {/*ROOT_BEGAN,*/        UnitMoveFlag::Root},
+    {/*SWIM_BEGAN,*/        UnitMoveFlag::Swimming},
+    {/*WATERWALK_MODE,*/    UnitMoveFlag::Waterwalking},
+    {/*SLOW_FALL_BEGAN,*/   UnitMoveFlag::Safe_Fall},
+    {/*HOVER_BEGAN,*/       UnitMoveFlag::Hover},
+    {/*FLY_BEGAN, */        UnitMoveFlag::Flying},
+    {                       UnitMoveFlag::Levitating},
+    //{0},
+};
+
 void UnitMovement::ApplyMoveMode( MoveMode mode, bool apply )
 {
     if (apply)
@@ -59,6 +72,19 @@ void UnitMovement::ApplyMoveMode( MoveMode mode, bool apply )
         move_mode &= ~(1 << mode);
     }
 }
+
+static const float BaseSpeed[SpeedMaxCount] =
+{
+    2.5f,                                                   // SpeedWalk
+    7.0f,                                                   // SpeedRun
+    4.5f,                                                   // SpeedSwimBack
+    4.722222f,                                              // SpeedSwim
+    1.25f,                                                  // SpeedRunBack
+    7.0f,                                                   // SpeedFlight
+    4.5f,                                                   // SpeedFlightBack
+    3.141594f,                                              // SpeedTurn
+    3.141594f,                                              // SpeedPitch
+};
 
 UnitMovement::UnitMovement(WorldObject& owner) :
     Transportable(owner), move_spline(*new MoveSplineSegmented())

@@ -11,6 +11,56 @@
 
 namespace Movement
 {
+    const uint16 S_Speed2Opc_table[]=
+    {
+        {/*MOVE_WALK,*/         SMSG_SPLINE_SET_WALK_SPEED},
+        {/*MOVE_RUN,*/          SMSG_SPLINE_SET_RUN_SPEED},
+        {/*MOVE_SWIM_BACK,*/    SMSG_SPLINE_SET_SWIM_BACK_SPEED},
+        {/*MOVE_SWIM,*/         SMSG_SPLINE_SET_SWIM_SPEED},
+        {/*MOVE_RUN_BACK,*/     SMSG_SPLINE_SET_RUN_BACK_SPEED},
+        {/*MOVE_FLIGHT,*/       SMSG_SPLINE_SET_FLIGHT_SPEED},
+        {/*MOVE_FLIGHT_BACK,*/  SMSG_SPLINE_SET_FLIGHT_BACK_SPEED},
+        {/*MOVE_TURN_RATE,*/    SMSG_SPLINE_SET_TURN_RATE},
+        {/*MOVE_PITCH_RATE,*/   SMSG_SPLINE_SET_PITCH_RATE},
+    };
+
+    const uint16 S_Mode2Opc_table[MoveModeMaxCount][2]=
+    {
+        {/*WALK_BEGAN,*/        SMSG_SPLINE_MOVE_SET_RUN_MODE, SMSG_SPLINE_MOVE_SET_WALK_MODE},
+        {/*ROOT_BEGAN,*/        SMSG_SPLINE_MOVE_UNROOT,       SMSG_SPLINE_MOVE_ROOT},
+        {/*SWIM_BEGAN,*/        SMSG_SPLINE_MOVE_STOP_SWIM,    SMSG_SPLINE_MOVE_START_SWIM},
+        {/*WATERWALK_MODE,*/    SMSG_SPLINE_MOVE_LAND_WALK,    SMSG_SPLINE_MOVE_WATER_WALK},
+        {/*SLOW_FALL_BEGAN,*/   SMSG_SPLINE_MOVE_NORMAL_FALL,  SMSG_SPLINE_MOVE_FEATHER_FALL},
+        {/*HOVER_BEGAN,*/       SMSG_SPLINE_MOVE_UNSET_HOVER,  SMSG_SPLINE_MOVE_SET_HOVER},
+        {/*FLY_BEGAN,*/         SMSG_SPLINE_MOVE_UNSET_FLYING, SMSG_SPLINE_MOVE_SET_FLYING},
+        {/*levitation mode*/    MSG_NULL_ACTION,               MSG_NULL_ACTION},    // no opcodes
+    };
+
+    const uint16 C_Mode2Opc_table[MoveModeMaxCount][2]=
+    {
+        {/*WALK_BEGAN,*/        MSG_NULL_ACTION,               MSG_NULL_ACTION},
+        {/*ROOT_BEGAN,*/        SMSG_FORCE_MOVE_UNROOT,        SMSG_FORCE_MOVE_ROOT},
+        {/*SWIM_BEGAN,*/        MSG_NULL_ACTION,               MSG_NULL_ACTION},
+        {/*WATERWALK_MODE,*/    SMSG_MOVE_LAND_WALK,           SMSG_MOVE_WATER_WALK},
+        {/*SLOW_FALL_BEGAN,*/   SMSG_MOVE_NORMAL_FALL,         SMSG_MOVE_FEATHER_FALL},
+        {/*HOVER_BEGAN,*/       SMSG_MOVE_UNSET_HOVER,         SMSG_MOVE_SET_HOVER},
+        {/*FLY_BEGAN,*/         SMSG_MOVE_UNSET_CAN_FLY,       SMSG_MOVE_SET_CAN_FLY},
+        {/*levitation mode*/    MSG_NULL_ACTION,               MSG_NULL_ACTION},    // no opcodes
+    };
+
+    const uint16 SetSpeed2Opc_table[][2]=
+    {
+        {MSG_MOVE_SET_WALK_SPEED,       SMSG_FORCE_WALK_SPEED_CHANGE},
+        {MSG_MOVE_SET_RUN_SPEED,        SMSG_FORCE_RUN_SPEED_CHANGE},
+        {MSG_MOVE_SET_SWIM_BACK_SPEED,  SMSG_FORCE_SWIM_BACK_SPEED_CHANGE},
+        {MSG_MOVE_SET_SWIM_SPEED,       SMSG_FORCE_SWIM_SPEED_CHANGE},
+        {MSG_MOVE_SET_RUN_BACK_SPEED,   SMSG_FORCE_RUN_BACK_SPEED_CHANGE},
+        {MSG_MOVE_SET_FLIGHT_SPEED,     SMSG_FORCE_FLIGHT_SPEED_CHANGE},
+        {MSG_MOVE_SET_FLIGHT_BACK_SPEED,SMSG_FORCE_FLIGHT_BACK_SPEED_CHANGE},
+        {MSG_MOVE_SET_TURN_RATE,        SMSG_FORCE_TURN_RATE_CHANGE},
+        {MSG_MOVE_SET_PITCH_RATE,       SMSG_FORCE_PITCH_RATE_CHANGE},
+    };
+
     typedef void (*SpeedPtr)(const UnitMovement&,SpeedType,WorldPacket&);
     typedef void (*MoveModePtr)(const UnitMovement&,MoveMode,WorldPacket&);
     typedef void (*PathPtr)(const UnitMovement&,WorldPacket&);
