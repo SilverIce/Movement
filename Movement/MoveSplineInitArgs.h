@@ -30,7 +30,7 @@ namespace Movement
     struct MoveSplineInitArgs
     {
         MoveSplineInitArgs() : path_Idx_offset(0),
-            velocity(0.f), parabolic_heigth(0.f), time_perc(0.f)   {}
+            velocity(0.f), parabolic_heigth(0.f), time_perc(0.f), splineId(0)   {}
        
         PointsArray path;
         FacingInfo facing;
@@ -39,6 +39,7 @@ namespace Movement
         float velocity;
         float parabolic_heigth;
         float time_perc;
+        uint32 splineId;
 
         bool Validate() const;
     private:

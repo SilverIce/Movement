@@ -5,8 +5,6 @@
 
 namespace Movement{
 
-// TODO: make it Atomic
-counter<uint32, 0> movespline_counter;
 
 MoveSpline::UpdateResult MoveSpline::updateState( int32 ms_time_diff )
 {
@@ -168,6 +166,7 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
 
     splineflags = args.flags;
     facing = args.facing;
+    m_Id = args.splineId;
 
     time_passed  = 0;
     //duration_mod = 1.f;
@@ -187,8 +186,6 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
             vertical_acceleration = args.parabolic_heigth * 8.f / (f_duration * f_duration);
         }
     }
-
-    m_Id = movespline_counter.NewId();
 }
 
 std::string MoveSpline::ToString() const

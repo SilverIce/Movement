@@ -12,32 +12,8 @@
 #include "MoveSplineInitArgs.h"
 #include "Location.h"
 
-#include <limits>
-
 namespace Movement {
 
-    template<class T, T lower_limit>
-    class counter
-    {
-    public:
-        counter() { init();}
-
-        T NewId()
-        {
-            if (m_counter == std::numeric_limits<T>::max())
-                init();
-            else
-                ++m_counter;
-            return m_counter;
-        }
-
-        enum{
-            Lower_limit = lower_limit,
-        };
-    private:
-        void init() { m_counter = lower_limit+1; }
-        T m_counter;
-    };
 
     // MoveSpline - кривая гладкая или ломаная линия и точка на ней, движущаяся из начала в конец кривой
     // точка может иметь вертикальную составляющую движения

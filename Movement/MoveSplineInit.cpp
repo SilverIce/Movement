@@ -2,6 +2,7 @@
 #include "MoveSplineInit.h"
 #include "MoveSpline.h"
 #include "Object.h"
+#include "MoveUpdater.h"
 
 namespace Movement
 {
@@ -73,6 +74,8 @@ namespace Movement
             state.ReCalculateCurrentSpeed();
             args.velocity = state.GetCurrentSpeed();
         }
+
+        args.splineId = state.GetUpdater().NewMoveSplineId();
 
         if (target)
             state.BindOrientationTo(*target);
