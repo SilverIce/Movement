@@ -13,7 +13,7 @@ namespace Movement
         return *this;
     }
 
-    MoveSplineInit& MoveSplineInit::MoveTo( const Vector3& dest )
+    MoveSplineInit& MoveSplineInit::MoveTo(const Vector3& dest)
     {
         args.path_Idx_offset = 0;
         args.path.resize(2);
@@ -27,9 +27,9 @@ namespace Movement
         return *this;
     }
 
-    MoveSplineInit& MoveSplineInit::SetWalk()
+    MoveSplineInit& MoveSplineInit::SetWalk(bool enable)
     {
-        args.flags.walkmode = true;
+        args.flags.walkmode = enable;
         return *this;
     }
 
@@ -51,7 +51,7 @@ namespace Movement
         return *this;
     }
 
-    MoveSplineInit& MoveSplineInit::SetVelocity( float vel )
+    MoveSplineInit& MoveSplineInit::SetVelocity(float vel)
     {
         args.velocity = vel;
         return *this;
@@ -95,37 +95,31 @@ namespace Movement
         }
     }
 
-    MoveSplineInit& MoveSplineInit::SetTrajectory( float max_height, float time_shift )
+    MoveSplineInit& MoveSplineInit::SetParabolic(float max_height, float time_shift, bool is_knockback)
     {
         args.time_perc = time_shift;
         args.parabolic_heigth = max_height;
         args.flags.EnableParabolic();
+        args.flags.knockback = is_knockback;
         return *this;
     }
 
-    MoveSplineInit& MoveSplineInit::SetKnockBack( float max_height, float time_shift )
+    MoveSplineInit& MoveSplineInit::SetFacing(MovementBase& t)
     {
-        SetTrajectory(max_height, time_shift);
-        args.flags.knockback = true;
-        return *this;
-    }
-
-    MoveSplineInit& MoveSplineInit::SetFacing( MovementBase& t )
-    {
-        args.facing.target = t.GetOwner().GetGUID();
+        args.facing.target = t.Owner.GetGUID();
         args.flags.EnableFacingTarget();
         target = &t;
         return *this;
     }
 
-    MoveSplineInit& MoveSplineInit::SetFacing( float o )
+    MoveSplineInit& MoveSplineInit::SetFacing(float o)
     {
         args.facing.angle = G3D::wrap(o, 0.f, (float)G3D::twoPi());
         args.flags.EnableFacingAngle();
         return *this;
     }
 
-    MoveSplineInit& MoveSplineInit::SetFacing( Vector3 const& spot )
+    MoveSplineInit& MoveSplineInit::SetFacing(Vector3 const& spot)
     {
         args.facing.x = spot.x;
         args.facing.y = spot.y;

@@ -16,49 +16,60 @@ namespace Movement
     class UnitMovement;
 
     /// Initializer for MoveSpline class
+    /*  Initializes and launches spline movement
+     */
     class MoveSplineInit
     {
     public:
 
         explicit MoveSplineInit(UnitMovement& m);
         
-        // launches initialized movement
+        /*  Final pass of initialization that launches spline movement.
+         */
         void Launch();
 
-        // Adds movement by parabolic trajectory
-        // max_height - the maximum height of parabola, value could be negative and positive
-        // start_time - delay between movement starting time and beginning to move by parabolic trajectory
-        // you can have only one parabolic motion: previous will be overriden
-        // can't be combined with final animation
-        MoveSplineInit& SetKnockBack(float max_height, float start_time);
-        MoveSplineInit& SetTrajectory(float max_height, float start_time);
-        // Plays animation after start_time delay passed (delay since movement starting time)
-        // can't be combined with parabolic movement
+        /* Adds movement by parabolic trajectory
+         * @param max_height - the maximum height of parabola, value could be negative and positive
+         * @param start_time - delay between movement starting time and beginning to move by parabolic trajectory
+         * can't be combined with final animation
+         */ 
+        MoveSplineInit& SetParabolic(float max_height, float start_time, bool is_knockback);
+        /* Plays animation after start_time delay passed (delay since movement starting time)
+         * can't be combined with parabolic movement
+         */
         MoveSplineInit& SetAnimation(AnimType anim, float start_time);
 
-        // Adds final facing animation
-        // sets unit's facing to specified point/angle/target after all path done
-        // you can have only one final facing: previous will be overriden
+        /* Adds final facing animation
+         * sets unit's facing to specified point/angle/target after all path done
+         * you can have only one final facing: previous will be overriden
+         */ 
         MoveSplineInit& SetFacing(MovementBase& target);
         MoveSplineInit& SetFacing(float angle);
         MoveSplineInit& SetFacing(Vector3 const& point);
 
-        //
-        // controls - array of points, shouldn't be empty
-        MoveSplineInit& MovebyPath(const PointsArray& controls, uint32 path_offset = 0);
-        // Initializes spline for simple A to B motion, A is current unit's position, B is destination
+        /* Initializes movement by path
+         * @param path - array of points, shouldn't be empty
+         */ 
+        MoveSplineInit& MovebyPath(const PointsArray& path, uint32 path_offset = 0, bool contains_current = false);
+        /* Initializes simple A to B mition, A is current unit's position, B is destination
+         */ 
         MoveSplineInit& MoveTo(const Vector3& destination);
 
-        // Enables CatmullRom spline interpolation mode(makes path smooth)
-        // if not enabled linear spline mode will be choosen
+        /* Enables CatmullRom spline interpolation mode(makes path smooth)
+         * if not enabled linear spline mode will be choosen
+         */
         MoveSplineInit& SetSmooth();
-        // Enables CatmullRom spline interpolation mode, enables flying animation
+        /* Enables CatmullRom spline interpolation mode, enables flying animation
+         */ 
         MoveSplineInit& SetFly();
-        // Enables walk mode
-        MoveSplineInit& SetWalk();
-        // Makes movement cyclic
+        /* Enables walk mode
+         */ 
+        MoveSplineInit& SetWalk(bool enable);
+        /* Makes movement cyclic
+         */
         MoveSplineInit& SetCyclic();
-        // Enables falling mode
+        /* Enables falling mode
+         */
         MoveSplineInit& SetFall();
         /* 
          */

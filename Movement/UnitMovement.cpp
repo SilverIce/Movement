@@ -188,14 +188,14 @@ void UnitMovement::BindOrientationTo(MovementBase& target)
     // can i target self?
     m_target_link.Value = TargetLink(&target, this);
     target._link_targeter(m_target_link);
-    GetOwner().SetUInt64Value(UNIT_FIELD_TARGET, target.GetOwner().GetGUID());
+    Owner.SetUInt64Value(UNIT_FIELD_TARGET, target.Owner.GetGUID());
 }
 
 void UnitMovement::UnbindOrientation()
 {
     m_target_link.Value = TargetLink();
     m_target_link.delink();
-    GetOwner().SetUInt64Value(UNIT_FIELD_TARGET, 0);
+    Owner.SetUInt64Value(UNIT_FIELD_TARGET, 0);
 }
 
 void Scketches::ForceStop()

@@ -100,21 +100,24 @@ namespace Movement
 
         uint32 GetMovementFlags() const { return moveFlags.raw; }
 
+        #pragma region Move modes
         /// Move Modes
         bool HasMode(MoveMode m) const { return move_mode & (1 << m);}
         void ApplyMoveMode(MoveMode mode, bool apply);
-        /// end of Get-Set methtods
+        /// end of Get-Set methods
 
         /// Apply/remove modes
-        void Root(bool apply) { ApplyMoveMode(MoveModeRoot, apply); }
-        void Swim(bool apply) { ApplyMoveMode(MoveModeSwim, apply); }
-        void Walk(bool apply) { ApplyMoveMode(MoveModeWalk, apply); }
-        void WaterWalk(bool apply) { ApplyMoveMode(MoveModeWaterwalk, apply); }
-        void SlowFall(bool apply) { ApplyMoveMode(MoveModeSlowfall, apply); }
-        void Fly(bool apply) { ApplyMoveMode(MoveModeFly, apply); }
-        void Hover(bool apply) { ApplyMoveMode(MoveModeHover, apply); }
+        void ApplyRootMode(bool apply) { ApplyMoveMode(MoveModeRoot, apply); }
+        void ApplySwimMode(bool apply) { ApplyMoveMode(MoveModeSwim, apply); }
+        void ApplyWalkMode(bool apply) { ApplyMoveMode(MoveModeWalk, apply); }
+        void ApplyWaterWalkMode(bool apply) { ApplyMoveMode(MoveModeWaterwalk, apply); }
+        void ApplySlowFallMode(bool apply) { ApplyMoveMode(MoveModeSlowfall, apply); }
+        void ApplyFlyMode(bool apply) { ApplyMoveMode(MoveModeFly, apply); }
+        void ApplyHoverMode(bool apply) { ApplyMoveMode(MoveModeHover, apply); }
 
     private:
+        uint32 move_mode;
+        #pragma endregion
 
         #pragma region Speed
     public:
@@ -129,7 +132,6 @@ namespace Movement
         MovControlType  control_mode;
 
         uint32          last_ms_time;
-        uint32          move_mode;
 
         UnitMoveFlag    moveFlags;
         UnitMoveFlag2   moveFlags2;
@@ -172,9 +174,9 @@ namespace Movement
     struct MsgBroadcast : public MsgDeliverMethtod
     {
         explicit MsgBroadcast(WorldObject& owner) : m_owner(owner) {}
-        explicit MsgBroadcast(MovementBase* m) : m_owner(m->GetOwner()) {}
-        explicit MsgBroadcast(MovementBase& m) : m_owner(m.GetOwner()) {}
-        virtual void operator()(WorldPacket& data);
+        explicit MsgBroadcast(MovementBase* m) : m_owner(m->Owner) {}
+        explicit MsgBroadcast(MovementBase& m) : m_owner(m.Owner) {}
+        virtual void operator()(WorldPacket& data) { m_owner.SendMessageToSet(&data, true);}
         WorldObject& m_owner;
     };
 

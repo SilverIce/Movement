@@ -137,7 +137,7 @@ namespace Movement
     {
     public:
 
-        explicit MovementBase(WorldObject& owner) : m_owner(owner), listener(NULL)
+        explicit MovementBase(WorldObject& owner) : Owner(owner), listener(NULL)
         {
         }
 
@@ -154,9 +154,8 @@ namespace Movement
         void SetListener(IListener * l) { listener = l;}
         void ResetLisener() { listener = NULL; }
 
-        WorldObject& GetOwner() { return m_owner;}
-        const WorldObject& GetOwner() const { return m_owner;}
 
+        WorldObject& Owner;
 
         void _link_targeter(LinkedListElement<TargetLink>& t) { m_targeter_references.link(t);}
 
@@ -166,7 +165,6 @@ namespace Movement
     private:
 
         LinkedList<TargetLink> m_targeter_references;
-        WorldObject & m_owner;
 
         MovementBase(const MovementBase&);
         MovementBase& operator = (const MovementBase&);

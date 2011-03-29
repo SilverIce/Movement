@@ -16,7 +16,7 @@ namespace Movement
 {
     struct MsgDeliverMethtod
     {
-        virtual void operator()(WorldPacket&){}
+        virtual void operator()(WorldPacket&) = 0;
     };
 
     class UnitMovement;

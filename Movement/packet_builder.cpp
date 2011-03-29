@@ -115,7 +115,7 @@ namespace Movement
         uint16 opcode = S_Speed2Opc_table[type];
 
         data.Initialize(opcode, 8+4);
-        data << mov.GetOwner().GetPackGUID();
+        data << mov.Owner.GetPackGUID();
         data << mov.GetSpeed(type);
     }
 
@@ -124,7 +124,7 @@ namespace Movement
         uint16 opcode = S_Mode2Opc_table[mode][mov.HasMode(mode)];
 
         data.Initialize(opcode, 8);
-        data << mov.GetOwner().GetPackGUID();
+        data << mov.Owner.GetPackGUID();
     }
 
     void PacketBuilder::Spline_PathUpdate(const UnitMovement& mov, WorldPacket& data)
@@ -138,7 +138,7 @@ namespace Movement
         // TODO: find more generic way
         if (!mov.SplineEnabled())
         {
-            data << mov.GetOwner().GetPackGUID();
+            data << mov.Owner.GetPackGUID();
             data << uint8(0);
             data << mov.GetPosition3();
             data << splineInfo.GetId();
@@ -150,7 +150,7 @@ namespace Movement
         const Vector3 * real_path = &spline.getPoint(spline.first());
         uint32 last_idx = spline.pointsCount() - 1;
 
-        data << mov.GetOwner().GetPackGUID();
+        data << mov.Owner.GetPackGUID();
         data << uint8(0);
         data << real_path[0];
         data << splineInfo.GetId();
@@ -229,7 +229,7 @@ namespace Movement
         uint16 opcode = SetSpeed2Opc_table[ty][forced];
 
         data.Initialize(opcode, 30);
-        data << mov.GetOwner().GetPackGUID();
+        data << mov.Owner.GetPackGUID();
 
         if(!forced)
         {
