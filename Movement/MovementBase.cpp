@@ -6,9 +6,10 @@ namespace Movement{
 
     void MovementBase::CleanReferences()
     {
-        m_targeter_references.delink_all();
-        //MoveUpdater::Unregister(updater_link);
-
+        struct unbinder{
+            inline void operator()(TargetLink& link) { link.targeter->UnbindOrientation();}
+        };
+        m_targeter_references.Iterate(unbinder());
         UnSheduleUpdate();
     }
 

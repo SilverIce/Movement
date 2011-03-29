@@ -165,6 +165,7 @@ void UnitMovement::BindOrientationTo(MovementBase& target)
 
 void UnitMovement::UnbindOrientation()
 {
+    m_target_link.Value = TargetLink();
     m_target_link.delink();
     GetOwner().SetUInt64Value(UNIT_FIELD_TARGET, 0);
 }

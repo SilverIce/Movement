@@ -115,8 +115,7 @@ namespace Movement
             updater_link.Value = UpdaterLink(this, NULL);
         }
 
-        virtual ~MovementBase() {}
-
+        virtual ~MovementBase() { mov_assert(m_targeter_references.empty());}
         virtual void CleanReferences();
 
         const Location& GetPosition() const { return position;}
