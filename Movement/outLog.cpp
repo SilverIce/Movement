@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdarg.h>
+#include <time.h>
 
 namespace Movement{
 
@@ -10,11 +11,20 @@ namespace Movement{
     {
         __log_init()
         {
-            file = fopen("movement.log","wb");
+            file = fopen("movement.log","a++");
+
+            fprintf(file, "Movement Log\n");
+            time_t t;
+            time(&t);
+            fprintf(file, "Start: %s\n", ctime(&t));
+            fflush(file);
         }
 
         ~__log_init()
         {
+            time_t t;
+            time(&t);
+            fprintf(file, "Shutdown: %s\n", ctime(&t));
             fclose(file);
         }
 
