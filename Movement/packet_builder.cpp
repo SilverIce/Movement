@@ -122,7 +122,7 @@ namespace Movement
             break;
         case MoveSplineFlag::Final_Point:
             data << uint8(MonsterMoveFacingSpot);
-            data << splineInfo.facing.spot.x << splineInfo.facing.spot.y << splineInfo.facing.spot.z;
+            data << splineInfo.facing.x << splineInfo.facing.y << splineInfo.facing.z;
             break;
         }
 
@@ -232,7 +232,7 @@ namespace Movement
             }
             else if(splineFlags.final_point)
             {
-                data << splineInfo.facing.spot.x << splineInfo.facing.spot.y << splineInfo.facing.spot.z;
+                data << splineInfo.facing.x << splineInfo.facing.y << splineInfo.facing.z;
             }
 
             data << splineInfo.timePassed();
@@ -307,13 +307,13 @@ namespace Movement
 
         if (mov.moveFlags.ontransport)
         {
-            data.appendPackGUID(mov.m_transport.t_guid);
+            data.appendPackGUID(mov.m_transportInfo.t_guid);
             data << mov.transport_offset;
-            data << mov.m_transport.t_time;
-            data << mov.m_transport.t_seat;
+            data << mov.m_transportInfo.t_time;
+            data << mov.m_transportInfo.t_seat;
 
             if (mov.moveFlags2.interp_move)
-                data << mov.m_transport.t_time2;
+                data << mov.m_transportInfo.t_time2;
         }
 
         if (mov.moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying) || mov.moveFlags2.allow_pitching)

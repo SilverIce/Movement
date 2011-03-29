@@ -109,7 +109,7 @@ void UnitMovement::ApplyState(const ClientMoveState& mov)
     SetPosition(mov.position3);
     position.orientation = mov.orientation;
 
-    m_transport = mov.transport;
+    m_transportInfo = mov.transport;
     pitch = mov.pitch;
     fallTime = mov.fallTime;
     j_velocity = mov.j_velocity;
@@ -160,7 +160,7 @@ void UnitMovement::BindOrientationTo(MovementBase& target)
     // can i target self?
     m_target_link.Value = TargetLink(&target, this);
     target._link_targeter(m_target_link);
-    GetOwner().SetUInt64Value(UNIT_FIELD_TARGET, target.Owner.GetGUID());
+    GetOwner().SetUInt64Value(UNIT_FIELD_TARGET, target.GetOwner().GetGUID());
 }
 
 void UnitMovement::UnbindOrientation()

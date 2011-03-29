@@ -127,9 +127,9 @@ namespace Movement
 
     MoveSplineInit& MoveSplineInit::SetFacing( Vector3 const& spot )
     {
-        args.facing.spot.x = spot.x;
-        args.facing.spot.y = spot.y;
-        args.facing.spot.z = spot.z;
+        args.facing.x = spot.x;
+        args.facing.y = spot.y;
+        args.facing.z = spot.z;
         args.flags.EnableFacingPoint();
         return *this;
     }

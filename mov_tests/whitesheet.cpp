@@ -122,11 +122,11 @@ struct WP_test : public TestArea, public IListener
         //move();
     }
 
-    WorldObject * fake;
+    WorldObject *fake;
     UnitMovement st;
     MoveUpdater updater;
 
-    WP_test() : st(fake)
+    WP_test() : st(*fake)
     {
         st.SetListener(this);
         st.SetPosition(nodes2[0]);

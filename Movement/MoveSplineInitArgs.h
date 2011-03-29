@@ -16,13 +16,12 @@ namespace Movement
 
     union FacingInfo
     {
-        struct Point{
+        struct{
             float x,y,z;
-        }       spot;
+        };
         uint64  target;
         float   angle;
 
-        FacingInfo(const Point& p) : spot(p){}
         FacingInfo(float o) : angle(o) {}
         FacingInfo(uint64 t) : target(t) {}
         FacingInfo() {}

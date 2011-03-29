@@ -38,11 +38,6 @@ SplineBase::InitMethtod SplineBase::initializers[SplineBase::ModesCount] =
     (InitMethtod)&SplineBase::UninitializedSpline,
 };
 
-float SplineBase::SegLength( index_type Index ) const
-{
-    return (this->*seglengths[m_mode])(Index);
-}
-
 ///////////
 #pragma region evaluation methtods
 
@@ -195,10 +190,6 @@ float SplineBase::SegLengthBezier3(index_type Index) const
     return length;
 }
 #pragma endregion
-
-SplineBase::SplineBase() : m_mode(ModeLinear), index_lo(0), index_hi(0), points_count(0), cyclic(false)
-{
-}
 
 void SplineBase::init_spline(const Vector3 * controls, const int count, EvaluationMode m)
 {

@@ -105,9 +105,6 @@ namespace Movement
 
     private:
 
-        #pragma region fields
-
-
         #pragma region Speed
     public:
         void SetSpeed(SpeedType type, float s) { speed[type] = s; }
@@ -136,7 +133,7 @@ namespace Movement
 
         float           u_unk1;
 
-        TransportInfo   m_transport;
+        TransportInfo   m_transportInfo;
 
         union {
             SpeedInfo   speed_obj;

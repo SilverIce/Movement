@@ -62,6 +62,18 @@ template<typename length_type> SplineBase::index_type Spline<length_type>::compu
     return computeIndexInBounds(t * length());
 }
 
+template<typename length_type> void Spline<length_type>::init_spline(const Vector3 * controls, const int count, EvaluationMode m, float length_factor)
+{
+    SplineBase::init_spline(controls, count, m);
+    cacheLengths(length_factor);
+}
+
+template<typename length_type> void Spline<length_type>::init_cyclic_spline(const Vector3 * controls, const int count, EvaluationMode m, float length_factor, int cyclic_point)
+{
+    SplineBase::init_cyclic_spline(controls, count, m, cyclic_point);
+    cacheLengths(length_factor);
+}
+
 template<typename length_type> void Spline<length_type>::cacheLengths(float length_factor)
 {
     index_type i = index_lo;
