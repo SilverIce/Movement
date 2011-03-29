@@ -232,15 +232,26 @@ void MoveSpline::OnArrived()
 }
 
 /// ============================================================================================
+extern float terminalVelocity;
 
 bool MoveSplineInitArgs::Validate() const
 {
-    return path.size() > 1 && velocity > 0.f &&
-        time_perc >= 0.f && time_perc <= 1.f && _checkPathBounds();
+#define CHECK(exp) \
+    if (!(exp))\
+    {\
+        log_write("MoveSplineInitArgs::Validate: '%s' failed", #exp);\
+        return false;\
+    }
+    CHECK(path.size() > 1);
+    CHECK(velocity > 0.f && velocity <= terminalVelocity);
+    CHECK(time_perc >= 0.f && time_perc <= 1.f);
+    CHECK(_checkPathBounds());
+    return true;
+#undef CHECK
 }
 
 // MONSTER_MOVE packet format limitation for not CatmullRom movement:
-// extent of path vertices should fit inside 255x255x255 bounding box
+// each vertex offset packed into 4 bytes and it should fit inside 255x255x255 bounding box
 bool MoveSplineInitArgs::_checkPathBounds() const
 {
     if (!(flags & MoveSplineFlag::Mask_CatmullRom) && path.size() > 2)
