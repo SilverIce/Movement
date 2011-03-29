@@ -19,32 +19,47 @@ namespace Movement
 {
     class MoveUpdater;
     class MovementBase;
+    class UpdatableMovement;
     class Transportable;
     class UnitMovement;
 
-    struct TargetLink
+    struct IUpdatable 
     {
-        TargetLink() : target(0), targeter(0) {}
-
-        TargetLink(MovementBase* target_, UnitMovement* targeter_)
-            : target(target_), targeter(targeter_) {}
-
-        MovementBase* target;
-        UnitMovement* targeter;
+        virtual void UpdateState() = 0;
+    protected:
+        ~IUpdatable(){}
     };
 
-    struct UpdaterLink
+    class UpdatableMovement
     {
-        UpdaterLink() : updatable(0), updater(0) {}
+    private:
+        LinkedListElement<UpdatableMovement*> updater_link;
+        MoveUpdater * m_updater;
+        IUpdatable * m_strategy;
+    public:
+        explicit UpdatableMovement() : m_updater(NULL), m_strategy(NULL)
+        {
+            updater_link.Value = this;
+        }
 
-        UpdaterLink(MovementBase* updatable_, MoveUpdater* updater_)
-            : updatable(updatable_), updater(updater_) {}
+        ~UpdatableMovement() { mov_assert(!IsUpdateScheduled());}
 
-        MovementBase* updatable;
-        MoveUpdater* updater;
+        void CleanReferences()
+        {
+            UnScheduleUpdate();
+            m_updater = NULL;
+        }
+
+        void SetUpdateStrategy(IUpdatable * u) { m_strategy = u;}
+        void ScheduleUpdate();
+        void UnScheduleUpdate();
+        bool IsUpdateScheduled() const { return updater_link.linked();}
+
+        MoveUpdater& GetUpdater() const { mov_assert(m_updater);return *m_updater;}
+        bool HasUpdater() const { return m_updater;}
+        void SetUpdater(MoveUpdater& upd) { /*mov_assert(m_updater == NULL);*/m_updater = &upd;}
+        void UpdateState() { m_strategy->UpdateState();}
     };
-    typedef LinkedList<UpdaterLink> MovementBaseList;
-    typedef LinkedListElement<UpdaterLink> MovementBaseLink;
 
     /** Makes local transport position <--> global world position conversions */
     struct CoordTranslator
@@ -107,13 +122,23 @@ namespace Movement
         }
     };
 
+    struct TargetLink
+    {
+        TargetLink() : target(0), targeter(0) {}
+
+        TargetLink(MovementBase* target_, UnitMovement* targeter_)
+            : target(target_), targeter(targeter_) {}
+
+        MovementBase* target;
+        UnitMovement* targeter;
+    };
+
     class MovementBase
     {
     public:
 
-        explicit MovementBase(WorldObject& owner) : m_owner(owner), listener(NULL), delay(0)
+        explicit MovementBase(WorldObject& owner) : m_owner(owner), listener(NULL)
         {
-            updater_link.Value = UpdaterLink(this, NULL);
         }
 
         virtual ~MovementBase() { mov_assert(m_targeter_references.empty());}
@@ -132,17 +157,6 @@ namespace Movement
         WorldObject& GetOwner() { return m_owner;}
         const WorldObject& GetOwner() const { return m_owner;}
 
-        /// Updates
-        virtual void UpdateState() {}
-
-        bool IsUpdateSheduled() const { return updater_link;}
-        void SheduleUpdate(int32 delay);
-        void UnSheduleUpdate();
-        bool Initialized() const { return updater_link.Value.updater;}
-        // should be protected?
-        void SetUpdater(MoveUpdater& upd) { updater_link.Value.updater = &upd;}
-
-        int32 delay;
 
         void _link_targeter(LinkedListElement<TargetLink>& t) { m_targeter_references.link(t);}
 
@@ -153,7 +167,6 @@ namespace Movement
 
         LinkedList<TargetLink> m_targeter_references;
         WorldObject & m_owner;
-        MovementBaseLink updater_link;
 
         MovementBase(const MovementBase&);
         MovementBase& operator = (const MovementBase&);
@@ -231,7 +244,7 @@ namespace Movement
     };
 
 
-    /// concretete classes:
+    /// concrete classes:
 
     class GameobjectMovement : public Transportable
     {
@@ -243,21 +256,33 @@ namespace Movement
         virtual void UnBoard();
     };
 
-    class MO_Transport : public MovementBase
+    class MO_Transport : public MovementBase, public IUpdatable
     {
     public:
 
-        explicit MO_Transport(WorldObject& owner) : MovementBase(owner) {}
+        explicit MO_Transport(WorldObject& owner);
+        virtual ~MO_Transport() {}
 
         virtual void CleanReferences()
         {
             m_transport.CleanReferences();
             MovementBase::CleanReferences();
+            updatable.CleanReferences();
         }
+
+        virtual void UpdateState() {}   // does nothing.. yet
 
         void UnBoardAll() { m_transport.UnBoardAll();}
 
-    protected:
+        void ScheduleUpdate() { updatable.ScheduleUpdate();}
+        void UnScheduleUpdate() { updatable.UnScheduleUpdate();}
+        bool HasUpdater() const { return updatable.HasUpdater();}
+        void SetUpdater(MoveUpdater& upd) { updatable.SetUpdater(upd);}
+
+    private:
+
         Transport m_transport;
+        UpdatableMovement updatable;
     };
+
 }

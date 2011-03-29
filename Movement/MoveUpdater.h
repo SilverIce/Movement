@@ -9,10 +9,12 @@
 #pragma once
 
 #include "typedefs.h"
-#include "MovementBase.h"
+#include "LinkedList.h"
 
 namespace Movement
 {
+
+    class UpdatableMovement;
     class MoveUpdater
     {
     public:
@@ -22,8 +24,10 @@ namespace Movement
         };
 
         explicit MoveUpdater();
+        ~MoveUpdater() { CleanReferences(); mov_assert(m_movers.empty());}
+        void CleanReferences();
 
-        void Register(MovementBaseLink& m)
+        void Register(LinkedListElement<UpdatableMovement*>& m)
         {
             if (!m.linked())
             {
@@ -34,7 +38,7 @@ namespace Movement
             }
         }
 
-        void Unregister(MovementBaseLink& m)
+        void Unregister(LinkedListElement<UpdatableMovement*>& m)
         {
             if (m.linked())
             {
@@ -45,14 +49,14 @@ namespace Movement
             }
         }
 
-        void update();
+        void Update();
 
         uint32 TickCount() { return m_tick_count;}
-        uint32 MoversCount() { return m_tick_count;}
+        uint32 MoversCount() { return m_movers_count;}
 
     private:
 
-        MovementBaseList m_movers;
+        LinkedList<UpdatableMovement*> m_movers;
         uint32 m_tick_count;
         uint32 common_timer;
         uint32 m_movers_count;

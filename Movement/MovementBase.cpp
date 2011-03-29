@@ -5,42 +5,31 @@
 
 namespace Movement{
 
+    void UpdatableMovement::ScheduleUpdate()
+    {
+        if (HasUpdater())
+        {
+            //delay = delay_;
+            m_updater->Register(updater_link);
+        }
+        else
+            log_write("UpdatableMovement::SheduleUpdate called, but updater is null");
+    }
+
+    void UpdatableMovement::UnScheduleUpdate()
+    {
+        if (HasUpdater())
+            m_updater->Unregister(updater_link);
+        else
+            log_write("UpdatableMovement::UnSheduleUpdate called, but updater is null");
+    }
+
     void MovementBase::CleanReferences()
     {
         struct unbinder{
             inline void operator()(TargetLink& link) { link.targeter->UnbindOrientation();}
         };
         m_targeter_references.Iterate(unbinder());
-        UnSheduleUpdate();
-    }
-
-    void MovementBase::SheduleUpdate(int32 delay_)
-    {
-        //mov_assert(updater_link.Value.updater);
-        if (updater_link.Value.updater)
-        {
-            delay = delay_;
-            updater_link.Value.updater->Register(updater_link);
-        }
-        else
-            log_write("MovementBase::SheduleUpdate called, but updater is null");
-    }
-
-    void MovementBase::UnSheduleUpdate()
-    {
-        if (updater_link.linked())
-            updater_link.Value.updater->Unregister(updater_link);
-    }
-
-    void GameobjectMovement::Board( Transport& m )
-    {
-        // TODO: add gameobject specific code
-        _board(m);
-    }
-
-    void GameobjectMovement::UnBoard()
-    {
-        _unboard();
     }
 
     // for debugging:
@@ -65,6 +54,7 @@ namespace Movement{
         else
             (Vector3&)position = v;
     }
+
     void Transportable::_board(Transport& m)
     {
         _unboard();
@@ -79,5 +69,10 @@ namespace Movement{
             m_transport_link.Value = TransportLink();
             m_transport_link.delink();
         }
+    }
+
+    MO_Transport::MO_Transport(WorldObject& owner) : MovementBase(owner)
+    {
+        updatable.SetUpdateStrategy(this);
     }
 }

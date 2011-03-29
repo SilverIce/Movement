@@ -63,6 +63,8 @@ void UnitMovement::ApplyMoveMode( MoveMode mode, bool apply )
 UnitMovement::UnitMovement(WorldObject& owner) :
     Transportable(owner), move_spline(*new MoveSplineSegmented())
 {
+    updatable.SetUpdateStrategy(this);
+
     control_mode = MovControlServer;
     move_mode = 0;
     last_ms_time = 0;
@@ -214,7 +216,7 @@ void UnitMovement::UpdateState()
         {
             DisableSpline();
             ResetDirection();
-            UnSheduleUpdate();
+            updatable.UnScheduleUpdate();
         }
     }
 

@@ -89,7 +89,7 @@ namespace Movement
             state.EnableSpline();
             state.SetForwardDirection();
 
-            state.SheduleUpdate(spline.Duration());
+            state.ScheduleUpdate();
             // shall MoveSpline initializer care about packet broadcasting?
             PacketBuilder::PathUpdate(state, MsgBroadcast(state));
         }

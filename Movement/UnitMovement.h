@@ -34,7 +34,7 @@ namespace Movement
     };
 
     // class for unit's movement
-    class UnitMovement : public Transportable
+    class UnitMovement : public Transportable, public IUpdatable
     {
     public:
 
@@ -43,7 +43,18 @@ namespace Movement
             UnbindOrientation();
             m_transport.CleanReferences();
             Transportable::CleanReferences();
+            updatable.CleanReferences();
         }
+
+        #pragma region Updates
+    public:
+        bool HasUpdater() const { return updatable.HasUpdater();}
+        void SetUpdater(MoveUpdater& upd) { updatable.SetUpdater(upd);}
+        MoveUpdater& GetUpdater() const { return updatable.GetUpdater();}
+        void ScheduleUpdate() { updatable.ScheduleUpdate();}
+    private:
+        UpdatableMovement updatable;
+        #pragma endregion
 
         #pragma region Orientation
         /* Needed for monster movement only*/

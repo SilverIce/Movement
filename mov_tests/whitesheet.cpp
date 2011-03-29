@@ -146,7 +146,7 @@ struct WP_test : public TestArea, public IListener
 
     void Update(const uint32 diff)
     {
-        updater.update();
+        updater.Update();
     }
 };
 
