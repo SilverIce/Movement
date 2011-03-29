@@ -66,5 +66,6 @@ namespace Movement
     };
 
     float computeFallTime(float path_length, bool isSafeFall);
-    float computeFallElevation(float t_passed, bool isSafeFall, float start_velocy);
+    float computeFallElevation(float time_passed, bool isSafeFall, float start_velocy);
+    float computeFallElevation(float time_passed);
 }

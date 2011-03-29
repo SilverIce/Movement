@@ -87,7 +87,7 @@ void MoveSpline::computeParabolicElevation(float& el) const
 
 void MoveSpline::computeFallElevation(float& el) const
 {
-    float z_now = spline.getPoint(spline.first()).z - Movement::computeFallElevation(MSToSec(time_passed), false, 0.f);
+    float z_now = spline.getPoint(spline.first()).z - Movement::computeFallElevation(MSToSec(time_passed));
 
     if (z_now < finalDestination.z)
     {
