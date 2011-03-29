@@ -203,6 +203,27 @@ void Scketches::ForceStop()
     MoveSplineInit(impl).MoveTo(impl.GetPosition3()).Launch();
 }
 
+void UnitMovement::SetSpeed(SpeedType type, float s)
+{
+    if (GetSpeed(type) != s)
+    {
+        speed[type] = s;
+        PacketBuilder::SpeedUpdate(*this, type, MsgBroadcast(this));
+
+        if (SplineEnabled() && type == getCurrentSpeedType())
+        {
+            if (G3D::fuzzyEq(s,0))
+                Scketches(*this).ForceStop();
+            else
+            {
+                // FIXME: currently there is no way to change speed of already moving server-side controlled unit (spline movement)
+                // there is only one hacky way - launch new spline movement.. that's how blizz doing this
+                Scketches(*this).ForceStop();
+            }
+        }
+    }
+}
+
 void UnitMovement::UpdateState()
 {
     uint32 now = sMoveUpdater.TickCount();

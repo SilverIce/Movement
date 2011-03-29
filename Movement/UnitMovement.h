@@ -121,7 +121,7 @@ namespace Movement
 
         #pragma region Speed
     public:
-        void SetSpeed(SpeedType type, float s) { speed[type] = s; }
+        void SetSpeed(SpeedType type, float s);
         float GetSpeed(SpeedType type) const { return speed[type]; }
         float GetCurrentSpeed() const { return speed_obj.current; }
         SpeedType getCurrentSpeedType() const { return speed_type; }
