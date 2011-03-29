@@ -11,6 +11,8 @@ public:
     WorldPacket(){}
 
     void Initialize(unsigned short, size_t){}
+    void SetOpcode(uint16){}
+    uint16 GetOpcode() const { return 0;}
 };
 #endif
 

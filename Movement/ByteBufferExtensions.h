@@ -10,8 +10,7 @@
 
 #include "WorldPacket.h"
 #include "typedefs.h"
-#include "G3D/Vector3.h"
-#include "G3D/Vector4.h"
+#include "Location.h"
 
 namespace Movement
 {

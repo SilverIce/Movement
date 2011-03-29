@@ -60,6 +60,7 @@ public:
     uint64 readPackGUID()
     {
         r_pos += 8;
+        return 0;
     }
 
     bool empty() const { return true;}

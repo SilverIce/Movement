@@ -10,7 +10,7 @@
 
 #include "spline.h"
 #include "MoveSplineInitArgs.h"
-#include "MovementBase.h"
+#include "Location.h"
 
 #include <limits>
 

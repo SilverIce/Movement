@@ -14,8 +14,8 @@ namespace Movement
     class MovementBase;
     class GameobjectMovement;
     class MO_Transport;
-    class MovementState;
-    class Location;
+    class UnitMovement;
+    struct Location;
 }
 
 using Movement::Location;

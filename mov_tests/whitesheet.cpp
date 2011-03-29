@@ -7,6 +7,8 @@
 
 #include "AllocationStatistic.h"
 #include "MoveUpdater.h"
+#include <sstream>
+#include "MoveSpline.h"
 
 /*
 Update Flags: UPDATEFLAG_HIGHGUID, UPDATEFLAG_LIVING, UPDATEFLAG_HAS_POSITION

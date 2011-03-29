@@ -11,7 +11,7 @@
 #include "typedefs.h"
 #include "MoveListener.h"
 #include "LinkedList.h"
-#include "G3D/Vector3.h"
+#include "Location.h"
 
 class WorldObject;
 
