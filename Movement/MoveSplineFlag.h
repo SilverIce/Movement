@@ -40,7 +40,7 @@ namespace Movement
             Unknown6     = 0x01000000,
             Unknown7     = 0x02000000,
             Unknown8     = 0x04000000,
-            Unknown9     = 0x08000000,           // Appears with walkmode flag, affects orientation computation
+            Backward     = 0x08000000,
             Unknown10    = 0x10000000,
             Unknown11    = 0x20000000,
             Unknown12    = 0x40000000,
@@ -55,7 +55,7 @@ namespace Movement
             // CatmullRom interpolation mode used
             Mask_CatmullRom = Flying | Catmullrom,
             // Unused, not suported flags
-            Mask_Unused = No_Spline|Enter_Cycle|Instant|Unknown5|Unknown6|Unknown7|Unknown8|Unknown9|Unknown10|Unknown11|Unknown12|Unknown13,
+            Mask_Unused = No_Spline|Enter_Cycle|Instant|Unknown5|Unknown6|Unknown7|Unknown8|Unknown10|Unknown11|Unknown12|Unknown13,
         };
 
         MoveSplineFlag() : raw(0) {}
@@ -116,7 +116,7 @@ namespace Movement
                 bool unknown6      : 1;
                 bool unknown7      : 1;
                 bool unknown8      : 1;
-                bool unknown9      : 1;           // appears with walkmode flag, affects orientation computation
+                bool backward      : 1;
                 bool unknown10     : 1;
                 bool unknown11     : 1;
                 bool unknown12     : 1;

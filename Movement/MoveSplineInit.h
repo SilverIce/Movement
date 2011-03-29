@@ -60,10 +60,15 @@ namespace Movement
         MoveSplineInit& SetCyclic();
         // Enables falling mode
         MoveSplineInit& SetFall();
+        /* 
+         */
+        MoveSplineInit& SetBackward();
 
-        // Sets the velocity(in case you want to have custom movement velocity)
-        // if no set, speed will be selected based on values from speed table and current movement mode
-        // value shouldn't be negative
+        /* Sets the velocity (in case you want to have custom movement velocity)
+         * if no set, speed will be selected based on unit's speeds and current movement mode
+         * Has no effect if falling mode enabled
+         * velocity shouldn't be negative
+         */ 
         MoveSplineInit& SetVelocity(float velocity);
 
         template<typename InitStrategy>

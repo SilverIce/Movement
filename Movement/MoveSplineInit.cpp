@@ -145,4 +145,10 @@ namespace Movement
         args.flags.EnableAnimation(anim);
         return *this;
     }
+
+    MoveSplineInit& MoveSplineInit::SetBackward()
+    {
+        args.flags.backward = true;
+        return *this;
+    }
 }

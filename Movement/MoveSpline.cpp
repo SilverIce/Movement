@@ -43,27 +43,32 @@ Location MoveSpline::_ComputePosition(SplineBase::index_type seg_Idx, float u) c
     mov_assert(Initialized());
 
     Location c;
-    Vector3 hermite;
     spline.evaluate_percent(seg_Idx,u, c);
-    spline.evaluate_hermite(seg_Idx,u, hermite);
 
     if (splineflags.animation)
-        ;// SPLINEFLAG_ANIMATION disables falling or parabolic movement
+        ;// MoveSplineFlag::Animation disables falling or parabolic movement
     else if (splineflags.parabolic)
         computeParabolicElevation(c.z);
     else if (splineflags.falling)
         computeFallElevation(c.z);
 
-    if (splineflags.done && (splineflags & MoveSplineFlag::Mask_Final_Facing))
+    if (splineflags & (MoveSplineFlag::Done | MoveSplineFlag::Mask_Final_Facing))
     {
         if (splineflags.final_angle)
             c.orientation = facing.angle;
         else if (splineflags.final_point)
-            c.orientation = G3D::wrap(atan2(facing.spot.y-c.y, facing.spot.x-c.x), 0.f, (float)G3D::twoPi());
-        //nothing to do for SPLINEFLAG_FINAL_TARGET flag
-    }
+            c.orientation = atan2(facing.y-c.y, facing.x-c.x);
+        //nothing to do for MoveSplineFlag::Final_Target flag
+    } 
     else
-        c.orientation = G3D::wrap(atan2(hermite.y, hermite.x), 0.f, (float)G3D::twoPi());
+    {
+        Vector3 hermite;
+        spline.evaluate_hermite(seg_Idx,u,hermite);
+        c.orientation = atan2(hermite.y, hermite.x);
+
+        if (splineflags.backward)
+            c.orientation = -c.orientation;
+    }
     return c;
 }
 
