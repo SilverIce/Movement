@@ -27,7 +27,7 @@ namespace Movement{
 
     void MovementBase::UnSheduleUpdate()
     {
-        if (updater_link)
+        if (updater_link.linked())
             updater_link.Value.updater->Unregister(updater_link);
     }
 
@@ -84,7 +84,7 @@ namespace Movement{
 
     void Transportable::_unboard()
     {
-        if (m_transport_link)
+        if (m_transport_link.linked())
         {
             m_transport_link.Value = TransportLink();
             m_transport_link.delink();

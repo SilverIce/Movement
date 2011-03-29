@@ -86,10 +86,7 @@ public:
 
     T Value;
 
-    T& operator *() { return Value;}
-    const T& operator *() const { return Value;}
-
-    operator bool () const { return linked();}
+    using LinkedListElementBase::linked;
 
     void delink()
     {

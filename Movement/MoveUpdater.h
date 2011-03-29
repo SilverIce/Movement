@@ -25,7 +25,7 @@ namespace Movement
 
         void Register(MovementBaseLink& m)
         {
-            if (!m)
+            if (!m.linked())
             {
                 m_movers.link(m);
                 ++m_movers_count;
@@ -36,7 +36,7 @@ namespace Movement
 
         void Unregister(MovementBaseLink& m)
         {
-            if (m)
+            if (m.linked())
             {
                 m_movers.delink(m);
                 --m_movers_count;

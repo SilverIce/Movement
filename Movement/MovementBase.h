@@ -186,7 +186,7 @@ namespace Movement
             MovementBase::CleanReferences();
         }
 
-        bool IsBoarded() const { return m_transport_link;}
+        bool IsBoarded() const { return m_transport_link.linked();}
         Transport* GetTransport() { return m_transport_link.Value.transport;}
         const Transport* GetTransport() const { return m_transport_link.Value.transport;}
 
