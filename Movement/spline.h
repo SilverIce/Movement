@@ -25,7 +25,6 @@ public:
         ModeLinear,
         ModeCatmullrom,
         ModeBezier3_Unused,
-        ModesCount,
     };
 
     #pragma region fields
@@ -36,8 +35,20 @@ protected:
     index_type index_hi;
     index_type points_count;
 
-    EvaluationMode m_mode;
+    uint8 m_mode;
     bool cyclic;
+
+    enum{
+        // could be modified, affects segment length evaluation precision
+        // lesser value saves more performance in cost of lover precision
+        // minimal value is 1
+        // client's value is 20, blizzs use 2-3 steps to compute length
+        STEPS_PER_SEGMENT = 3,
+
+        UninitializedMode = 3,
+        ModesCount = UninitializedMode+1,
+    };
+    static_assert(STEPS_PER_SEGMENT > 0);
 
 protected:
     void EvaluateLinear(index_type, float, Vector3&) const;
@@ -63,18 +74,12 @@ protected:
     typedef void (SplineBase::*InitMethtod)(const Vector3*, const int, bool, int);
     static InitMethtod initializers[ModesCount];
 
-    enum{
-        // could be modified, affects segment length evaluation precision
-        // lesser value saves more performance in cost of lover precision
-        // minimal value is 1
-        // client's value is 20, blizzs use 2-3 steps to compute length
-        STEPS_PER_SEGMENT = 2,
-    };
-    static_assert(STEPS_PER_SEGMENT > 0);
+    void UninitializedSpline() const { mov_assert(false);}
+
     #pragma endregion
 public:
 
-    explicit SplineBase();
+    explicit SplineBase() : m_mode(UninitializedMode), index_lo(0), index_hi(0), cyclic(false) {}
 
     // Caclulates the position for given segment Idx, and percent of segment length t
     // t - percent of segment length, assumes that t in range [0, 1]
@@ -90,7 +95,7 @@ public:
     index_type last()  const { return index_hi;}
 
     bool empty() const { return index_lo == index_hi;}
-    EvaluationMode mode() const { return m_mode;}
+    EvaluationMode mode() const { return (EvaluationMode)m_mode;}
     bool isCyclic() const { return cyclic;}
 
     const PointsArray& getPoints() const { return points;}

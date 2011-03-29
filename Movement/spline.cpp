@@ -10,6 +10,7 @@ SplineBase::EvaluationMethtod SplineBase::evaluators[SplineBase::ModesCount] =
     &SplineBase::EvaluateLinear,
     &SplineBase::EvaluateCatmullRom,
     &SplineBase::EvaluateBezier3,
+    (EvaluationMethtod)&SplineBase::UninitializedSpline,
 };
 
 SplineBase::EvaluationMethtod SplineBase::hermite_evaluators[SplineBase::ModesCount] =
@@ -17,6 +18,7 @@ SplineBase::EvaluationMethtod SplineBase::hermite_evaluators[SplineBase::ModesCo
     &SplineBase::EvaluateHermiteLinear,
     &SplineBase::EvaluateHermiteCatmullRom,
     &SplineBase::EvaluateHermiteBezier3,
+    (EvaluationMethtod)&SplineBase::UninitializedSpline,
 };
 
 SplineBase::SegLenghtMethtod SplineBase::seglengths[SplineBase::ModesCount] =
@@ -24,14 +26,16 @@ SplineBase::SegLenghtMethtod SplineBase::seglengths[SplineBase::ModesCount] =
     &SplineBase::SegLengthLinear,
     &SplineBase::SegLengthCatmullRom,
     &SplineBase::SegLengthBezier3,
+    (SegLenghtMethtod)&SplineBase::UninitializedSpline,
 };
 
 SplineBase::InitMethtod SplineBase::initializers[SplineBase::ModesCount] =
 {
-    //&SplineOrigin::InitLinear,
+    //&SplineBase::InitLinear,
     &SplineBase::InitCatmullRom,    // we should use catmullrom initializer even for linear mode! (client's internal structure limitation)
     &SplineBase::InitCatmullRom,
     &SplineBase::InitBezier3,
+    (InitMethtod)&SplineBase::UninitializedSpline,
 };
 
 float SplineBase::SegLength( index_type Index ) const
