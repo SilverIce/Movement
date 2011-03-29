@@ -60,7 +60,8 @@ void UnitMovement::ApplyMoveMode( MoveMode mode, bool apply )
     }
 }
 
-UnitMovement::UnitMovement(WorldObject * owner) : UnitBase(*owner), move_spline(*new MoveSplineSegmented())
+UnitMovement::UnitMovement(WorldObject& owner) :
+    Transportable(owner), move_spline(*new MoveSplineSegmented())
 {
     control_mode = MovControlServer;
     move_mode = 0;
@@ -148,13 +149,23 @@ void UnitMovement::updateRotation(/*uint32 ms_time_diff*/)
 
 void UnitMovement::BindOrientationTo(MovementBase& target)
 {
-    UnitBase::BindOrientationTo(target);
-    GetOwner().SetUInt64Value(UNIT_FIELD_TARGET, target.GetOwner().GetGUID());
+    UnbindOrientation();
+
+    if (&target == this)
+    {
+        log_write("UnitMovement::BindOrientationTo: trying to target self, skipped");
+        return;
+    }
+
+    // can i target self?
+    m_target_link.Value = TargetLink(&target, this);
+    target._link_targeter(m_target_link);
+    GetOwner().SetUInt64Value(UNIT_FIELD_TARGET, target.Owner.GetGUID());
 }
 
 void UnitMovement::UnbindOrientation()
 {
-    UnitBase::UnbindOrientation();
+    m_target_link.delink();
     GetOwner().SetUInt64Value(UNIT_FIELD_TARGET, 0);
 }
 

@@ -260,46 +260,4 @@ namespace Movement
     protected:
         Transport m_transport;
     };
-
-    // class for unit's movement
-    class UnitBase : public Transportable
-    {
-    public:
-
-        virtual void CleanReferences()
-        {
-            UnbindOrientation();
-            m_transport.CleanReferences();
-            Transportable::CleanReferences();
-        }
-
-        void UnbindOrientation()
-        {
-            if (m_target_link)
-                m_target_link.delink();
-        }
-
-        void BindOrientationTo(MovementBase& m)
-        {
-            UnbindOrientation();
-            // can i target self?
-            m_target_link.Value = TargetLink(&m, this);
-            m._link_targeter(m_target_link);
-        }
-
-        bool IsOrientationBinded() const { return m_target_link; }
-        MovementBase* GetTarget() { return m_target_link.Value.target;}
-        const MovementBase* GetTarget() const { return m_target_link.Value.target;}
-
-        virtual void Board(Transport& m);
-        virtual void UnBoard();
-
-    protected:
-
-        explicit UnitBase(WorldObject& owner) : Transportable(owner) {}
-
-    private:
-        Transport m_transport;
-        LinkedListElement<TargetLink> m_target_link;
-    };
 }
