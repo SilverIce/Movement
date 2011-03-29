@@ -11,11 +11,11 @@
 
 namespace Movement
 {
-    typedef void (*SpeedPtr)(const MovementState&,SpeedType,WorldPacket&);
-    typedef void (*MoveModePtr)(const MovementState&,MoveMode,WorldPacket&);
-    typedef void (*PathPtr)(const MovementState&,WorldPacket&);
+    typedef void (*SpeedPtr)(const UnitMovement&,SpeedType,WorldPacket&);
+    typedef void (*MoveModePtr)(const UnitMovement&,MoveMode,WorldPacket&);
+    typedef void (*PathPtr)(const UnitMovement&,WorldPacket&);
 
-    void PacketBuilder::SpeedUpdate(const MovementState& mov, SpeedType type, MsgDeliverMethtod& broadcast)
+    void PacketBuilder::SpeedUpdate(const UnitMovement& mov, SpeedType type, MsgDeliverMethtod& broadcast)
     {
         static const SpeedPtr speed_ptrs[MovControlCount] =
         {
@@ -30,7 +30,7 @@ namespace Movement
             broadcast(data);
     }
 
-    void PacketBuilder::MoveModeUpdate(const MovementState& mov, MoveMode move_mode, MsgDeliverMethtod& broadcast)
+    void PacketBuilder::MoveModeUpdate(const UnitMovement& mov, MoveMode move_mode, MsgDeliverMethtod& broadcast)
     {
         static const MoveModePtr move_mode_ptrs[MovControlCount] =
         {
@@ -45,7 +45,7 @@ namespace Movement
             broadcast(data);
     }
 
-    void PacketBuilder::PathUpdate(const MovementState& mov, MsgDeliverMethtod& broadcast)
+    void PacketBuilder::PathUpdate(const UnitMovement& mov, MsgDeliverMethtod& broadcast)
     {
         static const PathPtr path_update_ptrs[MovControlCount] =
         {
@@ -60,7 +60,7 @@ namespace Movement
             broadcast(data);
     }
 
-    void PacketBuilder::Spline_SpeedUpdate(const MovementState& mov, SpeedType type, WorldPacket& data)
+    void PacketBuilder::Spline_SpeedUpdate(const UnitMovement& mov, SpeedType type, WorldPacket& data)
     {
         uint16 opcode = S_Speed2Opc_table[type];
 
@@ -69,7 +69,7 @@ namespace Movement
         data << mov.GetSpeed(type);
     }
 
-    void PacketBuilder::Spline_MoveModeUpdate(const MovementState& mov, MoveMode mode, WorldPacket& data)
+    void PacketBuilder::Spline_MoveModeUpdate(const UnitMovement& mov, MoveMode mode, WorldPacket& data)
     {
         uint16 opcode = S_Mode2Opc_table[mode][mov.HasMode(mode)];
 
@@ -77,7 +77,7 @@ namespace Movement
         data << mov.GetOwner().GetPackGUID();
     }
 
-    void PacketBuilder::Spline_PathUpdate(const MovementState& mov, WorldPacket& data)
+    void PacketBuilder::Spline_PathUpdate(const UnitMovement& mov, WorldPacket& data)
     {
         uint16 opcode = SMSG_MONSTER_MOVE;
 
@@ -167,12 +167,12 @@ namespace Movement
         }
     }
 
-    void PacketBuilder::Client_MoveModeUpdate(const MovementState& mov, MoveMode /*type*/, WorldPacket& data)
+    void PacketBuilder::Client_MoveModeUpdate(const UnitMovement& mov, MoveMode /*type*/, WorldPacket& data)
     {
         WriteClientStatus(mov, data);
     }
 
-    void PacketBuilder::Client_SpeedUpdate(const MovementState& mov, SpeedType ty, WorldPacket& data)
+    void PacketBuilder::Client_SpeedUpdate(const UnitMovement& mov, SpeedType ty, WorldPacket& data)
     {
         bool forced = false;
 
@@ -195,13 +195,13 @@ namespace Movement
         data << mov.GetSpeed(ty);
     }
 
-    void PacketBuilder::Client_PathUpdate(const MovementState& mov, WorldPacket& data)
+    void PacketBuilder::Client_PathUpdate(const UnitMovement& mov, WorldPacket& data)
     {
         //WriteClientStatus(data);
         // do nothing
     }
 
-    void PacketBuilder::FullUpdate(const MovementState& mov, ByteBuffer& data)
+    void PacketBuilder::FullUpdate(const UnitMovement& mov, ByteBuffer& data)
     {
         WriteClientStatus(mov,data);
 
@@ -297,7 +297,7 @@ namespace Movement
         }
     }
 
-    void PacketBuilder::WriteClientStatus(const MovementState& mov, ByteBuffer& data)
+    void PacketBuilder::WriteClientStatus(const UnitMovement& mov, ByteBuffer& data)
     {
         data << mov.moveFlags.raw;
         data << mov.moveFlags2.raw;

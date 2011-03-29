@@ -19,15 +19,15 @@ namespace Movement
 {
     class MoveSplineSegmented;
 
-    class MovementState : public UnitBase
+    class UnitMovement : public UnitBase
     {
         friend class PacketBuilder;
         friend class MoveSplineInit;
 
     public:
-        MovementState(WorldObject * owner);
+        UnitMovement(WorldObject * owner);
 
-        ~MovementState();
+        ~UnitMovement();
 
         void SetControl(MovControlType c) { control_mode = c; }
         MovControlType GetControl() const { return control_mode; }
@@ -141,10 +141,10 @@ namespace Movement
 
     class Scketches
     {
-        MovementState& impl;
+        UnitMovement& impl;
     public:
 
-        Scketches(MovementState* m) : impl(*m) {}
+        Scketches(UnitMovement* m) : impl(*m) {}
 
         void ForceStop();
 

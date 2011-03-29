@@ -13,14 +13,14 @@
 namespace Movement
 {
     class MovementBase;
-    class MovementState;
+    class UnitMovement;
 
     /// Initializer for MoveSpline class
     class MoveSplineInit
     {
     public:
 
-        explicit MoveSplineInit(MovementState& m);
+        explicit MoveSplineInit(UnitMovement& m);
         
         // launches initialized movement
         void Launch();
@@ -76,7 +76,7 @@ namespace Movement
     private:
 
         MoveSplineInitArgs args;
-        MovementState&  state;
+        UnitMovement&  state;
         MovementBase*   target;
 
         // lets prevent dynamic allocation: that object should have short lifetime
@@ -85,12 +85,12 @@ namespace Movement
 
     namespace MoveKnockBackStrategy
     {
-        inline void Apply(MovementState& st, const Vector3& dest, float velocity)
+        inline void Apply(UnitMovement& st, const Vector3& dest, float velocity)
         {
             MoveSplineInit(st).MoveTo(dest).SetKnockBack(0.5,0).SetVelocity(velocity).Launch();
         }
 
-        inline void Apply(MovementState& st, const Vector3& dest, float velocity, float parabolic_heigth)
+        inline void Apply(UnitMovement& st, const Vector3& dest, float velocity, float parabolic_heigth)
         {
             MoveSplineInit(st).MoveTo(dest).SetKnockBack(parabolic_heigth,0).SetVelocity(velocity).Launch();
         }

@@ -123,7 +123,7 @@ struct WP_test : public TestArea, public IListener
     }
 
     WorldObject * fake;
-    MovementState st;
+    UnitMovement st;
     MoveUpdater updater;
 
     WP_test() : st(fake)

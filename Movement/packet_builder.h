@@ -19,27 +19,27 @@ namespace Movement
         virtual void operator()(WorldPacket&){}
     };
 
-    class MovementState;
+    class UnitMovement;
     struct ClientMoveState;
 
     class PacketBuilder
     {
-        static void Client_SpeedUpdate(const MovementState& mov, SpeedType type, WorldPacket&);
-        static void Client_MoveModeUpdate(const MovementState& mov, MoveMode mode, WorldPacket&);
-        static void Client_PathUpdate(const MovementState& mov, WorldPacket&);
+        static void Client_SpeedUpdate(const UnitMovement& mov, SpeedType type, WorldPacket&);
+        static void Client_MoveModeUpdate(const UnitMovement& mov, MoveMode mode, WorldPacket&);
+        static void Client_PathUpdate(const UnitMovement& mov, WorldPacket&);
 
-        static void Spline_SpeedUpdate(const MovementState& mov, SpeedType type, WorldPacket&);
-        static void Spline_MoveModeUpdate(const MovementState& mov, MoveMode mode, WorldPacket&);
-        static void Spline_PathUpdate(const MovementState& mov, WorldPacket&);
+        static void Spline_SpeedUpdate(const UnitMovement& mov, SpeedType type, WorldPacket&);
+        static void Spline_MoveModeUpdate(const UnitMovement& mov, MoveMode mode, WorldPacket&);
+        static void Spline_PathUpdate(const UnitMovement& mov, WorldPacket&);
 
     public:
 
-        static void SpeedUpdate(const MovementState& mov, SpeedType type, MsgDeliverMethtod&);
-        static void MoveModeUpdate(const MovementState& mov, MoveMode mode, MsgDeliverMethtod&);
-        static void PathUpdate(const MovementState& mov, MsgDeliverMethtod&);
-        static void FullUpdate(const MovementState& mov, ByteBuffer& );
+        static void SpeedUpdate(const UnitMovement& mov, SpeedType type, MsgDeliverMethtod&);
+        static void MoveModeUpdate(const UnitMovement& mov, MoveMode mode, MsgDeliverMethtod&);
+        static void PathUpdate(const UnitMovement& mov, MsgDeliverMethtod&);
+        static void FullUpdate(const UnitMovement& mov, ByteBuffer& );
 
-        static void WriteClientStatus(const MovementState& mov, ByteBuffer& data);
+        static void WriteClientStatus(const UnitMovement& mov, ByteBuffer& data);
         static void ReadClientStatus(ClientMoveState& state, ByteBuffer& data);
     };
 }

@@ -134,7 +134,7 @@ namespace Movement
         return *this;
     }
 
-    MoveSplineInit::MoveSplineInit(MovementState& m) : state(m), target(NULL)
+    MoveSplineInit::MoveSplineInit(UnitMovement& m) : state(m), target(NULL)
     {
         state.UpdateState();
     }

@@ -7,7 +7,7 @@
 
 namespace Movement{
 
-SpeedType MovementState::SelectSpeedType( bool is_walking /*= false*/ ) const
+SpeedType UnitMovement::SelectSpeedType( bool is_walking /*= false*/ ) const
 {
     // g_moveFlags_mask - some global client's moveflag mask
     // TODO: get real value
@@ -46,7 +46,7 @@ SpeedType MovementState::SelectSpeedType( bool is_walking /*= false*/ ) const
     }
 }
 
-void MovementState::ApplyMoveMode( MoveMode mode, bool apply )
+void UnitMovement::ApplyMoveMode( MoveMode mode, bool apply )
 {
     if (apply)
     {
@@ -60,7 +60,7 @@ void MovementState::ApplyMoveMode( MoveMode mode, bool apply )
     }
 }
 
-MovementState::MovementState(WorldObject * owner) : UnitBase(*owner), move_spline(*new MoveSplineSegmented())
+UnitMovement::UnitMovement(WorldObject * owner) : UnitBase(*owner), move_spline(*new MoveSplineSegmented())
 {
     control_mode = MovControlServer;
     move_mode = 0;
@@ -80,18 +80,18 @@ MovementState::MovementState(WorldObject * owner) : UnitBase(*owner), move_splin
     dbg_flags = 0;
 }
 
-MovementState::~MovementState()
+UnitMovement::~UnitMovement()
 {
     delete &move_spline;
 }
 
-void MovementState::ReCalculateCurrentSpeed()
+void UnitMovement::ReCalculateCurrentSpeed()
 {
     speed_type = SelectSpeedType(false);
     speed_obj.current = speed[speed_type];
 }
 
-void MovementState::Initialize( MovControlType controller, const Location& pos)
+void UnitMovement::Initialize( MovControlType controller, const Location& pos)
 {
     SetUpdater(sMoveUpdater);
     SetPosition(pos);
@@ -100,7 +100,7 @@ void MovementState::Initialize( MovControlType controller, const Location& pos)
     last_ms_time = sMoveUpdater.TickCount();
 }
 
-void MovementState::ApplyState(const ClientMoveState& mov)
+void UnitMovement::ApplyState(const ClientMoveState& mov)
 {
     moveFlags = mov.moveFlags;
     moveFlags2 = mov.moveFlags2;
@@ -118,7 +118,7 @@ void MovementState::ApplyState(const ClientMoveState& mov)
     u_unk1 = mov.u_unk1;
 }
 
-void MovementState::updateRotation(/*uint32 ms_time_diff*/)
+void UnitMovement::updateRotation(/*uint32 ms_time_diff*/)
 {
     if (!IsOrientationBinded())
         return;
@@ -146,13 +146,13 @@ void MovementState::updateRotation(/*uint32 ms_time_diff*/)
 */
 }
 
-void MovementState::BindOrientationTo(MovementBase& target)
+void UnitMovement::BindOrientationTo(MovementBase& target)
 {
     UnitBase::BindOrientationTo(target);
     GetOwner().SetUInt64Value(UNIT_FIELD_TARGET, target.GetOwner().GetGUID());
 }
 
-void MovementState::UnbindOrientation()
+void UnitMovement::UnbindOrientation()
 {
     UnitBase::UnbindOrientation();
     GetOwner().SetUInt64Value(UNIT_FIELD_TARGET, 0);
@@ -163,7 +163,7 @@ void Scketches::ForceStop()
     MoveSplineInit(impl).MoveTo(impl.GetPosition3()).Launch();
 }
 
-void MovementState::UpdateState()
+void UnitMovement::UpdateState()
 {
     uint32 now = sMoveUpdater.TickCount();
     int32 difftime = getMSTimeDiff(last_ms_time, now);
@@ -180,18 +180,18 @@ void MovementState::UpdateState()
 
             if (++loops > 80)
             {
-                log_console("MovementState::UpdateState: deadloop?");
+                log_console("UnitMovement::UpdateState: deadloop?");
                 break;
             }
 
             switch (result & ~MoveSpline::Result_StopUpdate)
             {
             case MoveSpline::Result_NextSegment:
-                log_console("MovementState::UpdateState: segment %d is on hold", move_spline.currentSplineSegment());
+                log_console("UnitMovement::UpdateState: segment %d is on hold", move_spline.currentSplineSegment());
                 // do something
                 break;
             case MoveSpline::Result_Arrived:
-                log_console("MovementState::UpdateState: spline done");
+                log_console("UnitMovement::UpdateState: spline done");
                 // do something
                 break;
            }
