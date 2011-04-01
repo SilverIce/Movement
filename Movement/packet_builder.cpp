@@ -11,7 +11,7 @@
 
 namespace Movement
 {
-    const uint16 S_Speed2Opc_table[]=
+    const uint16 S_Speed2Opc_table[SpeedMaxCount]=
     {
         {/*MOVE_WALK,*/         SMSG_SPLINE_SET_WALK_SPEED},
         {/*MOVE_RUN,*/          SMSG_SPLINE_SET_RUN_SPEED},
@@ -48,7 +48,7 @@ namespace Movement
         {/*levitation mode*/    MSG_NULL_ACTION,               MSG_NULL_ACTION},    // no opcodes
     };
 
-    const uint16 SetSpeed2Opc_table[][2]=
+    const uint16 SetSpeed2Opc_table[SpeedMaxCount][2]=
     {
         {MSG_MOVE_SET_WALK_SPEED,       SMSG_FORCE_WALK_SPEED_CHANGE},
         {MSG_MOVE_SET_RUN_SPEED,        SMSG_FORCE_RUN_SPEED_CHANGE},
