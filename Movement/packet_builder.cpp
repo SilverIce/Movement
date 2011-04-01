@@ -123,6 +123,7 @@ namespace Movement
 
     void PacketBuilder::Spline_PathSend(const UnitMovement& mov, WorldPacket& data)
     {
+        mov_assert(mov.SplineEnabled() && mov.move_spline.Initialized());
         uint16 opcode = SMSG_MONSTER_MOVE;
 
 
