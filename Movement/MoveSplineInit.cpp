@@ -106,10 +106,10 @@ namespace Movement
         }
     }
 
-    MoveSplineInit& MoveSplineInit::SetParabolic(float max_height, float time_shift, bool is_knockback)
+    MoveSplineInit& MoveSplineInit::SetParabolic(float amplitude, float time_shift, bool is_knockback)
     {
         args.time_perc = time_shift;
-        args.parabolic_heigth = max_height;
+        args.parabolic_amplitude = amplitude;
         args.flags.EnableParabolic();
         args.flags.knockback = is_knockback;
         return *this;

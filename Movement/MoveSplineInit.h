@@ -28,11 +28,11 @@ namespace Movement
         void Launch();
 
         /* Adds movement by parabolic trajectory
-         * @param max_height - the maximum height of parabola, value could be negative and positive
+         * @param amplitude  - the maximum height of parabola, value could be negative and positive
          * @param start_time - delay between movement starting time and beginning to move by parabolic trajectory
          * can't be combined with final animation
          */ 
-        MoveSplineInit& SetParabolic(float max_height, float start_time, bool is_knockback = false);
+        MoveSplineInit& SetParabolic(float amplitude, float start_time, bool is_knockback = false);
         /* Plays animation after start_time delay passed (delay since movement starting time)
          * can't be combined with parabolic movement
          */

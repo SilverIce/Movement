@@ -30,14 +30,14 @@ namespace Movement
     struct MoveSplineInitArgs
     {
         MoveSplineInitArgs() : path_Idx_offset(0),
-            velocity(0.f), parabolic_heigth(0.f), time_perc(0.f), splineId(0)   {}
+            velocity(0.f), parabolic_amplitude(0.f), time_perc(0.f), splineId(0)   {}
        
         PointsArray path;
         FacingInfo facing;
         MoveSplineFlag flags;
         int32 path_Idx_offset;
         float velocity;
-        float parabolic_heigth;
+        float parabolic_amplitude;
         float time_perc;
         uint32 splineId;
 

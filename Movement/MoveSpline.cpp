@@ -151,7 +151,7 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
         if (args.flags.parabolic && effect_start_time < Duration())
         {
             float f_duration = MSToSec(Duration() - effect_start_time);
-            vertical_acceleration = args.parabolic_heigth * 8.f / (f_duration * f_duration);
+            vertical_acceleration = args.parabolic_amplitude * 8.f / (f_duration * f_duration);
         }
     }
 
