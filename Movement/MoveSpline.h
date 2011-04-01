@@ -100,7 +100,6 @@ namespace Movement {
         #pragma region fields
         using MoveSpline::ComputePosition;
         using MoveSpline::Initialize;
-        using MoveSpline::updateState;
         using MoveSpline::ToString;
     protected:
         int32           point_Idx;

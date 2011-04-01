@@ -4,6 +4,9 @@
 #include "Object.h"
 #include "moveupdater.h"
 #include "MoveSpline.h"
+#include "MoveSplineInit.h"
+
+#include <sstream>
 
 namespace Movement{
 
@@ -276,4 +279,26 @@ void MsgBroadcast::operator ()(WorldPacket& data)
     m_owner.SendMessageToSet(&data, true);
 }
 
+std::string UnitMovement::ToString() const
+{
+    std::stringstream st;
+    st << "Movement  flags: " << moveFlags.ToString() << std::endl;
+    st << "Global position: " << GetPosition().toString() << std::endl;
+
+    if (moveFlags.ontransport)
+        st << "Local position: " << m_transportInfo.position.toString() << std::endl;
+
+    if (moveFlags.falling)
+    {
+        st << "jump z  vel " << j_velocity;
+        st << "jump    sin " << j_sinAngle;
+        st << "jump    cos " << j_cosAngle;
+        st << "jump xy vel " << j_xy_velocy;
+    }
+
+    if (SplineEnabled())
+        st << move_spline.ToString();
+
+    return st.str();
+}
 }

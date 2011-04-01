@@ -8,6 +8,7 @@
 #pragma once
 
 #include "typedefs.h"
+#include <string>
 
 namespace Movement
 {
@@ -64,6 +65,7 @@ namespace Movement
 
         uint32 operator & (uint32 f) const { return (raw & f);}
         uint32 operator | (uint32 f) const { return (raw | f);}
+        std::string ToString() const;
 
         // Not constant interface
 
@@ -145,6 +147,7 @@ namespace Movement
 
         uint32 operator & (uint32 f) const { return (raw & f);}
         uint32 operator | (uint32 f) const { return (raw | f);}
+        std::string ToString() const;
 
         // Not constant interface
 

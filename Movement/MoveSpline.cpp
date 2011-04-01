@@ -192,10 +192,10 @@ std::string MoveSpline::ToString() const
     std::stringstream str;
 
     str << "MoveSpline" << std::endl;
-    str << "spline Id:    " << GetId() << std::endl;
+    str << "spline    Id: " << GetId() << std::endl;
     str << "spline flags: " << GetSplineFlags() << std::endl;
-    str << "time passed:  " << time_passed << std::endl;
-    str << "total time:   " << Duration() << std::endl;
+    str << "time  passed: " << time_passed << std::endl;
+    str << "total   time: " << Duration() << std::endl;
     str << spline.ToString();
     return str.str();
 }
@@ -351,14 +351,19 @@ MoveSplineSegmented::MoveSplineSegmented() : point_Idx(0), point_Idx_offset(0)
 std::string MoveSplineSegmented::ToString() const
 {
     std::stringstream str;
-
     str << "MoveSplineSegmented" << std::endl;
-    str << "spline Id:    " << GetId() << std::endl;
-    //str << "spline flags: " << print_flags(GetSplineFlags(),g_SplineFlags_names);
-    str << "flags:        " << GetSplineFlags() << std::endl;
-    str << "time passed:  " << time_passed << std::endl;
-    str << "total time:   " << Duration() << std::endl;
-    str << "segment Idx:  " << point_Idx << std::endl;
+    str << "spline Id: " << GetId() << std::endl;
+    str << "flags: " << splineflags.ToString() << std::endl;
+    if (splineflags.final_angle)
+        str << "facing  angle: " << facing.angle;
+    else if (splineflags.final_target)
+        str << "facing target: " << facing.target;
+    else if(splineflags.final_point)
+        str << "facing  point: " << facing.x << " " << facing.y << " " << facing.z;
+    str << std::endl;
+    str << "time passed: " << time_passed << std::endl;
+    str << "total  time: " << Duration() << std::endl;
+    str << "segment Idx: " << point_Idx << std::endl;
     str << spline.ToString();
     return str.str();
 }

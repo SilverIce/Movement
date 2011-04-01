@@ -158,6 +158,7 @@ namespace Movement
 
     public:
         uint8           dbg_flags;
+        std::string ToString() const;
 
         MoveSplineSegmented&  move_spline;
 
