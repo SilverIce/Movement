@@ -19,7 +19,7 @@ namespace Movement
     struct ClientMoveState
     {
         ClientMoveState() : mover(0), ms_time(0), pitch(0), fallTime(0),
-            j_velocity(0), j_sinAngle(0), j_cosAngle(0), j_xy_velocy(0), u_unk1(0)
+            j_velocity(0), j_sinAngle(0), j_cosAngle(0), j_xy_velocy(0), spline_elevation(0)
         {
         }
 
@@ -36,7 +36,7 @@ namespace Movement
         float j_sinAngle;
         float j_cosAngle;
         float j_xy_velocy;
-        float u_unk1;
+        float spline_elevation;
     };
 
     struct ClientMoveEvent

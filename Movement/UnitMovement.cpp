@@ -104,7 +104,7 @@ UnitMovement::UnitMovement(WorldObject& owner) :
     fallStartElevation = 0.f;
     // jumping
     j_velocity = j_sinAngle = j_cosAngle = j_xy_velocy = 0.f;
-    u_unk1 = 0.f;
+    spline_elevation = 0.f;
     speed_type = SpeedRun;
     dbg_flags = 0;
 }
@@ -144,7 +144,7 @@ void UnitMovement::ApplyState(const ClientMoveState& mov)
     j_sinAngle = mov.j_sinAngle;
     j_cosAngle = mov.j_cosAngle;
     j_xy_velocy = mov.j_xy_velocy;
-    u_unk1 = mov.u_unk1;
+    spline_elevation = mov.spline_elevation;
 }
 
 void UnitMovement::updateRotation(/*uint32 ms_time_diff*/)

@@ -32,7 +32,7 @@ namespace Movement
          * @param start_time - delay between movement starting time and beginning to move by parabolic trajectory
          * can't be combined with final animation
          */ 
-        MoveSplineInit& SetParabolic(float max_height, float start_time, bool is_knockback);
+        MoveSplineInit& SetParabolic(float max_height, float start_time, bool is_knockback = false);
         /* Plays animation after start_time delay passed (delay since movement starting time)
          * can't be combined with parabolic movement
          */
@@ -103,12 +103,12 @@ namespace Movement
     {
         inline void Apply(UnitMovement& st, const Vector3& dest, float velocity)
         {
-            MoveSplineInit(st).MoveTo(dest).SetKnockBack(0.5,0).SetVelocity(velocity).Launch();
+            MoveSplineInit(st).MoveTo(dest).SetParabolic(0.5,0).SetVelocity(velocity).Launch();
         }
 
         inline void Apply(UnitMovement& st, const Vector3& dest, float velocity, float parabolic_heigth)
         {
-            MoveSplineInit(st).MoveTo(dest).SetKnockBack(parabolic_heigth,0).SetVelocity(velocity).Launch();
+            MoveSplineInit(st).MoveTo(dest).SetParabolic(parabolic_heigth,0).SetVelocity(velocity).Launch();
         }
     };
 }

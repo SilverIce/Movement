@@ -136,7 +136,7 @@ namespace Movement
             data << mov.Owner.GetPackGUID();
             data << uint8(0);
             data << mov.GetPosition3();
-            data << splineInfo.GetId();
+            data << move_spline.GetId();
             data << uint8(MonsterMoveStop);
             return;
         }
@@ -239,12 +239,6 @@ namespace Movement
         data << mov.GetSpeed(ty);
     }
 
-    void PacketBuilder::Client_PathUpdate(const UnitMovement& mov, WorldPacket& data)
-    {
-        //WriteClientStatus(data);
-        // do nothing
-    }
-
     void PacketBuilder::FullUpdate(const UnitMovement& mov, ByteBuffer& data)
     {
         WriteClientStatus(mov,data);
@@ -329,7 +323,7 @@ namespace Movement
 
         if (mov.moveFlags.spline_elevation)
         {
-            data >> mov.u_unk1;
+            data >> mov.spline_elevation;
         }
     }
 
@@ -369,7 +363,7 @@ namespace Movement
 
         if (mov.moveFlags.spline_elevation)
         {
-            data << mov.u_unk1;
+            data << mov.spline_elevation;
         }
     }
 }

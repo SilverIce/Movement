@@ -144,7 +144,7 @@ namespace Movement
         // jumping
         float           j_velocity, j_sinAngle, j_cosAngle, j_xy_velocy;
 
-        float           u_unk1;
+        float           spline_elevation;
 
         TransportInfo   m_transportInfo;
 
@@ -176,7 +176,7 @@ namespace Movement
         explicit MsgBroadcast(WorldObject& owner) : m_owner(owner) {}
         explicit MsgBroadcast(MovementBase* m) : m_owner(m->Owner) {}
         explicit MsgBroadcast(MovementBase& m) : m_owner(m.Owner) {}
-        virtual void operator()(WorldPacket& data) { m_owner.SendMessageToSet(&data, true);}
+        virtual void operator()(WorldPacket& data);
         WorldObject& m_owner;
     };
 
