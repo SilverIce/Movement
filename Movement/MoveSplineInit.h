@@ -15,7 +15,6 @@ namespace Movement
     class MovementBase;
     class UnitMovement;
 
-    /// Initializer for MoveSpline class
     /*  Initializes and launches spline movement
      */
     class MoveSplineInit

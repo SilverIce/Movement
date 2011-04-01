@@ -131,8 +131,9 @@ namespace Movement
     {
         uint16 opcode = SMSG_MONSTER_MOVE;
 
-        const MoveSplineSegmented& splineInfo = mov.move_spline;
 
+        const MoveSplineSegmented& move_spline = mov.move_spline;
+        const MoveSplineSegmented::MySpline& spline = move_spline.spline;
         data.Initialize(opcode, 60);
 
         // TODO: find more generic way
@@ -146,16 +147,15 @@ namespace Movement
             return;
         }
 
-        const MoveSplineSegmented::MySpline& spline = splineInfo.spline;
         const Vector3 * real_path = &spline.getPoint(spline.first());
         uint32 last_idx = spline.pointsCount() - 1;
 
         data << mov.Owner.GetPackGUID();
         data << uint8(0);
         data << real_path[0];
-        data << splineInfo.GetId();
+        data << move_spline.GetId();
 
-        MoveSplineFlag splineflags = splineInfo.splineflags;
+        MoveSplineFlag splineflags = move_spline.splineflags;
 
         switch(splineflags & MoveSplineFlag::Mask_Final_Facing)
         {
@@ -164,15 +164,15 @@ namespace Movement
             break;
         case MoveSplineFlag::Final_Target:
             data << uint8(MonsterMoveFacingTarget);
-            data << splineInfo.facing.target;
+            data << move_spline.facing.target;
             break;
         case MoveSplineFlag::Final_Angle:
             data << uint8(MonsterMoveFacingAngle);
-            data << splineInfo.facing.angle;
+            data << move_spline.facing.angle;
             break;
         case MoveSplineFlag::Final_Point:
             data << uint8(MonsterMoveFacingSpot);
-            data << splineInfo.facing.x << splineInfo.facing.y << splineInfo.facing.z;
+            data << move_spline.facing.x << move_spline.facing.y << move_spline.facing.z;
             break;
         }
 
@@ -180,16 +180,16 @@ namespace Movement
 
         if (splineflags.animation)
         {
-            data << (uint8)splineflags.animId;
-            data << splineInfo.spec_effect_time;
+            data << splineflags.getAnimationId();
+            data << move_spline.effect_start_time;
         }
 
-        data << uint32(splineInfo.Duration());
+        data << move_spline.Duration();
 
         if (splineflags.parabolic)
         {
-            data << splineInfo.vertical_acceleration;
-            data << splineInfo.spec_effect_time;
+            data << move_spline.vertical_acceleration;
+            data << move_spline.effect_start_time;
         }
 
         data << uint32(last_idx);
@@ -257,51 +257,43 @@ namespace Movement
 
         data.append<float>(&mov.speed[SpeedWalk], SpeedMaxCount);
 
-        if (mov.moveFlags.spline_enabled)
+        if (mov.SplineEnabled())
         {
-            // for debugging
-            static float unkf1 = 1.f;
-            static float unkf2 = 1.f;
-            static float unkf3 = 0.f;
-            static float dur_multiplier = 1.f;
-
-            static uint32 addit_flags = 0;
-
-            const MoveSplineSegmented& splineInfo = mov.move_spline;
-            const MoveSplineFlag& splineFlags = mov.move_spline.splineflags;
+            const MoveSplineSegmented& move_spline = mov.move_spline;
+            MoveSplineFlag splineFlags = mov.move_spline.splineflags;
 
             data << splineFlags.raw;
 
             if (splineFlags.final_angle)
             {
-                data << splineInfo.facing.angle;
+                data << move_spline.facing.angle;
             }
             else if (splineFlags.final_target)
             {
-                data << splineInfo.facing.target;
+                data << move_spline.facing.target;
             }
             else if(splineFlags.final_point)
             {
-                data << splineInfo.facing.x << splineInfo.facing.y << splineInfo.facing.z;
+                data << move_spline.facing.x << move_spline.facing.y << move_spline.facing.z;
             }
 
-            data << splineInfo.timePassed();
-            data << splineInfo.Duration();
-            data << splineInfo.GetId();
+            data << move_spline.timePassed();
+            data << move_spline.Duration();
+            data << move_spline.GetId();
 
             data << float(1.f);//splineInfo.duration_mod;
             data << float(1.f);//splineInfo.duration_mod_next;
 
-            data << splineInfo.vertical_acceleration;
-            data << splineInfo.spec_effect_time;
+            data << move_spline.vertical_acceleration;
+            data << move_spline.effect_start_time;
 
-            uint32 nodes = splineInfo.getPath().size();
+            uint32 nodes = move_spline.getPath().size();
             data << nodes;
-            data.append<Vector3>(&splineInfo.getPath()[0], nodes);
+            data.append<Vector3>(&move_spline.getPath()[0], nodes);
 
-            data << uint8(splineInfo.spline.mode());
+            data << uint8(move_spline.spline.mode());
 
-            data << splineInfo.finalDestination;
+            data << move_spline.finalDestination;
         }
     }
 

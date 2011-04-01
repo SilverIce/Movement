@@ -72,10 +72,10 @@ Location MoveSpline::_ComputePosition(SplineBase::index_type seg_Idx, float u) c
 
 void MoveSpline::computeParabolicElevation(float& el) const
 {
-    if (time_passed > spec_effect_time)
+    if (time_passed > effect_start_time)
     {
-        float t_passedf = MSToSec(time_passed - spec_effect_time);
-        float t_durationf = MSToSec(Duration() - spec_effect_time); //client use not modified duration here
+        float t_passedf = MSToSec(time_passed - effect_start_time);
+        float t_durationf = MSToSec(Duration() - effect_start_time); //client use not modified duration here
 
         // -a*x*x + bx + c:
         //(dur * v3->z_acceleration * dt)/2 - (v3->z_acceleration * dt * dt)/2 + Z;
@@ -90,7 +90,7 @@ void MoveSpline::computeFallElevation(float& el) const
     if (z_now < finalDestination.z)
     {
         el = finalDestination.z;
-        log_write("MoveSpline::ComputePosition: z_now < finalDestination.z");
+        log_write("MoveSpline::computeFallElevation: z_now < finalDestination.z");
     }
     else
         el = z_now;
@@ -168,22 +168,21 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
     facing = args.facing;
     m_Id = args.splineId;
 
-    time_passed  = 0;
-    //duration_mod = 1.f;
-    //duration_mod_next = 1.f;
+    time_passed = 0;
     vertical_acceleration = 0.f;
-    spec_effect_time = 0;
+    effect_start_time = 0;
 
     init_spline(args);
 
-    // path initialized, duration is known and i able to compute parabolic acceleration
-    if (splineflags & (MoveSplineFlag::Parabolic | MoveSplineFlag::Animation))
+    // init parabolic / animation
+    // spline initialized, duration known and i able to compute parabolic acceleration
+    if (args.flags & (MoveSplineFlag::Parabolic | MoveSplineFlag::Animation))
     {
-        spec_effect_time = Duration() * args.time_perc;
-        if (splineflags.parabolic)
+        effect_start_time = Duration() * args.time_perc;
+        if (args.flags.parabolic && effect_start_time < Duration())
         {
-            float f_duration = MSToSec(Duration() - spec_effect_time);
-            vertical_acceleration = args.parabolic_heigth * 8.f / (f_duration * f_duration);
+            float f_duration = MSToSec(Duration() - effect_start_time);
+            vertical_acceleration = args.parabolic_amplitude * 8.f / (f_duration * f_duration);
         }
     }
 }
@@ -202,7 +201,7 @@ std::string MoveSpline::ToString() const
 }
 
 MoveSpline::MoveSpline() : m_Id(0), time_passed(0),
-    vertical_acceleration(0.f), spec_effect_time(0)
+    vertical_acceleration(0.f), effect_start_time(0)
 {
 }
 
@@ -213,25 +212,19 @@ void MoveSpline::OnArrived()
         time_passed = time_passed % Duration();
 
         // SPLINEFLAG_ENTER_CYCLE support dropped
-        /*if (splineflags & SPLINEFLAG_ENTER_CYCLE)
+        /*if (splineflags.enter_cycle)
         {
-            PointsArray points(spline.getPoints());
-            spline.init_cyclic_spline(&points[spline.first()+1],spline.pointsCount()-1,spline.mode(),0);
+            int32 duration = Duration();
+            MySpline::ControlArray points(spline.getPoints());
+            spline.init_cyclic_spline(&points[spline.first()+1],points_count-1,spline.mode(),0);
 
-            RemoveSplineFlag(SPLINEFLAG_ENTER_CYCLE);
+            splineflags.enter_cycle = false;
 
             // client-side bug: client resets parabolic info to default values, but doesn't removes parabolic/trajectory flag
             // in simple words: parabolic movement can be used with cyclic movement but there will be little visual bug on client side
             // i decided remove remove trajectory flag
-            RemoveSplineFlag(SPLINEFLAG_TRAJECTORY);
-            // client resets duration mods
-            //duration_mod = 1.f;
-            //duration_mod_next = 1.f;
+            splineflags.parabolic = false;
         }*/
-
-        //duration_mod = this->duration_mod_next;
-        //duration_mod_next = 1.f;
-        //duration_ = modifiedDuration();
     }
     else
     {
@@ -337,11 +330,9 @@ MoveSpline::UpdateResult MoveSplineSegmented::updateState(int32& ms_time_diff)
 Location MoveSplineSegmented::ComputePosition() const
 {
     float u = 1.f;
-
     int32 seg_time = spline.length(point_Idx,point_Idx+1);
     if (seg_time > 0)
         u = (time_passed - spline.length(point_Idx)) / (float)seg_time;
-
     return _ComputePosition(point_Idx, u);
 }
 

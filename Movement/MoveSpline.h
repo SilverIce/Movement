@@ -44,17 +44,14 @@ namespace Movement {
         //float           duration_mod;
         //float           duration_mod_next;
         float           vertical_acceleration;
-        int32           spec_effect_time;
+        int32           effect_start_time;
 
         void init_spline(const MoveSplineInitArgs& args);
     protected:
-        bool isCyclic() const { return splineflags.cyclic;}
-        bool isSmooth() const { return splineflags.isSmooth();}
         void Finalize() { splineflags.done = true; }
-        void RemoveSplineFlag(uint32 f) { splineflags &= ~f;}
         uint32 GetSplineFlags() const { return splineflags.raw;}
 
-        const PointsArray& getPath() const { return spline.getPoints();}
+        const MySpline::ControlArray& getPath() const { return spline.getPoints();}
         void computeParabolicElevation(float& el) const;
         void computeFallElevation(float& el) const;
 
@@ -83,6 +80,7 @@ namespace Movement {
 
         uint32 GetId() const { return m_Id;}
         bool Finalized() const { return splineflags.done; }
+        bool isCyclic() const { return splineflags.cyclic;}
         int32 Duration() const { return spline.length();}
         int32 timeElapsed() const { return Duration() - time_passed;}
         int32 timePassed() const { return time_passed;}
@@ -100,6 +98,10 @@ namespace Movement {
     class MoveSplineSegmented : public MoveSpline
     {
         #pragma region fields
+        using MoveSpline::ComputePosition;
+        using MoveSpline::Initialize;
+        using MoveSpline::updateState;
+        using MoveSpline::ToString;
     protected:
         int32           point_Idx;
         int32           point_Idx_offset;
