@@ -129,7 +129,7 @@ struct WP_test : public TestArea, public IListener
     WP_test() : st(*fake)
     {
         st.SetListener(this);
-        st.SetPosition(nodes2[0]);
+        st.Initialize(MovControlServer, Location(nodes2[0]),updater);
         st.SetUpdater(updater);
 
         move();

@@ -291,7 +291,7 @@ namespace Movement
         data >> mov.moveFlags.raw;
         data >> mov.moveFlags2.raw;
 
-        data.read_skip<uint32>();// >> mov.last_ms_time;
+        data.read_skip<uint32>();// >> mov.last_update_time;
         data >> mov.position3;
         data >> mov.orientation;
 
@@ -333,7 +333,7 @@ namespace Movement
         data << mov.moveFlags.raw;
         data << mov.moveFlags2.raw;
 
-        data << sMoveUpdater.TickCount();
+        data << mov.last_update_time;
         data << mov.position;
 
         if (mov.moveFlags.ontransport)

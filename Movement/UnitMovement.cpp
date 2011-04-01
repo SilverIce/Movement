@@ -96,7 +96,7 @@ UnitMovement::UnitMovement(WorldObject& owner) :
 
     control_mode = MovControlServer;
     move_mode = 0;
-    last_ms_time = 0;
+    last_update_time = 0;
 
     memcpy(&speed, BaseSpeed, sizeof BaseSpeed);
     speed_obj.current = BaseSpeed[SpeedRun];
@@ -123,20 +123,20 @@ void UnitMovement::ReCalculateCurrentSpeed()
     speed_obj.current = speed[speed_type];
 }
 
-void UnitMovement::Initialize( MovControlType controller, const Location& pos)
+void UnitMovement::Initialize( MovControlType controller, const Location& pos, MoveUpdater& updater)
 {
-    SetUpdater(sMoveUpdater);
+    SetUpdater(updater);
     SetPosition(pos);
 
     control_mode = controller;
-    last_ms_time = sMoveUpdater.TickCount();
+    last_update_time = GetUpdater().TickCount();
 }
 
 void UnitMovement::ApplyState(const ClientMoveState& mov)
 {
     moveFlags = mov.moveFlags;
     moveFlags2 = mov.moveFlags2;
-    //last_ms_time = mov.ms_time;
+    //last_update_time = mov.ms_time;
     SetPosition(mov.position3);
     position.orientation = mov.orientation;
 
@@ -229,9 +229,9 @@ void UnitMovement::SetSpeed(SpeedType type, float s)
 
 void UnitMovement::UpdateState()
 {
-    uint32 now = sMoveUpdater.TickCount();
-    int32 difftime = getMSTimeDiff(last_ms_time, now);
-    last_ms_time = now;
+    uint32 now = GetUpdater().TickCount();
+    int32 difftime = getMSTimeDiff(last_update_time, now);
+    last_update_time = now;
 
     if (SplineEnabled())
     {

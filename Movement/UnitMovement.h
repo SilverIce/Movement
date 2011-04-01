@@ -131,7 +131,7 @@ namespace Movement
         SpeedType speed_type;
         MovControlType  control_mode;
 
-        uint32          last_ms_time;
+        uint32          last_update_time;
 
         UnitMoveFlag    moveFlags;
         UnitMoveFlag2   moveFlags2;
@@ -166,7 +166,7 @@ namespace Movement
 
 
 
-        void Initialize(MovControlType controller, const Location& position);
+        void Initialize(MovControlType controller, const Location& position, MoveUpdater& updater);
         void ApplyState(const ClientMoveState& );
 
         friend class Scketches;

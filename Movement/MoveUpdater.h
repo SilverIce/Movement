@@ -46,7 +46,7 @@ namespace Movement
         };
 
         explicit MoveUpdater();
-        ~MoveUpdater() { CleanReferences(); mov_assert(m_movers.empty());}
+        ~MoveUpdater() { CleanReferences();}
         void CleanReferences();
 
         void Register(LinkedListElement<UpdatableMovement*>& m)
@@ -73,8 +73,8 @@ namespace Movement
 
         void Update();
 
-        uint32 TickCount() { return m_tick_count;}
-        uint32 MoversCount() { return m_movers_count;}
+        uint32 TickCount() const { return m_tick_count;}
+        uint32 MoversCount() const { return m_movers_count;}
         uint32 NewMoveSplineId() { return movespline_counter.NewId();}
 
     private:
