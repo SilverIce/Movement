@@ -95,18 +95,12 @@ namespace Movement
             broadcast(data);
     }
 
-    void PacketBuilder::PathUpdate(const UnitMovement& mov, MsgDeliverMethtod& broadcast)
+    void PacketBuilder::SplinePathSend(const UnitMovement& mov, MsgDeliverMethtod& broadcast)
     {
-        static const PathPtr path_update_ptrs[MovControlCount] =
-        {
-            &PacketBuilder::Client_PathUpdate,
-            &PacketBuilder::Spline_PathUpdate,
-        };
+        WorldPacket data(MSG_NULL_ACTION, 64);
+        Spline_PathSend(mov, data);
 
-        WorldPacket data;
-        path_update_ptrs[mov.GetControl()](mov, data);
-
-        if (!data.empty())
+        if (data.GetOpcode() != MSG_NULL_ACTION)
             broadcast(data);
     }
 
@@ -127,14 +121,14 @@ namespace Movement
         data << mov.Owner.GetPackGUID();
     }
 
-    void PacketBuilder::Spline_PathUpdate(const UnitMovement& mov, WorldPacket& data)
+    void PacketBuilder::Spline_PathSend(const UnitMovement& mov, WorldPacket& data)
     {
         uint16 opcode = SMSG_MONSTER_MOVE;
 
 
         const MoveSplineSegmented& move_spline = mov.move_spline;
         const MoveSplineSegmented::MySpline& spline = move_spline.spline;
-        data.Initialize(opcode, 60);
+        data.SetOpcode(opcode);
 
         // TODO: find more generic way
         if (!mov.SplineEnabled())

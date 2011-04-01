@@ -102,7 +102,7 @@ namespace Movement
 
             state.ScheduleUpdate();
             // shall MoveSpline initializer care about packet broadcasting?
-            PacketBuilder::PathUpdate(state, MsgBroadcast(state));
+            PacketBuilder::SplinePathSend(state, MsgBroadcast(state));
         }
     }
 

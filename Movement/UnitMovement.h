@@ -186,14 +186,9 @@ namespace Movement
     public:
 
         Scketches(UnitMovement* m) : impl(*m) {}
+        Scketches(UnitMovement& m) : impl(m) {}
 
         void ForceStop();
-
-        void SendPath()
-        {
-            PacketBuilder::PathUpdate(impl, MsgBroadcast(&impl));
-        }
-
     };
 
     class MovementAuraFace
