@@ -94,7 +94,7 @@ namespace Movement
         // TODO: find more elegant way (maybe just set current_speed to some minimal value)
         if (args.velocity > 0.f)
         {
-            MoveSplineSegmented& spline = state.move_spline;
+            MoveSpline& spline = state.move_spline;
             spline.Initialize(args);
 
             state.EnableSpline();

@@ -126,8 +126,8 @@ namespace Movement
         uint16 opcode = SMSG_MONSTER_MOVE;
 
 
-        const MoveSplineSegmented& move_spline = mov.move_spline;
-        const MoveSplineSegmented::MySpline& spline = move_spline.spline;
+        const MoveSpline& move_spline = mov.move_spline;
+        const MoveSpline::MySpline& spline = move_spline.spline;
         data.SetOpcode(opcode);
 
         // TODO: find more generic way
@@ -247,7 +247,7 @@ namespace Movement
 
         if (mov.SplineEnabled())
         {
-            const MoveSplineSegmented& move_spline = mov.move_spline;
+            const MoveSpline& move_spline = mov.move_spline;
             MoveSplineFlag splineFlags = mov.move_spline.splineflags;
 
             data << splineFlags.raw;

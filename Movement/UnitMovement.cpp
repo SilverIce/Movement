@@ -90,7 +90,7 @@ static const float BaseSpeed[SpeedMaxCount] =
 };
 
 UnitMovement::UnitMovement(WorldObject& owner) :
-    Transportable(owner), move_spline(*new MoveSplineSegmented())
+    Transportable(owner), move_spline(*new MoveSpline())
 {
     updatable.SetUpdateStrategy(this);
 
@@ -235,39 +235,38 @@ void UnitMovement::UpdateState()
 
     if (SplineEnabled())
     {
-        MoveSpline::UpdateResult result;
-        uint32 loops = 0;
-        do
+        struct MoveSplineResultHandler
         {
-            result = move_spline.updateState(difftime);
-            SetPosition(move_spline.ComputePosition());
+            uint32 loops_count;
+            IListener * listener;
+            UnitMovement& mov;
+            MoveSplineResultHandler(UnitMovement& movement, IListener * list) : mov(movement), listener(list), loops_count(0) {}
 
-            if (++loops > 80)
+            inline void operator()(MoveSpline::UpdateResult result)
             {
-                log_console("UnitMovement::UpdateState: deadloop?");
-                break;
+                switch (result)
+                {
+                case MoveSpline::Result_NextSegment:
+                    //log_console("UpdateState: segment %d is on hold, position: %s", move_spline.currentSplineSegment(),GetPosition3().toString().c_str());
+                    if (listener)
+                        listener->OnEvent(1, mov.move_spline.currentPathIdx());
+                    break;
+                case MoveSpline::Result_Arrived:
+                    //log_console("UpdateState: spline done, position: %s", GetPosition3().toString().c_str());
+                    if (listener)
+                        listener->OnEvent(1, mov.move_spline.currentPathIdx()+1);
+                    if (listener)
+                        listener->OnEvent(0, -1);
+                    if (listener)
+                        listener->OnSplineDone();
+                    mov.DisableSpline();
+                    break;
+                }
             }
+        };
 
-            switch (result & ~MoveSpline::Result_StopUpdate)
-            {
-            case MoveSpline::Result_NextSegment:
-                log_console("UnitMovement::UpdateState: segment %d is on hold", move_spline.currentSplineSegment());
-                // do something
-                break;
-            case MoveSpline::Result_Arrived:
-                log_console("UnitMovement::UpdateState: spline done");
-                // do something
-                break;
-           }
-        }
-        while(!(result & MoveSpline::Result_StopUpdate));
-
-        if (move_spline.Finalized())
-        {
-            DisableSpline();
-            ResetDirection();
-            updatable.UnScheduleUpdate();
-        }
+        move_spline.updateState(difftime, MoveSplineResultHandler(*this, listener));
+        SetPosition(move_spline.ComputePosition());
     }
 
     if (!SplineEnabled())

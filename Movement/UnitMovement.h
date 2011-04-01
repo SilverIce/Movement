@@ -17,7 +17,7 @@
 
 namespace Movement
 {
-    class MoveSplineSegmented;
+    class MoveSpline;
 
     struct SpeedInfo
     {
@@ -160,7 +160,7 @@ namespace Movement
         uint8           dbg_flags;
         std::string ToString() const;
 
-        MoveSplineSegmented&  move_spline;
+        MoveSpline&  move_spline;
 
         virtual void UpdateState();
 

@@ -27,6 +27,12 @@ namespace Movement {
     {
     public:
         typedef Spline<int32> MySpline;
+        enum UpdateResult{
+            Result_None         = 0x01,
+            Result_Arrived      = 0x02,
+            Result_NextCycle    = 0x04,
+            Result_NextSegment  = 0x08,
+        };
         #pragma region fields
         friend class PacketBuilder;
     protected:
@@ -45,17 +51,20 @@ namespace Movement {
         //float           duration_mod_next;
         float           vertical_acceleration;
         int32           effect_start_time;
+        int32           point_Idx;
+        int32           point_Idx_offset;
 
         void init_spline(const MoveSplineInitArgs& args);
     protected:
-        void Finalize() { splineflags.done = true; }
-        uint32 GetSplineFlags() const { return splineflags.raw;}
 
         const MySpline::ControlArray& getPath() const { return spline.getPoints();}
         void computeParabolicElevation(float& el) const;
         void computeFallElevation(float& el) const;
 
-        void OnArrived();
+        UpdateResult _updateState(int32& ms_time_diff);
+        int32 next_timestamp() const { return spline.length(point_Idx+1);}
+        int32 segment_time_elapsed() const { return next_timestamp()-time_passed;}
+        void Finalize();
 
         Location _ComputePosition(MySpline::index_type Idx, float u) const;
 
@@ -67,15 +76,14 @@ namespace Movement {
 
         explicit MoveSpline();
 
-        enum UpdateResult{
-            Result_None         = 0x01,
-            Result_Arrived      = 0x02,
-            Result_NextCycle    = 0x04,
-            Result_NextSegment  = 0x08,
-            Result_StopUpdate   = 0x10,
-        };
+        template<class UpdateHandler>
+        void updateState(int32 difftime, UpdateHandler& handler)
+        {
+            mov_assert(Initialized());
+            while(difftime >= 0)
+                handler(_updateState(difftime));
+        }
 
-        UpdateResult updateState( int32 ms_time_diff );
         Location ComputePosition() const;
 
         uint32 GetId() const { return m_Id;}
@@ -85,55 +93,8 @@ namespace Movement {
         int32 timeElapsed() const { return Duration() - time_passed;}
         int32 timePassed() const { return time_passed;}
         const Vector3& FinalDestination() const { return finalDestination;}
-
-        // not supported functions:
-        int32 currentPathSegment() const;
-        int32 currentSplineSegment() const;
-        //UpdateResult updateState(int32& ms_time_diff);
-
-        std::string ToString() const;
-
-    };
-
-    class MoveSplineSegmented : public MoveSpline
-    {
-        #pragma region fields
-        using MoveSpline::ComputePosition;
-        using MoveSpline::Initialize;
-        using MoveSpline::ToString;
-    protected:
-        int32           point_Idx;
-        int32           point_Idx_offset;
-
-    protected:
-        UpdateResult _updateState( int32 ms_time_diff );
-        int32 segment_timestamp() const { return spline.length(point_Idx+1);}
-        #pragma endregion
-    public:
-
-        explicit MoveSplineSegmented();
-
-        /** Just a little example of 'How to update':
-         ** int32 ms_time_diff = 5000;
-         ** UpdateResult result;
-         ** do {
-         **     UpdateResult result = move_spline.updateState(ms_time_diff);
-         **     switch(result & ~Result_StopUpdate)
-         **     {
-         **     case Result_NextCycle:
-         **     ...
-         **     case Result_Arrived:
-         **     ...
-         **     }
-         ** } while(!(result & Result_StopUpdate))
-        */
-        UpdateResult updateState(int32& ms_time_diff);
-        Location ComputePosition() const;
-
-        void Initialize(const MoveSplineInitArgs&);
-
-        int32 currentPathSegment() const { return point_Idx_offset + point_Idx - spline.first();}
-        int32 currentSplineSegment() const { return point_Idx;}
+        const Vector3& CurrentDestination() const { return spline.getPoint(point_Idx+1);}
+        int32 currentPathIdx() const { return point_Idx_offset + point_Idx - spline.first();}
 
         std::string ToString() const;
     };

@@ -5,37 +5,6 @@
 
 namespace Movement{
 
-
-MoveSpline::UpdateResult MoveSpline::updateState( int32 ms_time_diff )
-{
-    mov_assert(Initialized());
-    mov_assert(ms_time_diff >= 0);
-
-    UpdateResult result = Result_None;
-    if (!Finalized())
-    {
-        //if (splineflags & SPLINEFLAG_INSTANT)
-        //    Finalize();
-        time_passed += ms_time_diff;
-        if (time_passed >= Duration())
-        {
-            OnArrived();
-            result = Finalized() ? Result_Arrived : Result_NextCycle;
-        }
-    }
-    return result;
-}
-
-Location MoveSpline::ComputePosition() const
-{
-    SplineBase::index_type seg_Idx;
-    float u, t = 1.f;
-    if (Duration())
-        t = time_passed / Duration();
-    spline.computeIndex(t, seg_Idx, u);
-    return _ComputePosition(seg_Idx, u);
-}
-
 Location MoveSpline::_ComputePosition(SplineBase::index_type seg_Idx, float u) const
 {
     mov_assert(Initialized());
@@ -185,52 +154,14 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
             vertical_acceleration = args.parabolic_heigth * 8.f / (f_duration * f_duration);
         }
     }
-}
 
-std::string MoveSpline::ToString() const
-{
-    std::stringstream str;
-
-    str << "MoveSpline" << std::endl;
-    str << "spline    Id: " << GetId() << std::endl;
-    str << "spline flags: " << GetSplineFlags() << std::endl;
-    str << "time  passed: " << time_passed << std::endl;
-    str << "total   time: " << Duration() << std::endl;
-    str << spline.ToString();
-    return str.str();
+    point_Idx_offset = args.path_Idx_offset;
+    point_Idx = spline.first();
 }
 
 MoveSpline::MoveSpline() : m_Id(0), time_passed(0),
-    vertical_acceleration(0.f), effect_start_time(0)
+    vertical_acceleration(0.f), effect_start_time(0), point_Idx(0), point_Idx_offset(0)
 {
-}
-
-void MoveSpline::OnArrived()
-{
-    if (isCyclic())
-    {
-        time_passed = time_passed % Duration();
-
-        // SPLINEFLAG_ENTER_CYCLE support dropped
-        /*if (splineflags.enter_cycle)
-        {
-            int32 duration = Duration();
-            MySpline::ControlArray points(spline.getPoints());
-            spline.init_cyclic_spline(&points[spline.first()+1],points_count-1,spline.mode(),0);
-
-            splineflags.enter_cycle = false;
-
-            // client-side bug: client resets parabolic info to default values, but doesn't removes parabolic/trajectory flag
-            // in simple words: parabolic movement can be used with cyclic movement but there will be little visual bug on client side
-            // i decided remove remove trajectory flag
-            splineflags.parabolic = false;
-        }*/
-    }
-    else
-    {
-        Finalize();
-        time_passed = Duration();
-    }
 }
 
 /// ============================================================================================
@@ -275,59 +206,49 @@ bool MoveSplineInitArgs::_checkPathBounds() const
 
 /// ============================================================================================
 
-MoveSpline::UpdateResult MoveSplineSegmented::_updateState(int32 ms_time_diff)
+MoveSpline::UpdateResult MoveSpline::_updateState(int32& ms_time_diff)
 {
-    mov_assert(Initialized());
-    mov_assert(ms_time_diff >= 0);
-
     if (Finalized())
-        return Result_StopUpdate;
+    {
+        ms_time_diff = -1;
+        return Result_Arrived;
+    }
 
     UpdateResult result = Result_None;
-    time_passed += ms_time_diff;
 
-    if (time_passed >= segment_timestamp())
+    int32 minimal_diff = std::min(ms_time_diff, segment_time_elapsed());
+    mov_assert(minimal_diff >= 0);
+    time_passed += minimal_diff;
+    ms_time_diff -= minimal_diff;
+
+    if (time_passed >= next_timestamp())
     {
-        //On next segment
         ++point_Idx;
-
         if (point_Idx < spline.last())
         {
             result = Result_NextSegment;
         }
-        else if (spline.isCyclic())
-        {
-            point_Idx = spline.first();
-            time_passed = time_passed % Duration();
-
-            result = Result_NextSegment;
-        }
         else
         {
-            Finalize();
-            point_Idx = spline.last() - 1;
-            time_passed = Duration();
-            result = (UpdateResult)(Result_Arrived | Result_StopUpdate);
+            if (spline.isCyclic())
+            {
+                point_Idx = spline.first();
+                time_passed = time_passed % Duration();
+                result = Result_NextSegment;
+            }
+            else
+            {
+                Finalize();
+                ms_time_diff = -1;
+                result = Result_Arrived;
+            }
         }
     }
 
     return result;
 }
 
-MoveSpline::UpdateResult MoveSplineSegmented::updateState(int32& ms_time_diff)
-{
-    int32 minimal_diff = std::min(ms_time_diff, segment_timestamp() - time_passed);
-
-    UpdateResult result = _updateState(minimal_diff);
-
-    ms_time_diff -= minimal_diff;
-    if (ms_time_diff <= 0)
-        (uint32&)result |= Result_StopUpdate;
-
-    return result;
-}
-
-Location MoveSplineSegmented::ComputePosition() const
+Location MoveSpline::ComputePosition() const
 {
     float u = 1.f;
     int32 seg_time = spline.length(point_Idx,point_Idx+1);
@@ -336,22 +257,10 @@ Location MoveSplineSegmented::ComputePosition() const
     return _ComputePosition(point_Idx, u);
 }
 
-void MoveSplineSegmented::Initialize(const MoveSplineInitArgs& args)
-{
-    MoveSpline::Initialize(args);
-
-    point_Idx_offset = args.path_Idx_offset;
-    point_Idx = spline.first();
-}
-
-MoveSplineSegmented::MoveSplineSegmented() : point_Idx(0), point_Idx_offset(0)
-{
-}
-
-std::string MoveSplineSegmented::ToString() const
+std::string MoveSpline::ToString() const
 {
     std::stringstream str;
-    str << "MoveSplineSegmented" << std::endl;
+    str << "MoveSpline" << std::endl;
     str << "spline Id: " << GetId() << std::endl;
     str << "flags: " << splineflags.ToString() << std::endl;
     if (splineflags.final_angle)
@@ -368,4 +277,10 @@ std::string MoveSplineSegmented::ToString() const
     return str.str();
 }
 
+void MoveSpline::Finalize()
+{
+    splineflags.done = true;
+    point_Idx = spline.last() - 1;
+    time_passed = Duration();
+}
 }
