@@ -48,6 +48,7 @@ namespace Movement
 
         /* Initializes movement by path
          * @param path - array of points, shouldn't be empty
+         * @param contains_current - set to true if first path point is current unit's position
          */ 
         MoveSplineInit& MovebyPath(const PointsArray& path, uint32 path_offset = 0, bool contains_current = false);
         /* Initializes simple A to B mition, A is current unit's position, B is destination
