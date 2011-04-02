@@ -19,7 +19,7 @@ Location MoveSpline::_ComputePosition(SplineBase::index_type seg_Idx, float u) c
     else if (splineflags.falling)
         computeFallElevation(c.z);
 
-    if (splineflags & (MoveSplineFlag::Done | MoveSplineFlag::Mask_Final_Facing))
+    if (splineflags.done && splineflags.isFacing())
     {
         if (splineflags.final_angle)
             c.orientation = facing.angle;
