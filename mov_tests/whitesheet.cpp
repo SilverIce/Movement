@@ -151,10 +151,11 @@ struct WP_test : public TestArea, public IListener
 };
 
 void test_list();
+void spline_sync_test();
 
 void test()
 {
-    sWorld.Run();
+    spline_sync_test();
 }
 
 void test_list()
@@ -177,6 +178,64 @@ void test_list()
     _counter cc;
     list.Visit(cc);
 }
+
+#pragma region Spline sync test
+struct SplineData 
+{
+    int32 duration;
+    int32 move_time_passed;
+    float duration_mod;
+    float duration_mod_next;
+};
+
+void OnFlightSyncPacket(SplineData *_this, float path_passed_perc)
+{
+    SplineData *v2; // edx@1
+    double v3; // st7@4
+    SplineData *v4; // edx@8
+    SplineData *v5; // esi@8
+    double v6; // st7@8
+    double v7; // st6@8
+
+    v2 = _this;
+    if ( v2 )
+    {
+        if ( v2->duration && (double)v2->duration * v2->duration_mod >= 0.009999999776482582 )
+        {
+            v3 = path_passed_perc - (double)(signed int)v2->move_time_passed / ((double)v2->duration * v2->duration_mod);
+            if ( v3 > 0.5 )                           // 0.8
+                v3 = v3 - 1.0;                          // 0.8-1 = -0.2
+            if ( v3 < -0.5 )                          // -0.8
+                v3 = v3 + 1.0;                          // -0.8+1 = 0.2
+            v5 = _this;                      // v3 now in range [-0.5, 0.5]
+            v7 = (double)(v5->duration - (unsigned int)(signed __int64)(v3 * (double)v5->duration)) / (double)v5->duration;
+            v6 = 0.5;
+            v5->duration_mod_next = v7;
+            v4 = _this;
+            if ( v4->duration_mod_next >= 0.5 && (v6 = v4->duration_mod_next, v6 >= 2.0) )
+                v4->duration_mod_next = 2.0;
+            else
+                v4->duration_mod_next = v6;
+        }
+        else
+        {
+            v2->duration_mod_next = 1.0;
+        }
+    }
+}
+
+void spline_sync_test()
+{
+    SplineData dat = {90000, 33000, 1, 0};
+    for (float t = 0.f; t <= 1.f; t += 0.1f)
+    {
+        dat.move_time_passed = dat.duration * t;
+        OnFlightSyncPacket(&dat, t);
+        if (!G3D::fuzzyEq(1, dat.duration_mod_next))
+            log_write("spline_sync_test failed");
+    }
+}
+#pragma endregion
 
 void World::InitWorld()
 {

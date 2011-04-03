@@ -367,4 +367,15 @@ namespace Movement
             data << mov.spline_elevation;
         }
     }
+
+    void PacketBuilder::SplineSyncSend(const UnitMovement& mov, MsgDeliverMethtod& broadcast)
+    {
+        mov_assert(mov.SplineEnabled());
+        const MoveSpline& move_spline = mov.move_spline;
+
+        WorldPacket data(SMSG_FLIGHT_SPLINE_SYNC, 13);
+        data << (float)(move_spline.timePassed() / (float)move_spline.Duration());
+        data << mov.Owner.GetPackGUID();
+        broadcast(data);
+    }
 }
