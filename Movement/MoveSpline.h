@@ -80,8 +80,9 @@ namespace Movement {
         void updateState(int32 difftime, UpdateHandler& handler)
         {
             mov_assert(Initialized());
-            while(difftime >= 0)
+            do
                 handler(_updateState(difftime));
+            while(difftime > 0);
         }
 
         Location ComputePosition() const;

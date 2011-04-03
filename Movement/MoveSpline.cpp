@@ -210,7 +210,7 @@ MoveSpline::UpdateResult MoveSpline::_updateState(int32& ms_time_diff)
 {
     if (Finalized())
     {
-        ms_time_diff = -1;
+        ms_time_diff = 0;
         return Result_Arrived;
     }
 
@@ -239,7 +239,7 @@ MoveSpline::UpdateResult MoveSpline::_updateState(int32& ms_time_diff)
             else
             {
                 Finalize();
-                ms_time_diff = -1;
+                ms_time_diff = 0;
                 result = Result_Arrived;
             }
         }
