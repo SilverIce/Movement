@@ -32,7 +32,6 @@ protected:
 
     index_type index_lo;
     index_type index_hi;
-    index_type points_count;
 
     uint8 m_mode;
     bool cyclic;
@@ -102,7 +101,6 @@ public:
 
     const ControlArray& getPoints() const { return points;}
     const Vector3& getPoint(index_type i) const { return points[i];}
-    index_type pointsCount() const { return points_count;}
 
     /**	Initializes spline. Don't call other methods while spline not initialized. */
     void init_spline(const Vector3 * controls, index_type count, EvaluationMode m);

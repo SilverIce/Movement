@@ -130,6 +130,8 @@ namespace Movement
         const MoveSpline& move_spline = mov.move_spline;
         const MoveSpline::MySpline& spline = move_spline.spline;
         data.SetOpcode(opcode);
+        const Vector3 * real_path = &spline.getPoint(1);
+        uint32 last_idx = spline.getPoints().size() - (spline.isCyclic() ? 4 : 3);
 
         // TODO: find more generic way
         if (!mov.SplineEnabled())
@@ -141,9 +143,6 @@ namespace Movement
             data << uint8(MonsterMoveStop);
             return;
         }
-
-        const Vector3 * real_path = &spline.getPoint(spline.first());
-        uint32 last_idx = spline.pointsCount() - 1;
 
         data << mov.Owner.GetPackGUID();
         data << uint8(0);

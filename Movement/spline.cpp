@@ -193,7 +193,6 @@ float SplineBase::SegLengthBezier3(index_type index) const
 void SplineBase::init_spline(const Vector3 * controls, index_type count, EvaluationMode m)
 {
     m_mode = m;
-    points_count = count;
     cyclic = false;
 
     (this->*initializers[m_mode])(controls, count, cyclic, 0);
@@ -202,7 +201,6 @@ void SplineBase::init_spline(const Vector3 * controls, index_type count, Evaluat
 void SplineBase::init_cyclic_spline(const Vector3 * controls, index_type count, EvaluationMode m, index_type cyclic_point)
 {
     m_mode = m;
-    points_count = count;
     cyclic = true;
 
     (this->*initializers[m_mode])(controls, count, cyclic, cyclic_point);
@@ -278,8 +276,6 @@ void SplineBase::clear()
 {
     index_lo = 0;
     index_hi = 0;
-    points_count = 0;
-
     points.clear();
 }
 
