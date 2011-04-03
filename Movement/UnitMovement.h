@@ -155,6 +155,11 @@ namespace Movement
         #pragma endregion
 
 
+        enum{
+        /** Affects spline movement precision & performance,
+            makes spline movement to be updated once per N millisconds. */
+            MoveSpline_UpdateDelay = 400,
+        };
 
     public:
         uint8           dbg_flags;

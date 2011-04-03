@@ -231,7 +231,6 @@ void UnitMovement::UpdateState()
 {
     uint32 now = GetUpdater().TickCount();
     int32 difftime = getMSTimeDiff(last_update_time, now);
-    last_update_time = now;
 
     if (SplineEnabled())
     {
@@ -265,12 +264,18 @@ void UnitMovement::UpdateState()
             }
         };
 
-        move_spline.updateState(difftime, MoveSplineResultHandler(*this, listener));
-        SetPosition(move_spline.ComputePosition());
+        if (move_spline.timeElapsed() <= difftime || difftime >= MoveSpline_UpdateDelay)
+        {
+            move_spline.updateState(difftime, MoveSplineResultHandler(*this,listener));
+            SetPosition(move_spline.ComputePosition());
+            last_update_time = now;
+        }
     }
-
-    if (!SplineEnabled())
+    else
+    {
         updateRotation();
+        last_update_time = now;
+    }
 }
 
 void MsgBroadcast::operator ()(WorldPacket& data)
