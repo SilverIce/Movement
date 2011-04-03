@@ -90,7 +90,7 @@ static const float BaseSpeed[SpeedMaxCount] =
 };
 
 UnitMovement::UnitMovement(WorldObject& owner) :
-    Transportable(owner), move_spline(*new MoveSpline())
+    Transportable(owner), move_spline(*new MoveSpline()), m_transport(*this)
 {
     updatable.SetUpdateStrategy(this);
 
@@ -137,8 +137,10 @@ void UnitMovement::ApplyState(const ClientMoveState& mov)
     moveFlags = mov.moveFlags;
     moveFlags2 = mov.moveFlags2;
     //last_update_time = mov.ms_time;
-    SetPosition(mov.position3);
-    position.orientation = mov.orientation;
+    world_position = mov.position3;
+    world_position.orientation = mov.orientation;
+    m_local_position = mov.transport.position;
+    m_local_position.orientation = mov.transport.orientation;
 
     m_transportInfo = mov.transport;
     pitch = mov.pitch;
@@ -157,7 +159,7 @@ void UnitMovement::updateRotation(/*uint32 ms_time_diff*/)
 
     const Vector3& t_pos = GetTarget()->GetPosition3();
 
-    position.orientation = G3D::wrap(atan2(t_pos.y - position.y, t_pos.x - position.x), 0.f, (float)G3D::twoPi());
+    position().orientation = G3D::wrap(atan2(t_pos.y - position().y, t_pos.x - position().x), 0.f, (float)G3D::twoPi());
 
     // code below calculates facing angle base on turn speed, but seems this not needed:
     // server-side rotation have instant speed, i.e. units are everytimes facing to their targets
@@ -276,6 +278,16 @@ void UnitMovement::UpdateState()
         updateRotation();
         last_update_time = now;
     }
+}
+
+void UnitMovement::BoardOn(Transport& transport, const Location& local_position, int8 seatId)
+{
+    _board(transport, local_position);
+}
+
+void UnitMovement::Unboard()
+{
+    _unboard();
 }
 
 void MsgBroadcast::operator ()(WorldPacket& data)

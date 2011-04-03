@@ -333,12 +333,12 @@ namespace Movement
         data << mov.moveFlags2.raw;
 
         data << mov.last_update_time;
-        data << mov.position;
+        data << mov.world_position;
 
         if (mov.moveFlags.ontransport)
         {
             data.appendPackGUID(mov.m_transportInfo.t_guid);
-            data << mov.transport_offset;
+            data << mov.m_local_position;
             data << mov.m_transportInfo.t_time;
             data << mov.m_transportInfo.t_seat;
 

@@ -137,33 +137,39 @@ namespace Movement
     {
     public:
 
-        explicit MovementBase(WorldObject& owner) : Owner(owner), listener(NULL)
+        explicit MovementBase(WorldObject& owner) : Owner(owner), listener(NULL), managed_position(&world_position)
         {
         }
 
         virtual ~MovementBase() { mov_assert(m_targeter_references.empty());}
         virtual void CleanReferences();
 
-        const Location& GetPosition() const { return position;}
-        const Vector3& GetPosition3() const { return position;}
-
+        Location& position() { return *managed_position;}
+        Vector3& position3() { return *managed_position;}
+        const Location& GetPosition() const { return *managed_position;}
+        const Vector3& GetPosition3() const { return *managed_position;}
         // should be protected?
         void SetPosition(const Location& v);
         void SetPosition(const Vector3& v);
 
+        const Location& GetGlobalPosition() const { return world_position;}
+        void SetGlobalPosition(const Location& loc) { world_position = loc;}
+
         void SetListener(IListener * l) { listener = l;}
         void ResetLisener() { listener = NULL; }
-
 
         WorldObject& Owner;
 
         void _link_targeter(LinkedListElement<TargetLink>& t) { m_targeter_references.link(t);}
 
     protected:
-        Location position;
+        void set_managed_position(Location& p) { managed_position = &p;}
+
+        Location world_position;
         IListener * listener;
     private:
 
+        Location * managed_position;
         LinkedList<TargetLink> m_targeter_references;
 
         MovementBase(const MovementBase&);
@@ -176,10 +182,10 @@ namespace Movement
     {
         TransportLink() : transport(0), transportable(0) {}
 
-        TransportLink(Transport* transport_, Transportable* transportable_)
+        TransportLink(MovementBase* transport_, Transportable* transportable_)
             : transport(transport_), transportable(transportable_) {}
 
-        Transport* transport;
+        MovementBase* transport;
         Transportable* transportable;
     };
 
@@ -189,28 +195,30 @@ namespace Movement
 
         virtual ~Transportable() {}
 
-        virtual void Board(Transport& m) = 0;
-        virtual void UnBoard() = 0;
-
         virtual void CleanReferences()
         {
-            UnBoard();
+            Unboard();
             MovementBase::CleanReferences();
         }
 
+        virtual void BoardOn(Transport& m, const Location& local_position, int8 seatId) = 0;
+        virtual void Unboard() = 0;
+
         bool IsBoarded() const { return m_transport_link.linked();}
-        Transport* GetTransport() { return m_transport_link.Value.transport;}
-        const Transport* GetTransport() const { return m_transport_link.Value.transport;}
+        const MovementBase* GetTransport() const { return m_transport_link.Value.transport;}
+
+        void _link_to(LinkedList<TransportLink>& list) { list.link(m_transport_link);}
 
     protected:
 
         explicit Transportable(WorldObject& owner) : MovementBase(owner)  {}
 
-        void _board(Transport& m);
+        void _board(Transport& m, const Location& local_position);
         void _unboard();
 
+        Location m_local_position;
+    private:
         LinkedListElement<TransportLink> m_transport_link;
-        Location transport_offset;
     };
 
     class Transport
@@ -220,9 +228,33 @@ namespace Movement
         void UnBoardAll()
         {
             struct _unboard{
-                inline void operator()(TransportLink& m) const { m.transportable->UnBoard(); }
+                inline void operator()(TransportLink& m) const { m.transportable->Unboard(); }
             };
             m_passenger_references.Iterate(_unboard());
+            mov_assert(Empty());
+        }
+
+        void UpdatePassengerPositions()
+        {
+            struct PassengerRelocator
+            {
+                Location transport_pos;
+                Vector2 dir;
+
+                PassengerRelocator(const MovementBase& transport)
+                {
+                    transport_pos = transport.GetGlobalPosition();
+                    dir = Vector2(cos(transport_pos.orientation),sin(transport_pos.orientation));
+                }
+
+                inline void operator()(TransportLink& link)
+                {
+                    link.transportable->SetGlobalPosition(
+                        CoordTranslator::ToGlobal(transport_pos, dir, link.transportable->GetPosition()));            
+                }
+            };
+            if (!Empty())
+                m_passenger_references.Iterate(PassengerRelocator(Owner));
         }
 
         void CleanReferences()
@@ -230,14 +262,16 @@ namespace Movement
             UnBoardAll();
         }
 
-        explicit Transport() {}
+        explicit Transport(MovementBase& _owner) : Owner(_owner) {}
+        ~Transport() { mov_assert(Empty());}
 
-        bool HavePassengers() const { return !m_passenger_references.empty();}
+        bool Empty() const { return m_passenger_references.empty();}
+        MovementBase& Owner;
+        const Location& GetGlobalPosition() const { return Owner.GetGlobalPosition();}
 
         void _link_transportable(LinkedListElement<TransportLink>& t) { m_passenger_references.link(t);}
 
     private:
-
         LinkedList<TransportLink> m_passenger_references;
     };
 
@@ -247,11 +281,10 @@ namespace Movement
     class GameobjectMovement : public Transportable
     {
     public:
-
         explicit GameobjectMovement(WorldObject& owner) : Transportable(owner) {}
 
-        virtual void Board(Transport& m);
-        virtual void UnBoard();
+        virtual void BoardOn(Transport& m, const Location& local_position, int8 /*seatId*/) {}
+        virtual void Unboard() {}
     };
 
     class MO_Transport : public MovementBase, public IUpdatable
@@ -259,7 +292,7 @@ namespace Movement
     public:
 
         explicit MO_Transport(WorldObject& owner);
-        virtual ~MO_Transport() {}
+        virtual ~MO_Transport();
 
         virtual void CleanReferences()
         {
@@ -268,8 +301,9 @@ namespace Movement
             updatable.CleanReferences();
         }
 
-        virtual void UpdateState() {}   // does nothing.. yet
+        virtual void UpdateState();   // does nothing.. yet
 
+        void Board(Transportable& t, const Location& local_position) { t.BoardOn(m_transport, local_position, -1);}
         void UnBoardAll() { m_transport.UnBoardAll();}
 
         void ScheduleUpdate() { updatable.ScheduleUpdate();}

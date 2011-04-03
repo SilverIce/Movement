@@ -71,9 +71,10 @@ namespace Movement
 
         #pragma region Transport
     public:
-        virtual void Board(Transport& m) {_board(m);}
-        virtual void UnBoard() {_unboard();}
+        virtual void BoardOn(Transport& transport, const Location& local_position, int8 seatId);
+        virtual void Unboard();
 
+        void Board(Transportable& t, const Location& local_position, int8 seatId) { t.BoardOn(m_transport, local_position, seatId);}
     private:
         // Does all units are transporters?
         // if not, need add subclass or allocate it dynamically

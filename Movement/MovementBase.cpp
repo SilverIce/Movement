@@ -41,10 +41,10 @@ namespace Movement{
 
     void MovementBase::SetPosition(const Location& v)
     {
-        if (!_finiteV((Vector3&)v))
+        if (!_finiteV(v))
             log_write("MovementBase::SetPosition: NaN coord detected");
         else
-            position = v;
+            *managed_position = v;
     }
 
     void MovementBase::SetPosition(const Vector3& v)
@@ -52,27 +52,49 @@ namespace Movement{
         if (!_finiteV(v))
             log_write("MovementBase::SetPosition: NaN coord detected");
         else
-            (Vector3&)position = v;
+            (Vector3&)(*managed_position) = v;
     }
 
-    void Transportable::_board(Transport& m)
+    MO_Transport::MO_Transport(WorldObject& owner) : MovementBase(owner), m_transport(*this)
     {
-        _unboard();
-        m_transport_link.Value = TransportLink(&m, this);
-        m._link_transportable(m_transport_link);
+        updatable.SetUpdateStrategy(this);
+    }
+
+    MO_Transport::~MO_Transport()
+    {
+        //delete impl;
+    }
+
+    void MO_Transport::UpdateState()
+    {
+        m_transport.UpdatePassengerPositions();
+    }
+
+    void Transportable::_board(Transport& transport, const Location& local_position)
+    {
+        mov_assert(&transport.Owner != this);
+
+        // should i unboard first?
+        //_unboard();
+        if (IsBoarded())
+            m_transport_link.delink();
+
+        m_transport_link.Value = TransportLink(&transport.Owner, this);
+        transport._link_transportable(m_transport_link);
+
+        m_local_position = local_position;
+        set_managed_position(m_local_position);
     }
 
     void Transportable::_unboard()
     {
-        if (m_transport_link.linked())
+        if (IsBoarded())
         {
-            m_transport_link.Value = TransportLink();
             m_transport_link.delink();
-        }
-    }
+            m_transport_link.Value = TransportLink();
 
-    MO_Transport::MO_Transport(WorldObject& owner) : MovementBase(owner)
-    {
-        updatable.SetUpdateStrategy(this);
+            set_managed_position(world_position);
+            m_local_position = Location();
+        }
     }
 }
