@@ -124,27 +124,23 @@ namespace Movement
     void PacketBuilder::Spline_PathSend(const UnitMovement& mov, WorldPacket& data)
     {
         mov_assert(mov.SplineEnabled() && mov.move_spline.Initialized());
-        uint16 opcode = SMSG_MONSTER_MOVE;
 
+        uint16 opcode = mov.IsBoarded() ? SMSG_MONSTER_MOVE_TRANSPORT : SMSG_MONSTER_MOVE;
+        data.SetOpcode(opcode);
 
         const MoveSpline& move_spline = mov.move_spline;
         const MoveSpline::MySpline& spline = move_spline.spline;
-        data.SetOpcode(opcode);
         const Vector3 * real_path = &spline.getPoint(1);
         uint32 last_idx = spline.getPoints().size() - (spline.isCyclic() ? 4 : 3);
 
-        // TODO: find more generic way
-        if (!mov.SplineEnabled())
+        data << mov.Owner.GetPackGUID();
+
+        if (opcode == SMSG_MONSTER_MOVE_TRANSPORT)
         {
-            data << mov.Owner.GetPackGUID();
-            data << uint8(0);
-            data << mov.GetPosition3();
-            data << move_spline.GetId();
-            data << uint8(MonsterMoveStop);
-            return;
+            data << mov.GetTransport()->Owner.GetPackGUID();
+            data << int8(mov.m_unused.transport_seat);
         }
 
-        data << mov.Owner.GetPackGUID();
         data << uint8(0);
         data << real_path[0];
         data << move_spline.GetId();
