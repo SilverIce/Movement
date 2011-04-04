@@ -27,7 +27,7 @@ namespace Movement
             Pitch_Up           = 0x00000040,
             Pitch_Down         = 0x00000080,
 
-            Walk_Mode          = 0x00000100,               // Walking
+            Walk_Mode          = 0x00000100,
             Ontransport        = 0x00000200,
             Levitating         = 0x00000400,
             Root               = 0x00000800,
