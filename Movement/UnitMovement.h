@@ -102,6 +102,7 @@ namespace Movement
         uint32 GetMovementFlags() const { return moveFlags.raw; }
 
         #pragma region Move modes
+    public:
         /// Move Modes
         bool HasMode(MoveMode m) const { return move_mode & (1 << m);}
         void ApplyMoveMode(MoveMode mode, bool apply);
@@ -130,31 +131,19 @@ namespace Movement
         SpeedType SelectSpeedType(bool use_walk_forced) const;
     private:
         SpeedType speed_type;
-        MovControlType  control_mode;
-
-        uint32          last_update_time;
-
-        UnitMoveFlag    moveFlags;
-        UnitMoveFlag2   moveFlags2;
-
-        // swimming and flying
-        float           pitch;
-        // last fall time
-        uint32          fallTime;
-        float           fallStartElevation;
-        // jumping
-        float           j_velocity, j_sinAngle, j_cosAngle, j_xy_velocy;
-
-        float           spline_elevation;
-
-        TransportInfo   m_transportInfo;
-
         union {
             SpeedInfo   speed_obj;
             float       speed[SpeedMaxCount];
         };
         #pragma endregion
 
+    private:
+        MovControlType control_mode;
+
+        UnitMoveFlag moveFlags;
+        uint32 last_update_time;
+        /** Data that cames from client. It affects nothing here but might be used in future. */
+        _ClientMoveState m_unused;
 
         enum{
         /** Affects spline movement precision & performance,

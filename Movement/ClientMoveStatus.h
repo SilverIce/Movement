@@ -1,42 +1,44 @@
 #pragma once
 
-#include "G3D/Vector3.h"
+#include "Location.h"
 #include "UnitMoveFlags.h"
 
 namespace Movement
 {
-    struct TransportInfo
+    /** Contains unused fields */
+    struct _ClientMoveState
     {
-        TransportInfo() : t_guid(0), t_time(0), t_seat(0), t_time2(2) {}
-        uint64 t_guid;
-        Vector3 position;
-        float orientation;
-        uint32 t_time;
-        int8 t_seat;
-        uint32 t_time2;
-    };
-
-    struct ClientMoveState
-    {
-        ClientMoveState() : mover(0), ms_time(0), pitch(0), fallTime(0),
-            j_velocity(0), j_sinAngle(0), j_cosAngle(0), j_xy_velocy(0), spline_elevation(0)
+        _ClientMoveState() : pitch(0), fallTime(0),
+            jump_velocity(0), jump_sinAngle(0), jump_cosAngle(0), jump_xy_velocy(0), spline_elevation(0),
+            transport_time(0), transport_seat(0), transport_time2(0)
         {
         }
 
-        uint64 mover;
-        UnitMoveFlag moveFlags;
         UnitMoveFlag2 moveFlags2;
-        uint32 ms_time;
-        Vector3 position3;
-        float orientation;
-        TransportInfo transport;
+        uint32 transport_time;
+        int8 transport_seat;
+        uint32 transport_time2;
         float pitch;
         uint32 fallTime;
-        float j_velocity;
-        float j_sinAngle;
-        float j_cosAngle;
-        float j_xy_velocy;
+        float jump_velocity;
+        float jump_sinAngle;
+        float jump_cosAngle;
+        float jump_xy_velocy;
         float spline_elevation;
+    };
+
+    struct ClientMoveState : public _ClientMoveState
+    {
+        ClientMoveState() : /*mover(0),*/ ms_time(0), t_guid(0)
+        {
+        }
+
+        //uint64 mover;
+        UnitMoveFlag moveFlags;
+        uint32 ms_time;
+        Location world_position;
+        uint64 t_guid;
+        Location transport_position;
     };
 
     struct ClientMoveEvent

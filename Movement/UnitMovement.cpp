@@ -98,17 +98,9 @@ UnitMovement::UnitMovement(WorldObject& owner) :
     move_mode = 0;
     last_update_time = 0;
 
-    memcpy(&speed, BaseSpeed, sizeof BaseSpeed);
-    speed_obj.current = BaseSpeed[SpeedRun];
-
-    pitch = 0.f;
-    // last fall time
-    fallTime = 0;
-    fallStartElevation = 0.f;
-    // jumping
-    j_velocity = j_sinAngle = j_cosAngle = j_xy_velocy = 0.f;
-    spline_elevation = 0.f;
+    std::copy(BaseSpeed, &BaseSpeed[SpeedMaxCount], speed);
     speed_type = SpeedRun;
+    speed_obj.current = speed[SpeedRun];
     dbg_flags = 0;
 }
 
@@ -132,24 +124,34 @@ void UnitMovement::Initialize( MovControlType controller, const Location& pos, M
     last_update_time = GetUpdater().TickCount();
 }
 
-void UnitMovement::ApplyState(const ClientMoveState& mov)
+void UnitMovement::ApplyState(const ClientMoveState& new_state)
 {
-    moveFlags = mov.moveFlags;
-    moveFlags2 = mov.moveFlags2;
-    //last_update_time = mov.ms_time;
-    world_position = mov.position3;
-    world_position.orientation = mov.orientation;
-    m_local_position = mov.transport.position;
-    m_local_position.orientation = mov.transport.orientation;
+    UnitMoveFlag new_flags = new_state.moveFlags;
 
-    m_transportInfo = mov.transport;
-    pitch = mov.pitch;
-    fallTime = mov.fallTime;
-    j_velocity = mov.j_velocity;
-    j_sinAngle = mov.j_sinAngle;
-    j_cosAngle = mov.j_cosAngle;
-    j_xy_velocy = mov.j_xy_velocy;
-    spline_elevation = mov.spline_elevation;
+    /*// Don't allow change world position: only transport able to change world position while we are on transport
+    if (!new_state.moveFlags.ontransport)
+    {
+        world_position = new_state.world_position;
+    }
+    m_local_position = new_state.transport_position;*/
+
+    if (moveFlags.ontransport != new_flags.ontransport)
+    {
+        if (new_flags.ontransport)
+        {
+            // TODO: find transport by guid, board
+            // BoardOn(transport, state.transport_position, state.transport_seat);
+        } 
+        else
+        {
+            // Unboard();
+        }
+    }
+
+    moveFlags = new_flags;
+    world_position = new_state.world_position;
+    m_local_position = new_state.transport_position;
+    m_unused = new_state;
 }
 
 void UnitMovement::updateRotation(/*uint32 ms_time_diff*/)
@@ -283,11 +285,15 @@ void UnitMovement::UpdateState()
 void UnitMovement::BoardOn(Transport& transport, const Location& local_position, int8 seatId)
 {
     _board(transport, local_position);
+    m_unused.transport_seat = seatId;
+    moveFlags.ontransport = true;
 }
 
 void UnitMovement::Unboard()
 {
     _unboard();
+    moveFlags.ontransport = false;
+    m_unused.transport_seat = 0;
 }
 
 void MsgBroadcast::operator ()(WorldPacket& data)
@@ -299,17 +305,17 @@ std::string UnitMovement::ToString() const
 {
     std::stringstream st;
     st << "Movement  flags: " << moveFlags.ToString() << std::endl;
-    st << "Global position: " << GetPosition().toString() << std::endl;
+    st << "Global position: " << GetGlobalPosition().toString() << std::endl;
 
     if (moveFlags.ontransport)
-        st << "Local position: " << m_transportInfo.position.toString() << std::endl;
+        st << "Local position: " << GetPosition().toString() << std::endl;
 
     if (moveFlags.falling)
     {
-        st << "jump z  vel " << j_velocity;
-        st << "jump    sin " << j_sinAngle;
-        st << "jump    cos " << j_cosAngle;
-        st << "jump xy vel " << j_xy_velocy;
+        st << "jump z  vel " << m_unused.jump_velocity;
+        st << "jump    sin " << m_unused.jump_sinAngle;
+        st << "jump    cos " << m_unused.jump_cosAngle;
+        st << "jump xy vel " << m_unused.jump_xy_velocy;
     }
 
     if (SplineEnabled())

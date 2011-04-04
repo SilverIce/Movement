@@ -40,6 +40,7 @@ namespace Movement
         static void FullUpdate(const UnitMovement& mov, ByteBuffer& );
 
         static void WriteClientStatus(const UnitMovement& mov, ByteBuffer& data);
+        static void WriteClientStatus(const ClientMoveState& mov, ByteBuffer& data);
         static void ReadClientStatus(ClientMoveState& state, ByteBuffer& data);
     };
 }

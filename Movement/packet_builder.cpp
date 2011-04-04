@@ -290,20 +290,18 @@ namespace Movement
         data >> mov.moveFlags.raw;
         data >> mov.moveFlags2.raw;
 
-        data.read_skip<uint32>();// >> mov.last_update_time;
-        data >> mov.position3;
-        data >> mov.orientation;
+        data >> mov.ms_time;
+        data >> mov.world_position;
 
         if (mov.moveFlags.ontransport)
         {
-            data >> mov.transport.t_guid;
-            data >> mov.transport.position;
-            data >> mov.transport.orientation;
-            data >> mov.transport.t_time;
-            data >> mov.transport.t_seat;
+            mov.t_guid = data.readPackGUID();
+            data >> mov.transport_position;
+            data >> mov.transport_time;
+            data >> mov.transport_seat;
 
             if (mov.moveFlags2.interp_move)
-                data >> mov.transport.t_time2;
+                data >> mov.transport_time2;
         }
 
         if (mov.moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying) || mov.moveFlags2.allow_pitching)
@@ -315,10 +313,10 @@ namespace Movement
 
         if (mov.moveFlags.falling)
         {
-            data >> mov.j_velocity;
-            data >> mov.j_sinAngle;
-            data >> mov.j_cosAngle;
-            data >> mov.j_xy_velocy;
+            data >> mov.jump_velocity;
+            data >> mov.jump_sinAngle;
+            data >> mov.jump_cosAngle;
+            data >> mov.jump_xy_velocy;
         }
 
         if (mov.moveFlags.spline_elevation)
@@ -329,21 +327,63 @@ namespace Movement
 
     void PacketBuilder::WriteClientStatus(const UnitMovement& mov, ByteBuffer& data)
     {
-        data << mov.moveFlags.raw;
-        data << mov.moveFlags2.raw;
+        const _ClientMoveState& un = mov.m_unused;
 
-        data << mov.last_update_time;
+        data << mov.moveFlags.raw;
+        data << un.moveFlags2.raw;
+
+        data << mov.GetUpdater().TickCount();
         data << mov.world_position;
 
         if (mov.moveFlags.ontransport)
         {
-            data.appendPackGUID(mov.m_transportInfo.t_guid);
+            data << mov.GetTransport()->Owner.GetPackGUID();
             data << mov.m_local_position;
-            data << mov.m_transportInfo.t_time;
-            data << mov.m_transportInfo.t_seat;
+            data << un.transport_time;
+            data << un.transport_seat;
+
+            if (un.moveFlags2.interp_move)
+                data << un.transport_time2;
+        }
+
+        if (mov.moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying) || un.moveFlags2.allow_pitching)
+        {
+            data << un.pitch;
+        }
+
+        data << un.fallTime;
+
+        if (mov.moveFlags.falling)
+        {
+            data << un.jump_velocity;
+            data << un.jump_sinAngle;
+            data << un.jump_cosAngle;
+            data << un.jump_xy_velocy;
+        }
+
+        if (mov.moveFlags.spline_elevation)
+        {
+            data << un.spline_elevation;
+        }
+    }
+
+    void PacketBuilder::WriteClientStatus(const ClientMoveState& mov, ByteBuffer& data)
+    {
+        data << mov.moveFlags.raw;
+        data << mov.moveFlags2.raw;
+
+        data << mov.ms_time;
+        data << mov.world_position;
+
+        if (mov.moveFlags.ontransport)
+        {
+            data.appendPackGUID(mov.t_guid);
+            data << mov.transport_position;
+            data << mov.transport_time;
+            data << mov.transport_seat;
 
             if (mov.moveFlags2.interp_move)
-                data << mov.m_transportInfo.t_time2;
+                data << mov.transport_time2;
         }
 
         if (mov.moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying) || mov.moveFlags2.allow_pitching)
@@ -355,10 +395,10 @@ namespace Movement
 
         if (mov.moveFlags.falling)
         {
-            data << mov.j_velocity;
-            data << mov.j_sinAngle;
-            data << mov.j_cosAngle;
-            data << mov.j_xy_velocy;
+            data << mov.jump_velocity;
+            data << mov.jump_sinAngle;
+            data << mov.jump_cosAngle;
+            data << mov.jump_xy_velocy;
         }
 
         if (mov.moveFlags.spline_elevation)
