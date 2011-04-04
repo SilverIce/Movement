@@ -38,6 +38,9 @@ namespace Movement
     {
     public:
 
+        explicit UnitMovement(WorldObject& owner);
+        virtual ~UnitMovement();
+
         virtual void CleanReferences()
         {
             UnbindOrientation();
@@ -82,11 +85,8 @@ namespace Movement
         #pragma endregion
 
         friend class PacketBuilder;
-        friend class MoveSplineInit;
 
     public:
-        explicit UnitMovement(WorldObject& owner);
-        virtual ~UnitMovement();
 
         void SetControl(MovControlType c) { control_mode = c; }
         MovControlType GetControl() const { return control_mode; }

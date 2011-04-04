@@ -21,6 +21,7 @@ namespace Movement
     class MovementBase;
     class UpdatableMovement;
     class Transportable;
+    class IListener;
     class UnitMovement;
 
     struct IUpdatable 

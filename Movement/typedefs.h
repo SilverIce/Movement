@@ -65,13 +65,10 @@ namespace Movement
         return N;
     }
 
-    template<bool> struct _assert_fail;
-    template<> struct _assert_fail<true> { enum{value = 1}; };
-
-    #define static_assert(B)\
-        enum {\
-            static_assert_enum##__LINE__ = sizeof(_assert_fail<(bool)(B)>)\
-        }
-
+#ifndef static_assert
+    #define CONCAT(x, y) CONCAT1 (x, y)
+    #define CONCAT1(x, y) x##y
+    #define static_assert(expr) typedef char CONCAT(static_assert_failed_at_line_, __LINE__) [(expr) ? 1 : -1]
+#endif
 
 }
