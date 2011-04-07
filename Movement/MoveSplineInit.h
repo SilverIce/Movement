@@ -99,16 +99,11 @@ namespace Movement
         void* operator new(size_t);
     };
 
-    namespace MoveKnockBackStrategy
     {
-        inline void Apply(UnitMovement& st, const Vector3& dest, float velocity)
-        {
-            MoveSplineInit(st).MoveTo(dest).SetParabolic(0.5,0).SetVelocity(velocity).Launch();
-        }
 
-        inline void Apply(UnitMovement& st, const Vector3& dest, float velocity, float parabolic_heigth)
-        {
-            MoveSplineInit(st).MoveTo(dest).SetParabolic(parabolic_heigth,0).SetVelocity(velocity).Launch();
-        }
     };
+    inline void MoveJumpInit(UnitMovement& st, const Vector3& dest, float velocity, float parabolic_heigth = 0.5f)
+    {
+        MoveSplineInit(st).MoveTo(dest).SetParabolic(parabolic_heigth,0,false).SetVelocity(velocity).Launch();
+    }
 }

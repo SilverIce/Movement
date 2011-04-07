@@ -48,7 +48,7 @@ namespace Movement
             Spline_Elevation   = 0x04000000,               // Used For Flight Paths
             Spline_Enabled     = 0x08000000,               // Used For Flight Paths
             Waterwalking       = 0x10000000,               // Prevent Unit From Falling Through Water
-            Safe_Fall          = 0x20000000,               // Active Rogue Safe Fall Spell (Passive)
+            Can_Safe_Fall      = 0x20000000,               // Active Rogue Safe Fall Spell (Passive)
             Hover              = 0x40000000,
             Flag_x80000000     = 0x80000000,
 
@@ -107,7 +107,7 @@ namespace Movement
                 bool spline_elevation    : 1;
                 bool spline_enabled      : 1;
                 bool waterwalking        : 1;
-                bool safe_fall           : 1;
+                bool can_safe_fall       : 1;
                 bool hover               : 1;
                 bool flag_x80000000      : 1;
             };
