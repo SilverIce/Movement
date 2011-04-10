@@ -10,11 +10,12 @@
 
 namespace Movement{
 
-SpeedType UnitMovement::SelectSpeedType( bool is_walking /*= false*/ ) const
+SpeedType UnitMovement::SelectSpeedType(UnitMoveFlag moveFlags)
 {
     // g_moveFlags_mask - some global client's moveflag mask
     // TODO: get real value
     static uint32 g_moveFlags_mask = 0;
+    bool use_walk_forced = false;
 
     //if ( !(g_moveFlags_mask & moveFlags) )
         //return 0.0f;
@@ -35,7 +36,7 @@ SpeedType UnitMovement::SelectSpeedType( bool is_walking /*= false*/ ) const
     }
     else
     {
-        if ( moveFlags.walk_mode || is_walking )
+        if ( moveFlags.walk_mode || use_walk_forced )
         {
             //if ( speed_obj.run > speed_obj.walk )
                 return SpeedWalk;
@@ -111,7 +112,7 @@ UnitMovement::~UnitMovement()
 
 void UnitMovement::ReCalculateCurrentSpeed()
 {
-    speed_type = SelectSpeedType(false);
+    speed_type = UnitMovement::SelectSpeedType(moveFlags);
     speed_obj.current = speed[speed_type];
 }
 
@@ -296,9 +297,53 @@ void UnitMovement::Unboard()
     m_unused.transport_seat = 0;
 }
 
-void MsgBroadcast::operator ()(WorldPacket& data)
+void UnitMovement::LaunchMoveSpline(MoveSplineInitArgs& args)
 {
-    m_owner.SendMessageToSet(&data, true);
+    if (!HasUpdater())
+    {
+        log_console("UnitMovement::LaunchMoveSpline: not initialized movement lauched");
+        return;
+    }
+
+    UnitMoveFlag moveFlag_new;
+    SpeedType speed_type_new;
+    pre_launchMoveSpline_const(args, moveFlag_new, speed_type_new);
+
+    if (!args.Validate())
+    {
+        log_console("UnitMovement::LaunchMoveSpline: can't lauch, invalid movespline args");
+        return;
+    }
+
+    speed_type = speed_type_new;
+    moveFlags = moveFlag_new;
+
+    move_spline.Initialize(args);
+    updatable.ScheduleUpdate();
+
+    SetControl(MovControlServer);
+
+    PacketBuilder::SplinePathSend(*this, MsgBroadcast(this));
+}
+
+void UnitMovement::PrepareMoveSplineArgs(MoveSplineInitArgs& args, UnitMoveFlag& moveFlag_new, SpeedType& speed_type_new) const
+{
+    args.path[0] = GetPosition3();    //correct first vertex
+    args.splineId = GetUpdater().NewMoveSplineId();
+
+    moveFlag_new = moveFlags & ~(UnitMoveFlag::Mask_Directions | UnitMoveFlag::Mask_Moving) | UnitMoveFlag::Spline_Enabled;
+    moveFlag_new.backward = args.flags.backward;
+    moveFlag_new.forward = !args.flags.backward && !args.flags.falling;
+    moveFlag_new.walk_mode = args.flags.walkmode;
+
+    // select velocity if was not set in SetVelocity
+    if (args.velocity == 0.f)
+    {
+        speed_type_new = UnitMovement::SelectSpeedType(moveFlag_new);
+        args.velocity = GetSpeed(speed_type_new);
+    }
+    else
+        speed_type_new = SpeedNotStandart;
 }
 
 std::string UnitMovement::ToString() const
@@ -308,7 +353,12 @@ std::string UnitMovement::ToString() const
     st << "Global position: " << GetGlobalPosition().toString() << std::endl;
 
     if (moveFlags.ontransport)
-        st << "Local position: " << GetPosition().toString() << std::endl;
+        st << "Local  position: " << GetPosition().toString() << std::endl;
+
+    if (moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying) || m_unused.moveFlags2.allow_pitching)
+    {
+        st << "pitch angle " << m_unused.pitch;
+    }
 
     if (moveFlags.falling)
     {
@@ -322,5 +372,10 @@ std::string UnitMovement::ToString() const
         st << move_spline.ToString();
 
     return st.str();
+}
+
+void MsgBroadcast::operator()(WorldPacket& data)
+{
+    m_owner.SendMessageToSet(&data, true);
 }
 }

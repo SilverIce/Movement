@@ -54,7 +54,6 @@ namespace Movement
         bool HasUpdater() const { return updatable.HasUpdater();}
         void SetUpdater(MoveUpdater& upd) { updatable.SetUpdater(upd);}
         MoveUpdater& GetUpdater() const { return updatable.GetUpdater();}
-        void ScheduleUpdate() { updatable.ScheduleUpdate();}
     private:
         UpdatableMovement updatable;
         #pragma endregion
@@ -94,12 +93,11 @@ namespace Movement
         void EnableSpline() { moveFlags.spline_enabled = true; }
         void DisableSpline() { moveFlags.spline_enabled = false; }
         bool SplineEnabled() const { return moveFlags.spline_enabled; }
+        void LaunchMoveSpline(MoveSplineInitArgs& args);
 
-        bool HasDest() const { return moveFlags.hasDirection(); }
-        void ResetDirection()  { moveFlags &= ~UnitMoveFlag::Mask_Directions; }
-        void SetForwardDirection() { moveFlags.forward = true; }
-
-        uint32 GetMovementFlags() const { return moveFlags.raw; }
+    private:
+        void PrepareMoveSplineArgs(MoveSplineInitArgs&,UnitMoveFlag&, SpeedType&) const;
+        void CleanDirectionFlags()  { moveFlags &= ~UnitMoveFlag::Mask_Directions; }
 
         #pragma region Move modes
     public:
@@ -128,7 +126,7 @@ namespace Movement
         float GetCurrentSpeed() const { return speed_obj.current; }
         SpeedType getCurrentSpeedType() const { return speed_type; }
         void ReCalculateCurrentSpeed();
-        SpeedType SelectSpeedType(bool use_walk_forced) const;
+        static SpeedType SelectSpeedType(UnitMoveFlag moveFlags);
     private:
         SpeedType speed_type;
         union {
@@ -147,7 +145,7 @@ namespace Movement
 
         enum{
         /** Affects spline movement precision & performance,
-            makes spline movement to be updated once per N millisconds. */
+            makes spline movement to be updated once per N milliseconds. */
             MoveSpline_UpdateDelay = 400,
         };
 

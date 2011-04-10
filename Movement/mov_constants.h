@@ -55,6 +55,7 @@ namespace Movement
         SpeedTurn           = 7,
         SpeedPitch          = 8,
 
+        SpeedDefault        = SpeedWalk,
         SpeedMaxCount       = 9,
     };
 

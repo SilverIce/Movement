@@ -68,42 +68,13 @@ namespace Movement
 
     void MoveSplineInit::Launch()
     {
-        //correct first vertex
-        args.path[0] = state.GetPosition3();
-
-        // select velocity
-        if (args.velocity != 0.f)
+        if (args.path.empty())
         {
-            state.speed_obj.current = args.velocity;
-            state.speed_type = SpeedNotStandart;
-        }
-        else
-        {
-            state.ReCalculateCurrentSpeed();
-            args.velocity = state.GetCurrentSpeed();
+            // TODO: should i do the things that user should do?
+            MoveTo(state.GetPosition3());
         }
 
-        args.splineId = state.GetUpdater().NewMoveSplineId();
-
-        if (target)
-            state.BindOrientationTo(*target);
-        else
-            state.UnbindOrientation();
-
-        // no sense to move unit
-        // TODO: find more elegant way (maybe just set current_speed to some minimal value)
-        if (args.velocity > 0.f)
-        {
-            MoveSpline& spline = state.move_spline;
-            spline.Initialize(args);
-
-            state.EnableSpline();
-            state.SetForwardDirection();
-
-            state.ScheduleUpdate();
-            // shall MoveSpline initializer care about packet broadcasting?
-            PacketBuilder::SplinePathSend(state, MsgBroadcast(state));
-        }
+        state.LaunchMoveSpline(args);
     }
 
     MoveSplineInit& MoveSplineInit::SetParabolic(float amplitude, float time_shift, bool is_knockback)
