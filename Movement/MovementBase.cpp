@@ -3,6 +3,12 @@
 #include "UnitMovement.h"
 #include <float.h>
 
+/** Updates map position by calling not movement system's method.
+    Should be implemented out of movement system code. Might be usafe (depends on implementation).
+    TODO: find a better/safe way to synchronize movement system and MaNGOS position.
+*/
+extern void UpdateMapPosition(WorldObject& obj, const Movement::Location& v);
+
 namespace Movement{
 
     void UpdatableMovement::ScheduleUpdate()
@@ -42,7 +48,13 @@ namespace Movement{
     void MovementBase::SetPosition(const Location& v)
     {
         if (!_finiteV(v))
+        {
             log_write("MovementBase::SetPosition: NaN coord detected");
+            return;
+        }
+        // dirty code..
+        if (managed_position == &world_position)
+            SetGlobalPosition(v);
         else
             *managed_position = v;
     }
@@ -55,6 +67,7 @@ namespace Movement{
     void MovementBase::SetGlobalPosition(const Location& loc)
     {
         world_position = loc;
+        UpdateMapPosition(Owner, loc);
     }
 
     MovementBase::MovementBase(WorldObject& owner) : Owner(owner), listener(NULL)
