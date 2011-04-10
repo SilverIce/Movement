@@ -53,6 +53,7 @@ namespace Movement
             Flag_x80000000     = 0x80000000,
 
             Mask_Directions = Forward | Backward | Strafe_Left | Strafe_Right | Turn_Left | Turn_Right | Pitch_Up | Pitch_Down,
+            Mask_Moving     = Forward | Backward | Strafe_Left | Strafe_Right | Turn_Left | Turn_Right | Falling | Fallingfar | Ascending | Descending,
         };
 
         UnitMoveFlag() : raw(0) {}

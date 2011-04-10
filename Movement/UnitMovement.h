@@ -115,6 +115,9 @@ namespace Movement
         void ApplyFlyMode(bool apply) { ApplyMoveMode(MoveModeFly, apply); }
         void ApplyHoverMode(bool apply) { ApplyMoveMode(MoveModeHover, apply); }
 
+        bool IsMoving() const { return moveFlags & UnitMoveFlag::Mask_Moving;}
+        bool IsTurning() const { return moveFlags & (UnitMoveFlag::Turn_Left | UnitMoveFlag::Turn_Right);}
+
     private:
         uint32 move_mode;
         #pragma endregion
