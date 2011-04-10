@@ -138,15 +138,11 @@ namespace Movement
     {
     public:
 
-        explicit MovementBase(WorldObject& owner) : Owner(owner), listener(NULL), managed_position(&world_position)
-        {
-        }
+        explicit MovementBase(WorldObject& owner);
 
         virtual ~MovementBase() { mov_assert(m_targeter_references.empty());}
         virtual void CleanReferences();
 
-        Location& position() { return *managed_position;}
-        Vector3& position3() { return *managed_position;}
         const Location& GetPosition() const { return *managed_position;}
         const Vector3& GetPosition3() const { return *managed_position;}
         // should be protected?
@@ -154,7 +150,7 @@ namespace Movement
         void SetPosition(const Vector3& v);
 
         const Location& GetGlobalPosition() const { return world_position;}
-        void SetGlobalPosition(const Location& loc) { world_position = loc;}
+        void SetGlobalPosition(const Location& loc);
 
         void SetListener(IListener * l) { listener = l;}
         void ResetLisener() { listener = NULL; }
@@ -165,11 +161,12 @@ namespace Movement
 
     protected:
         void set_managed_position(Location& p) { managed_position = &p;}
+        void reset_managed_position() { managed_position = &world_position;}
 
-        Location world_position;
         IListener * listener;
     private:
 
+        Location world_position;
         Location * managed_position;
         LinkedList<TargetLink> m_targeter_references;
 

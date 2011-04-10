@@ -329,7 +329,7 @@ namespace Movement
         data << un.moveFlags2.raw;
 
         data << mov.GetUpdater().TickCount();
-        data << mov.world_position;
+        data << mov.GetGlobalPosition();
 
         if (mov.moveFlags.ontransport)
         {

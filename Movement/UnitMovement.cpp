@@ -150,7 +150,7 @@ void UnitMovement::ApplyState(const ClientMoveState& new_state)
     }
 
     moveFlags = new_flags;
-    world_position = new_state.world_position;
+    SetGlobalPosition(new_state.world_position);
     m_local_position = new_state.transport_position;
     m_unused = new_state;
 }
@@ -161,13 +161,12 @@ void UnitMovement::updateRotation(/*uint32 ms_time_diff*/)
         return;
 
     const Vector3& t_pos = GetTarget()->GetPosition3();
-
-    position().orientation = G3D::wrap(atan2(t_pos.y - position().y, t_pos.x - position().x), 0.f, (float)G3D::twoPi());
-
+    Location my_pos = GetPosition();
+    my_pos.orientation = atan2(t_pos.y - my_pos.y, t_pos.x - my_pos.x);
+    SetPosition(my_pos);
     // code below calculates facing angle base on turn speed, but seems this not needed:
-    // server-side rotation have instant speed, i.e. units are everytimes facing to their targets
-/*
-    float limit_angle = G3D::wrap(atan2(t_pos.y - position.y, t_pos.x - position.x), 0.f, (float)G3D::twoPi());
+    // server-side conrolled unit has instant rotation speed, i.e. unit are everytime face to the target
+    /*float limit_angle = G3D::wrap(atan2(t_pos.y - position.y, t_pos.x - position.x), 0.f, (float)G3D::twoPi());
     float total_angle_diff = fabs(position.w - limit_angle);
 
     if (total_angle_diff > 10.f/180.f * G3D::pi())
@@ -201,8 +200,8 @@ void UnitMovement::BindOrientationTo(MovementBase& target)
 
 void UnitMovement::UnbindOrientation()
 {
-    m_target_link.Value = TargetLink();
     m_target_link.delink();
+    m_target_link.Value = TargetLink();
     Owner.SetUInt64Value(UNIT_FIELD_TARGET, 0);
 }
 
@@ -307,7 +306,7 @@ void UnitMovement::LaunchMoveSpline(MoveSplineInitArgs& args)
 
     UnitMoveFlag moveFlag_new;
     SpeedType speed_type_new;
-    pre_launchMoveSpline_const(args, moveFlag_new, speed_type_new);
+    PrepareMoveSplineArgs(args, moveFlag_new, speed_type_new);
 
     if (!args.Validate())
     {

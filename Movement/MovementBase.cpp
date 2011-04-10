@@ -49,10 +49,17 @@ namespace Movement{
 
     void MovementBase::SetPosition(const Vector3& v)
     {
-        if (!_finiteV(v))
-            log_write("MovementBase::SetPosition: NaN coord detected");
-        else
-            (Vector3&)(*managed_position) = v;
+        SetPosition(Location(v,managed_position->orientation));
+    }
+
+    void MovementBase::SetGlobalPosition(const Location& loc)
+    {
+        world_position = loc;
+    }
+
+    MovementBase::MovementBase(WorldObject& owner) : Owner(owner), listener(NULL)
+    {
+        set_managed_position(world_position);
     }
 
     MO_Transport::MO_Transport(WorldObject& owner) : MovementBase(owner), m_transport(*this)
@@ -93,7 +100,7 @@ namespace Movement{
             m_transport_link.delink();
             m_transport_link.Value = TransportLink();
 
-            set_managed_position(world_position);
+            reset_managed_position();
             m_local_position = Location();
         }
     }
