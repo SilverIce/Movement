@@ -21,6 +21,7 @@ namespace Movement
 
     class UnitMovement;
     struct ClientMoveState;
+    template<class T> class Spline;
 
     class PacketBuilder
     {
@@ -30,6 +31,11 @@ namespace Movement
         static void Spline_SpeedUpdate(const UnitMovement& mov, SpeedType type, WorldPacket&);
         static void Spline_MoveModeUpdate(const UnitMovement& mov, MoveMode mode, WorldPacket&);
         static void Spline_PathSend(const UnitMovement& mov, WorldPacket&);
+
+        static void WriteCommonMonsterMovePart(const UnitMovement& mov, WorldPacket& data);
+        static void WriteLinearPath(const Spline<int32>& spline, ByteBuffer& data);
+        static void WriteCatmullRomPath(const Spline<int32>& spline, ByteBuffer& data);
+        static void WriteCatmullRomCyclicPath(const Spline<int32>& spline, ByteBuffer& data);
 
     public:
 

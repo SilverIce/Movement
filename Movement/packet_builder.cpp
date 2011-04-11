@@ -121,31 +121,27 @@ namespace Movement
         data << mov.Owner.GetPackGUID();
     }
 
-    void PacketBuilder::Spline_PathSend(const UnitMovement& mov, WorldPacket& data)
+    void PacketBuilder::WriteCommonMonsterMovePart(const UnitMovement& mov, WorldPacket& data)
     {
-        mov_assert(mov.SplineEnabled() && mov.move_spline.Initialized());
-
-        uint16 opcode = mov.IsBoarded() ? SMSG_MONSTER_MOVE_TRANSPORT : SMSG_MONSTER_MOVE;
-        data.SetOpcode(opcode);
-
         const MoveSpline& move_spline = mov.move_spline;
-        const MoveSpline::MySpline& spline = move_spline.spline;
-        const Vector3 * real_path = &spline.getPoint(1);
-        uint32 last_idx = spline.getPoints().size() - (spline.isCyclic() ? 4 : 3);
+        MoveSplineFlag splineflags = move_spline.splineflags;
 
-        data << mov.Owner.GetPackGUID();
-
-        if (opcode == SMSG_MONSTER_MOVE_TRANSPORT)
+        if (mov.IsBoarded())
         {
+            data.SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
+            data << mov.Owner.GetPackGUID();
             data << mov.GetTransport()->Owner.GetPackGUID();
             data << int8(mov.m_unused.transport_seat);
         }
+        else
+        {
+            data.SetOpcode(SMSG_MONSTER_MOVE);
+            data << mov.Owner.GetPackGUID();
+        }
 
         data << uint8(0);
-        data << real_path[0];
+        data << mov.GetPosition3();
         data << move_spline.GetId();
-
-        MoveSplineFlag splineflags = move_spline.splineflags;
 
         switch(splineflags & MoveSplineFlag::Mask_Final_Facing)
         {
@@ -166,6 +162,8 @@ namespace Movement
             break;
         }
 
+        // add fake Enter_Cycle flag - needed for client-side cyclic movement (client will erase first spline vertex after first cycle done)
+        splineflags.enter_cycle = move_spline.isCyclic();
         data << uint32(splineflags & ~MoveSplineFlag::Mask_No_Monster_Move);
 
         if (splineflags.animation)
@@ -181,29 +179,80 @@ namespace Movement
             data << move_spline.vertical_acceleration;
             data << move_spline.effect_start_time;
         }
+    }
 
-        data << uint32(last_idx);
+    void PacketBuilder::WriteLinearPath(const Spline<int32>& spline, ByteBuffer& data)
+    {
+        uint32 last_idx = spline.getPointCount() - 3;
+        const Vector3 * real_path = &spline.getPoint(1);
 
+        data << last_idx;
+        data << real_path[last_idx];   // destination
+        if (last_idx > 1)
+        {
+            Vector3 middle = (real_path[0] + real_path[last_idx]) / 2.f;
+            Vector3 offset;
+            // first and last points already appended
+            for(uint32 i = 1; i < last_idx; ++i)
+            {
+                offset = middle - real_path[i];
+                data.appendPackXYZ(offset.x, offset.y, offset.z);
+            }
+        }
+    }
+
+    void PacketBuilder::WriteCatmullRomPath(const Spline<int32>& spline, ByteBuffer& data)
+    {
+        uint32 count = spline.getPointCount() - 3;
+        data << count;
+        data.append<Vector3>(&spline.getPoint(2), count);
+    }
+
+    /*
+    Mover GUID: 0x079A1 Unit 1E4B
+    unk byte: 0
+    Current Position: 6557.049 1156.459 385.3375
+    sequence Id: 62345736
+    MovementType: NORMAL
+    Spline Flags: WALKMODE, FLYING, CYCLIC, ENTER_CYCLE
+    Movement Time: 36937
+    Points Count: 4
+    Point 0: 6713.656 1158.745 357.573
+    Point 1: 6627.521 1346.398 365.9617
+    Point 2: 6532.312 1322.547 391.823
+    Point 3: 6511.499 1175.65 393.3785
+
+    Path Lenght 615.58657483662
+    Speed  16.66585
+    */
+
+    void PacketBuilder::WriteCatmullRomCyclicPath(const Spline<int32>& spline, ByteBuffer& data)
+    {
+        uint32 count = spline.getPointCount() - 3;
+        data << uint32(count + 1);
+        data << spline.getPoint(1); // fake point, client will erase it from the spline after first cycle done
+        data.append<Vector3>(&spline.getPoint(1), count);
+    }
+
+    void PacketBuilder::Spline_PathSend(const UnitMovement& mov, WorldPacket& data)
+    {
+        mov_assert(mov.SplineEnabled() && mov.move_spline.Initialized());
+
+        WriteCommonMonsterMovePart(mov, data);
+
+        const MoveSpline& move_spline = mov.move_spline;
+        const Spline<int32>& spline = move_spline.spline;
+        MoveSplineFlag splineflags = move_spline.splineflags;
         if (splineflags & MoveSplineFlag::Mask_CatmullRom)
         {
-            data.append<Vector3>(&real_path[1], last_idx);
-        }
+            if (splineflags.cyclic)
+                WriteCatmullRomCyclicPath(spline, data);
+            else
+                WriteCatmullRomPath(spline, data);
+        } 
         else
         {
-            data << real_path[last_idx];   // destination
-
-            if (last_idx > 1)
-            {
-                Vector3 middle = (real_path[0] + real_path[last_idx]) / 2.f;
-                Vector3 offset;
-
-                // first and last points already appended
-                for(uint32 i = 1; i < last_idx; ++i)
-                {
-                    offset = middle - real_path[i];
-                    data.appendPackXYZ(offset.x, offset.y, offset.z);
-                }
-            }
+            WriteLinearPath(spline, data);
         }
     }
 

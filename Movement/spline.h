@@ -100,6 +100,7 @@ public:
     bool isCyclic() const { return cyclic;}
 
     const ControlArray& getPoints() const { return points;}
+    index_type getPointCount() const { return points.size();}
     const Vector3& getPoint(index_type i) const { return points[i];}
 
     /**	Initializes spline. Don't call other methods while spline not initialized. */
