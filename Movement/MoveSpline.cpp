@@ -136,12 +136,14 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
     splineflags = args.flags;
     facing = args.facing;
     m_Id = args.splineId;
+    point_Idx_offset = args.path_Idx_offset;
 
     time_passed = 0;
     vertical_acceleration = 0.f;
     effect_start_time = 0;
 
     init_spline(args);
+    point_Idx = spline.first();
 
     // init parabolic / animation
     // spline initialized, duration known and i able to compute parabolic acceleration
@@ -154,9 +156,6 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
             vertical_acceleration = args.parabolic_amplitude * 8.f / (f_duration * f_duration);
         }
     }
-
-    point_Idx_offset = args.path_Idx_offset;
-    point_Idx = spline.first();
 }
 
 MoveSpline::MoveSpline() : m_Id(0), time_passed(0),

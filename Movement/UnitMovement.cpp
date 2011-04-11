@@ -50,13 +50,13 @@ SpeedType UnitMovement::SelectSpeedType(UnitMoveFlag moveFlags)
     }
 }
 
-static const uint32 Mode2Flag_table[]=
+static const uint32 Mode2Flag_table[MoveModeMaxCount]=
 {
     {/*WALK_BEGAN,*/        UnitMoveFlag::Walk_Mode},
     {/*ROOT_BEGAN,*/        UnitMoveFlag::Root},
     {/*SWIM_BEGAN,*/        UnitMoveFlag::Swimming},
     {/*WATERWALK_MODE,*/    UnitMoveFlag::Waterwalking},
-    {/*SLOW_FALL_BEGAN,*/   UnitMoveFlag::Safe_Fall},
+    {/*SLOW_FALL_BEGAN,*/   UnitMoveFlag::Can_Safe_Fall},
     {/*HOVER_BEGAN,*/       UnitMoveFlag::Hover},
     {/*FLY_BEGAN, */        UnitMoveFlag::Flying},
     {                       UnitMoveFlag::Levitating},
