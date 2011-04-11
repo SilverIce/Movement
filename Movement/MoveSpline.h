@@ -95,7 +95,7 @@ namespace Movement {
         int32 timePassed() const { return time_passed;}
         const Vector3& FinalDestination() const { return finalDestination;}
         const Vector3& CurrentDestination() const { return spline.getPoint(point_Idx+1);}
-        int32 currentPathIdx() const { return point_Idx_offset + point_Idx - spline.first();}
+        int32 currentPathIdx() const;
 
         std::string ToString() const;
     };

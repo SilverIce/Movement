@@ -271,7 +271,8 @@ std::string MoveSpline::ToString() const
     str << std::endl;
     str << "time passed: " << time_passed << std::endl;
     str << "total  time: " << Duration() << std::endl;
-    str << "segment Idx: " << point_Idx << std::endl;
+    str << "spline point Id: " << point_Idx << std::endl;
+    str << "path  point  Id: " << currentPathIdx() << std::endl;
     str << spline.ToString();
     return str.str();
 }
@@ -281,5 +282,13 @@ void MoveSpline::Finalize()
     splineflags.done = true;
     point_Idx = spline.last() - 1;
     time_passed = Duration();
+}
+
+int32 MoveSpline::currentPathIdx() const
+{
+    int32 point = point_Idx_offset + point_Idx - spline.first();
+    if (isCyclic())
+        point = point % (spline.last()-spline.first());
+    return point;
 }
 }

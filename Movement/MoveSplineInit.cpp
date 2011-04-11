@@ -6,17 +6,17 @@
 
 namespace Movement
 {
-    MoveSplineInit& MoveSplineInit::MovebyPath(const PointsArray& controls, uint32 path_offset, bool contains_current)
+    MoveSplineInit& MoveSplineInit::MovebyPath(const PointsArray& controls, int32 path_offset, bool contains_current)
     {
         if (!contains_current)
         {
-            args.path_Idx_offset = path_offset - 1;
+            args.path_Idx_offset = path_offset - 1; // need decrease by 1 because one vertex will be added 
             args.path.resize(controls.size()+1);
             std::copy(controls.begin(),controls.end(),args.path.begin()+1);
         } 
         else
         {
-            args.path_Idx_offset = 0;
+            args.path_Idx_offset = path_offset;
             args.path.assign(controls.begin(),controls.end());
         }
         return *this;
