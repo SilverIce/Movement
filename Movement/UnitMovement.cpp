@@ -377,4 +377,8 @@ void MsgBroadcast::operator()(WorldPacket& data)
 {
     m_owner.SendMessageToSet(&data, true);
 }
+void MsgBroadcastExcept::operator()(WorldPacket& data)
+{
+    m_owner.SendMessageToSetExcept(&data, &m_except);
+}
 }

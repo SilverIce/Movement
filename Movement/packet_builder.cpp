@@ -65,7 +65,7 @@ namespace Movement
     typedef void (*MoveModePtr)(const UnitMovement&,MoveMode,WorldPacket&);
     typedef void (*PathPtr)(const UnitMovement&,WorldPacket&);
 
-    void PacketBuilder::SpeedUpdate(const UnitMovement& mov, SpeedType type, MsgDeliverMethtod& broadcast)
+    void PacketBuilder::SpeedUpdate(const UnitMovement& mov, SpeedType type, MsgDeliverer& broadcast)
     {
         static const SpeedPtr speed_ptrs[MovControlCount] =
         {
@@ -80,7 +80,7 @@ namespace Movement
             broadcast(data);
     }
 
-    void PacketBuilder::MoveModeUpdate(const UnitMovement& mov, MoveMode move_mode, MsgDeliverMethtod& broadcast)
+    void PacketBuilder::MoveModeUpdate(const UnitMovement& mov, MoveMode move_mode, MsgDeliverer& broadcast)
     {
         static const MoveModePtr move_mode_ptrs[MovControlCount] =
         {
@@ -95,7 +95,7 @@ namespace Movement
             broadcast(data);
     }
 
-    void PacketBuilder::SplinePathSend(const UnitMovement& mov, MsgDeliverMethtod& broadcast)
+    void PacketBuilder::SplinePathSend(const UnitMovement& mov, MsgDeliverer& broadcast)
     {
         WorldPacket data(MSG_NULL_ACTION, 64);
         Spline_PathSend(mov, data);
@@ -452,7 +452,7 @@ namespace Movement
         }
     }
 
-    void PacketBuilder::SplineSyncSend(const UnitMovement& mov, MsgDeliverMethtod& broadcast)
+    void PacketBuilder::SplineSyncSend(const UnitMovement& mov, MsgDeliverer& broadcast)
     {
         mov_assert(mov.SplineEnabled());
         const MoveSpline& move_spline = mov.move_spline;

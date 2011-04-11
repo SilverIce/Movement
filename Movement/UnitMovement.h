@@ -168,7 +168,7 @@ namespace Movement
         friend class Scketches;
     };
 
-    struct MsgBroadcast : public MsgDeliverMethtod
+    struct MsgBroadcast : public MsgDeliverer
     {
         explicit MsgBroadcast(WorldObject& owner) : m_owner(owner) {}
         explicit MsgBroadcast(MovementBase* m) : m_owner(m->Owner) {}
@@ -177,6 +177,14 @@ namespace Movement
         WorldObject& m_owner;
     };
 
+    struct MsgBroadcastExcept : public MsgDeliverer
+    {
+        explicit MsgBroadcastExcept(WorldObject& owner, WorldObject& except) : m_owner(owner), m_except(except) {}
+        explicit MsgBroadcastExcept(MovementBase* m, WorldObject& except) : m_owner(m->Owner), m_except(except) {}
+        virtual void operator()(WorldPacket& data);
+        WorldObject& m_owner;
+        WorldObject& m_except;
+    };
     class Scketches
     {
         UnitMovement& impl;

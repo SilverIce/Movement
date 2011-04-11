@@ -14,7 +14,7 @@ class WorldPacket;
 
 namespace Movement
 {
-    struct MsgDeliverMethtod
+    struct MsgDeliverer
     {
         virtual void operator()(WorldPacket&) = 0;
     };
@@ -39,10 +39,10 @@ namespace Movement
 
     public:
 
-        static void SpeedUpdate(const UnitMovement& mov, SpeedType type, MsgDeliverMethtod&);
-        static void MoveModeUpdate(const UnitMovement& mov, MoveMode mode, MsgDeliverMethtod&);
-        static void SplinePathSend(const UnitMovement& mov, MsgDeliverMethtod&);
-        static void SplineSyncSend(const UnitMovement& mov, MsgDeliverMethtod&);
+        static void SpeedUpdate(const UnitMovement& mov, SpeedType type, MsgDeliverer&);
+        static void MoveModeUpdate(const UnitMovement& mov, MoveMode mode, MsgDeliverer&);
+        static void SplinePathSend(const UnitMovement& mov, MsgDeliverer&);
+        static void SplineSyncSend(const UnitMovement& mov, MsgDeliverer&);
         static void FullUpdate(const UnitMovement& mov, ByteBuffer& );
 
         static void WriteClientStatus(const UnitMovement& mov, ByteBuffer& data);
