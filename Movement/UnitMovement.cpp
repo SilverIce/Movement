@@ -252,16 +252,16 @@ void UnitMovement::UpdateState()
                 case MoveSpline::Result_NextSegment:
                     //log_console("UpdateState: segment %d is on hold, position: %s", move_spline.currentSplineSegment(),GetPosition3().toString().c_str());
                     if (listener)
-                        listener->OnEvent(1, mov.move_spline.currentPathIdx());
+                        listener->OnEvent( OnEventArgs::OnPoint(move_spline.GetId(),move_spline.currentPathIdx()) );
                     break;
                 case MoveSpline::Result_Arrived:
                     //log_console("UpdateState: spline done, position: %s", GetPosition3().toString().c_str());
                     if (listener)
-                        listener->OnEvent(1, mov.move_spline.currentPathIdx()+1);
-                    if (listener)
-                        listener->OnEvent(0, -1);
-                    if (listener)
-                        listener->OnSplineDone();
+                    {
+                        // it's never possible to have 'current point == last point', so need send point+1 here
+                        listener->OnEvent( OnEventArgs::OnPoint(move_spline.GetId(),move_spline.currentPathIdx()+1) );
+                        listener->OnEvent( OnEventArgs::OnArrived(move_spline.GetId()) );
+                    }
                     mov.DisableSpline();
                     break;
                 }
