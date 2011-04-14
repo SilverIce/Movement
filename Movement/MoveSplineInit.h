@@ -83,6 +83,8 @@ namespace Movement
          */ 
         MoveSplineInit& SetVelocity(float velocity);
 
+        PointsArray& Path() { return args.path; }
+
         template<typename InitStrategy>
         inline MoveSplineInit& operator << (InitStrategy init)
         {
@@ -100,9 +102,6 @@ namespace Movement
         void* operator new(size_t);
     };
 
-    {
-
-    };
     inline void MoveJumpInit(UnitMovement& st, const Vector3& dest, float velocity, float parabolic_heigth = 0.5f)
     {
         MoveSplineInit(st).MoveTo(dest).SetParabolic(parabolic_heigth,0,false).SetVelocity(velocity).Launch();
