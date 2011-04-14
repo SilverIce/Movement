@@ -241,3 +241,7 @@ void World::InitWorld()
 {
     new WP_test();
 }
+
+void UpdateMapPosition(class WorldObject &,struct Movement::Location const &)
+{
+}

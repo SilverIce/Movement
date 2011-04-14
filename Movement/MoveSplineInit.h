@@ -83,6 +83,8 @@ namespace Movement
          */ 
         MoveSplineInit& SetVelocity(float velocity);
 
+        PointsArray& Path() { return args.path; }
+
         template<typename InitStrategy>
         inline MoveSplineInit& operator << (InitStrategy init)
         {
