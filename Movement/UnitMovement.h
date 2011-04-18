@@ -152,6 +152,11 @@ namespace Movement
             MoveSpline_UpdateDelay = 400,
         };
 
+        struct MoveSplineUpdater; 
+
+        void setLastUpdate(uint32 time) { last_update_time = time;}
+        uint32 getLastUpdate() const { return last_update_time;}
+
     public:
         uint8           dbg_flags;
         std::string ToString() const;

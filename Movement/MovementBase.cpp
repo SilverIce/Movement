@@ -117,4 +117,14 @@ namespace Movement{
             m_local_position = Location();
         }
     }
+
+    void Transportable::BoardOn(Transport& m, const Location& local_position, int8 seatId)
+    {
+        _board(m, local_position);
+    }
+
+    void Transportable::Unboard()
+    {
+        _unboard();
+    }
 }

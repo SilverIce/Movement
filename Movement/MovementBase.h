@@ -191,6 +191,7 @@ namespace Movement
     {
     public:
 
+        explicit Transportable(WorldObject& owner) : MovementBase(owner)  {}
         virtual ~Transportable() {}
 
         virtual void CleanReferences()
@@ -199,8 +200,8 @@ namespace Movement
             MovementBase::CleanReferences();
         }
 
-        virtual void BoardOn(Transport& m, const Location& local_position, int8 seatId) = 0;
-        virtual void Unboard() = 0;
+        virtual void BoardOn(Transport& m, const Location& local_position, int8 seatId);
+        virtual void Unboard();
 
         bool IsBoarded() const { return m_transport_link.linked();}
         const MovementBase* GetTransport() const { return m_transport_link.Value.transport;}
@@ -208,8 +209,6 @@ namespace Movement
         void _link_to(LinkedList<TransportLink>& list) { list.link(m_transport_link);}
 
     protected:
-
-        explicit Transportable(WorldObject& owner) : MovementBase(owner)  {}
 
         void _board(Transport& m, const Location& local_position);
         void _unboard();
@@ -271,18 +270,6 @@ namespace Movement
 
     private:
         LinkedList<TransportLink> m_passenger_references;
-    };
-
-
-    /// concrete classes:
-
-    class GameobjectMovement : public Transportable
-    {
-    public:
-        explicit GameobjectMovement(WorldObject& owner) : Transportable(owner) {}
-
-        virtual void BoardOn(Transport& m, const Location& local_position, int8 /*seatId*/) {}
-        virtual void Unboard() {}
     };
 
     class MO_Transport : public MovementBase, public IUpdatable

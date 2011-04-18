@@ -375,7 +375,7 @@ namespace Movement
         data << mov.moveFlags.raw;
         data << un.moveFlags2.raw;
 
-        data << mov.GetUpdater().TickCount();
+        data << mov.GetUpdater().TickTime();
         data << mov.GetGlobalPosition();
 
         if (mov.moveFlags.ontransport)

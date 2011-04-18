@@ -7,7 +7,7 @@ namespace Movement
 
     MoveUpdater::MoveUpdater()
     {
-        m_tick_count = getMSTime();
+        m_tick_time = getMSTime();
         common_timer = 0;
         m_movers_count = 0;
     }
@@ -48,8 +48,8 @@ namespace Movement
         };
 
         uint32 now = getMSTime();
-        uint32 diff = getMSTimeDiff(m_tick_count, now);
-        m_tick_count = now;
+        uint32 diff = getMSTimeDiff(m_tick_time, now);
+        m_tick_time = now;
 
         //common_timer += diff;
         //if (common_timer > Common_Update_Delay)

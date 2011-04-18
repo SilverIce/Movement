@@ -73,7 +73,7 @@ namespace Movement
 
         void Update();
 
-        uint32 TickCount() const { return m_tick_count;}
+        uint32 TickTime() const { return m_tick_time;}
         uint32 MoversCount() const { return m_movers_count;}
         uint32 NewMoveSplineId() { return movespline_counter.NewId();}
 
@@ -81,7 +81,7 @@ namespace Movement
 
         LinkedList<UpdatableMovement*> m_movers;
         counter<uint32> movespline_counter;
-        uint32 m_tick_count;
+        uint32 m_tick_time;
         uint32 common_timer;
         uint32 m_movers_count;
     };

@@ -97,7 +97,7 @@ UnitMovement::UnitMovement(WorldObject& owner) :
 
     control_mode = MovControlServer;
     move_mode = 0;
-    last_update_time = 0;
+    setLastUpdate(0);
 
     std::copy(BaseSpeed, &BaseSpeed[SpeedMaxCount], speed);
     speed_type = SpeedRun;
@@ -122,7 +122,7 @@ void UnitMovement::Initialize( MovControlType controller, const Location& pos, M
     SetPosition(pos);
 
     control_mode = controller;
-    last_update_time = GetUpdater().TickCount();
+    setLastUpdate(GetUpdater().TickTime());
 }
 
 void UnitMovement::ApplyState(const ClientMoveState& new_state)
@@ -231,54 +231,69 @@ void UnitMovement::SetSpeed(SpeedType type, float s)
     }
 }
 
-void UnitMovement::UpdateState()
+
+struct UnitMovement::MoveSplineUpdater
 {
-    uint32 now = GetUpdater().TickCount();
-    int32 difftime = getMSTimeDiff(last_update_time, now);
+    bool NeedSync;
+    UnitMovement& mov;
+    MoveSpline& move_spline;
 
-    if (SplineEnabled())
+    explicit MoveSplineUpdater(UnitMovement& movement, int32 difftime) :
+        mov(movement), NeedSync(false), move_spline(mov.move_spline)
     {
-        struct MoveSplineResultHandler
-        {
-            uint32 loops_count;
-            IListener * listener;
-            UnitMovement& mov;
-            MoveSplineResultHandler(UnitMovement& movement, IListener * list) : mov(movement), listener(list), loops_count(0) {}
+        move_spline.updateState(difftime, *this);
+        mov.SetPosition(move_spline.ComputePosition());
 
-            inline void operator()(MoveSpline::UpdateResult result)
+        if (NeedSync)
+            PacketBuilder::SplineSyncSend(mov, MsgBroadcast(mov));
+    }
+
+    inline void operator()(MoveSpline::UpdateResult result)
+    {
+        switch (result)
+        {
+        case MoveSpline::Result_NextSegment:
+            //log_console("UpdateState: segment %d is on hold, position: %s", move_spline.currentSplineSegment(),GetPosition3().toString().c_str());
+            if (mov.listener)
+                mov.listener->OnEvent( OnEventArgs::OnPoint(move_spline.GetId(),move_spline.currentPathIdx()) );
+            break;
+        case MoveSpline::Result_Arrived:
+            //log_console("UpdateState: spline done, position: %s", GetPosition3().toString().c_str());
+            mov.DisableSpline();
+            if (mov.listener)
             {
-                switch (result)
-                {
-                case MoveSpline::Result_NextSegment:
-                    //log_console("UpdateState: segment %d is on hold, position: %s", move_spline.currentSplineSegment(),GetPosition3().toString().c_str());
-                    if (listener)
-                        listener->OnEvent( OnEventArgs::OnPoint(move_spline.GetId(),move_spline.currentPathIdx()) );
-                    break;
-                case MoveSpline::Result_Arrived:
-                    //log_console("UpdateState: spline done, position: %s", GetPosition3().toString().c_str());
-                    if (listener)
-                    {
-                        // it's never possible to have 'current point == last point', so need send point+1 here
-                        listener->OnEvent( OnEventArgs::OnPoint(move_spline.GetId(),move_spline.currentPathIdx()+1) );
-                        listener->OnEvent( OnEventArgs::OnArrived(move_spline.GetId()) );
-                    }
-                    mov.DisableSpline();
-                    break;
-                }
+                // it's never possible to have 'current point == last point', need send point+1 here
+                mov.listener->OnEvent( OnEventArgs::OnPoint(move_spline.GetId(),move_spline.currentPathIdx()+1) );
+                mov.listener->OnEvent( OnEventArgs::OnArrived(move_spline.GetId()) );
             }
-        };
-
-        if (move_spline.timeElapsed() <= difftime || difftime >= MoveSpline_UpdateDelay)
-        {
-            move_spline.updateState(difftime, MoveSplineResultHandler(*this,listener));
-            SetPosition(move_spline.ComputePosition());
-            last_update_time = now;
+            break;
+        case MoveSpline::Result_NextCycle:
+            NeedSync = true;
+            break;
         }
     }
-    else
+};
+
+void UnitMovement::UpdateState()
+{
+    uint32 now = GetUpdater().TickTime();
+    int32 difftime = getMSTimeDiff(getLastUpdate(), now);
+
+    if (GetControl() == MovControlServer)
     {
-        updateRotation();
-        last_update_time = now;
+        if (SplineEnabled())
+        {
+            if (move_spline.timeElapsed() <= difftime || difftime >= MoveSpline_UpdateDelay)
+            {
+                MoveSplineUpdater(*this, difftime);
+                setLastUpdate(now);
+            }
+        }
+        else
+        {
+            updateRotation();
+            setLastUpdate(now);
+        }
     }
 }
 
@@ -314,6 +329,8 @@ void UnitMovement::LaunchMoveSpline(MoveSplineInitArgs& args)
         return;
     }
 
+    setLastUpdate(GetUpdater().TickTime());
+    speed_obj.current = args.velocity;
     speed_type = speed_type_new;
     moveFlags = moveFlag_new;
 
