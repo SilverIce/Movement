@@ -45,7 +45,7 @@ namespace Movement{
         return _finite(v.x) && _finite(v.y) && _finite(v.z);
     }
 
-    void MovementBase::SetPosition(const Location& v)
+    void Transportable::SetPosition(const Location& v)
     {
         if (!_finiteV(v))
         {
@@ -53,13 +53,13 @@ namespace Movement{
             return;
         }
         // dirty code..
-        if (managed_position == &world_position)
+        if (managed_position == &GetGlobalPosition())
             SetGlobalPosition(v);
         else
             *managed_position = v;
     }
 
-    void MovementBase::SetPosition(const Vector3& v)
+    void Transportable::SetPosition(const Vector3& v)
     {
         SetPosition(Location(v,managed_position->orientation));
     }
@@ -72,7 +72,6 @@ namespace Movement{
 
     MovementBase::MovementBase(WorldObject& owner) : Owner(owner), listener(NULL)
     {
-        set_managed_position(world_position);
     }
 
     MO_Transport::MO_Transport(WorldObject& owner) : MovementBase(owner), m_transport(*this)

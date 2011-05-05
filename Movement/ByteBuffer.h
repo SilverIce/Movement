@@ -20,6 +20,11 @@ public:
 
     ByteBuffer() : w_pos(0), r_pos(0) {}
 
+    size_t rpos() {return 0;}
+    size_t wpos() {return 0;}
+    void rpos(int) {}
+    void wpos(int) {}
+
     template<class T>
     ByteBuffer& operator << (const T&)
     {

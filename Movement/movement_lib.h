@@ -13,6 +13,7 @@ namespace Movement
 {
     class MovementBase;
     class GameobjectMovement;
+    class Transportable;
     class MO_Transport;
     class UnitMovement;
     struct Location;

@@ -160,7 +160,7 @@ void UnitMovement::updateRotation(/*uint32 ms_time_diff*/)
     if (!IsOrientationBinded())
         return;
 
-    const Vector3& t_pos = GetTarget()->GetPosition3();
+    const Vector3& t_pos = GetTarget()->GetGlobalPosition();
     Location my_pos = GetPosition();
     my_pos.orientation = atan2(t_pos.y - my_pos.y, t_pos.x - my_pos.x);
     SetPosition(my_pos);
@@ -378,10 +378,10 @@ std::string UnitMovement::ToString() const
 
     if (moveFlags.falling)
     {
-        st << "jump z  vel " << m_unused.jump_velocity;
-        st << "jump    sin " << m_unused.jump_sinAngle;
-        st << "jump    cos " << m_unused.jump_cosAngle;
-        st << "jump xy vel " << m_unused.jump_xy_velocy;
+        st << "jump z  vel " << m_unused.jump_velocity << std::endl;
+        st << "jump    sin " << m_unused.jump_sinAngle << std::endl;
+        st << "jump    cos " << m_unused.jump_cosAngle << std::endl;
+        st << "jump xy vel " << m_unused.jump_xy_velocy << std::endl;
     }
 
     if (SplineEnabled())

@@ -143,12 +143,6 @@ namespace Movement
         virtual ~MovementBase() { mov_assert(m_targeter_references.empty());}
         virtual void CleanReferences();
 
-        const Location& GetPosition() const { return *managed_position;}
-        const Vector3& GetPosition3() const { return *managed_position;}
-        // should be protected?
-        void SetPosition(const Location& v);
-        void SetPosition(const Vector3& v);
-
         const Location& GetGlobalPosition() const { return world_position;}
         void SetGlobalPosition(const Location& loc);
 
@@ -160,14 +154,10 @@ namespace Movement
         void _link_targeter(LinkedListElement<TargetLink>& t) { m_targeter_references.link(t);}
 
     protected:
-        void set_managed_position(Location& p) { managed_position = &p;}
-        void reset_managed_position() { managed_position = &world_position;}
 
         IListener * listener;
-    private:
-
         Location world_position;
-        Location * managed_position;
+    private:
         LinkedList<TargetLink> m_targeter_references;
 
         MovementBase(const MovementBase&);
@@ -191,7 +181,11 @@ namespace Movement
     {
     public:
 
-        explicit Transportable(WorldObject& owner) : MovementBase(owner)  {}
+        explicit Transportable(WorldObject& owner) : MovementBase(owner)
+        {
+            set_managed_position(world_position);
+        }
+
         virtual ~Transportable() {}
 
         virtual void CleanReferences()
@@ -205,17 +199,27 @@ namespace Movement
 
         bool IsBoarded() const { return m_transport_link.linked();}
         const MovementBase* GetTransport() const { return m_transport_link.Value.transport;}
+        const Location& GetPosition() const { return *managed_position;}
+        const Vector3& GetPosition3() const { return *managed_position;}
 
         void _link_to(LinkedList<TransportLink>& list) { list.link(m_transport_link);}
 
     protected:
 
+        // should be protected?
+        void SetPosition(const Location& v);
+        void SetPosition(const Vector3& v);
+
         void _board(Transport& m, const Location& local_position);
         void _unboard();
+
+        void set_managed_position(Location& p) { managed_position = &p;}
+        void reset_managed_position() { managed_position = &world_position;}
 
         Location m_local_position;
     private:
         LinkedListElement<TransportLink> m_transport_link;
+        Location * managed_position;
     };
 
     class Transport
