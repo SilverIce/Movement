@@ -44,7 +44,7 @@ namespace Movement
         {/*WATERWALK_MODE,*/    SMSG_MOVE_LAND_WALK,           SMSG_MOVE_WATER_WALK},
         {/*SLOW_FALL_BEGAN,*/   SMSG_MOVE_NORMAL_FALL,         SMSG_MOVE_FEATHER_FALL},
         {/*HOVER_BEGAN,*/       SMSG_MOVE_UNSET_HOVER,         SMSG_MOVE_SET_HOVER},
-        {/*FLY_BEGAN,*/         SMSG_MOVE_UNSET_CAN_FLY,       SMSG_MOVE_SET_CAN_FLY},
+        {/*FLY_BEGAN,*/         SMSG_MOVE_UNSET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY,        SMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY},
         {/*levitation mode*/    MSG_NULL_ACTION,               MSG_NULL_ACTION},    // no opcodes
     };
 
