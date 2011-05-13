@@ -6,8 +6,7 @@
 #include "MoveSpline.h"
 #include "ByteBufferExtensions.h"
 #include "Object.h"
-#include "moveupdater.h"
-#include "ClientMoveStatus.h"
+#include "MoveUpdater.h"
 
 namespace Movement
 {
@@ -34,6 +33,7 @@ namespace Movement
         {/*HOVER_BEGAN,*/       SMSG_SPLINE_MOVE_UNSET_HOVER,  SMSG_SPLINE_MOVE_SET_HOVER},
         {/*FLY_BEGAN,*/         SMSG_SPLINE_MOVE_UNSET_FLYING, SMSG_SPLINE_MOVE_SET_FLYING},
         {/*levitation mode*/    MSG_NULL_ACTION,               MSG_NULL_ACTION},    // no opcodes
+        {/*can fly mode*/       SMSG_SPLINE_MOVE_UNSET_FLYING, SMSG_SPLINE_MOVE_SET_FLYING},    // no opcodes ?
     };
 
     const uint16 C_Mode2Opc_table[MoveModeMaxCount][2]=
@@ -46,6 +46,7 @@ namespace Movement
         {/*HOVER_BEGAN,*/       SMSG_MOVE_UNSET_HOVER,         SMSG_MOVE_SET_HOVER},
         {/*FLY_BEGAN,*/         SMSG_MOVE_UNSET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY,        SMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY},
         {/*levitation mode*/    MSG_NULL_ACTION,               MSG_NULL_ACTION},    // no opcodes
+        {/*can fly mode*/       SMSG_MOVE_UNSET_CAN_FLY,       SMSG_MOVE_SET_CAN_FLY},
     };
 
     const uint16 SetSpeed2Opc_table[SpeedMaxCount][2]=
@@ -73,10 +74,10 @@ namespace Movement
             &PacketBuilder::Spline_SpeedUpdate,
         };
 
-        WorldPacket data;
+        WorldPacket data(MSG_NULL_ACTION, 64);
         speed_ptrs[mov.GetControl()](mov, type, data);
 
-        if (!data.empty())  // currently it can be empty
+        if (data.GetOpcode() != MSG_NULL_ACTION)
             broadcast(data);
     }
 
@@ -88,17 +89,8 @@ namespace Movement
             &PacketBuilder::Spline_MoveModeUpdate,
         };
 
-        WorldPacket data;
-        move_mode_ptrs[mov.GetControl()](mov, move_mode, data);
-
-        if (!data.empty())
-            broadcast(data);
-    }
-
-    void PacketBuilder::SplinePathSend(const UnitMovement& mov, MsgDeliverer& broadcast)
-    {
         WorldPacket data(MSG_NULL_ACTION, 64);
-        Spline_PathSend(mov, data);
+        move_mode_ptrs[mov.GetControl()](mov, move_mode, data);
 
         if (data.GetOpcode() != MSG_NULL_ACTION)
             broadcast(data);
@@ -108,7 +100,7 @@ namespace Movement
     {
         uint16 opcode = S_Speed2Opc_table[type];
 
-        data.Initialize(opcode, 8+4);
+        data.SetOpcode(opcode);
         data << mov.Owner.GetPackGUID();
         data << mov.GetSpeed(type);
     }
@@ -117,7 +109,7 @@ namespace Movement
     {
         uint16 opcode = S_Mode2Opc_table[mode][mov.HasMode(mode)];
 
-        data.Initialize(opcode, 8);
+        data.SetOpcode(opcode);
         data << mov.Owner.GetPackGUID();
     }
 
@@ -234,10 +226,11 @@ namespace Movement
         data.append<Vector3>(&spline.getPoint(1), count);
     }
 
-    void PacketBuilder::Spline_PathSend(const UnitMovement& mov, WorldPacket& data)
+    void PacketBuilder::SplinePathSend(const UnitMovement& mov, MsgDeliverer& broadcast)
     {
         mov_assert(mov.SplineEnabled() && mov.move_spline.Initialized());
 
+        WorldPacket data(64);
         WriteCommonMonsterMovePart(mov, data);
 
         const MoveSpline& move_spline = mov.move_spline;
@@ -251,14 +244,19 @@ namespace Movement
                 WriteCatmullRomPath(spline, data);
         } 
         else
-        {
             WriteLinearPath(spline, data);
-        }
+
+        broadcast(data);
     }
 
-    void PacketBuilder::Client_MoveModeUpdate(const UnitMovement& mov, MoveMode /*type*/, WorldPacket& data)
+    void PacketBuilder::Client_MoveModeUpdate(const UnitMovement& mov, MoveMode mode, WorldPacket& data)
     {
-        WriteClientStatus(mov, data);
+        if (uint16 opcode = C_Mode2Opc_table[mode][mov.HasMode(mode)])
+        {
+            data.SetOpcode(opcode);
+            data << mov.Owner.GetPackGUID();
+            data << uint32(0);  // sequence Id
+        }
     }
 
     void PacketBuilder::Client_SpeedUpdate(const UnitMovement& mov, SpeedType ty, WorldPacket& data)
@@ -267,7 +265,7 @@ namespace Movement
 
         uint16 opcode = SetSpeed2Opc_table[ty][forced];
 
-        data.Initialize(opcode, 30);
+        data.SetOpcode(opcode);
         data << mov.Owner.GetPackGUID();
 
         if(!forced)
@@ -458,6 +456,14 @@ namespace Movement
         WorldPacket data(SMSG_FLIGHT_SPLINE_SYNC, 13);
         data << (float)(move_spline.timePassed() / (float)move_spline.Duration());
         data << mov.Owner.GetPackGUID();
+        broadcast(data);
+    }
+
+    void PacketBuilder::Send_HeartBeat(const UnitMovement& mov, MsgDeliverer& broadcast)
+    {
+        WorldPacket data(MSG_MOVE_HEARTBEAT, 64);
+        data << mov.Owner.GetPackGUID();
+        WriteClientStatus(mov, data);
         broadcast(data);
     }
 }

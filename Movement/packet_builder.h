@@ -30,7 +30,6 @@ namespace Movement
 
         static void Spline_SpeedUpdate(const UnitMovement& mov, SpeedType type, WorldPacket&);
         static void Spline_MoveModeUpdate(const UnitMovement& mov, MoveMode mode, WorldPacket&);
-        static void Spline_PathSend(const UnitMovement& mov, WorldPacket&);
 
         static void WriteCommonMonsterMovePart(const UnitMovement& mov, WorldPacket& data);
         static void WriteLinearPath(const Spline<int32>& spline, ByteBuffer& data);
@@ -48,5 +47,6 @@ namespace Movement
         static void WriteClientStatus(const UnitMovement& mov, ByteBuffer& data);
         static void WriteClientStatus(const ClientMoveState& mov, ByteBuffer& data);
         static void ReadClientStatus(ClientMoveState& state, ByteBuffer& data);
+        static void Send_HeartBeat(const UnitMovement& mov, MsgDeliverer&);     // actually i shouldn't use it: only client is author of such packets
     };
 }

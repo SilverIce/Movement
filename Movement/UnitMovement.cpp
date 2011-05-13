@@ -60,7 +60,7 @@ static const uint32 Mode2Flag_table[MoveModeMaxCount]=
     {/*HOVER_BEGAN,*/       UnitMoveFlag::Hover},
     {/*FLY_BEGAN, */        UnitMoveFlag::Flying},
     {                       UnitMoveFlag::Levitating},
-    //{0},
+    {                       UnitMoveFlag::Can_Fly},
 };
 
 void UnitMovement::ApplyMoveMode( MoveMode mode, bool apply )
