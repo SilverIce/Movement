@@ -185,17 +185,20 @@ bool MoveSplineInitArgs::Validate() const
 }
 
 // MONSTER_MOVE packet format limitation for not CatmullRom movement:
-// each vertex offset packed into 4 bytes and it should fit inside 255x255x255 bounding box
+// each vertex offset packed into 11 bytes
 bool MoveSplineInitArgs::_checkPathBounds() const
 {
     if (!(flags & MoveSplineFlag::Mask_CatmullRom) && path.size() > 2)
     {
+        enum{
+            MAX_OFFSET = (1 << 11) / 2,
+        };
         Vector3 middle = (path.front()+path.back()) / 2;
         Vector3 offset;
         for (uint32 i = 1; i < path.size()-1; ++i)
         {
             offset = path[i] - middle;
-            if (fabs(offset.x) >= 255 || fabs(offset.y) >= 255 || fabs(offset.z) >= 255)
+            if (fabs(offset.x) >= MAX_OFFSET || fabs(offset.y) >= MAX_OFFSET || fabs(offset.z) >= MAX_OFFSET)
             {
                 log_console("MoveSplineInitArgs::_checkPathBounds check failed");
                 return false;

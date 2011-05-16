@@ -14,17 +14,14 @@ namespace Movement
 
     void MoveUpdater::Update()
     {
-        struct common_updater
-        {
-            uint32 t_diff;
-            common_updater(uint32 diff) : t_diff(diff) {}
-            void operator ()(UpdatableMovement* mov) { mov->UpdateState();}
+        struct common_updater{
+            inline void operator ()(UpdatableMovement* mov) { mov->UpdateState();}
         };
 
         uint32 now = getMSTime();
         uint32 diff = getMSTimeDiff(m_tick_time, now);
         m_tick_time = now;
-        m_movers.Iterate(common_updater(diff));
+        m_movers.Iterate(common_updater());
     }
 
     void MoveUpdater::CleanReferences()

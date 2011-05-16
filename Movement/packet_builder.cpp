@@ -230,7 +230,7 @@ namespace Movement
     {
         mov_assert(mov.SplineEnabled() && mov.move_spline.Initialized());
 
-        WorldPacket data(64);
+        WorldPacket data(MSG_NULL_ACTION, 64);
         WriteCommonMonsterMovePart(mov, data);
 
         const MoveSpline& move_spline = mov.move_spline;
