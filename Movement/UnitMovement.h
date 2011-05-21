@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <list>
 #include "MovementBase.h"
 #include "mov_constants.h"
 #include "packet_builder.h"
@@ -31,6 +32,25 @@ namespace Movement
         float turn;
         float pitch;
         float current;
+    };
+
+    // Manages by sequential set of client movement states
+    class MoveEventSet
+    {
+        // TODO: more memory efficient storage
+        std::list<ClientMoveState> m_state_queue;
+        uint32 m_last_move_event;
+
+        const ClientMoveState& LastQueuedState() const { return m_state_queue.front();}     // may crash in case no states queued
+
+    public:
+
+        MoveEventSet() : m_last_move_event(0) {}
+
+        bool QueueState(const ClientMoveState& ev);
+        bool UpdateState(uint32 ms_time);
+        void CleanStates();
+        const ClientMoveState& CurrentState() const { return m_state_queue.back();}     // may crash in case no states queued
     };
 
     // class for unit's movement
@@ -139,6 +159,7 @@ namespace Movement
         #pragma endregion
 
     private:
+        MoveEventSet m_moveEvents;
         MovControlType control_mode;
 
         UnitMoveFlag moveFlags;
@@ -168,8 +189,10 @@ namespace Movement
 
 
         void Initialize(MovControlType controller, const Location& position, MoveUpdater& updater);
-        void ApplyState(const ClientMoveState& );
 
+        void QueueState(const ClientMoveState& state) { m_moveEvents.QueueState(state);}
+    private:
+        void ApplyState(const ClientMoveState& state);
     };
 
     struct MsgBroadcast : public MsgDeliverer
