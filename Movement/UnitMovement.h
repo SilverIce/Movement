@@ -170,7 +170,6 @@ namespace Movement
         void Initialize(MovControlType controller, const Location& position, MoveUpdater& updater);
         void ApplyState(const ClientMoveState& );
 
-        friend class Scketches;
     };
 
     struct MsgBroadcast : public MsgDeliverer
@@ -218,23 +217,4 @@ namespace Movement
         int data;
     };
 
-    class Scketches
-    {
-        UnitMovement& impl;
-    public:
-
-        Scketches(UnitMovement* m) : impl(*m) {}
-        Scketches(UnitMovement& m) : impl(m) {}
-
-        void ForceStop();
-    };
-
-    class MovementAuraFace
-    {
-    public:
-
-        void WaterWalk(bool on);
-        void Hover(bool on);
-        void CanFly(bool on);
-    };
 }

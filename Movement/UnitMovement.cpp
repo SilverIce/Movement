@@ -205,11 +205,6 @@ void UnitMovement::UnbindOrientation()
     Owner.SetUInt64Value(UNIT_FIELD_TARGET, 0);
 }
 
-void Scketches::ForceStop()
-{
-    MoveSplineInit(impl).MoveTo(impl.GetPosition3()).Launch();
-}
-
 void UnitMovement::SetSpeed(SpeedType type, float s)
 {
     if (GetSpeed(type) != s)
