@@ -427,6 +427,30 @@ std::string UnitMovement::ToString() const
     return st.str();
 }
 
+uint32 UnitMovement::MoveSplineId() const
+{
+    if (SplineEnabled())
+        return move_spline.GetId();
+    else
+        return 0;
+}
+
+const Vector3& UnitMovement::MoveSplineDest() const
+{
+    if (SplineEnabled())
+        return move_spline.FinalDestination();
+    else
+        return GetPosition3();
+}
+
+int32 UnitMovement::MoveSplineTimeElapsed() const
+{
+    if (SplineEnabled())
+        return move_spline.timeElapsed();
+    else
+        return 0;
+}
+
 void MsgBroadcast::operator()(WorldPacket& data)
 {
     m_owner.SendMessageToSet(&data, true);

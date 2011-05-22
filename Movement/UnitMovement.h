@@ -112,8 +112,11 @@ namespace Movement
 
         void EnableSpline() { moveFlags.spline_enabled = true; }
         void DisableSpline() { moveFlags.spline_enabled = false; }
-        bool SplineEnabled() const { return moveFlags.spline_enabled; }
         void LaunchMoveSpline(MoveSplineInitArgs& args);
+        bool SplineEnabled() const { return moveFlags.spline_enabled; }
+        uint32 MoveSplineId() const;
+        const Vector3& MoveSplineDest() const;
+        int32 MoveSplineTimeElapsed() const;
 
     private:
         void PrepareMoveSplineArgs(MoveSplineInitArgs&,UnitMoveFlag&, SpeedType&) const;
