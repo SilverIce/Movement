@@ -183,10 +183,9 @@ namespace Movement
 
         explicit Transportable(WorldObject& owner) : MovementBase(owner)
         {
-            set_managed_position(world_position);
         }
 
-        virtual ~Transportable() {}
+        virtual ~Transportable() { mov_assert(!IsBoarded()); }
 
         virtual void CleanReferences()
         {
@@ -199,27 +198,17 @@ namespace Movement
 
         bool IsBoarded() const { return m_transport_link.linked();}
         const MovementBase* GetTransport() const { return m_transport_link.Value.transport;}
-        const Location& GetPosition() const { return *managed_position;}
-        const Vector3& GetPosition3() const { return *managed_position;}
 
-        void _link_to(LinkedList<TransportLink>& list) { list.link(m_transport_link);}
+        const Location& GetLocalPosition() const { return m_local_position;}
 
     protected:
-
-        // should be protected?
-        void SetPosition(const Location& v);
-        void SetPosition(const Vector3& v);
 
         void _board(Transport& m, const Location& local_position);
         void _unboard();
 
-        void set_managed_position(Location& p) { managed_position = &p;}
-        void reset_managed_position() { managed_position = &world_position;}
-
         Location m_local_position;
     private:
         LinkedListElement<TransportLink> m_transport_link;
-        Location * managed_position;
     };
 
     class Transport

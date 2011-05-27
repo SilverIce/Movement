@@ -130,6 +130,7 @@ UnitMovement::UnitMovement(WorldObject& owner) :
     Transportable(owner), move_spline(*new MoveSpline()), m_transport(*this)
 {
     updatable.SetUpdateStrategy(this);
+    reset_managed_position();
 
     control_mode = MovControlServer;
     move_mode = 0;
@@ -337,6 +338,8 @@ void UnitMovement::UpdateState()
 void UnitMovement::BoardOn(Transport& transport, const Location& local_position, int8 seatId)
 {
     _board(transport, local_position);
+    set_managed_position(m_local_position);
+
     m_unused.transport_seat = seatId;
     moveFlags.ontransport = true;
 }
@@ -344,8 +347,19 @@ void UnitMovement::BoardOn(Transport& transport, const Location& local_position,
 void UnitMovement::Unboard()
 {
     _unboard();
-    moveFlags.ontransport = false;
+    reset_managed_position();
+
     m_unused.transport_seat = 0;
+    moveFlags.ontransport = false;
+}
+
+void UnitMovement::SetPosition(const Location& v)
+{
+    // dirty code..
+    if (managed_position == &GetGlobalPosition())
+        SetGlobalPosition(v);
+    else
+        *managed_position = v;
 }
 
 void UnitMovement::LaunchMoveSpline(MoveSplineInitArgs& args)

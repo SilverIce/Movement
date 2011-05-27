@@ -94,13 +94,19 @@ namespace Movement
         #pragma region Transport
     public:
         virtual void BoardOn(Transport& transport, const Location& local_position, int8 seatId);
+        const Location& GetPosition() const { return *managed_position;}
+        const Vector3& GetPosition3() const { return *managed_position;}
         virtual void Unboard();
 
         void Board(Transportable& t, const Location& local_position, int8 seatId) { t.BoardOn(m_transport, local_position, seatId);}
     private:
-        // Does all units are transporters?
-        // if not, need add subclass or allocate it dynamically
+        void SetPosition(const Location& v);
+        void SetPosition(const Vector3& v) { SetPosition(Location(v,managed_position->orientation));}
+        void set_managed_position(Location& p) { managed_position = &p;}
+        void reset_managed_position() { managed_position = (Location*)&GetGlobalPosition();}
+
         Transport m_transport;
+        Location * managed_position;
         #pragma endregion
 
         friend class PacketBuilder;

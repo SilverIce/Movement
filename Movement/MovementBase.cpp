@@ -45,25 +45,6 @@ namespace Movement{
         return _finite(v.x) && _finite(v.y) && _finite(v.z);
     }
 
-    void Transportable::SetPosition(const Location& v)
-    {
-        if (!_finiteV(v))
-        {
-            log_write("MovementBase::SetPosition: NaN coord detected");
-            return;
-        }
-        // dirty code..
-        if (managed_position == &GetGlobalPosition())
-            SetGlobalPosition(v);
-        else
-            *managed_position = v;
-    }
-
-    void Transportable::SetPosition(const Vector3& v)
-    {
-        SetPosition(Location(v,managed_position->orientation));
-    }
-
     void MovementBase::SetGlobalPosition(const Location& loc)
     {
         world_position = loc;
@@ -102,7 +83,6 @@ namespace Movement{
         transport._link_transportable(m_transport_link);
 
         m_local_position = local_position;
-        set_managed_position(m_local_position);
     }
 
     void Transportable::_unboard()
@@ -112,7 +92,6 @@ namespace Movement{
             m_transport_link.delink();
             m_transport_link.Value = TransportLink();
 
-            reset_managed_position();
             m_local_position = Location();
         }
     }
