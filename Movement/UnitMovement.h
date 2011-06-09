@@ -44,8 +44,9 @@ namespace Movement
         explicit MoveStateSet() {}
 
         void QueueState(const ClientMoveState& state) { m_state_queue.push_front(state);}
-        bool Next(ClientMoveState& state, uint32 time_now);
+        bool Next(ClientMoveState& state, MSTime time_now);
         void Clear() { m_state_queue.clear();}
+        size_t Size() const { return m_state_queue.size();}
     };
 
     // class for unit's movement
@@ -56,74 +57,42 @@ namespace Movement
         explicit UnitMovement(WorldObjectType owner);
         virtual ~UnitMovement();
 
+        virtual void CleanReferences();
+        virtual void UpdateState();
 
-        #pragma region Updates
-    public:
-        bool HasUpdater() const { return updatable.HasUpdater();}
-        void SetUpdater(MoveUpdater& upd) { updatable.SetUpdater(upd);}
-        MoveUpdater& GetUpdater() const { return updatable.GetUpdater();}
-    private:
-        UpdatableMovement updatable;
-        #pragma endregion
+        std::string ToString() const;
 
-        #pragma region Orientation
+        void Initialize(const Location& position, MoveUpdater& updater);
+
         /* Needed for monster movement only*/
-    public:
         void BindOrientationTo(MovementBase& target);
         void UnbindOrientation();
         bool IsOrientationBinded() const { return m_target_link.linked(); }
-        //MovementBase* GetTarget() { return m_target_link.Value.target;}
         const MovementBase* GetTarget() const { return m_target_link.Value.target;}
-    private:
-        void updateRotation();
-        LinkedListElement<TargetLink> m_target_link;
-        #pragma endregion
 
-        #pragma region Transport
-    public:
         virtual void BoardOn(Transport& transport, const Location& local_position, int8 seatId);
         const Location& GetPosition() const { return *managed_position;}
         const Vector3& GetPosition3() const { return *managed_position;}
         virtual void Unboard();
 
         void Board(Transportable& t, const Location& local_position, int8 seatId) { t.BoardOn(m_transport, local_position, seatId);}
-    private:
-        void SetPosition(const Location& v);
-        void SetPosition(const Vector3& v) { SetPosition(Location(v,managed_position->orientation));}
-        void set_managed_position(Location& p) { managed_position = &p;}
-        void reset_managed_position() { managed_position = (Location*)&GetGlobalPosition();}
-
-        Transport m_transport;
-        Location * managed_position;
-        #pragma endregion
 
     public:
 
-        MovControlType GetControl() const
-        {
-            const MovControlType tt[] = {MovControlClient,MovControlServer};
-            return tt[(SplineEnabled() || !client)];
-        }
 
-        bool IsServerControlled() const { return GetControl() == MovControlServer;}
-        void EnableSpline() { moveFlags.spline_enabled = true; }
-        void DisableSpline() { moveFlags.spline_enabled = false; }
+
+    public:
+        // Used by server side controlled movement
         void LaunchMoveSpline(MoveSplineInitArgs& args);
-        bool SplineEnabled() const { return moveFlags.spline_enabled; }
         uint32 MoveSplineId() const;
         const Vector3& MoveSplineDest() const;
         int32 MoveSplineTimeElapsed() const;
 
-    private:
-        void PrepareMoveSplineArgs(MoveSplineInitArgs&,UnitMoveFlag&, SpeedType&) const;
-        void CleanDirectionFlags()  { moveFlags &= ~UnitMoveFlag::Mask_Directions; }
-
-        #pragma region Move modes
     public:
+        /** Seems it should be removed(or used for monster movement only), since it hard or impossible to get movement mode from incoming movement packets*/
         /// Move Modes
         bool HasMode(MoveMode m) const { return move_mode & (1 << m);}
         void ApplyMoveMode(MoveMode mode, bool apply);
-        /// end of Get-Set methods
 
         /// Apply/remove modes
         void ApplyRootMode(bool apply) { ApplyMoveMode(MoveModeRoot, apply); }
@@ -134,46 +103,51 @@ namespace Movement
         void ApplyFlyMode(bool apply) { ApplyMoveMode(MoveModeFly, apply); }
         void ApplyHoverMode(bool apply) { ApplyMoveMode(MoveModeHover, apply); }
 
+        bool IsWalking() const { return moveFlags.walk_mode;}
         bool IsMoving() const { return moveFlags & UnitMoveFlag::Mask_Moving;}
         bool IsTurning() const { return moveFlags & (UnitMoveFlag::Turn_Left | UnitMoveFlag::Turn_Right);}
+        bool IsFlying() const { return moveFlags & (UnitMoveFlag::Flying | UnitMoveFlag::Levitating);}
 
-    private:
-        uint32 move_mode;
-        #pragma endregion
-
-        #pragma region Speed
-    public:
         void SetSpeed(SpeedType type, float s);
         float GetSpeed(SpeedType type) const { return speed[type]; }
         float GetCurrentSpeed() const { return speed_obj.current; }
         SpeedType getCurrentSpeedType() const { return speed_type; }
-        void ReCalculateCurrentSpeed();
-        static SpeedType SelectSpeedType(UnitMoveFlag moveFlags);
+
+        uint32 dbg_flags;
+
+        #pragma region Impl
     private:
         friend class PacketBuilder;
         friend class Client;
            
+        UpdatableMovement updatable;
+        Location * managed_position;
+        MoveSpline& move_spline;
         Client* client;
         MSTime last_update_time;
         MoveStateSet m_moveEvents;
+        Transport m_transport;
+
+        UnitMoveFlag moveFlags;
+        uint32 move_mode;
+        /** Data that cames from client. It affects nothing here but might be used in future. */
+        _ClientMoveState m_unused; 
+
+        LinkedListElement<TargetLink> m_target_link;
         SpeedType speed_type;
         union {
             SpeedInfo   speed_obj;
             float       speed[SpeedMaxCount];
         };
-        #pragma endregion
 
     private:
-        MovControlType control_mode;
-
-        UnitMoveFlag moveFlags;
-        /** Data that cames from client. It affects nothing here but might be used in future. */
-        _ClientMoveState m_unused;
-
         enum{
         /** Affects spline movement precision & performance,
             makes spline movement to be updated once per N milliseconds. */
-            MoveSpline_UpdateDelay = 400,
+            MoveSpline_UpdateDelay = 200,
+
+        /** Upper limit for diff time values, milliseconds. Useful when movement wasn't get updated for a long time. */
+            Maximum_update_difftime = 10000,
         };
 
         struct MoveSplineUpdater; 
@@ -181,21 +155,33 @@ namespace Movement
         void setLastUpdate(MSTime time) { last_update_time = time;}
         MSTime getLastUpdate() const { return last_update_time;}
 
-    public:
-        uint8           dbg_flags;
-        std::string ToString() const;
+        bool HasUpdater() const { return updatable.HasUpdater();}
+        MoveUpdater& GetUpdater() const { return updatable.GetUpdater();}
 
-        MoveSpline&  move_spline;
-
-        virtual void UpdateState();
-        void Initialize(const Location& position, MoveUpdater& updater);
-
-
-
-
-    private:
         void ApplyState(const ClientMoveState& state);
+        void ReCalculateCurrentSpeed();
+        static SpeedType SelectSpeedType(UnitMoveFlag moveFlags);
+
+        MovControlType GetControl() const
+        {
+            const MovControlType tt[] = {MovControlClient,MovControlServer};
+            return tt[(SplineEnabled() || !client)];
+        }
+
+        bool IsServerControlled() const { return GetControl() == MovControlServer;}
+        bool SplineEnabled() const { return moveFlags.spline_enabled; }
+        void DisableSpline() { moveFlags &= ~(UnitMoveFlag::Mask_Directions | UnitMoveFlag::Spline_Enabled);}
+        void PrepareMoveSplineArgs(MoveSplineInitArgs&, UnitMoveFlag&, SpeedType&) const;
+
+        void updateRotation();
+        void SetPosition(const Location& v);
+        void SetPosition(const Vector3& v) { SetPosition(Location(v,managed_position->orientation));}
+        void reset_managed_position() { managed_position = (Location*)&GetGlobalPosition();}
+        #pragma endregion
     };
+
+
+
 
 
 

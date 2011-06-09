@@ -28,9 +28,9 @@ struct UniqueStateFilter
     }
 };
 
-bool MoveStateSet::Next(ClientMoveState& state, uint32 time_now)
+bool MoveStateSet::Next(ClientMoveState& state, MSTime time_now)
 {
-    if (m_state_queue.empty() || CurrentState().ms_time > time_now)
+    if (m_state_queue.empty() || CurrentState().ms_time.time > time_now.time)
         return false;
 
     state = CurrentState();
@@ -195,7 +195,8 @@ void UnitMovement::ApplyState(const ClientMoveState& new_state)
     m_unused = new_state;
 }
 
-void UnitMovement::updateRotation(/*uint32 ms_time_diff*/)
+
+void UnitMovement::updateRotation()
 {
     if (!IsOrientationBinded())
         return;
