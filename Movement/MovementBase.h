@@ -134,11 +134,13 @@ namespace Movement
         UnitMovement* targeter;
     };
 
+    typedef WorldObject& WorldObjectType;
+
     class MovementBase
     {
     public:
 
-        explicit MovementBase(WorldObject& owner);
+        explicit MovementBase(WorldObjectType owner);
 
         virtual ~MovementBase() { mov_assert(m_targeter_references.empty());}
         virtual void CleanReferences();
@@ -149,7 +151,7 @@ namespace Movement
         void SetListener(IListener * l) { listener = l;}
         void ResetLisener() { listener = NULL; }
 
-        WorldObject& Owner;
+        WorldObjectType Owner;
 
         void _link_targeter(LinkedListElement<TargetLink>& t) { m_targeter_references.link(t);}
 
@@ -181,7 +183,7 @@ namespace Movement
     {
     public:
 
-        explicit Transportable(WorldObject& owner) : MovementBase(owner)
+        explicit Transportable(WorldObjectType owner) : MovementBase(owner), m_transport(NULL), m_transport_container(NULL)
         {
         }
 

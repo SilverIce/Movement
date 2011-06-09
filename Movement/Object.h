@@ -27,9 +27,6 @@ public:
 
     const ByteBuffer& GetPackGUID() const { return m_packGuid; }
 
-    void SendMessageToSet(WorldPacket *, bool){}
-    void SendMessageToSetExcept(WorldPacket *, const WorldObject*){}
-
     float GetFloatValue(uint16) const { return 0.f;}
     void SetFloatValue(uint16,float)  {}
 

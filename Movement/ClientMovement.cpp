@@ -3,6 +3,8 @@
 #include "packet_builder.h"
 //#include "WorldSession.h"
 #include "UnitMovement.h"
+#include "ObjectGuid.h"
+#include "opcodes.h"
 
 #include <sstream>
 

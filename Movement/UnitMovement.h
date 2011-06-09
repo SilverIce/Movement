@@ -53,7 +53,7 @@ namespace Movement
     {
     public:
 
-        explicit UnitMovement(WorldObject& owner);
+        explicit UnitMovement(WorldObjectType owner);
         virtual ~UnitMovement();
 
 

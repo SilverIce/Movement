@@ -25,6 +25,10 @@ public:
     void rpos(int) {}
     void wpos(int) {}
 
+    template<class T> void put(size_t, T&) {}
+    template<class T> T read(int) { return T();}
+    template<class T> T read() { return T();}
+
     template<class T>
     ByteBuffer& operator << (const T&)
     {

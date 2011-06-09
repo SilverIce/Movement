@@ -37,8 +37,8 @@ namespace Movement
         MSTime ClientTime() const {return ServerToClientTime(ServerTime());}
         MSTime ClientToServerTime(const MSTime& client_time) const { return client_time - m_time_diff;}
 
-        inline void BroadcastMessage(MovementMessage& msg) const { MaNGOS_API::BroadcastMessage(m_controlled->Owner, msg);}
-        inline void BroadcastMessage(WorldPacket& data) const { MaNGOS_API::BroadcastMessage(m_controlled->Owner, data);}
+        inline void BroadcastMessage(MovementMessage& msg) const { MaNGOS_API::BroadcastMessage(&m_controlled->Owner, msg);}
+        inline void BroadcastMessage(WorldPacket& data) const { MaNGOS_API::BroadcastMessage(&m_controlled->Owner, data);}
         inline void SendPacket(const WorldPacket& data) const { MaNGOS_API::SendPacket(m_socket, data);}
 
         void CleanReferences();

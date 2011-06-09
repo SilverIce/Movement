@@ -43,14 +43,14 @@ namespace Movement{
     void MovementBase::SetGlobalPosition(const Location& loc)
     {
         world_position = loc;
-        MaNGOS_API::UpdateMapPosition(Owner, loc);
+        MaNGOS_API::UpdateMapPosition(&Owner, loc);
     }
 
-    MovementBase::MovementBase(WorldObject& owner) : Owner(owner), listener(NULL)
+    MovementBase::MovementBase(WorldObjectType owner) : Owner(owner), listener(NULL)
     {
     }
 
-    MO_Transport::MO_Transport(WorldObject& owner) : MovementBase(owner), m_transport(*this)
+    MO_Transport::MO_Transport(WorldObjectType owner) : MovementBase(owner)
     {
         updatable.SetUpdateStrategy(this);
     }

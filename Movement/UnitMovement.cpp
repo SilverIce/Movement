@@ -13,11 +13,11 @@ namespace Movement{
 
 struct MsgBroadcast : public MsgDeliverer
 {
-    explicit MsgBroadcast(WorldObject* owner) : m_owner(owner) {}
+    explicit MsgBroadcast(WorldObjectType owner) : m_owner(owner) {}
     explicit MsgBroadcast(MovementBase* m) : m_owner(m->Owner) {}
     explicit MsgBroadcast(MovementBase& m) : m_owner(m.Owner) {}
-    virtual void operator()(WorldPacket& data) { MaNGOS_API::BroadcastMessage(m_owner, data);}
-    WorldObject* m_owner;
+    virtual void operator()(WorldPacket& data) { MaNGOS_API::BroadcastMessage(&m_owner, data);}
+    WorldObjectType m_owner;
 };
 
 struct UniqueStateFilter
@@ -118,7 +118,7 @@ static const float BaseSpeed[SpeedMaxCount] =
     3.141594f,                                              // SpeedPitch
 };
 
-UnitMovement::UnitMovement(WorldObject& owner) :
+UnitMovement::UnitMovement(WorldObjectType owner) :
     Transportable(owner), move_spline(*new MoveSpline()), m_transport(*this),
     client(NULL)
 {

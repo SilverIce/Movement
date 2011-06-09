@@ -182,6 +182,10 @@
 			Name="packet_builder"
 			>
 			<File
+				RelativePath="..\Movement\ByteBufferExtensions.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Movement\packet_builder.cpp"
 				>
 			</File>
@@ -226,6 +230,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Movement\ObjectGuid.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Movement\UpdateFields.h"
 				>
 			</File>
@@ -263,7 +271,11 @@
 			</File>
 		</Filter>
 		<File
-			RelativePath="..\Movement\ByteBufferExtensions.h"
+			RelativePath="..\Movement\ClientMovement.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\Movement\ClientMovement.h"
 			>
 		</File>
 		<File
