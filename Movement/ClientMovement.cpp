@@ -1,22 +1,52 @@
 #include "ClientMovement.h"
+#include "WorldPacket.h"
 #include "packet_builder.h"
-#include "WorldSession.h"
+//#include "WorldSession.h"
 #include "UnitMovement.h"
-#include "ObjectGuid.h"
 
-void SendPacket(HANDLE socket, const WorldPacket& data)
-{
-    ((WorldSession*)socket)->SendPacket(&data);
-}
+#include <sstream>
 
 namespace Movement
 {
+    class MovementMessage
+    {
+    public:
+        typedef const UnitMovement* MessageSource;
+    private:
+        WorldPacket m_packet;
+        MessageSource m_source;
+        MSTime original_time;
+        uint32 time_position;
+    public:
+
+        explicit MovementMessage(MessageSource source, uint16 opcode, size_t size) :
+            m_packet(opcode, size), m_source(source), time_position(0)
+        {}
+
+        explicit MovementMessage(MessageSource source) : m_source(source), time_position(0) {}
+
+        template<class T> void operator << (const T& value)
+        {
+            m_packet << value;
+        }
+
+        void operator << (const ClientMoveState& state)
+        {
+            original_time = state.ms_time;
+            time_position = m_packet.wpos() + sizeof(uint32)/*UnitMoveFlag*/ + sizeof(uint16)/*UnitMoveFlag2*/;
+            PacketBuilder::WriteClientStatus(state, m_packet);
+        }
+
+        MessageSource Source() const { return m_source;}
+        const WorldPacket& Packet() const { return m_packet;}
+        MSTime OrigTime() const { return original_time;}
+        void CorrectTimeStamp(MSTime ms_time) { m_packet.put<uint32>(time_position,ms_time.time);}
+    };
+
     void operator >> (ByteBuffer& data, ClientMoveState& state)
     {
         PacketBuilder::ReadClientStatus(state, data);
     }
-
-    int32 Client::timestamp_incr = 5000;
 
     void Client::HandleOutcomingMessage(WorldPacket& recv_data)
     {
@@ -28,37 +58,33 @@ namespace Movement
         recv_data >> guid.ReadAsPacked();
         recv_data >> state;
 
-        state.ms_time = ClientToServerTime(state.ms_time).time;    // convert client ticks to server ticks
+        state.ms_time = ClientToServerTime(state.ms_time);    // convert client ticks to server ticks
         m_controlled->m_moveEvents.QueueState(state);
 
-        MovementMessage msg(recv_data.GetOpcode(), recv_data.size());
+        MovementMessage msg(m_controlled, recv_data.GetOpcode(), recv_data.size());
         msg << guid.WriteAsPacked();
         msg << state;
         BroadcastMessage(msg);
     }
 
     /* For test. if set to true, enables old & wrong time correction */
-    bool old_way = false;
+    static bool old_way = false;
+    static bool send_self = false;
+
+    static MSTime timestamp_incr = 0;
+    static MSTime timestamp_decr = 0;
 
     void Client::HandleIncomingMessage(MovementMessage& msg) const
     {
+        if (msg.Source() == m_controlled && !send_self)
+            return;
+
         // convert original time(server time) to local per-client time
         if (old_way == false)
-            msg.CorrectTimeStamp(ServerToClientTime(msg.original_time) + MSTime(timestamp_incr));
+            msg.CorrectTimeStamp(ServerToClientTime(msg.OrigTime()) + timestamp_incr - timestamp_decr);
         else
             msg.CorrectTimeStamp(ServerTime());
-        SendPacket(m_socket, msg.Packet());
-    }
-
-    void Client::HandleIncomingMoveState(ByteBuffer& data)
-    {
-        ClientMoveState state;
-        data >> state;
-
-        state.ms_time = ClientToServerTime(state.ms_time).time;    // convert client ticks to server ticks
-
-        if (m_controlled)
-            m_controlled->m_moveEvents.QueueState(state);
+        SendPacket(msg.Packet());
     }
 
     void Client::CleanReferences()
@@ -69,6 +95,7 @@ namespace Movement
         }
         m_controlled = NULL;
         m_local = NULL;
+        m_socket = NULL;
     }
 
     void Client::Dereference(const UnitMovement * m)
@@ -78,9 +105,6 @@ namespace Movement
             log_write("wtf?");
             return;
         }
-
-        if (m == m_local)
-            m_local = NULL;
 
         m_controlled = NULL;
     }
@@ -143,7 +167,7 @@ namespace Movement
 
             WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
             data << (uint32)sync_counter.getCurrent();
-            SendPacket(m_socket, data);
+            SendPacket(data);
         }
     }
 
@@ -153,6 +177,20 @@ namespace Movement
         int32 time;
         recv_data >> guid.ReadAsPacked();
         recv_data >> time;
-        time_skipped = time;
+        //time_skipped = time;
+
+        MovementMessage data(m_controlled, MSG_MOVE_TIME_SKIPPED, 16);
+        data << guid.WriteAsPacked();
+        data << time;
+        BroadcastMessage(data);
+    }
+
+    std::string Client::ToString() const
+    {
+        std::stringstream str;
+        str << "Server-side time: " << ServerTime().time << " Client-side time: " << ClientTime().time << std::endl;
+        str << "Ack  counter: " << ack_counter.getCurrent() << std::endl;
+        str << "Sync counter: " << sync_counter.getCurrent() << std::endl;
+        return str.str();
     }
 }
