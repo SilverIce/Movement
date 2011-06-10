@@ -18,9 +18,7 @@ namespace Movement
             inline void operator ()(UpdatableMovement* mov) { mov->UpdateState();}
         };
 
-        uint32 now = getMSTime();
-        uint32 diff = getMSTimeDiff(m_tick_time, now);
-        m_tick_time = now;
+        m_tick_time = getMSTime();
         m_movers.Iterate(common_updater());
     }
 
