@@ -270,9 +270,9 @@ void UnitMovement::SetSpeed(SpeedType type, float s)
 
 struct UnitMovement::MoveSplineUpdater
 {
-    bool NeedSync;
     UnitMovement& mov;
     MoveSpline& move_spline;
+    bool NeedSync;
 
     explicit MoveSplineUpdater(UnitMovement& movement, int32 difftime) :
         mov(movement), NeedSync(false), move_spline(mov.move_spline)
@@ -332,7 +332,7 @@ void UnitMovement::UpdateState()
         else
         {
             ClientMoveState state;
-            while (m_moveEvents.Next(state, now.time))
+            while (m_moveEvents.Next(state, now))
                 ApplyState(state);
 
             client->_OnUpdate();
@@ -430,7 +430,7 @@ std::string UnitMovement::ToString() const
 
     if (moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying) || m_unused.moveFlags2.allow_pitching)
     {
-        st << "pitch angle " << m_unused.pitch;
+        st << "pitch angle " << m_unused.pitch << std::endl;
     }
 
     if (moveFlags.falling)
@@ -440,6 +440,12 @@ std::string UnitMovement::ToString() const
         st << "jump    cos " << m_unused.jump_cosAngle << std::endl;
         st << "jump xy vel " << m_unused.jump_xy_velocy << std::endl;
     }
+
+    if (m_moveEvents.Size() != 0)
+        st << "states count: " << m_moveEvents.Size() << std::endl;
+
+    if (client)
+        st << client->ToString();
 
     if (SplineEnabled())
         st << move_spline.ToString();

@@ -14,27 +14,33 @@
 
 namespace Movement
 {
-    inline ByteBuffer& operator << (ByteBuffer& b, const Vector3& v)
+    inline void operator << (ByteBuffer& b, const Vector3& v)
     {
         b << v.x << v.y << v.z;
-        return b;
     }
 
-    inline ByteBuffer& operator << (ByteBuffer& b, const Location& v)
+    inline void operator << (ByteBuffer& b, const Location& v)
     {
         b << v.x << v.y << v.z << v.orientation;
-        return b;
     }
 
-    inline ByteBuffer& operator >> (ByteBuffer& b, Vector3& v)
+    inline void operator >> (ByteBuffer& b, Vector3& v)
     {
         b >> v.x >> v.y >> v.z;
-        return b;
     }
 
-    inline ByteBuffer& operator >> (ByteBuffer& b, Location& v)
+    inline void operator >> (ByteBuffer& b, Location& v)
     {
         b >> v.x >> v.y >> v.z >> v.orientation;
-        return b;
+    }
+
+    inline void operator >> (ByteBuffer& b, MSTime& v)
+    {
+        b >> v.time;
+    }
+
+    inline void operator << (ByteBuffer& b, const MSTime& v)
+    {
+        b << v.time;
     }
 }
