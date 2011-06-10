@@ -160,6 +160,7 @@ namespace Movement
         void ReCalculateCurrentSpeed();
         static SpeedType SelectSpeedType(UnitMoveFlag moveFlags);
     private:
+        MSTime last_update_time;
         SpeedType speed_type;
         union {
             SpeedInfo   speed_obj;
@@ -172,7 +173,6 @@ namespace Movement
         MovControlType control_mode;
 
         UnitMoveFlag moveFlags;
-        uint32 last_update_time;
         /** Data that cames from client. It affects nothing here but might be used in future. */
         _ClientMoveState m_unused;
 
@@ -184,8 +184,8 @@ namespace Movement
 
         struct MoveSplineUpdater; 
 
-        void setLastUpdate(uint32 time) { last_update_time = time;}
-        uint32 getLastUpdate() const { return last_update_time;}
+        void setLastUpdate(MSTime time) { last_update_time = time;}
+        MSTime getLastUpdate() const { return last_update_time;}
 
     public:
         uint8           dbg_flags;

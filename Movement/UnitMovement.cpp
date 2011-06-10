@@ -134,7 +134,6 @@ UnitMovement::UnitMovement(WorldObject& owner) :
 
     control_mode = MovControlServer;
     move_mode = 0;
-    setLastUpdate(0);
 
     std::copy(BaseSpeed, &BaseSpeed[SpeedMaxCount], speed);
     speed_type = SpeedRun;
@@ -308,11 +307,11 @@ struct UnitMovement::MoveSplineUpdater
 
 void UnitMovement::UpdateState()
 {
-    uint32 now = GetUpdater().TickTime();
-    int32 difftime = getMSTimeDiff(getLastUpdate(), now);
+    MSTime now = GetUpdater().TickTime();
 
     if (GetControl() == MovControlServer)
     {
+        int32 difftime = (now - getLastUpdate()).time;
         if (SplineEnabled())
         {
             if (move_spline.timeElapsed() <= difftime || difftime >= MoveSpline_UpdateDelay)

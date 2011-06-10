@@ -37,15 +37,6 @@ namespace Movement
     typedef __int64         int64;
     typedef unsigned __int64 uint64;
 
-    // TODO: move it out of here
-    inline uint32 getMSTimeDiff(uint32 old_time, uint32 new_time)
-    {
-        if (old_time > new_time)
-            return (0xFFFFFFFF - old_time) + new_time;
-        else
-            return new_time - old_time;
-    }
-
     inline uint32 SecToMS(float sec)
     {
         return static_cast<uint32>(sec * 1000.f);
@@ -95,3 +86,5 @@ namespace Movement
 
     typedef counter<uint32, 0xFFFFFFFF> UInt32Counter;
 }
+
+#include "MSTime.h"
