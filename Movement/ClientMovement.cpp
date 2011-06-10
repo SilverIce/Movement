@@ -19,13 +19,14 @@ namespace Movement
         MessageSource m_source;
         MSTime original_time;
         uint32 time_position;
+        enum {NO_TIMESTAMP = 0xFFFFFFFF};
     public:
 
         explicit MovementMessage(MessageSource source, uint16 opcode, size_t size) :
-            m_packet(opcode, size), m_source(source), time_position(0)
+            m_packet(opcode, size), m_source(source), time_position(NO_TIMESTAMP)
         {}
 
-        explicit MovementMessage(MessageSource source) : m_source(source), time_position(0) {}
+        explicit MovementMessage(MessageSource source) : m_source(source), time_position(NO_TIMESTAMP) {}
 
         template<class T> void operator << (const T& value)
         {
@@ -42,7 +43,11 @@ namespace Movement
         MessageSource Source() const { return m_source;}
         const WorldPacket& Packet() const { return m_packet;}
         MSTime OrigTime() const { return original_time;}
-        void CorrectTimeStamp(MSTime ms_time) { m_packet.put<uint32>(time_position,ms_time.time);}
+        void CorrectTimeStamp(MSTime ms_time)
+        {
+            if (time_position != NO_TIMESTAMP)
+                m_packet.put<uint32>(time_position,ms_time.time);
+        }
     };
 
     void operator >> (ByteBuffer& data, ClientMoveState& state)
