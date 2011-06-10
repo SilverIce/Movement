@@ -2,12 +2,7 @@
 #include "MoveUpdater.h"
 #include "UnitMovement.h"
 #include <float.h>
-
-/** Updates map position by calling not movement system's method.
-    Should be implemented out of movement system code. Might be usafe (depends on implementation).
-    TODO: find a better/safe way to synchronize movement system and MaNGOS position.
-*/
-extern void UpdateMapPosition(WorldObject& obj, const Movement::Location& v);
+#include "MaNGOS_API.h"
 
 namespace Movement{
 
@@ -48,7 +43,7 @@ namespace Movement{
     void MovementBase::SetGlobalPosition(const Location& loc)
     {
         world_position = loc;
-        UpdateMapPosition(Owner, loc);
+        MaNGOS_API::UpdateMapPosition(Owner, loc);
     }
 
     MovementBase::MovementBase(WorldObject& owner) : Owner(owner), listener(NULL)

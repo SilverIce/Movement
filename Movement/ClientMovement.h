@@ -9,6 +9,7 @@
 #include "ClientMoveStatus.h"
 #include "WorldPacket.h"
 #include "packet_builder.h"
+#include "MaNGOS_API.h"
 
 extern void BroadcastMessage(WorldObject const* obj, Movement::MovementMessage& msg, WorldObject const* skipped);
 

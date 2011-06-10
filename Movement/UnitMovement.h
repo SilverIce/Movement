@@ -11,9 +11,7 @@
 #include <list>
 #include "MovementBase.h"
 #include "mov_constants.h"
-#include "packet_builder.h"
 #include "MoveSplineInit.h"
-//#include "UnitMoveFlags.h"
 #include "ClientMoveStatus.h"
 
 namespace Movement
@@ -199,23 +197,7 @@ namespace Movement
         void ApplyState(const ClientMoveState& state);
     };
 
-    struct MsgBroadcast : public MsgDeliverer
-    {
-        explicit MsgBroadcast(WorldObject& owner) : m_owner(owner) {}
-        explicit MsgBroadcast(MovementBase* m) : m_owner(m->Owner) {}
-        explicit MsgBroadcast(MovementBase& m) : m_owner(m.Owner) {}
-        virtual void operator()(WorldPacket& data);
-        WorldObject& m_owner;
-    };
 
-    struct MsgBroadcastExcept : public MsgDeliverer
-    {
-        explicit MsgBroadcastExcept(WorldObject& owner, WorldObject& except) : m_owner(owner), m_except(except) {}
-        explicit MsgBroadcastExcept(MovementBase* m, WorldObject& except) : m_owner(m->Owner), m_except(except) {}
-        virtual void operator()(WorldPacket& data);
-        WorldObject& m_owner;
-        WorldObject& m_except;
-    };
 
     struct OnEventArgs
     {
@@ -230,7 +212,7 @@ namespace Movement
             return args;
         }
 
-        static OnEventArgs OnPoint(uint32 splineId, int pointId)
+        static OnEventArgs OnPoint(uint32 splineId, int32 pointId)
         {
             OnEventArgs args = {PointDone, splineId, pointId};
             return args;
@@ -241,7 +223,7 @@ namespace Movement
 
         EventType type;
         uint32 splineId;
-        int data;
+        int32 data;
     };
 
 }

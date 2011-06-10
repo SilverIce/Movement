@@ -1,15 +1,24 @@
 
 #include "UnitMovement.h"
-#include "WorldPacket.h"
 #include "Object.h"
 #include "moveupdater.h"
 #include "MoveSpline.h"
 #include "ClientMovement.h"
 #include "MoveSplineInit.h"
+#include "packet_builder.h"
 
 #include <sstream>
 
 namespace Movement{
+
+struct MsgBroadcast : public MsgDeliverer
+{
+    explicit MsgBroadcast(WorldObject* owner) : m_owner(owner) {}
+    explicit MsgBroadcast(MovementBase* m) : m_owner(m->Owner) {}
+    explicit MsgBroadcast(MovementBase& m) : m_owner(m.Owner) {}
+    virtual void operator()(WorldPacket& data) { MaNGOS_API::BroadcastMessage(m_owner, data);}
+    WorldObject* m_owner;
+};
 
 struct UniqueStateFilter
 {
@@ -461,12 +470,4 @@ int32 UnitMovement::MoveSplineTimeElapsed() const
         return 0;
 }
 
-void MsgBroadcast::operator()(WorldPacket& data)
-{
-    m_owner.SendMessageToSet(&data, true);
-}
-void MsgBroadcastExcept::operator()(WorldPacket& data)
-{
-    m_owner.SendMessageToSetExcept(&data, &m_except);
-}
 }
