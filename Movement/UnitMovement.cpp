@@ -18,32 +18,14 @@ struct UniqueStateFilter
     }
 };
 
-bool MoveEventSet::QueueState(const ClientMoveState& state)
+bool MoveStateSet::Next(ClientMoveState& state, uint32 time_now)
 {
-    if (m_state_queue.empty() || UniqueStateFilter::Do(LastQueuedState(), state))
-    {
-        m_state_queue.push_front(state);
-        return true;
-    }
-    else
+    if (m_state_queue.empty() || CurrentState().ms_time > time_now)
         return false;
-}
 
-bool MoveEventSet::UpdateState(uint32 time_now)
-{
-    uint32 size = m_state_queue.size();
-    while(time_now > m_last_move_event && m_state_queue.size() > 1)
-    {
-        m_state_queue.pop_back();
-        m_last_move_event = CurrentState().ms_time;
-    }
-    return m_state_queue.size() != size;
-}
-
-void MoveEventSet::CleanStates()
-{
-    m_state_queue.clear();
-    m_last_move_event = 0;
+    state = CurrentState();
+    m_state_queue.pop_back();
+    return true;
 }
 
 SpeedType UnitMovement::SelectSpeedType(UnitMoveFlag moveFlags)
@@ -328,8 +310,9 @@ void UnitMovement::UpdateState()
     }
     else
     {
-        if (m_moveEvents.UpdateState(now))
-            ApplyState(m_moveEvents.CurrentState());
+            ClientMoveState state;
+            while (m_moveEvents.Next(state, now.time))
+                ApplyState(state);
         setLastUpdate(now);
     }
 }

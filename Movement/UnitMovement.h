@@ -35,22 +35,18 @@ namespace Movement
     };
 
     // Manages by sequential set of client movement states
-    class MoveEventSet
+    class MoveStateSet
     {
         // TODO: more memory efficient storage
         std::list<ClientMoveState> m_state_queue;
-        uint32 m_last_move_event;
-
         const ClientMoveState& LastQueuedState() const { return m_state_queue.front();}     // may crash in case no states queued
-
-    public:
-
-        MoveEventSet() : m_last_move_event(0) {}
-
-        bool QueueState(const ClientMoveState& ev);
-        bool UpdateState(uint32 ms_time);
-        void CleanStates();
         const ClientMoveState& CurrentState() const { return m_state_queue.back();}     // may crash in case no states queued
+    public:
+        explicit MoveStateSet() {}
+
+        void QueueState(const ClientMoveState& state) { m_state_queue.push_front(state);}
+        bool Next(ClientMoveState& state, uint32 time_now);
+        void Clear() { m_state_queue.clear();}
     };
 
     // class for unit's movement
@@ -161,6 +157,7 @@ namespace Movement
         static SpeedType SelectSpeedType(UnitMoveFlag moveFlags);
     private:
         MSTime last_update_time;
+        MoveStateSet m_moveEvents;
         SpeedType speed_type;
         union {
             SpeedInfo   speed_obj;
@@ -169,7 +166,6 @@ namespace Movement
         #pragma endregion
 
     private:
-        MoveEventSet m_moveEvents;
         MovControlType control_mode;
 
         UnitMoveFlag moveFlags;
