@@ -19,6 +19,7 @@
 namespace Movement
 {
     class MoveSpline;
+    class Client;
 
     struct SpeedInfo
     {
@@ -57,13 +58,6 @@ namespace Movement
         explicit UnitMovement(WorldObject& owner);
         virtual ~UnitMovement();
 
-        virtual void CleanReferences()
-        {
-            UnbindOrientation();
-            m_transport.CleanReferences();
-            Transportable::CleanReferences();
-            updatable.CleanReferences();
-        }
 
         #pragma region Updates
     public:
@@ -105,13 +99,15 @@ namespace Movement
         Location * managed_position;
         #pragma endregion
 
-        friend class PacketBuilder;
-
     public:
 
-        void SetControl(MovControlType c) { control_mode = c; }
-        MovControlType GetControl() const { return control_mode; }
+        MovControlType GetControl() const
+        {
+            const MovControlType tt[] = {MovControlClient,MovControlServer};
+            return tt[(SplineEnabled() || !client)];
+        }
 
+        bool IsServerControlled() const { return GetControl() == MovControlServer;}
         void EnableSpline() { moveFlags.spline_enabled = true; }
         void DisableSpline() { moveFlags.spline_enabled = false; }
         void LaunchMoveSpline(MoveSplineInitArgs& args);
@@ -156,6 +152,10 @@ namespace Movement
         void ReCalculateCurrentSpeed();
         static SpeedType SelectSpeedType(UnitMoveFlag moveFlags);
     private:
+        friend class PacketBuilder;
+        friend class Client;
+           
+        Client* client;
         MSTime last_update_time;
         MoveStateSet m_moveEvents;
         SpeedType speed_type;
@@ -190,12 +190,11 @@ namespace Movement
         MoveSpline&  move_spline;
 
         virtual void UpdateState();
+        void Initialize(const Location& position, MoveUpdater& updater);
 
 
 
-        void Initialize(MovControlType controller, const Location& position, MoveUpdater& updater);
 
-        void QueueState(const ClientMoveState& state) { m_moveEvents.QueueState(state);}
     private:
         void ApplyState(const ClientMoveState& state);
     };

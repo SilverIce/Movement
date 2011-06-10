@@ -4,6 +4,7 @@
 #include "Object.h"
 #include "moveupdater.h"
 #include "MoveSpline.h"
+#include "ClientMovement.h"
 #include "MoveSplineInit.h"
 
 #include <sstream>
@@ -109,12 +110,12 @@ static const float BaseSpeed[SpeedMaxCount] =
 };
 
 UnitMovement::UnitMovement(WorldObject& owner) :
-    Transportable(owner), move_spline(*new MoveSpline()), m_transport(*this)
+    Transportable(owner), move_spline(*new MoveSpline()), m_transport(*this),
+    client(NULL)
 {
     updatable.SetUpdateStrategy(this);
     reset_managed_position();
 
-    control_mode = MovControlServer;
     move_mode = 0;
 
     std::copy(BaseSpeed, &BaseSpeed[SpeedMaxCount], speed);
@@ -128,18 +129,30 @@ UnitMovement::~UnitMovement()
     delete &move_spline;
 }
 
+void UnitMovement::CleanReferences()
+{
+    if (client)
+    {
+        client->Dereference(this);
+        client = NULL;
+    }
+
+    UnbindOrientation();
+    m_transport.CleanReferences();
+    Transportable::CleanReferences();
+    updatable.CleanReferences();
+}
+
 void UnitMovement::ReCalculateCurrentSpeed()
 {
     speed_type = UnitMovement::SelectSpeedType(moveFlags);
     speed_obj.current = speed[speed_type];
 }
 
-void UnitMovement::Initialize( MovControlType controller, const Location& pos, MoveUpdater& updater)
+void UnitMovement::Initialize(const Location& pos, MoveUpdater& updater)
 {
-    SetUpdater(updater);
     SetPosition(pos);
-
-    control_mode = controller;
+    updatable.SetUpdater(updater);
     setLastUpdate(GetUpdater().TickTime());
 }
 
@@ -291,28 +304,29 @@ void UnitMovement::UpdateState()
 {
     MSTime now = GetUpdater().TickTime();
 
-    if (GetControl() == MovControlServer)
+    if (SplineEnabled())
     {
         int32 difftime = (now - getLastUpdate()).time;
-        if (SplineEnabled())
+        if (move_spline.timeElapsed() <= difftime || difftime >= MoveSpline_UpdateDelay)
         {
-            if (move_spline.timeElapsed() <= difftime || difftime >= MoveSpline_UpdateDelay)
-            {
-                MoveSplineUpdater(*this, difftime);
-                setLastUpdate(now);
-            }
-        }
-        else
-        {
-            updateRotation();
+            MoveSplineUpdater(*this, std::min(difftime,(int32)Maximum_update_difftime));
             setLastUpdate(now);
         }
     }
     else
     {
+        if (!client)
+        {
+            updateRotation();
+        }
+        else
+        {
             ClientMoveState state;
             while (m_moveEvents.Next(state, now.time))
                 ApplyState(state);
+
+            client->_OnUpdate();
+        }
         setLastUpdate(now);
     }
 }
