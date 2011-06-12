@@ -101,7 +101,6 @@ namespace Movement
             m_controlled->client = NULL;
         }
         m_controlled = NULL;
-        m_local = NULL;
         m_socket = NULL;
     }
 
@@ -124,9 +123,6 @@ namespace Movement
             m_controlled->client = NULL;
         }
 
-        if (!m_local)
-            m_local = newly_controlled;
-
         m_controlled = newly_controlled;
         m_controlled->client = this;
     }
@@ -143,7 +139,6 @@ namespace Movement
 
     Client::Client(HANDLE socket) :
         m_socket(socket),
-        m_local(NULL),
         m_controlled(NULL)
     {
     }

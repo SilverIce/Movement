@@ -23,7 +23,6 @@ namespace Movement
         #pragma region Impl
     private:
         HANDLE m_socket;
-        UnitMovement * m_local;
         UnitMovement * m_controlled;
         MSTime m_time_diff;             // difference between client and server time: diff = client_ticks - server_ticks
         MSTime m_last_sync_time;
