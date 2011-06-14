@@ -55,6 +55,33 @@ namespace Movement
         PacketBuilder::ReadClientStatus(state, data);
     }
 
+    class TimeSyncRequest : public RespHandler
+    {
+        uint32 reqId;
+    public:
+
+        TimeSyncRequest(Client * client) : RespHandler(CMSG_TIME_SYNC_RESP), reqId(client->AddRespHandler(this))
+        {     
+            WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
+            data << reqId;
+            client->SendPacket(data);
+        }
+
+        virtual void OnReply(Client * client, WorldPacket& data) override
+        {
+            uint32 client_req_id;
+            MSTime client_ticks;
+            data >> client_req_id;
+            data >> client_ticks;
+            if (client_req_id != reqId)
+            {
+                log_write("SyncTimeRequest::OnReply: wrong counter value: %u and should be: %u", client_req_id, reqId);
+                return;
+            }
+            client->SetClientTime(client_ticks);
+        }
+    };
+
     void Client::HandleOutcomingMessage(WorldPacket& recv_data)
     {
         if (!m_controlled)
@@ -96,6 +123,12 @@ namespace Movement
 
     void Client::CleanReferences()
     {
+        while(!m_resp_handlers.empty())
+        {
+            delete m_resp_handlers.back();
+            m_resp_handlers.pop_back();
+        }
+
         if (m_controlled && m_controlled->client == this)
         {
             m_controlled->client = NULL;
@@ -125,6 +158,8 @@ namespace Movement
 
         m_controlled = newly_controlled;
         m_controlled->client = this;
+
+        new TimeSyncRequest(this);
     }
 
     void Client::LostControl()
@@ -143,21 +178,6 @@ namespace Movement
     {
     }
 
-    void Client::HandleTimeSyncResp(WorldPacket & recv_data)
-    {
-        uint32 counter = recv_data.read<uint32>();
-        MSTime client_ticks = recv_data.read<uint32>();
-        if (sync_counter.getCurrent() != counter)
-        {
-            log_write("Client::HandleTimeSyncResp: wrong counter value: %u and should be: %u", counter, sync_counter.getCurrent());
-            return;
-        }
-        MSTime time_now = ServerTime();
-        // client_ticks - client-side time when client receives TimeSyncResp message, need corrent it (take into account latency)
-        //MSTime latency = uint32( (time_now - TimeSyncResp_sended).time / 2.f );
-        m_time_diff = client_ticks - time_now;
-    }
-
     void Client::_OnUpdate()
     {
         MSTime now = ServerTime();
@@ -165,11 +185,7 @@ namespace Movement
         if ((now - m_last_sync_time).time > 10000)
         {
             m_last_sync_time = now;
-            sync_counter.Increase();
-
-            WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
-            data << (uint32)sync_counter.getCurrent();
-            SendPacket(data);
+            new TimeSyncRequest(this);
         }
     }
 
@@ -191,8 +207,33 @@ namespace Movement
     {
         std::stringstream str;
         str << "Server-side time: " << ServerTime().time << " Client-side time: " << ClientTime().time << std::endl;
-        str << "Ack  counter: " << ack_counter.getCurrent() << std::endl;
-        str << "Sync counter: " << sync_counter.getCurrent() << std::endl;
+        str << "Request  counter: " << request_counter.getCurrent() << std::endl;
+        str << "Sync     counter: " << sync_counter.getCurrent() << std::endl;
         return str.str();
+    }
+
+    void Client::HandleResponse(WorldPacket& data)
+    {
+        if (!m_controlled)
+            return;
+
+        struct _handler
+        {
+            Client * client;
+            WorldPacket& data;
+
+            _handler(Client * c, WorldPacket& _data) : client(c), data(_data) {}
+
+            inline bool operator()(RespHandler* hdl)
+            {
+                if (!hdl->CanHandle(data.GetOpcode()))
+                    return false;
+                hdl->OnReply(client, data);
+                delete hdl;
+                return true;
+            }
+        };
+
+        m_resp_handlers.erase(std::find_if(m_resp_handlers.begin(),m_resp_handlers.end(),_handler(this,data)));
     }
 }
