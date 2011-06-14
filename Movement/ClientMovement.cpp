@@ -92,8 +92,7 @@ namespace Movement
         recv_data >> guid.ReadAsPacked();
         recv_data >> state;
 
-        state.ms_time = ClientToServerTime(state.ms_time);    // convert client ticks to server ticks
-        m_controlled->m_moveEvents.QueueState(state);
+        QueueState(state);
 
         MovementMessage msg(m_controlled, recv_data.GetOpcode(), recv_data.size());
         msg << guid.WriteAsPacked();
@@ -208,7 +207,6 @@ namespace Movement
         std::stringstream str;
         str << "Server-side time: " << ServerTime().time << " Client-side time: " << ClientTime().time << std::endl;
         str << "Request  counter: " << request_counter.getCurrent() << std::endl;
-        str << "Sync     counter: " << sync_counter.getCurrent() << std::endl;
         return str.str();
     }
 

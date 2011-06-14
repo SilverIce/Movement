@@ -41,7 +41,6 @@ namespace Movement
         MSTime m_time_diff;             // difference between client and server time: diff = client_ticks - server_ticks
         MSTime m_last_sync_time;
         UInt32Counter request_counter;
-        UInt32Counter sync_counter;
         uint32 last_recvd_ack;
         //int32 time_skipped;
         typedef std::list<RespHandler*> RespHdlContainer;
@@ -54,7 +53,14 @@ namespace Movement
 
     public:
 
+        UnitMovement* controlled() const { return m_controlled;}
         void SetClientTime(const MSTime& client_time) { m_time_diff = client_time - ServerTime();}
+
+        void QueueState(ClientMoveState& client_state)
+        {
+            client_state.ms_time = ClientToServerTime(client_state.ms_time);
+            m_controlled->QueueState(client_state);
+        }
 
         uint32 AddRespHandler(RespHandler* req)
         {
@@ -67,6 +73,8 @@ namespace Movement
         inline void SendPacket(const WorldPacket& data) const { MaNGOS_API::SendPacket(m_socket, data);}
 
         void CleanReferences();
+        void Dereference(const UnitMovement * m);
+        void _OnUpdate();
         #pragma endregion
     public:
 
@@ -80,12 +88,10 @@ namespace Movement
 
         std::string ToString() const;
 
-        void Dereference(const UnitMovement * m);
         void LostControl();
         void SetControl(UnitMovement * mov);
 
         void HandleResponse(WorldPacket& data);
-        void _OnUpdate();
 
         /** Handles messages from another clients */
         void HandleIncomingMessage(MovementMessage& msg) const;
