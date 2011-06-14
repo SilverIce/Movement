@@ -168,14 +168,19 @@ void UnitMovement::Initialize(const Location& pos, MoveUpdater& updater)
 
 void UnitMovement::ApplyState(const ClientMoveState& new_state)
 {
+    if (SplineEnabled())
+    {
+        log_write("UnitMovement::ApplyState while in server control");
+        return;
+    }
+
     UnitMoveFlag new_flags = new_state.moveFlags;
 
-    /*// Don't allow change world position: only transport able to change world position while we are on transport
+    // Allow world position change only while we are not on transport
     if (!new_state.moveFlags.ontransport)
     {
-        world_position = new_state.world_position;
+        SetGlobalPosition(new_state.world_position);
     }
-    m_local_position = new_state.transport_position;*/
 
     if (moveFlags.ontransport != new_flags.ontransport)
     {
@@ -191,9 +196,9 @@ void UnitMovement::ApplyState(const ClientMoveState& new_state)
     }
 
     moveFlags = new_flags;
-    SetGlobalPosition(new_state.world_position);
     m_local_position = new_state.transport_position;
     m_unused = new_state;
+    ReCalculateCurrentSpeed();
 }
 
 
