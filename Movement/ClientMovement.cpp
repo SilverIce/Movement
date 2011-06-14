@@ -128,46 +128,34 @@ namespace Movement
             m_resp_handlers.pop_back();
         }
 
-        if (m_controlled && m_controlled->client == this)
-        {
-            m_controlled->client = NULL;
-        }
-        m_controlled = NULL;
+        LostControl();
         m_socket = NULL;
     }
 
     void Client::Dereference(const UnitMovement * m)
     {
-        if (m != m_controlled || m_controlled->client != this)
+        if (m != m_controlled || m_controlled->client() != this)
         {
             log_write("wtf?");
             return;
         }
 
-        m_controlled = NULL;
+        LostControl();
     }
 
     void Client::SetControl(UnitMovement * newly_controlled)
     {
-        if (m_controlled && m_controlled->client == this)
-        {
-            // Hm.. should i clean reference? what if it already in control of another client?
-            m_controlled->client = NULL;
-        }
-
+        LostControl();
         m_controlled = newly_controlled;
-        m_controlled->client = this;
+        m_controlled->client(this);
 
         new TimeSyncRequest(this);
     }
 
     void Client::LostControl()
     {
-        if (m_controlled && m_controlled->client == this)
-        {
-            m_controlled->client = NULL;
-        }
-
+        if (m_controlled && m_controlled->client() == this)
+            m_controlled->client(NULL);
         m_controlled = NULL;
     }
 

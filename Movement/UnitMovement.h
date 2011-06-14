@@ -19,20 +19,6 @@ namespace Movement
     class MoveSpline;
     class Client;
 
-    struct SpeedInfo
-    {
-        float walk;
-        float run;
-        float run_back;
-        float swim;
-        float swim_back;
-        float flight;
-        float flight_back;
-        float turn;
-        float pitch;
-        float current;
-    };
-
     // Manages by sequential set of client movement states
     class MoveStateSet
     {
@@ -109,37 +95,13 @@ namespace Movement
         bool IsFlying() const { return moveFlags & (UnitMoveFlag::Flying | UnitMoveFlag::Levitating);}
 
         void SetSpeed(SpeedType type, float s);
-        float GetSpeed(SpeedType type) const { return speed[type]; }
-        float GetCurrentSpeed() const { return speed_obj.current; }
+        float GetSpeed(SpeedType type) const { return m_float_values[0 + type]; }
+        float GetCurrentSpeed() const { return m_float_values[Parameter_SpeedCurrent]; }
         SpeedType getCurrentSpeedType() const { return speed_type; }
 
         uint32 dbg_flags;
 
         #pragma region Impl
-    private:
-        friend class PacketBuilder;
-        friend class Client;
-           
-        UpdatableMovement updatable;
-        Location * managed_position;
-        MoveSpline& move_spline;
-        Client* client;
-        MSTime last_update_time;
-        MoveStateSet m_moveEvents;
-        Transport m_transport;
-
-        UnitMoveFlag moveFlags;
-        uint32 move_mode;
-        /** Data that cames from client. It affects nothing here but might be used in future. */
-        _ClientMoveState m_unused; 
-
-        LinkedListElement<TargetLink> m_target_link;
-        SpeedType speed_type;
-        union {
-            SpeedInfo   speed_obj;
-            float       speed[SpeedMaxCount];
-        };
-
     private:
         enum{
         /** Affects spline movement precision & performance,
@@ -159,13 +121,36 @@ namespace Movement
         MoveUpdater& GetUpdater() const { return updatable.GetUpdater();}
 
         void ApplyState(const ClientMoveState& state);
+    public:
+        enum FloatParameter
+        {
+            Parameter_SpeedWalk,
+            Parameter_SpeedRun,
+            Parameter_SpeedSwimBack,
+            Parameter_SpeedSwim,
+            Parameter_SpeedRunBack,
+            Parameter_SpeedFlight,
+            Parameter_SpeedFlightBack,
+            Parameter_SpeedTurn,
+            Parameter_SpeedPitch,
+            Parameter_SpeedCurrent,
+            Parameter_End,
+        };
+
+        void SetParameter(FloatParameter p, float value) { m_float_values[p] = value;}
+        float GetParameter(FloatParameter p) const { return m_float_values[p];}
+
+        void QueueState(const ClientMoveState& state) { m_moveEvents.QueueState(state);}
+        Client* client() const { return m_client;}
+        void client(Client* c) { m_client = c;}
+    private:
         void ReCalculateCurrentSpeed();
         static SpeedType SelectSpeedType(UnitMoveFlag moveFlags);
 
         MovControlType GetControl() const
         {
             const MovControlType tt[] = {MovControlClient,MovControlServer};
-            return tt[(SplineEnabled() || !client)];
+            return tt[(SplineEnabled() || !m_client)];
         }
 
         bool IsServerControlled() const { return GetControl() == MovControlServer;}
@@ -177,6 +162,26 @@ namespace Movement
         void SetPosition(const Location& v);
         void SetPosition(const Vector3& v) { SetPosition(Location(v,managed_position->orientation));}
         void reset_managed_position() { managed_position = (Location*)&GetGlobalPosition();}
+
+    private:
+        friend class PacketBuilder;
+
+        UpdatableMovement updatable;
+        Location * managed_position;
+        MoveSpline& move_spline;
+        Client* m_client;
+        MSTime last_update_time;
+        MoveStateSet m_moveEvents;
+        Transport m_transport;
+
+        UnitMoveFlag moveFlags;
+        uint32 move_mode;
+        /** Data that cames from client. It affects nothing here but might be used in future. */
+        _ClientMoveState m_unused; 
+
+        LinkedListElement<TargetLink> m_target_link;
+        SpeedType speed_type;
+        float m_float_values[Parameter_End];
         #pragma endregion
     };
 

@@ -105,31 +105,32 @@ void UnitMovement::ApplyMoveMode( MoveMode mode, bool apply )
     }
 }
 
-static const float BaseSpeed[SpeedMaxCount] =
-{
-    2.5f,                                                   // SpeedWalk
-    7.0f,                                                   // SpeedRun
-    4.5f,                                                   // SpeedSwimBack
-    4.722222f,                                              // SpeedSwim
-    1.25f,                                                  // SpeedRunBack
-    7.0f,                                                   // SpeedFlight
-    4.5f,                                                   // SpeedFlightBack
-    3.141594f,                                              // SpeedTurn
-    3.141594f,                                              // SpeedPitch
-};
 
 UnitMovement::UnitMovement(WorldObjectType owner) :
     Transportable(owner), move_spline(*new MoveSpline()), m_transport(*this),
-    client(NULL)
+    m_client(NULL)
 {
     updatable.SetUpdateStrategy(this);
     reset_managed_position();
 
     move_mode = 0;
 
-    std::copy(BaseSpeed, &BaseSpeed[SpeedMaxCount], speed);
+    const float BaseValues[Parameter_End] =
+    {
+        2.5f,                                                   // SpeedWalk
+        7.0f,                                                   // SpeedRun
+        4.5f,                                                   // SpeedSwimBack
+        4.722222f,                                              // SpeedSwim
+        1.25f,                                                  // SpeedRunBack
+        7.0f,                                                   // SpeedFlight
+        4.5f,                                                   // SpeedFlightBack
+        3.141594f,                                              // SpeedTurn
+        3.141594f,                                              // SpeedPitch
+        7.0f,                                                   // SpeedCurrent
+    };
+
+    memcpy(m_float_values,BaseValues, sizeof m_float_values);
     speed_type = SpeedRun;
-    speed_obj.current = speed[SpeedRun];
     dbg_flags = 0;
 }
 
@@ -140,10 +141,10 @@ UnitMovement::~UnitMovement()
 
 void UnitMovement::CleanReferences()
 {
-    if (client)
+    if (m_client)
     {
-        client->Dereference(this);
-        client = NULL;
+        m_client->Dereference(this);
+        m_client = NULL;
     }
 
     UnbindOrientation();
@@ -155,7 +156,7 @@ void UnitMovement::CleanReferences()
 void UnitMovement::ReCalculateCurrentSpeed()
 {
     speed_type = UnitMovement::SelectSpeedType(moveFlags);
-    speed_obj.current = speed[speed_type];
+    m_float_values[Parameter_SpeedCurrent] = GetSpeed(speed_type);
 }
 
 void UnitMovement::Initialize(const Location& pos, MoveUpdater& updater)
@@ -250,20 +251,20 @@ void UnitMovement::SetSpeed(SpeedType type, float s)
 {
     if (GetSpeed(type) != s)
     {
-        speed[type] = s;
+        SetParameter((FloatParameter)type, s);
         PacketBuilder::SpeedUpdate(*this, type, MsgBroadcast(this));
 
-        if (SplineEnabled() && type == getCurrentSpeedType())
+        // FIXME: currently there is no way to change speed of already moving server-side controlled unit (spline movement)
+        // there is only one hacky way - launch new spline movement.. that's how blizz doing this
+        /*if (SplineEnabled() && type == getCurrentSpeedType())
         {
             if (G3D::fuzzyEq(s,0))
                 Scketches(*this).ForceStop();
             else
             {
-                // FIXME: currently there is no way to change speed of already moving server-side controlled unit (spline movement)
-                // there is only one hacky way - launch new spline movement.. that's how blizz doing this
                 Scketches(*this).ForceStop();
             }
-        }
+        }*/
     }
 }
 
@@ -325,7 +326,7 @@ void UnitMovement::UpdateState()
     }
     else
     {
-        if (!client)
+        if (!m_client)
         {
             updateRotation();
         }
@@ -335,7 +336,7 @@ void UnitMovement::UpdateState()
             while (m_moveEvents.Next(state, now))
                 ApplyState(state);
 
-            client->_OnUpdate();
+            m_client->_OnUpdate();
         }
         setLastUpdate(now);
     }
@@ -372,7 +373,7 @@ void UnitMovement::LaunchMoveSpline(MoveSplineInitArgs& args)
 {
     if (!HasUpdater())
     {
-        log_console("UnitMovement::LaunchMoveSpline: not initialized movement lauched");
+        log_console("UnitMovement::LaunchMoveSpline: attempt to lauch not initialized movement");
         return;
     }
 
@@ -444,8 +445,8 @@ std::string UnitMovement::ToString() const
     if (m_moveEvents.Size() != 0)
         st << "states count: " << m_moveEvents.Size() << std::endl;
 
-    if (client)
-        st << client->ToString();
+    if (m_client)
+        st << m_client->ToString();
 
     if (SplineEnabled())
         st << move_spline.ToString();
