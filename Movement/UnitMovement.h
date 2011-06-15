@@ -59,6 +59,7 @@ namespace Movement
         virtual void BoardOn(Transport& transport, const Location& local_position, int8 seatId);
         const Location& GetPosition() const { return *managed_position;}
         const Vector3& GetPosition3() const { return *managed_position;}
+        Vector3 direction() const;
         virtual void Unboard();
 
         void Board(Transportable& t, const Location& local_position, int8 seatId) { t.BoardOn(m_transport, local_position, seatId);}

@@ -159,6 +159,37 @@ void UnitMovement::ReCalculateCurrentSpeed()
     m_float_values[Parameter_SpeedCurrent] = GetSpeed(speed_type);
 }
 
+Vector3 UnitMovement::direction() const
+{
+    if (!moveFlags.hasDirection())
+        return Vector3();
+
+    float dest_angle = GetGlobalPosition().orientation;
+
+    if (moveFlags.forward)
+    {
+        if (moveFlags.strafe_right)
+            dest_angle -= G3D::halfPi()*0.5;
+        else if (moveFlags.strafe_left)
+            dest_angle += G3D::halfPi()*0.5;
+    }
+    else if (moveFlags.backward)
+    {
+        dest_angle += G3D::pi();
+
+        if (moveFlags.strafe_right)
+            dest_angle -= G3D::halfPi()*0.5;
+        else if (moveFlags.strafe_left)
+            dest_angle += G3D::halfPi()*0.5;
+    }
+    else if (moveFlags.strafe_right)
+        dest_angle -= G3D::halfPi();
+    else if (moveFlags.strafe_left)
+        dest_angle += G3D::halfPi();
+
+    return Vector3(cos(dest_angle), sin(dest_angle), 0);
+}
+
 void UnitMovement::Initialize(const Location& pos, MoveUpdater& updater)
 {
     SetPosition(pos);
