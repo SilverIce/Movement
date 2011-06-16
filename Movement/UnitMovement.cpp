@@ -5,7 +5,7 @@
 #include "MoveSpline.h"
 #include "ClientMovement.h"
 #include "MoveSplineInit.h"
-#include "packet_builder.h"
+#include "MovementMessage.h"
 
 #include <sstream>
 
@@ -232,7 +232,6 @@ namespace Movement
         ReCalculateCurrentSpeed();
     }
 
-
     void UnitMovement::updateRotation()
     {
         if (!IsOrientationBinded())
@@ -281,27 +280,6 @@ namespace Movement
         m_target_link.delink();
         m_target_link.Value = TargetLink();
         Owner.SetUInt64Value(UNIT_FIELD_TARGET, 0);
-    }
-
-    void UnitMovement::SetSpeed(SpeedType type, float s)
-    {
-        if (GetSpeed(type) != s)
-        {
-            SetParameter((FloatParameter)type, s);
-            PacketBuilder::SpeedUpdate(*this, type, MsgBroadcast(this));
-
-            // FIXME: currently there is no way to change speed of already moving server-side controlled unit (spline movement)
-            // there is only one hacky way - launch new spline movement.. that's how blizz doing this
-            /*if (SplineEnabled() && type == getCurrentSpeedType())
-            {
-                if (G3D::fuzzyEq(s,0))
-                    Scketches(*this).ForceStop();
-                else
-                {
-                    Scketches(*this).ForceStop();
-                }
-            }*/
-        }
     }
 
 
@@ -512,5 +490,118 @@ namespace Movement
             return move_spline.timeElapsed();
         else
             return 0;
+    }
+
+    struct ReqRespMsg
+    {
+        uint16 request;
+        uint16 response;
+        uint16 msg;
+    };
+
+    /* request-response-msg order*/
+    #define CLIENT_VALUE_CHANGE(mode)   {SMSG_FORCE_##mode##_CHANGE, CMSG_FORCE_##mode##_CHANGE_ACK, MSG_MOVE_SET_##mode},
+    static const ReqRespMsg ValueChange2Opc_table[UnitMovement::Parameter_End] =
+    {
+        CLIENT_VALUE_CHANGE(WALK_SPEED)
+        CLIENT_VALUE_CHANGE(RUN_SPEED)
+        CLIENT_VALUE_CHANGE(SWIM_BACK_SPEED)
+        CLIENT_VALUE_CHANGE(RUN_BACK_SPEED)
+        CLIENT_VALUE_CHANGE(FLIGHT_SPEED)
+        CLIENT_VALUE_CHANGE(FLIGHT_BACK_SPEED)
+        CLIENT_VALUE_CHANGE(TURN_RATE)
+        CLIENT_VALUE_CHANGE(PITCH_RATE)
+    };
+    #undef CLIENT_VALUE_CHANGE
+
+    class FloatValueChangeRequest : public RespHandler
+    {
+        uint32 m_reqId;
+        UnitMovement::FloatParameter m_value_type;
+        float m_value;
+
+    public:
+
+        FloatValueChangeRequest(Client * client, UnitMovement::FloatParameter _value_type, float _value) :
+              RespHandler(ValueChange2Opc_table[_value_type].response),
+              m_value_type(_value_type),
+              m_reqId(client->AddRespHandler(this)),
+              m_value(_value)
+        {     
+            WorldPacket data(ValueChange2Opc_table[m_value_type].request, 32);
+            data << client->controlled()->Owner.GetPackGUID();
+            data << m_reqId;
+            if (m_value_type == UnitMovement::Parameter_SpeedRun)
+                data << int8(0);                               // new 2.1.0
+            data << m_value;
+            client->SendPacket(data);
+        }
+
+        virtual void OnReply(Client * client, WorldPacket& data) override
+        {
+            ClientMoveState client_state;
+            ObjectGuid guid;
+            uint32 client_req_id;
+            float client_value;
+            data >> guid.ReadAsPacked();
+            data >> client_req_id;
+            data >> client_state;
+            data >> client_value;
+
+            if (client_req_id != m_reqId)
+            {
+                log_write("FloatValueChangeRequest::OnReply: wrong counter value: %u and should be: %u",client_req_id,m_reqId);
+                return;
+            }
+            if (client_value != m_value)
+            {
+                log_write("FloatValueChangeRequest::OnReply: wrong float value(type %u): %f and should be: %f",m_value_type,client_value,m_value);
+                return;
+            }
+
+            client->QueueState(client_state);
+            client->controlled()->SetParameter(m_value_type, m_value);
+            MovementMessage msg(client->controlled(), ValueChange2Opc_table[m_value_type].msg, 64);
+            msg << guid.WriteAsPacked();
+            msg << client_state;
+            msg << m_value;
+            client->BroadcastMessage(msg);
+        }
+    };
+
+    void UnitMovement::SetSpeed(SpeedType type, float value)
+    {
+        if (GetSpeed(type) == value)
+            return;
+
+        if (IsClientControlled())
+        {
+            new FloatValueChangeRequest(m_client,(UnitMovement::FloatParameter)type,value);
+        }
+        else
+        {
+            // FIXME: currently there is no way to change speed of already moving server-side controlled unit (spline movement)
+            // there is only one hacky way - launch new spline movement.. that's how blizz doing this
+
+            SetParameter((UnitMovement::FloatParameter)type, value);
+
+            #define SERVER_SPEED_CHANGE(mode)   {SMSG_SPLINE_SET_##mode},
+            const uint16 S_Speed2Opc_table[SpeedMaxCount]=
+            {
+                SERVER_SPEED_CHANGE(WALK_SPEED)
+                SERVER_SPEED_CHANGE(RUN_SPEED)
+                SERVER_SPEED_CHANGE(SWIM_BACK_SPEED)
+                SERVER_SPEED_CHANGE(RUN_BACK_SPEED)
+                SERVER_SPEED_CHANGE(FLIGHT_SPEED)
+                SERVER_SPEED_CHANGE(FLIGHT_BACK_SPEED)
+                SERVER_SPEED_CHANGE(TURN_RATE)
+                SERVER_SPEED_CHANGE(PITCH_RATE)
+            };
+            #undef SERVER_SPEED_CHANGE
+            WorldPacket data(S_Speed2Opc_table[type], 16);
+            data << Owner.GetPackGUID();
+            data << value;
+            MaNGOS_API::BroadcastMessage(&Owner, data);
+        }
     }
 }

@@ -154,6 +154,7 @@ namespace Movement
             return tt[(SplineEnabled() || !m_client)];
         }
 
+        bool IsClientControlled() const { return GetControl() == MovControlClient;}
         bool IsServerControlled() const { return GetControl() == MovControlServer;}
         bool SplineEnabled() const { return moveFlags.spline_enabled; }
         void DisableSpline() { moveFlags &= ~(UnitMoveFlag::Mask_Directions | UnitMoveFlag::Spline_Enabled);}
