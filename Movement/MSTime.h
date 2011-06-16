@@ -29,8 +29,6 @@ namespace Movement
 
         MSTime operator + (const MSTime& t) const { return MSTime(increase(time,t.time));}
         MSTime operator - (const MSTime& t) const { return MSTime(decrease(time,t.time));}
-        MSTime operator + (const uint32& t) const { return MSTime(increase(time,t));}
-        MSTime operator - (const uint32& t) const { return MSTime(decrease(time,t));}
 
         void operator = (const MSTime& t) { time = t.time;}
         void operator = (const uint32& t) { time = t;}
@@ -40,7 +38,4 @@ namespace Movement
         bool operator != (const MSTime& t) const { return time != t.time;}
         bool operator == (const MSTime& t) const { return time == t.time;}
     };
-
-    static MSTime operator + (const uint32& time, const MSTime& t) { return MSTime(time) + t;}
-    static MSTime operator - (const uint32& time, const MSTime& t) { return MSTime(time) - t;}
 }

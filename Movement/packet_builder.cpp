@@ -1,10 +1,7 @@
 
-#include "opcodes.h"
-
 #include "UnitMovement.h"
-#include "packet_builder.h"
 #include "MoveSpline.h"
-#include "ByteBufferExtensions.h"
+#include "MovementMessage.h"
 #include "Object.h"
 #include "MoveUpdater.h"
 

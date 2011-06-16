@@ -41,7 +41,6 @@ namespace Movement
         MSTime m_time_diff;             // difference between client and server time: diff = client_ticks - server_ticks
         MSTime m_last_sync_time;
         UInt32Counter request_counter;
-        uint32 last_recvd_ack;
         //int32 time_skipped;
         typedef std::list<RespHandler*> RespHdlContainer;
         RespHdlContainer m_resp_handlers;

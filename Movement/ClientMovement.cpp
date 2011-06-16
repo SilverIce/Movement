@@ -1,60 +1,12 @@
 #include "ClientMovement.h"
-#include "WorldPacket.h"
-#include "packet_builder.h"
-//#include "WorldSession.h"
 #include "UnitMovement.h"
 #include "ObjectGuid.h"
-#include "opcodes.h"
+#include "MovementMessage.h"
 
 #include <sstream>
 
 namespace Movement
 {
-    class MovementMessage
-    {
-    public:
-        typedef const UnitMovement* MessageSource;
-    private:
-        WorldPacket m_packet;
-        MessageSource m_source;
-        MSTime original_time;
-        uint32 time_position;
-        enum {NO_TIMESTAMP = 0xFFFFFFFF};
-    public:
-
-        explicit MovementMessage(MessageSource source, uint16 opcode, size_t size) :
-            m_packet(opcode, size), m_source(source), time_position(NO_TIMESTAMP)
-        {}
-
-        explicit MovementMessage(MessageSource source) : m_source(source), time_position(NO_TIMESTAMP) {}
-
-        template<class T> void operator << (const T& value)
-        {
-            m_packet << value;
-        }
-
-        void operator << (const ClientMoveState& state)
-        {
-            original_time = state.ms_time;
-            time_position = m_packet.wpos() + sizeof(uint32)/*UnitMoveFlag*/ + sizeof(uint16)/*UnitMoveFlag2*/;
-            PacketBuilder::WriteClientStatus(state, m_packet);
-        }
-
-        MessageSource Source() const { return m_source;}
-        const WorldPacket& Packet() const { return m_packet;}
-        MSTime OrigTime() const { return original_time;}
-        void CorrectTimeStamp(MSTime ms_time)
-        {
-            if (time_position != NO_TIMESTAMP)
-                m_packet.put<uint32>(time_position,ms_time.time);
-        }
-    };
-
-    void operator >> (ByteBuffer& data, ClientMoveState& state)
-    {
-        PacketBuilder::ReadClientStatus(state, data);
-    }
-
     class TimeSyncRequest : public RespHandler
     {
         uint32 reqId;
@@ -75,7 +27,7 @@ namespace Movement
             data >> client_ticks;
             if (client_req_id != reqId)
             {
-                log_write("SyncTimeRequest::OnReply: wrong counter value: %u and should be: %u", client_req_id, reqId);
+                log_write("TimeSyncRequest::OnReply: wrong counter value: %u and should be: %u", client_req_id, reqId);
                 return;
             }
             client->SetClientTime(client_ticks);
