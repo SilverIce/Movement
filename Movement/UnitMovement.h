@@ -90,6 +90,9 @@ namespace Movement
         void ApplyFlyMode(bool apply) { ApplyMoveMode(MoveModeFly, apply); }
         void ApplyHoverMode(bool apply) { ApplyMoveMode(MoveModeHover, apply); }
 
+        void SetCollisionHeight(float value);
+        float GetCollisionHeight() const { return GetParameter(Parameter_CollisionHeight);}
+
         bool IsWalking() const { return moveFlags.walk_mode;}
         bool IsMoving() const { return moveFlags & UnitMoveFlag::Mask_Moving;}
         bool IsTurning() const { return moveFlags & (UnitMoveFlag::Turn_Left | UnitMoveFlag::Turn_Right);}
@@ -134,6 +137,7 @@ namespace Movement
             Parameter_SpeedFlightBack,
             Parameter_SpeedTurn,
             Parameter_SpeedPitch,
+            Parameter_CollisionHeight,
             Parameter_SpeedCurrent,
             Parameter_End,
         };

@@ -126,6 +126,7 @@ namespace Movement
             4.5f,                                                   // SpeedFlightBack
             3.141594f,                                              // SpeedTurn
             3.141594f,                                              // SpeedPitch
+            2.0f,                                                   // CollisionHeight
             7.0f,                                                   // SpeedCurrent
         };
 
@@ -506,11 +507,13 @@ namespace Movement
         CLIENT_VALUE_CHANGE(WALK_SPEED)
         CLIENT_VALUE_CHANGE(RUN_SPEED)
         CLIENT_VALUE_CHANGE(SWIM_BACK_SPEED)
+        CLIENT_VALUE_CHANGE(SWIM_SPEED)
         CLIENT_VALUE_CHANGE(RUN_BACK_SPEED)
         CLIENT_VALUE_CHANGE(FLIGHT_SPEED)
         CLIENT_VALUE_CHANGE(FLIGHT_BACK_SPEED)
         CLIENT_VALUE_CHANGE(TURN_RATE)
         CLIENT_VALUE_CHANGE(PITCH_RATE)
+        {SMSG_MOVE_SET_COLLISION_HGT,CMSG_MOVE_SET_COLLISION_HGT_ACK,MSG_MOVE_SET_COLLISION_HGT},
     };
     #undef CLIENT_VALUE_CHANGE
 
@@ -568,6 +571,14 @@ namespace Movement
             client->BroadcastMessage(msg);
         }
     };
+
+    void UnitMovement::SetCollisionHeight(float value)
+    {
+        if (m_client)
+            new FloatValueChangeRequest(m_client,Parameter_CollisionHeight,value);
+        else
+            SetParameter(Parameter_CollisionHeight,value);
+    }
 
     void UnitMovement::SetSpeed(SpeedType type, float value)
     {
