@@ -58,7 +58,7 @@ namespace Movement
         void QueueState(ClientMoveState& client_state)
         {
             client_state.ms_time = ClientToServerTime(client_state.ms_time);
-            m_controlled->QueueState(client_state);
+            m_controlled->_QueueState(client_state);
         }
 
         uint32 AddRespHandler(RespHandler* req)

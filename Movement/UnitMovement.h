@@ -145,9 +145,14 @@ namespace Movement
         void SetParameter(FloatParameter p, float value) { m_float_values[p] = value;}
         float GetParameter(FloatParameter p) const { return m_float_values[p];}
 
-        void QueueState(const ClientMoveState& state) { m_moveEvents.QueueState(state);}
+        void _QueueState(const ClientMoveState& state) { m_moveEvents.QueueState(state);}       // only for call from Client code
+
+        void SetPosition(const Location& v);
+        void SetPosition(const Vector3& v) { SetPosition(Location(v,managed_position->orientation));}
+
         Client* client() const { return m_client;}
         void client(Client* c) { m_client = c;}
+        bool IsClientControlled() const { return GetControl() == MovControlClient;}
     private:
         void ReCalculateCurrentSpeed();
         static SpeedType SelectSpeedType(UnitMoveFlag moveFlags);
@@ -158,15 +163,12 @@ namespace Movement
             return tt[(SplineEnabled() || !m_client)];
         }
 
-        bool IsClientControlled() const { return GetControl() == MovControlClient;}
         bool IsServerControlled() const { return GetControl() == MovControlServer;}
         bool SplineEnabled() const { return moveFlags.spline_enabled; }
         void DisableSpline() { moveFlags &= ~(UnitMoveFlag::Mask_Directions | UnitMoveFlag::Spline_Enabled);}
         void PrepareMoveSplineArgs(MoveSplineInitArgs&, UnitMoveFlag&, SpeedType&) const;
 
         void updateRotation();
-        void SetPosition(const Location& v);
-        void SetPosition(const Vector3& v) { SetPosition(Location(v,managed_position->orientation));}
         void reset_managed_position() { managed_position = (Location*)&GetGlobalPosition();}
 
     private:
