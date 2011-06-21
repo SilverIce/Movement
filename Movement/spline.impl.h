@@ -12,12 +12,12 @@ template<typename length_type> void Spline<length_type>::evaluate_percent( float
     evaluate_percent(Index, u, c);
 }
 
-template<typename length_type> void Spline<length_type>::evaluate_hermite(float t, Vector3& hermite) const
+template<typename length_type> void Spline<length_type>::evaluate_derivative(float t, Vector3& hermite) const
 {
     index_type Index;
     float u;
     computeIndex(t, Index, u);
-    evaluate_hermite(Index, u, hermite);
+    evaluate_derivative(Index, u, hermite);
 }
 
 template<typename length_type> SplineBase::index_type Spline<length_type>::computeIndexInBounds(length_type length_) const

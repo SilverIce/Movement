@@ -55,10 +55,10 @@ protected:
     typedef void (SplineBase::*EvaluationMethtod)(index_type,float,Vector3&) const;
     static EvaluationMethtod evaluators[ModesCount];
 
-    void EvaluateHermiteLinear(index_type, float, Vector3&) const;
-    void EvaluateHermiteCatmullRom(index_type, float, Vector3&) const;
-    void EvaluateHermiteBezier3(index_type, float, Vector3&) const;
-    static EvaluationMethtod hermite_evaluators[ModesCount];
+    void EvaluateDerivativeLinear(index_type, float, Vector3&) const;
+    void EvaluateDerivativeCatmullRom(index_type, float, Vector3&) const;
+    void EvaluateDerivativeBezier3(index_type, float, Vector3&) const;
+    static EvaluationMethtod derivative_evaluators[ModesCount];
 
     float SegLengthLinear(index_type) const;
     float SegLengthCatmullRom(index_type) const;
@@ -85,11 +85,11 @@ public:
      */
     void evaluate_percent(index_type Idx, float u, Vector3& c) const {(this->*evaluators[m_mode])(Idx,u,c);}
 
-    /** Caclulates Vector3(dx/dt, dy/dt, dz/dt) for index Idx, and percent of segment length t
+    /** Caclulates derivation in index Idx, and percent of segment length t
         @param Idx - spline segment index, should be in range [first, last)
         @param t  - percent of spline segment length, assumes that t in range [0, 1]
      */
-    void evaluate_hermite(index_type Idx, float u, Vector3& hermite) const {(this->*hermite_evaluators[m_mode])(Idx,u,hermite);}
+    void evaluate_derivative(index_type Idx, float u, Vector3& hermite) const {(this->*derivative_evaluators[m_mode])(Idx,u,hermite);}
 
     /**  Bounds for spline indexes. All indexes should be in range [first, last). */
     index_type first() const { return index_lo;}
@@ -143,19 +143,19 @@ public:
         @param t - percent of spline's length, assumes that t in range [0, 1]. */
     void evaluate_percent(float t, Vector3 & c) const;
 
-    /** Calculates Vector3(dx/dt, dy/dt, dz/dt) for given t
+    /** Calculates derivation for given t
         @param t - percent of spline's length, assumes that t in range [0, 1]. */
-    void evaluate_hermite(float t, Vector3& hermite) const;
+    void evaluate_derivative(float t, Vector3& hermite) const;
 
     /** Calculates the position for given segment Idx, and percent of segment length t
         @param t = partial_segment_length / whole_segment_length
         @param Idx - spline segment index, should be in range [first, last). */   
     void evaluate_percent(index_type Idx, float u, Vector3& c) const { SplineBase::evaluate_percent(Idx,u,c);}
 
-    /** Caclulates Vector3(dx/dt, dy/dt, dz/dt) for index Idx, and percent of segment length t
+    /** Caclulates derivation for index Idx, and percent of segment length t
         @param Idx - spline segment index, should be in range [first, last)
         @param t  - percent of spline segment length, assumes that t in range [0, 1]. */
-    void evaluate_hermite(index_type Idx, float u, Vector3& c) const { SplineBase::evaluate_hermite(Idx,u,c);}
+    void evaluate_derivative(index_type Idx, float u, Vector3& c) const { SplineBase::evaluate_derivative(Idx,u,c);}
 
     // Assumes that t in range [0, 1]
     index_type computeIndexInBounds(float t) const;

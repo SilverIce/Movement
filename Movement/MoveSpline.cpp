@@ -34,7 +34,7 @@ Location MoveSpline::ComputePosition() const
     else
     {
         Vector3 hermite;
-        spline.evaluate_hermite(point_Idx,u,hermite);
+        spline.evaluate_derivative(point_Idx,u,hermite);
         c.orientation = atan2(hermite.y, hermite.x);
 
         if (splineflags.backward)

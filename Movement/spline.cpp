@@ -13,11 +13,11 @@ SplineBase::EvaluationMethtod SplineBase::evaluators[SplineBase::ModesCount] =
     (EvaluationMethtod)&SplineBase::UninitializedSpline,
 };
 
-SplineBase::EvaluationMethtod SplineBase::hermite_evaluators[SplineBase::ModesCount] =
+SplineBase::EvaluationMethtod SplineBase::derivative_evaluators[SplineBase::ModesCount] =
 {
-    &SplineBase::EvaluateHermiteLinear,
-    &SplineBase::EvaluateHermiteCatmullRom,
-    &SplineBase::EvaluateHermiteBezier3,
+    &SplineBase::EvaluateDerivativeLinear,
+    &SplineBase::EvaluateDerivativeCatmullRom,
+    &SplineBase::EvaluateDerivativeBezier3,
     (EvaluationMethtod)&SplineBase::UninitializedSpline,
 };
 
@@ -93,7 +93,7 @@ inline void C_Evaluate(const Vector3 *vertice, float t, const Matrix4& matr, Vec
            + vertice[2] * weights[2] + vertice[3] * weights[3];
 }
 
-inline void C_Evaluate_Hermite(const Vector3 *vertice, float t, const Matrix4& matr, Vector3 &result)
+inline void C_Evaluate_Derivative(const Vector3 *vertice, float t, const Matrix4& matr, Vector3 &result)
 {
     Vector4 tvec(3.f*t*t, 2.f*t, 1.f, 0.f);
     Vector4 weights(tvec * matr);
@@ -121,23 +121,23 @@ void SplineBase::EvaluateBezier3(index_type index, float t, Vector3& result) con
     C_Evaluate(&points[index], t, s_Bezier3Coeffs, result);
 }
 
-void SplineBase::EvaluateHermiteLinear(index_type index, float, Vector3& result) const
+void SplineBase::EvaluateDerivativeLinear(index_type index, float, Vector3& result) const
 {
     mov_assert(index >= index_lo && index < index_hi);
     result = points[index+1] - points[index];
 }
 
-void SplineBase::EvaluateHermiteCatmullRom(index_type index, float t, Vector3& result) const
+void SplineBase::EvaluateDerivativeCatmullRom(index_type index, float t, Vector3& result) const
 {
     mov_assert(index >= index_lo && index < index_hi);
-    C_Evaluate_Hermite(&points[index - 1], t, s_catmullRomCoeffs, result);
+    C_Evaluate_Derivative(&points[index - 1], t, s_catmullRomCoeffs, result);
 }
 
-void SplineBase::EvaluateHermiteBezier3(index_type index, float t, Vector3& result) const
+void SplineBase::EvaluateDerivativeBezier3(index_type index, float t, Vector3& result) const
 {
     index *= 3u;
     mov_assert(index >= index_lo && index < index_hi);
-    C_Evaluate_Hermite(&points[index], t, s_Bezier3Coeffs, result);
+    C_Evaluate_Derivative(&points[index], t, s_Bezier3Coeffs, result);
 }
 
 float SplineBase::SegLengthLinear(index_type index) const
@@ -216,7 +216,7 @@ void SplineBase::InitLinear(const Vector3* controls, index_type count, bool cycl
     memcpy(&points[0],controls, sizeof(Vector3) * count);
 
     // first and last two indexes are space for special 'virtual points'
-    // these points are required for proper C_Evaluate and C_Evaluate_Hermite methtod work
+    // these points are required for proper C_Evaluate and C_Evaluate_Derivative methtod work
     if (cyclic)
         points[count] = controls[cyclic_point];
     else
@@ -238,7 +238,7 @@ void SplineBase::InitCatmullRom(const Vector3* controls, index_type count, bool 
     memcpy(&points[lo_index],controls, sizeof(Vector3) * count);
 
     // first and last two indexes are space for special 'virtual points'
-    // these points are required for proper C_Evaluate and C_Evaluate_Hermite methtod work
+    // these points are required for proper C_Evaluate and C_Evaluate_Derivative methtod work
     if (cyclic)
     {
         if (cyclic_point == 0)
@@ -259,7 +259,7 @@ void SplineBase::InitCatmullRom(const Vector3* controls, index_type count, bool 
     index_hi = high_index + (cyclic ? 1 : 0);
 }
 
-void SplineBase::InitBezier3(const Vector3* controls, index_type count, bool cyclic, index_type cyclic_point)
+void SplineBase::InitBezier3(const Vector3* controls, index_type count, bool /*cyclic*/, index_type /*cyclic_point*/)
 {
     index_type c = count / 3u * 3u;
     index_type t = c / 3u;
