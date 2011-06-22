@@ -283,12 +283,12 @@ namespace Movement
     {
         WriteClientStatus(mov,data);
 
-        data.append<float>(&mov.speed[SpeedWalk], SpeedMaxCount);
+        data.append<float>(&mov.m_float_values[SpeedWalk], SpeedMaxCount);
 
         if (mov.SplineEnabled())
         {
             const MoveSpline& move_spline = mov.move_spline;
-            MoveSplineFlag splineFlags = mov.move_spline.splineflags;
+            MoveSplineFlag splineFlags = move_spline.splineflags;
 
             data << splineFlags.raw;
 
@@ -370,13 +370,13 @@ namespace Movement
         data << mov.moveFlags.raw;
         data << un.moveFlags2.raw;
 
-        data << mov.GetUpdater().TickTime();
+        data << mov.GetUpdater().TickTime(); // or mov.getLastUpdate() ?
         data << mov.GetGlobalPosition();
 
         if (mov.moveFlags.ontransport)
         {
             data << mov.GetTransport()->Owner.GetPackGUID();
-            data << mov.m_local_position;
+            data << mov.GetLocalPosition();
             data << un.transport_time;
             data << un.transport_seat;
 
