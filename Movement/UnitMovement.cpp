@@ -78,34 +78,6 @@ namespace Movement
         }
     }
 
-    static const uint32 Mode2Flag_table[MoveModeMaxCount]=
-    {
-        {/*WALK_BEGAN,*/        UnitMoveFlag::Walk_Mode},
-        {/*ROOT_BEGAN,*/        UnitMoveFlag::Root},
-        {/*SWIM_BEGAN,*/        UnitMoveFlag::Swimming},
-        {/*WATERWALK_MODE,*/    UnitMoveFlag::Waterwalking},
-        {/*SLOW_FALL_BEGAN,*/   UnitMoveFlag::Can_Safe_Fall},
-        {/*HOVER_BEGAN,*/       UnitMoveFlag::Hover},
-        {/*FLY_BEGAN, */        UnitMoveFlag::Flying},
-        {                       UnitMoveFlag::Levitating},
-        {                       UnitMoveFlag::Can_Fly},
-    };
-
-    void UnitMovement::ApplyMoveMode( MoveMode mode, bool apply )
-    {
-        if (apply)
-        {
-            moveFlags |= Mode2Flag_table[mode];
-            move_mode |= (1 << mode);
-        }
-        else
-        {
-            moveFlags &= ~Mode2Flag_table[mode];
-            move_mode &= ~(1 << mode);
-        }
-    }
-
-
     UnitMovement::UnitMovement(WorldObjectType owner) :
         Transportable(owner), move_spline(*new MoveSpline()), m_transport(*this),
         m_client(NULL)
@@ -614,5 +586,134 @@ namespace Movement
             data << value;
             MaNGOS_API::BroadcastMessage(&Owner, data);
         }
+    };
+
+    struct ModeInfo
+    {
+        UnitMoveFlag::eUnitMoveFlags moveFlag;
+        uint16 smsg_apply[2];   // 0 is apply, 1 - unapply
+        uint16 cmsg_ack;
+        uint16 msg_apply[2];   // 0 is apply, 1 - unapply
+        uint16 smsg_spline_apply[2];   // 0 is apply, 1 - unapply
+    };
+
+    const ModeInfo modeInfo[MoveModeMaxCount]=
+    {
+        {
+            UnitMoveFlag::Walk_Mode, 0, 0, 0, 0, 0,
+            SMSG_SPLINE_MOVE_SET_WALK_MODE, SMSG_SPLINE_MOVE_SET_RUN_MODE
+        },
+        {
+            UnitMoveFlag::Root, SMSG_FORCE_MOVE_ROOT, SMSG_FORCE_MOVE_UNROOT,
+            CMSG_FORCE_MOVE_ROOT_ACK, MSG_MOVE_ROOT, MSG_MOVE_UNROOT,
+            SMSG_SPLINE_MOVE_ROOT, SMSG_SPLINE_MOVE_UNROOT
+        },
+        {
+            UnitMoveFlag::Swimming, 0, 0, 0, 0, 0,
+            SMSG_SPLINE_MOVE_START_SWIM, SMSG_SPLINE_MOVE_STOP_SWIM
+        },
+        {
+            UnitMoveFlag::Waterwalking, SMSG_MOVE_WATER_WALK, SMSG_MOVE_LAND_WALK,
+            CMSG_MOVE_WATER_WALK_ACK, MSG_MOVE_WATER_WALK, MSG_MOVE_WATER_WALK,
+            SMSG_SPLINE_MOVE_WATER_WALK, SMSG_SPLINE_MOVE_LAND_WALK
+        },
+        {
+            UnitMoveFlag::Can_Safe_Fall, SMSG_MOVE_FEATHER_FALL, SMSG_MOVE_NORMAL_FALL,
+            CMSG_MOVE_FEATHER_FALL_ACK, MSG_MOVE_FEATHER_FALL, MSG_MOVE_FEATHER_FALL,
+            SMSG_SPLINE_MOVE_FEATHER_FALL, SMSG_SPLINE_MOVE_NORMAL_FALL
+        },
+        {
+            UnitMoveFlag::Hover, SMSG_MOVE_SET_HOVER, SMSG_MOVE_UNSET_HOVER,
+            CMSG_MOVE_HOVER_ACK, MSG_MOVE_HOVER, MSG_MOVE_HOVER,
+            SMSG_SPLINE_MOVE_SET_HOVER, SMSG_SPLINE_MOVE_UNSET_HOVER
+        },
+        {
+            UnitMoveFlag::Flying, 0, 0, 0, 0, 0,
+            SMSG_SPLINE_MOVE_SET_FLYING, SMSG_SPLINE_MOVE_UNSET_FLYING
+        },
+        {
+            UnitMoveFlag::Levitating, 0, 0, 0, 0, 0, 0, 0
+        },
+        {
+            UnitMoveFlag::Can_Fly, SMSG_MOVE_SET_CAN_FLY, SMSG_MOVE_UNSET_CAN_FLY,
+            CMSG_MOVE_SET_CAN_FLY_ACK, MSG_MOVE_UPDATE_CAN_FLY, MSG_MOVE_UPDATE_CAN_FLY,
+            SMSG_SPLINE_MOVE_SET_FLYING, SMSG_SPLINE_MOVE_UNSET_FLYING
+        },
+    };
+
+    class ModeChangeRequest : public RespHandler
+    {
+        uint32 m_reqId;
+        MoveMode m_mode;
+        bool m_apply;
+
+        ModeChangeRequest(Client * client, MoveMode mode, bool apply) : RespHandler(modeInfo[mode].cmsg_ack),
+            m_mode(mode), m_apply(apply), m_reqId(client->AddRespHandler(this))
+        {
+            if (uint16 opcode = modeInfo[mode].smsg_apply[!apply])
+            {
+                WorldPacket msg(opcode, 16);
+                msg << client->controlled()->Owner.GetPackGUID();
+                msg << m_reqId;
+                client->SendPacket(msg);
+            }
+        }
+
+    public:
+
+        static void Launch(UnitMovement * mov, MoveMode mode, bool apply)
+        {
+            if (mov->IsClientControlled())
+                new ModeChangeRequest(mov->client(), mode, apply);
+            else
+            {
+                mov->ApplyMoveFlag(modeInfo[mode].moveFlag, apply);
+                if (uint16 opcode = modeInfo[mode].smsg_spline_apply[!apply])
+                {
+                    WorldPacket data(opcode, 12);
+                    data << mov->Owner.GetPackGUID();
+                    MaNGOS_API::BroadcastMessage(&mov->Owner, data);
+                }
+            }
+        }
+
+        virtual void OnReply(Client * client, WorldPacket& data) override
+        {
+            ClientMoveState client_state;
+            ObjectGuid guid;
+            uint32 client_req_id;
+            float f_unk;
+
+            data >> guid.ReadAsPacked();
+            data >> client_req_id;
+            data >> client_state;
+            data >> f_unk;          // 0 or 1, unused
+
+            if (client_req_id != m_reqId)
+            {
+                log_write("FloatValueChangeRequest::OnReply: wrong counter value: %u and should be: %u",client_req_id,m_reqId);
+                return;
+            }
+            if (modeInfo[m_mode].moveFlag != 0 && m_apply != (bool)(client_state.moveFlags & modeInfo[m_mode].moveFlag))
+            {
+                log_write("ModeChangeRequest::OnReply: wrong client's flag");
+                return;
+            }
+
+            client->QueueState(client_state);
+
+            if (uint16 opcode = modeInfo[m_mode].msg_apply[!m_apply])
+            {
+                MovementMessage msg(client->controlled(), opcode, 64);
+                msg << guid.WriteAsPacked();
+                msg << client_state;
+                client->BroadcastMessage(msg);
+            }
+        }
+    };
+
+    void UnitMovement::ApplyMoveMode(MoveMode mode, bool apply)
+    {
+        ModeChangeRequest::Launch(this, mode, apply);
     }
 }

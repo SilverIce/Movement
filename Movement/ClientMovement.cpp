@@ -59,7 +59,7 @@ namespace Movement
     static MSTime timestamp_incr = 0;
     static MSTime timestamp_decr = 0;
 
-    void Client::HandleIncomingMessage(MovementMessage& msg) const
+    void Client::SendMoveMessage(MovementMessage& msg) const
     {
         if (msg.Source() == m_controlled && !send_self)
             return;

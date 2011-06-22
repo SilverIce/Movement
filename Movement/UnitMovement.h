@@ -145,6 +145,14 @@ namespace Movement
         void SetParameter(FloatParameter p, float value) { m_float_values[p] = value;}
         float GetParameter(FloatParameter p) const { return m_float_values[p];}
 
+        void ApplyMoveFlag(const UnitMoveFlag& f, bool apply)
+        {
+            if (apply)
+                moveFlags |= f.raw;
+            else
+                moveFlags &= ~f.raw;
+        }
+
         void _QueueState(const ClientMoveState& state) { m_moveEvents.QueueState(state);}       // only for call from Client code
 
         void SetPosition(const Location& v);

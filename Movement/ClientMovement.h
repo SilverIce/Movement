@@ -93,7 +93,7 @@ namespace Movement
         void HandleResponse(WorldPacket& data);
 
         /** Handles messages from another clients */
-        void HandleIncomingMessage(MovementMessage& msg) const;
+        void SendMoveMessage(MovementMessage& msg) const;
         /** Handles messages from that client */
         void HandleOutcomingMessage(WorldPacket& recv_data);
 
