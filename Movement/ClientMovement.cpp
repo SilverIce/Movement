@@ -56,7 +56,7 @@ namespace Movement
     static bool old_way = false;
     static bool send_self = false;
 
-    static MSTime timestamp_incr = 0;
+    static MSTime timestamp_incr = 5000;
     static MSTime timestamp_decr = 0;
 
     void Client::SendMoveMessage(MovementMessage& msg) const

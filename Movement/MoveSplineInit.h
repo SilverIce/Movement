@@ -90,8 +90,6 @@ namespace Movement
         PointsArray& Path() { return args.path; }
         const UnitMovement& Movement() { return state; }
 
-        PointsArray& Path() { return args.path; }
-
         template<typename InitStrategy>
         inline MoveSplineInit& operator << (InitStrategy init)
         {
