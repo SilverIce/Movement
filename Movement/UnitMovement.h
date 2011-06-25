@@ -145,7 +145,7 @@ namespace Movement
         void SetParameter(FloatParameter p, float value) { m_float_values[p] = value;}
         float GetParameter(FloatParameter p) const { return m_float_values[p];}
 
-        void QueueState(const ClientMoveState& state) { m_moveEvents.QueueState(state);}
+        void _QueueState(const ClientMoveState& state) { m_moveEvents.QueueState(state);}       // only for call from Client code
         Client* client() const { return m_client;}
         void client(Client* c) { m_client = c;}
     private:

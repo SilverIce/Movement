@@ -403,13 +403,13 @@ namespace Movement
         }
 
         setLastUpdate(GetUpdater().TickTime());
-        speed_obj.current = args.velocity;
         speed_type = speed_type_new;
         moveFlags = moveFlag_new;
 
         move_spline.Initialize(args);
         updatable.ScheduleUpdate();
 
+        SetParameter(Parameter_SpeedCurrent, args.velocity);
         SetControl(MovControlServer);
 
         PacketBuilder::SplinePathSend(*this, MsgBroadcast(this));
