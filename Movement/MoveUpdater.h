@@ -10,32 +10,9 @@
 
 #include "typedefs.h"
 #include "LinkedList.h"
-#include <limits>
 
 namespace Movement
 {
-    template<class T>
-    class counter
-    {
-    public:
-        counter() { init();}
-
-        void Increase()
-        {
-            if (m_counter == std::numeric_limits<T>::max())
-                init();
-            else
-                ++m_counter;
-        }
-
-        T NewId() { Increase(); return m_counter;}
-        T getCurrent() const { return m_counter;}
-
-    private:
-        void init() { m_counter = 1; }
-        T m_counter;
-    };
-
     class UpdatableMovement;
     class MoveUpdater
     {
@@ -55,8 +32,6 @@ namespace Movement
             {
                 m_movers.link(m);
                 ++m_movers_count;
-
-                //log_console("Mover registered: name %s, movers count: %u", m.Value.updatable->GetOwner().GetName(), m_movers_count);
             }
         }
 
@@ -66,22 +41,20 @@ namespace Movement
             {
                 m_movers.delink(m);
                 --m_movers_count;
-
-                //log_console("Mover unregistered: name %s, movers count: %u", m.Value.updatable->GetOwner().GetName(), m_movers_count);
             }
         }
 
         void Update();
 
-        uint32 TickCount() const { return m_tick_count;}
+        uint32 TickTime() const { return m_tick_time;}
         uint32 MoversCount() const { return m_movers_count;}
         uint32 NewMoveSplineId() { return movespline_counter.NewId();}
 
     private:
 
         LinkedList<UpdatableMovement*> m_movers;
-        counter<uint32> movespline_counter;
-        uint32 m_tick_count;
+        UInt32Counter movespline_counter;
+        uint32 m_tick_time;
         uint32 common_timer;
         uint32 m_movers_count;
     };

@@ -29,8 +29,11 @@ namespace Movement
 
     struct MoveSplineInitArgs
     {
-        MoveSplineInitArgs() : path_Idx_offset(0),
-            velocity(0.f), parabolic_amplitude(0.f), time_perc(0.f), splineId(0)   {}
+        MoveSplineInitArgs(size_t path_capacity = 16) : path_Idx_offset(0),
+            velocity(0.f), parabolic_amplitude(0.f), time_perc(0.f), splineId(0)
+        {
+            path.reserve(path_capacity);
+        }
        
         PointsArray path;
         FacingInfo facing;

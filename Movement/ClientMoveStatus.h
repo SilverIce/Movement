@@ -14,9 +14,7 @@ namespace Movement
         {
         }
 
-        UnitMoveFlag2 moveFlags2;
         uint32 transport_time;
-        int8 transport_seat;
         uint32 transport_time2;
         float pitch;
         uint32 fallTime;
@@ -25,20 +23,22 @@ namespace Movement
         float jump_cosAngle;
         float jump_xy_velocy;
         float spline_elevation;
+        UnitMoveFlag2 moveFlags2;
+        int8 transport_seat;
     };
 
     struct ClientMoveState : public _ClientMoveState
     {
-        ClientMoveState() : /*mover(0),*/ ms_time(0), t_guid(0)
+        ClientMoveState() : /*mover(0),*/ t_guid(0)
         {
         }
 
         //uint64 mover;
-        UnitMoveFlag moveFlags;
-        uint32 ms_time;
         Location world_position;
-        uint64 t_guid;
         Location transport_position;
+        uint64 t_guid;
+        UnitMoveFlag moveFlags;
+        MSTime ms_time;
     };
 
     struct ClientMoveEvent
@@ -47,7 +47,7 @@ namespace Movement
         {
         }
 
-        uint16 opcode;
         ClientMoveState state;
+        uint16 opcode;
     };
 }

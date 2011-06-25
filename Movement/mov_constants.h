@@ -38,6 +38,8 @@ namespace Movement
         MoveModeHover,
         MoveModeFly,
         MoveModeLevitation,
+        MoveModeCanFly,
+        MoveModeGravity,
         MoveModeMaxCount
     };
 

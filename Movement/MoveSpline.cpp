@@ -5,12 +5,16 @@
 
 namespace Movement{
 
-Location MoveSpline::_ComputePosition(SplineBase::index_type seg_Idx, float u) const
+Location MoveSpline::ComputePosition() const
 {
     mov_assert(Initialized());
 
+    float u = 1.f;
+    int32 seg_time = spline.length(point_Idx,point_Idx+1);
+    if (seg_time > 0)
+        u = (time_passed - spline.length(point_Idx)) / (float)seg_time;
     Location c;
-    spline.evaluate_percent(seg_Idx,u, c);
+    spline.evaluate_percent(point_Idx, u, c);
 
     if (splineflags.animation)
         ;// MoveSplineFlag::Animation disables falling or parabolic movement
@@ -30,7 +34,7 @@ Location MoveSpline::_ComputePosition(SplineBase::index_type seg_Idx, float u) c
     else
     {
         Vector3 hermite;
-        spline.evaluate_hermite(seg_Idx,u,hermite);
+        spline.evaluate_derivative(point_Idx,u,hermite);
         c.orientation = atan2(hermite.y, hermite.x);
 
         if (splineflags.backward)
@@ -55,10 +59,10 @@ void MoveSpline::computeParabolicElevation(float& el) const
 void MoveSpline::computeFallElevation(float& el) const
 {
     float z_now = spline.getPoint(spline.first()).z - Movement::computeFallElevation(MSToSec(time_passed));
-
-    if (z_now < finalDestination.z)
+    float final_z = FinalDestination().z;
+    if (z_now < final_z)
     {
-        el = finalDestination.z;
+        el = final_z;
         log_write("MoveSpline::computeFallElevation: z_now < finalDestination.z");
     }
     else
@@ -106,12 +110,10 @@ void MoveSpline::init_spline(const MoveSplineInitArgs& args)
         //if (splineflags & SPLINEFLAG_ENTER_CYCLE)
         //cyclic_point = 1;   // shouldn't be modified, came from client
         spline.init_cyclic_spline(&args.path[0], args.path.size(), modes[args.flags.isSmooth()], cyclic_point);
-        finalDestination = Vector3::zero();
     }
     else
     {
         spline.init_spline(&args.path[0], args.path.size(), modes[args.flags.isSmooth()]);
-        finalDestination = spline.getPoint(spline.last());
     }
 
     // init spline timestamps
@@ -127,6 +129,7 @@ void MoveSpline::init_spline(const MoveSplineInitArgs& args)
         log_write("MoveSpline::init_spline: Zero length spline");
         spline.set_length(spline.last(), 1000);
     }
+    point_Idx = spline.first();
 }
 
 void MoveSpline::Initialize(const MoveSplineInitArgs& args)
@@ -143,7 +146,6 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
     effect_start_time = 0;
 
     init_spline(args);
-    point_Idx = spline.first();
 
     // init parabolic / animation
     // spline initialized, duration known and i able to compute parabolic acceleration
@@ -171,7 +173,7 @@ bool MoveSplineInitArgs::Validate() const
 #define CHECK(exp) \
     if (!(exp))\
     {\
-        log_write("MoveSplineInitArgs::Validate: '%s' failed", #exp);\
+        log_write("MoveSplineInitArgs::Validate: expression '%s' failed", #exp);\
         return false;\
     }
     CHECK(path.size() > 1);
@@ -183,17 +185,20 @@ bool MoveSplineInitArgs::Validate() const
 }
 
 // MONSTER_MOVE packet format limitation for not CatmullRom movement:
-// each vertex offset packed into 4 bytes and it should fit inside 255x255x255 bounding box
+// each vertex offset packed into 11 bytes
 bool MoveSplineInitArgs::_checkPathBounds() const
 {
     if (!(flags & MoveSplineFlag::Mask_CatmullRom) && path.size() > 2)
     {
+        enum{
+            MAX_OFFSET = (1 << 11) / 2,
+        };
         Vector3 middle = (path.front()+path.back()) / 2;
         Vector3 offset;
         for (uint32 i = 1; i < path.size()-1; ++i)
         {
             offset = path[i] - middle;
-            if (fabs(offset.x) >= 255 || fabs(offset.y) >= 255 || fabs(offset.z) >= 255)
+            if (fabs(offset.x) >= MAX_OFFSET || fabs(offset.y) >= MAX_OFFSET || fabs(offset.z) >= MAX_OFFSET)
             {
                 log_console("MoveSplineInitArgs::_checkPathBounds check failed");
                 return false;
@@ -245,15 +250,6 @@ MoveSpline::UpdateResult MoveSpline::_updateState(int32& ms_time_diff)
     }
 
     return result;
-}
-
-Location MoveSpline::ComputePosition() const
-{
-    float u = 1.f;
-    int32 seg_time = spline.length(point_Idx,point_Idx+1);
-    if (seg_time > 0)
-        u = (time_passed - spline.length(point_Idx)) / (float)seg_time;
-    return _ComputePosition(point_Idx, u);
 }
 
 std::string MoveSpline::ToString() const

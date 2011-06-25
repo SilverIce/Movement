@@ -10,15 +10,13 @@
 
 namespace Movement
 {
+    struct OnEventArgs;
     class IListener
     {
+    protected:
+        ~IListener() {}
     public:
-
-        virtual ~IListener() {}
-
-        virtual void OnSplineDone() {}
-
-        virtual void OnEvent(int eventId, int data) {};
+        virtual void OnEvent(const OnEventArgs& args) = 0;
     };
 
 }

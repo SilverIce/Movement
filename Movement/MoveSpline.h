@@ -37,7 +37,6 @@ namespace Movement {
         friend class PacketBuilder;
     protected:
         MySpline        spline;
-        Vector3         finalDestination;
 
         FacingInfo      facing;
 
@@ -66,8 +65,6 @@ namespace Movement {
         int32 segment_time_elapsed() const { return next_timestamp()-time_passed;}
         void Finalize();
 
-        Location _ComputePosition(MySpline::index_type Idx, float u) const;
-
         #pragma endregion
     public:
 
@@ -85,6 +82,13 @@ namespace Movement {
             while(difftime > 0);
         }
 
+        void updateState(int32 difftime)
+        {
+            mov_assert(Initialized());
+            do _updateState(difftime);
+            while(difftime > 0);
+        }
+
         Location ComputePosition() const;
 
         uint32 GetId() const { return m_Id;}
@@ -93,7 +97,7 @@ namespace Movement {
         int32 Duration() const { return spline.length();}
         int32 timeElapsed() const { return Duration() - time_passed;}
         int32 timePassed() const { return time_passed;}
-        const Vector3& FinalDestination() const { return finalDestination;}
+        const Vector3& FinalDestination() const { return spline.getPoint(spline.last());}
         const Vector3& CurrentDestination() const { return spline.getPoint(point_Idx+1);}
         int32 currentPathIdx() const;
 

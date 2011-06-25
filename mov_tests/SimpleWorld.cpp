@@ -27,7 +27,7 @@ void World::Run()
     while ( state_run == true )
     {
         realCurrTime = GetTickCount();
-        uint32 diff = getMSTimeDiff(realPrevTime,realCurrTime);
+        uint32 diff = (MSTime(realCurrTime) - MSTime(realPrevTime)).time;
 
         Update(diff);         // takes some time
         realPrevTime = realCurrTime;

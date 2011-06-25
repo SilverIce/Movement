@@ -7,57 +7,19 @@ namespace Movement
 
     MoveUpdater::MoveUpdater()
     {
-        m_tick_count = getMSTime();
+        m_tick_time = getMSTime();
         common_timer = 0;
         m_movers_count = 0;
     }
 
     void MoveUpdater::Update()
     {
-        /*struct final_updater
-        {
-            MovementBaseList& list;
-            uint32 t_diff;
-
-            final_updater(MovementBaseList& l, uint32 diff) : list(l), t_diff(diff) {}
-
-            void operator ()(UpdaterLink& m)
-            {
-                UpdatableMovement * mov = m.updatable;
-                if (mov->delay >= 0)
-                {
-                    mov->delay -= t_diff;
-                    if (mov->delay <= 0)
-                        mov->UpdateState();
-                }
-            }
-        };*/
-
-        struct common_updater
-        {
-            uint32 t_diff;
-
-            common_updater(uint32 diff) : t_diff(diff) {}
-
-            void operator ()(UpdatableMovement* mov)
-            {
-                //if (mov->delay >= 0)
-                    //mov->delay -= t_diff;
-                mov->UpdateState();
-            }
+        struct common_updater{
+            inline void operator ()(UpdatableMovement* mov) { mov->UpdateState();}
         };
 
-        uint32 now = getMSTime();
-        uint32 diff = getMSTimeDiff(m_tick_count, now);
-        m_tick_count = now;
-
-        //common_timer += diff;
-        //if (common_timer > Common_Update_Delay)
-        //{
-            m_movers.Iterate(common_updater(diff));
-            //common_timer = 0;
-        //}else
-            //m_movers.Iterate(final_updater(m_movers,diff));
+        m_tick_time = getMSTime();
+        m_movers.Iterate(common_updater());
     }
 
     void MoveUpdater::CleanReferences()

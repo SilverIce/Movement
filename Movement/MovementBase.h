@@ -134,20 +134,16 @@ namespace Movement
         UnitMovement* targeter;
     };
 
+    typedef WorldObject& WorldObjectType;
+
     class MovementBase
     {
     public:
 
-        explicit MovementBase(WorldObject& owner);
+        explicit MovementBase(WorldObjectType owner);
 
         virtual ~MovementBase() { mov_assert(m_targeter_references.empty());}
         virtual void CleanReferences();
-
-        const Location& GetPosition() const { return *managed_position;}
-        const Vector3& GetPosition3() const { return *managed_position;}
-        // should be protected?
-        void SetPosition(const Location& v);
-        void SetPosition(const Vector3& v);
 
         const Location& GetGlobalPosition() const { return world_position;}
         void SetGlobalPosition(const Location& loc);
@@ -155,19 +151,15 @@ namespace Movement
         void SetListener(IListener * l) { listener = l;}
         void ResetLisener() { listener = NULL; }
 
-        WorldObject& Owner;
+        WorldObjectType Owner;
 
         void _link_targeter(LinkedListElement<TargetLink>& t) { m_targeter_references.link(t);}
 
     protected:
-        void set_managed_position(Location& p) { managed_position = &p;}
-        void reset_managed_position() { managed_position = &world_position;}
 
         IListener * listener;
-    private:
-
         Location world_position;
-        Location * managed_position;
+    private:
         LinkedList<TargetLink> m_targeter_references;
 
         MovementBase(const MovementBase&);
@@ -191,7 +183,11 @@ namespace Movement
     {
     public:
 
-        virtual ~Transportable() {}
+        explicit Transportable(WorldObjectType owner) : MovementBase(owner), m_transport(NULL), m_transport_container(NULL)
+        {
+        }
+
+        virtual ~Transportable() { mov_assert(!IsBoarded()); }
 
         virtual void CleanReferences()
         {
@@ -199,17 +195,15 @@ namespace Movement
             MovementBase::CleanReferences();
         }
 
-        virtual void BoardOn(Transport& m, const Location& local_position, int8 seatId) = 0;
-        virtual void Unboard() = 0;
+        virtual void BoardOn(Transport& m, const Location& local_position, int8 seatId);
+        virtual void Unboard();
 
         bool IsBoarded() const { return m_transport_link.linked();}
         const MovementBase* GetTransport() const { return m_transport_link.Value.transport;}
 
-        void _link_to(LinkedList<TransportLink>& list) { list.link(m_transport_link);}
+        const Location& GetLocalPosition() const { return m_local_position;}
 
     protected:
-
-        explicit Transportable(WorldObject& owner) : MovementBase(owner)  {}
 
         void _board(Transport& m, const Location& local_position);
         void _unboard();
@@ -271,18 +265,6 @@ namespace Movement
 
     private:
         LinkedList<TransportLink> m_passenger_references;
-    };
-
-
-    /// concrete classes:
-
-    class GameobjectMovement : public Transportable
-    {
-    public:
-        explicit GameobjectMovement(WorldObject& owner) : Transportable(owner) {}
-
-        virtual void BoardOn(Transport& m, const Location& local_position, int8 /*seatId*/) {}
-        virtual void Unboard() {}
     };
 
     class MO_Transport : public MovementBase, public IUpdatable

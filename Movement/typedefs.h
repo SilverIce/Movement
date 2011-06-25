@@ -37,15 +37,6 @@ namespace Movement
     typedef __int64         int64;
     typedef unsigned __int64 uint64;
 
-    // TODO: move it out of here
-    inline uint32 getMSTimeDiff(uint32 old_time, uint32 new_time)
-    {
-        if (old_time > new_time)
-            return (0xFFFFFFFF - old_time) + new_time;
-        else
-            return new_time - old_time;
-    }
-
     inline uint32 SecToMS(float sec)
     {
         return static_cast<uint32>(sec * 1000.f);
@@ -71,4 +62,29 @@ namespace Movement
     #define static_assert(expr) typedef char CONCAT(static_assert_failed_at_line_, __LINE__) [(expr) ? 1 : -1]
 #endif
 
+    template<class T, T limit>
+    class counter
+    {
+    public:
+        counter() { init();}
+
+        void Increase()
+        {
+            if (m_counter == limit)
+                init();
+            else
+                ++m_counter;
+        }
+
+        T NewId() { Increase(); return m_counter;}
+        T getCurrent() const { return m_counter;}
+
+    private:
+        void init() { m_counter = 0; }
+        T m_counter;
+    };
+
+    typedef counter<uint32, 0xFFFFFFFF> UInt32Counter;
 }
+
+#include "MSTime.h"

@@ -2,12 +2,7 @@
 #include "MoveUpdater.h"
 #include "UnitMovement.h"
 #include <float.h>
-
-/** Updates map position by calling not movement system's method.
-    Should be implemented out of movement system code. Might be usafe (depends on implementation).
-    TODO: find a better/safe way to synchronize movement system and MaNGOS position.
-*/
-extern void UpdateMapPosition(WorldObject& obj, const Movement::Location& v);
+#include "MaNGOS_API.h"
 
 namespace Movement{
 
@@ -45,37 +40,17 @@ namespace Movement{
         return _finite(v.x) && _finite(v.y) && _finite(v.z);
     }
 
-    void MovementBase::SetPosition(const Location& v)
-    {
-        if (!_finiteV(v))
-        {
-            log_write("MovementBase::SetPosition: NaN coord detected");
-            return;
-        }
-        // dirty code..
-        if (managed_position == &world_position)
-            SetGlobalPosition(v);
-        else
-            *managed_position = v;
-    }
-
-    void MovementBase::SetPosition(const Vector3& v)
-    {
-        SetPosition(Location(v,managed_position->orientation));
-    }
-
     void MovementBase::SetGlobalPosition(const Location& loc)
     {
         world_position = loc;
-        UpdateMapPosition(Owner, loc);
+        MaNGOS_API::UpdateMapPosition(&Owner, loc);
     }
 
-    MovementBase::MovementBase(WorldObject& owner) : Owner(owner), listener(NULL)
+    MovementBase::MovementBase(WorldObjectType owner) : Owner(owner), listener(NULL)
     {
-        set_managed_position(world_position);
     }
 
-    MO_Transport::MO_Transport(WorldObject& owner) : MovementBase(owner), m_transport(*this)
+    MO_Transport::MO_Transport(WorldObjectType owner) : MovementBase(owner)
     {
         updatable.SetUpdateStrategy(this);
     }
@@ -103,7 +78,6 @@ namespace Movement{
         transport._link_transportable(m_transport_link);
 
         m_local_position = local_position;
-        set_managed_position(m_local_position);
     }
 
     void Transportable::_unboard()
@@ -113,8 +87,17 @@ namespace Movement{
             m_transport_link.delink();
             m_transport_link.Value = TransportLink();
 
-            reset_managed_position();
             m_local_position = Location();
         }
+    }
+
+    void Transportable::BoardOn(Transport& m, const Location& local_position, int8 seatId)
+    {
+        _board(m, local_position);
+    }
+
+    void Transportable::Unboard()
+    {
+        _unboard();
     }
 }
