@@ -25,9 +25,11 @@ namespace Movement
     void MoveUpdater::CleanReferences()
     {
         struct ref_cleaner{
-            inline void operator()(UpdatableMovement * mov) { mov->CleanReferences();}
+            MoveUpdater * updater;
+            ref_cleaner(MoveUpdater * u) : updater(u) {}
+            inline void operator()(UpdatableMovement * mov) { mov->Dereference(updater);}
         };
-        m_movers.Iterate(ref_cleaner());
+        m_movers.Iterate(ref_cleaner(this));
         mov_assert(m_movers.empty());
     }
 }

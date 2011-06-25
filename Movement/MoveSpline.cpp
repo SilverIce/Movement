@@ -193,6 +193,13 @@ bool MoveSplineInitArgs::_checkPathBounds() const
         enum{
             MAX_OFFSET = (1 << 11) / 2,
         };
+        // simple, but less effective check:
+        if ((path.front() - path.back()).squaredLength() >= (2*MAX_OFFSET)*(2*MAX_OFFSET))
+        {
+            log_console("MoveSplineInitArgs::_checkPathBounds check failed");
+            return false;
+        }
+/*
         Vector3 middle = (path.front()+path.back()) / 2;
         Vector3 offset;
         for (uint32 i = 1; i < path.size()-1; ++i)
@@ -203,7 +210,7 @@ bool MoveSplineInitArgs::_checkPathBounds() const
                 log_console("MoveSplineInitArgs::_checkPathBounds check failed");
                 return false;
             }
-        }
+        }*/
     }
     return true;
 }

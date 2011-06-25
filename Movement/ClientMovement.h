@@ -21,14 +21,13 @@ namespace Movement
     class RespHandler
     {
     protected:
-        uint32 opcode;
+        uint32 Opcode;
         //MSTime time;
     public:
 
-        explicit RespHandler(uint32 _opcode) : opcode(_opcode) {}
+        explicit RespHandler(uint32 _opcode = 0) : Opcode(_opcode) {}
 
-        bool CanHandle(uint32 _opcode) const { return opcode == _opcode;}
-        //virtual void OnTimeout() {}
+        bool CanHandle(uint32 _opcode) const { return Opcode == _opcode;}
         virtual void OnReply(Client * client, WorldPacket& data) = 0;
     };
 
@@ -98,5 +97,11 @@ namespace Movement
         void HandleOutcomingMessage(WorldPacket& recv_data);
 
         void HandleMoveTimeSkipped(WorldPacket & recv_data);
+        /*void HandleMoveTeleportAckOpcode(WorldPacket& recvPacket);
+        void HandleMoveWorldportAckOpcode(WorldPacket& recvPacket);
+        void HandleMoveWorldportAckOpcode();                // for server-side calls
+
+        void HandleDismissControlledVehicle(WorldPacket &recv_data);
+        void HandleMoveSplineDoneOpcode(WorldPacket& recvPacket);*/
     };
 }

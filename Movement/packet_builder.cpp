@@ -7,18 +7,6 @@
 
 namespace Movement
 {
-    const uint16 S_Speed2Opc_table[SpeedMaxCount]=
-    {
-        {/*MOVE_WALK,*/         SMSG_SPLINE_SET_WALK_SPEED},
-        {/*MOVE_RUN,*/          SMSG_SPLINE_SET_RUN_SPEED},
-        {/*MOVE_SWIM_BACK,*/    SMSG_SPLINE_SET_SWIM_BACK_SPEED},
-        {/*MOVE_SWIM,*/         SMSG_SPLINE_SET_SWIM_SPEED},
-        {/*MOVE_RUN_BACK,*/     SMSG_SPLINE_SET_RUN_BACK_SPEED},
-        {/*MOVE_FLIGHT,*/       SMSG_SPLINE_SET_FLIGHT_SPEED},
-        {/*MOVE_FLIGHT_BACK,*/  SMSG_SPLINE_SET_FLIGHT_BACK_SPEED},
-        {/*MOVE_TURN_RATE,*/    SMSG_SPLINE_SET_TURN_RATE},
-        {/*MOVE_PITCH_RATE,*/   SMSG_SPLINE_SET_PITCH_RATE},
-    };
 
     const uint16 S_Mode2Opc_table[MoveModeMaxCount][2]=
     {
@@ -46,18 +34,69 @@ namespace Movement
         {/*can fly mode*/       SMSG_MOVE_UNSET_CAN_FLY,       SMSG_MOVE_SET_CAN_FLY},
     };
 
-    const uint16 SetSpeed2Opc_table[SpeedMaxCount][2]=
+/* change-ack-msg order*/
+#define CLIENT_VALUE_CHANGE(mode)   {SMSG_FORCE_##mode##_CHANGE, CMSG_FORCE_##mode##_CHANGE_ACK, MSG_MOVE_SET_##mode},
+
+    const uint16 C_Speed2Opc_table[SpeedMaxCount][3]=
     {
-        {MSG_MOVE_SET_WALK_SPEED,       SMSG_FORCE_WALK_SPEED_CHANGE},
-        {MSG_MOVE_SET_RUN_SPEED,        SMSG_FORCE_RUN_SPEED_CHANGE},
-        {MSG_MOVE_SET_SWIM_BACK_SPEED,  SMSG_FORCE_SWIM_BACK_SPEED_CHANGE},
-        {MSG_MOVE_SET_SWIM_SPEED,       SMSG_FORCE_SWIM_SPEED_CHANGE},
-        {MSG_MOVE_SET_RUN_BACK_SPEED,   SMSG_FORCE_RUN_BACK_SPEED_CHANGE},
-        {MSG_MOVE_SET_FLIGHT_SPEED,     SMSG_FORCE_FLIGHT_SPEED_CHANGE},
-        {MSG_MOVE_SET_FLIGHT_BACK_SPEED,SMSG_FORCE_FLIGHT_BACK_SPEED_CHANGE},
-        {MSG_MOVE_SET_TURN_RATE,        SMSG_FORCE_TURN_RATE_CHANGE},
-        {MSG_MOVE_SET_PITCH_RATE,       SMSG_FORCE_PITCH_RATE_CHANGE},
+        CLIENT_VALUE_CHANGE(WALK_SPEED)
+        CLIENT_VALUE_CHANGE(RUN_SPEED)
+        CLIENT_VALUE_CHANGE(SWIM_BACK_SPEED)
+        CLIENT_VALUE_CHANGE(RUN_BACK_SPEED)
+        CLIENT_VALUE_CHANGE(FLIGHT_SPEED)
+        CLIENT_VALUE_CHANGE(FLIGHT_BACK_SPEED)
+        CLIENT_VALUE_CHANGE(TURN_RATE)
+        CLIENT_VALUE_CHANGE(PITCH_RATE)
     };
+
+#define SERVER_SPEED_CHANGE(mode)   {SMSG_SPLINE_SET_##mode},
+
+    const uint16 S_Speed2Opc_table[SpeedMaxCount]=
+    {
+        SERVER_SPEED_CHANGE(WALK_SPEED)
+        SERVER_SPEED_CHANGE(RUN_SPEED)
+        SERVER_SPEED_CHANGE(SWIM_BACK_SPEED)
+        SERVER_SPEED_CHANGE(RUN_BACK_SPEED)
+        SERVER_SPEED_CHANGE(FLIGHT_SPEED)
+        SERVER_SPEED_CHANGE(FLIGHT_BACK_SPEED)
+        SERVER_SPEED_CHANGE(TURN_RATE)
+        SERVER_SPEED_CHANGE(PITCH_RATE)
+    };
+
+/* change-ack-msg order*/
+#define CLIENT_MODE_CHANGE(apply,unapply,ack,msg)   {SMSG_MOVE_##apply, SMSG_MOVE_##unapply, CMSG_MOVE_##ack##_ACK, MSG_MOVE_##msg},
+
+    const uint16 __C_Mode2Opc_table[8][4]=
+    {
+       // {SMSG_FORCE_MOVE_ROOT, SMSG_FORCE_MOVE_UNROOT, CMSG_FORCE_MOVE_ROOT_ACK, MSG_MOVE_ROOT,MSG_MOVE_UNROOT},
+        CLIENT_MODE_CHANGE(SET_CAN_FLY,UNSET_CAN_FLY,SET_CAN_FLY,UPDATE_CAN_FLY)
+        CLIENT_MODE_CHANGE(SET_HOVER,UNSET_HOVER,HOVER,HOVER)
+        CLIENT_MODE_CHANGE(WATER_WALK,LAND_WALK,WATER_WALK,WATER_WALK)
+        CLIENT_MODE_CHANGE(FEATHER_FALL,NORMAL_FALL,FEATHER_FALL,FEATHER_FALL)
+        CLIENT_MODE_CHANGE(SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY,UNSET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY,SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY, UPDATE_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY)
+
+        CLIENT_MODE_CHANGE(KNOCK_BACK,KNOCK_BACK,KNOCK_BACK,KNOCK_BACK)
+        CLIENT_MODE_CHANGE(SET_COLLISION_HGT,SET_COLLISION_HGT,SET_COLLISION_HGT,SET_COLLISION_HGT)
+
+        CLIENT_MODE_CHANGE(GRAVITY_ENABLE, GRAVITY_DISABLE, GRAVITY_ENABLE, GRAVITY_CHNG)
+
+
+        
+
+
+/*
+        {/ *WALK_BEGAN,* /        MSG_NULL_ACTION,               MSG_NULL_ACTION},
+        {/ *ROOT_BEGAN,* /        SMSG_FORCE_MOVE_UNROOT,        SMSG_FORCE_MOVE_ROOT},
+        {/ *SWIM_BEGAN,* /        MSG_NULL_ACTION,               MSG_NULL_ACTION},
+        {/ *WATERWALK_MODE,* /    SMSG_MOVE_LAND_WALK,           SMSG_MOVE_WATER_WALK},
+        {/ *SLOW_FALL_BEGAN,* /   SMSG_MOVE_NORMAL_FALL,         SMSG_MOVE_FEATHER_FALL},
+        {/ *HOVER_BEGAN,* /       SMSG_MOVE_UNSET_HOVER,         SMSG_MOVE_SET_HOVER},
+        {/ *FLY_BEGAN,* /         SMSG_MOVE_UNSET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY,        SMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY},
+        {/ *levitation mode* /    MSG_NULL_ACTION,               MSG_NULL_ACTION},    // no opcodes
+        {/ *can fly mode* /       SMSG_MOVE_UNSET_CAN_FLY,       SMSG_MOVE_SET_CAN_FLY},
+*/
+    };
+
 
     typedef void (*SpeedPtr)(const UnitMovement&,SpeedType,WorldPacket&);
     typedef void (*MoveModePtr)(const UnitMovement&,MoveMode,WorldPacket&);
@@ -258,24 +297,11 @@ namespace Movement
 
     void PacketBuilder::Client_SpeedUpdate(const UnitMovement& mov, SpeedType ty, WorldPacket& data)
     {
-        bool forced = false;
-
-        uint16 opcode = SetSpeed2Opc_table[ty][forced];
+        uint16 opcode = C_Speed2Opc_table[ty][2];
 
         data.SetOpcode(opcode);
         data << mov.Owner.GetPackGUID();
-
-        if(!forced)
-        {
-            WriteClientStatus(mov,data);
-        }
-        else
-        {
-            data << (uint32)0;                                  // moveEvent, NUM_PMOVE_EVTS = 0x39
-            if (ty == SpeedRun)
-                data << uint8(0);                               // new 2.1.0
-        }
-
+        WriteClientStatus(mov,data);
         data << mov.GetSpeed(ty);
     }
 
@@ -283,12 +309,12 @@ namespace Movement
     {
         WriteClientStatus(mov,data);
 
-        data.append<float>(&mov.speed[SpeedWalk], SpeedMaxCount);
+        data.append<float>(&mov.m_float_values[SpeedWalk], SpeedMaxCount);
 
         if (mov.SplineEnabled())
         {
             const MoveSpline& move_spline = mov.move_spline;
-            MoveSplineFlag splineFlags = mov.move_spline.splineflags;
+            MoveSplineFlag splineFlags = move_spline.splineflags;
 
             data << splineFlags.raw;
 
@@ -321,6 +347,30 @@ namespace Movement
             data << uint8(move_spline.spline.mode());
             data << (move_spline.isCyclic() ? Vector3::zero() : move_spline.FinalDestination());
         }
+    }
+
+    void PacketBuilder::FullUpdate(const Transportable& mov, ByteBuffer& data)
+    {
+        // TODO: find a better way for udate flag manipulation
+        //size_t wpos = data.wpos();
+        //data.put<uint16>(wpos, data.read<uint16>(wpos) | UPDATEFLAG_POSITION);
+
+        if (mov.IsBoarded())
+            data << mov.GetTransport()->Owner.GetPackGUID();
+        else
+            data << uint8(0);
+        
+        data << mov.GetLocalPosition();
+        data << mov.GetGlobalPosition();
+        //if(GetTypeId() == TYPEID_CORPSE)
+            //*data << float(((WorldObjectType)this)->GetOrientation());
+        //else
+            data << float(0);
+    }
+
+    void PacketBuilder::FullUpdate(const MovementBase& mov, ByteBuffer& data)
+    {
+        data << mov.GetGlobalPosition();
     }
 
     void PacketBuilder::ReadClientStatus(ClientMoveState& mov, ByteBuffer& data)
@@ -370,13 +420,13 @@ namespace Movement
         data << mov.moveFlags.raw;
         data << un.moveFlags2.raw;
 
-        data << mov.GetUpdater().TickTime();
+        data << mov.GetUpdater().TickTime(); // or mov.getLastUpdate() ?
         data << mov.GetGlobalPosition();
 
         if (mov.moveFlags.ontransport)
         {
             data << mov.GetTransport()->Owner.GetPackGUID();
-            data << mov.m_local_position;
+            data << mov.GetLocalPosition();
             data << un.transport_time;
             data << un.transport_seat;
 
@@ -453,6 +503,14 @@ namespace Movement
         WorldPacket data(SMSG_FLIGHT_SPLINE_SYNC, 13);
         data << (float)(move_spline.timePassed() / (float)move_spline.Duration());
         data << mov.Owner.GetPackGUID();
+        broadcast(data);
+    }
+
+    void PacketBuilder::Send_MSG_MOVE_TELEPORT(const UnitMovement& mov, MsgDeliverer& broadcast)
+    {
+        WorldPacket data(MSG_MOVE_TELEPORT, 64);
+        data << mov.Owner.GetPackGUID();
+        WriteClientStatus(mov, data);
         broadcast(data);
     }
 

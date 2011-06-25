@@ -62,42 +62,38 @@ namespace Movement{
 
     void MO_Transport::UpdateState()
     {
-        m_transport.UpdatePassengerPositions();
+        m_transport.Iterate(Transport::PassengerRelocator(GetGlobalPosition()));
     }
 
-    void Transportable::_board(Transport& transport, const Location& local_position)
+    void Transportable::board(const TransportData& transport, const Location& local_position)
     {
-        mov_assert(&transport.Owner != this);
+        if (transport.transport == m_transport)
+        {
+            log_write("Transportable::board: trying to board on same transport");
+            return;
+        }
+        
+        mov_assert(transport.transport != this);
 
-        // should i unboard first?
-        //_unboard();
         if (IsBoarded())
-            m_transport_link.delink();
+            m_transport_container->Remove(this);
 
-        m_transport_link.Value = TransportLink(&transport.Owner, this);
-        transport._link_transportable(m_transport_link);
+        m_transport = transport.transport;
+        m_transport_container = transport.container;
+        m_transport_container->Add(this);
 
         m_local_position = local_position;
     }
 
-    void Transportable::_unboard()
+    void Transportable::unboard()
     {
         if (IsBoarded())
         {
-            m_transport_link.delink();
-            m_transport_link.Value = TransportLink();
+            m_transport_container->Remove(this);
+            m_transport = NULL;
+            m_transport_container = NULL;
 
             m_local_position = Location();
         }
-    }
-
-    void Transportable::BoardOn(Transport& m, const Location& local_position, int8 seatId)
-    {
-        _board(m, local_position);
-    }
-
-    void Transportable::Unboard()
-    {
-        _unboard();
     }
 }

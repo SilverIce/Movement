@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <list>
 #include "MovementBase.h"
 #include "mov_constants.h"
 #include "MoveSplineInit.h"
@@ -49,6 +48,7 @@ namespace Movement
         std::string ToString() const;
 
         void Initialize(const Location& position, MoveUpdater& updater);
+        Location AssumePosition(float time) const;
 
         /* Needed for monster movement only*/
         void BindOrientationTo(MovementBase& target);
@@ -56,17 +56,26 @@ namespace Movement
         bool IsOrientationBinded() const { return m_target_link.linked(); }
         const MovementBase* GetTarget() const { return m_target_link.Value.target;}
 
-        virtual void BoardOn(Transport& transport, const Location& local_position, int8 seatId);
         const Location& GetPosition() const { return *managed_position;}
         const Vector3& GetPosition3() const { return *managed_position;}
         Vector3 direction() const;
-        virtual void Unboard();
-
-        void Board(Transportable& t, const Location& local_position, int8 seatId) { t.BoardOn(m_transport, local_position, seatId);}
 
     public:
+        virtual void BoardOn(const TransportData& m, const Location& local_position);
+        void BoardOn(const TransportData& transport, const Location& local_position, int8 seatId);
+        virtual void Unboard();
 
+        /*void Board(Transportable& ps, const Location& local_pos)
+        {
+            ps.BoardOn(TransportData(this,&m_transport),local_pos);
+        }*/
 
+        void Board(UnitMovement& ps, const Location& local_pos, int8 seat)
+        {
+            ps.BoardOn(TransportData(this,&m_transport),local_pos, seat);
+        }
+
+        void UnboardAll() { m_transport.Iterate(Transport::Unboarder());}
 
     public:
         // Used by server side controlled movement
@@ -82,7 +91,7 @@ namespace Movement
         void ApplyMoveMode(MoveMode mode, bool apply);
 
         /// Apply/remove modes
-        void ApplyRootMode(bool apply) { ApplyMoveMode(MoveModeRoot, apply); }
+        void ApplyRootMode(bool apply);
         void ApplySwimMode(bool apply) { ApplyMoveMode(MoveModeSwim, apply); }
         void ApplyWalkMode(bool apply) { ApplyMoveMode(MoveModeWalk, apply); }
         void ApplyWaterWalkMode(bool apply) { ApplyMoveMode(MoveModeWaterwalk, apply); }
@@ -91,13 +100,14 @@ namespace Movement
         void ApplyHoverMode(bool apply) { ApplyMoveMode(MoveModeHover, apply); }
 
         void Teleport(const Location& loc);
-        void SetCollisionHeight(float value);
-        float GetCollisionHeight() const { return GetParameter(Parameter_CollisionHeight);}
 
         bool IsWalking() const { return moveFlags.walk_mode;}
         bool IsMoving() const { return moveFlags & UnitMoveFlag::Mask_Moving;}
         bool IsTurning() const { return moveFlags & (UnitMoveFlag::Turn_Left | UnitMoveFlag::Turn_Right);}
         bool IsFlying() const { return moveFlags & (UnitMoveFlag::Flying | UnitMoveFlag::GravityDisabled);}
+
+        void SetCollisionHeight(float value);
+        float GetCollisionHeight() const { return GetParameter(Parameter_CollisionHeight);}
 
         void SetSpeed(SpeedType type, float s);
         float GetSpeed(SpeedType type) const { return GetParameter((FloatParameter)(0 + type)); }
@@ -126,6 +136,7 @@ namespace Movement
         MoveUpdater& GetUpdater() const { return updatable.GetUpdater();}
 
         void ApplyState(const ClientMoveState& state);
+        void ApplyMoveMode_NoBroadcast(MoveMode mode, bool apply);
     public:
         enum FloatParameter
         {
@@ -175,6 +186,9 @@ namespace Movement
 
     private:
         friend class PacketBuilder;
+        //friend class Client;
+        friend class IModifier;
+        friend struct CMovement;
 
         UpdatableMovement updatable;
         Location * managed_position;
@@ -196,9 +210,60 @@ namespace Movement
     };
 
 
+    class IModifier
+    {
+        UnitMovement& mov;
+    public:
+
+        IModifier(UnitMovement& m) : mov(m) {}
+
+        void SetCollisionHeight(float value);
+        void SetSpeed(SpeedType type, float s);
+        void ApplyMoveMode(MoveMode mode, bool apply);
+    };
 
 
+    /*
+    Who interacts with movement?
+        - movestates from client -> session-> queue state
+    core:
+        chain: server pck-> client's answer
 
+        sometimes need send message to client-controller (state has changed, knockback opcode maybe..)
+
+        Auras wants to:
+            - apply or remove hover, waterwalk, fly, root, slow fall etc modes
+        Movegens want to:
+            - launch spline movement by some path, with some addit. parameters (falling, parabolic etc)
+        Session(client) wants to:
+            handle messages from client, apply movestates from client, got an answers at some requests
+            sometimes we want to: change state and send some packet to client
+
+        There are three message types. These messages are needed to:
+            - broadcasted to all clients
+            - sended only to our client
+            - receivee and handlee somehow
+
+        Two kinds of message chains:
+            smsg(server is initiator) -> cmsg(client answers)
+            cmsg(client is initiator) -> smsg(client answers)
+
+            struct ClientRequests
+            {
+            void handleAPacket();
+            void HandleBPacket();
+            void HandleCPacket();
+            }
+
+            struct MaNGOSRequests
+            {
+            void TeleportTo(); // 2 modes
+            void KnockBack(); // 2
+
+            void ApplyMode();
+            }
+
+    */
 
     struct OnEventArgs
     {
@@ -227,4 +292,30 @@ namespace Movement
         int32 data;
     };
 
+/*
+    class IUnitMovement
+    {
+        // Used by server side controlled movement
+        void EnableSpline() { moveFlags.spline_enabled = true; }
+        void DisableSpline() { moveFlags.spline_enabled = false; }
+        bool SplineEnabled() const { return moveFlags.spline_enabled; }
+        void CleanDirection()  { moveFlags &= ~UnitMoveFlag::Mask_Directions; }
+        void SetForwardDirection() { moveFlags.forward = true; }
+
+    public:
+
+        virtual void UpdateState();
+
+        virtual void SetSpeed(SpeedType type, float s);
+        virtual void ApplyMoveMode(MoveMode mode, bool apply);
+
+        virtual void EnterTransport(Transport& t, Location offset, int8 seatId = -1);
+
+        void BindOrientationTo(MovementBase& target);
+        void UnbindOrientation();
+        bool IsOrientationBinded() const { return m_target_link; }
+        MovementBase* GetTarget() { return m_target_link.Value.target;}
+        const MovementBase* GetTarget() const { return m_target_link.Value.target;}
+    };
+*/
 }

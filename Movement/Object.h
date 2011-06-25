@@ -5,6 +5,7 @@
 #include "typedefs.h"
 #include "ByteBuffer.h"
 #include "UpdateFields.h"
+#include "ObjectGuid.h"
 
 using Movement::int8;
 using Movement::uint8;

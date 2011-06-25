@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="movement"
 	ProjectGUID="{A395F7CE-51DF-4819-8760-C1C95726C8C1}"
 	RootNamespace="main"

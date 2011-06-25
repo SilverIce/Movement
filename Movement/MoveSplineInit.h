@@ -97,12 +97,81 @@ namespace Movement
             return *this;
         }
 
-    private:
+    protected:
 
         MoveSplineInitArgs args;
         UnitMovement&  state;
     };
+    
+    /*  I have a feeling that blizz have 5 movespline initializers:
+     */
 
+    class MoveCommonInit : private MoveSplineInit
+    {
+    public:
+
+        explicit MoveCommonInit(UnitMovement& m) : MoveSplineInit(m) {}
+
+        void Launch();
+
+        using MoveSplineInit::MoveTo;
+        using MoveSplineInit::MovebyPath;
+        using MoveSplineInit::Path;
+        using MoveSplineInit::SetVelocity;
+        using MoveSplineInit::SetFirstPointId;
+
+        void SetFacing(float angle) {MoveSplineInit::SetFacing(angle);}
+        //void SetFacing(MovementBase& target);
+        //void Add_Unk6Flag();
+    };
+
+    class MoveParabolicInit : private MoveSplineInit
+    {
+    public:
+        MoveParabolicInit(UnitMovement& m) : MoveSplineInit(m) {}
+
+        void MovebyTrajectory(const Vector3& dest, float amplitude, float velocity, bool knockback = false, float time_perc = 0.f);
+        void MovebyTrajectory(const PointsArray& path, float amplitude, float velocity, bool knockback = false, float time_perc = 0.f);
+
+        //void SetWalk();
+        //void Add_Unk8Flag();
+    };
+
+    class MoveFallInit
+    {
+        MoveSplineInit init;
+    public:
+        MoveFallInit(UnitMovement& m, const Vector3& destination) : init(m)
+        {
+            init.MoveTo(destination);
+            init.SetFall();
+            init.Launch();
+        }
+    };
+
+    class MoveCyclicInit : private MoveSplineInit
+    {
+    public:
+
+        MoveCyclicInit(UnitMovement& m) : MoveSplineInit(m) {}
+
+        void Launch();
+        using MoveSplineInit::SetVelocity;
+        using MoveSplineInit::Path;
+        using MoveSplineInit::SetFirstPointId;
+    };
+/*
+    class MoveAnimInit
+    {
+    public:
+        MoveAnimInit(UnitMovement& m) : MoveSplineInit(m) {}
+        void Launch();
+
+        void SetWalk();
+        void SetFly();
+        void MoveTo(const Vector3& dest);
+    };
+*/
     inline void MoveJumpInit(UnitMovement& st, const Vector3& dest, float velocity, float parabolic_heigth = 0.5f)
     {
         MoveSplineInit init(st);

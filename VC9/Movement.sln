@@ -21,6 +21,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib.lib", "..\dep\zlib\win\VC9\zlib.lib.vcproj", "{1B66DDFF-4739-4911-B44D-D63E8B696075}"
 EndProject
 Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = Movement.vsmdi
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Resease_with_optimizations = Debug|Resease_with_optimizations
 		Debug|Win32 = Debug|Win32

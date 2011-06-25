@@ -19,6 +19,8 @@ namespace Movement
         virtual void operator()(WorldPacket&) = 0;
     };
 
+    class MovementBase;
+    class Transportable;
     class UnitMovement;
     struct ClientMoveState;
     template<class T> class Spline;
@@ -43,10 +45,14 @@ namespace Movement
         static void SplinePathSend(const UnitMovement& mov, MsgDeliverer&);
         static void SplineSyncSend(const UnitMovement& mov, MsgDeliverer&);
         static void FullUpdate(const UnitMovement& mov, ByteBuffer& );
+        static void FullUpdate(const Transportable& mov, ByteBuffer& );
+        static void FullUpdate(const MovementBase& mov, ByteBuffer& );
 
         static void WriteClientStatus(const UnitMovement& mov, ByteBuffer& data);
         static void WriteClientStatus(const ClientMoveState& mov, ByteBuffer& data);
         static void ReadClientStatus(ClientMoveState& state, ByteBuffer& data);
+
+        static void Send_MSG_MOVE_TELEPORT(const UnitMovement& mov, MsgDeliverer&);
         static void Send_HeartBeat(const UnitMovement& mov, MsgDeliverer&);     // actually i shouldn't use it: only client is author of such packets
     };
 }

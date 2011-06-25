@@ -9,8 +9,8 @@
 #pragma once
 
 // do not commit that assert redefinition!
-#include "G3D/debugAssert.h"
-#define mov_assert(exp) alwaysAssertM(exp, "")
+//#include "G3D/debugAssert.h"
+//#define mov_assert(exp) KASSERT(exp)/*alwaysAssertM(exp, "")*/
 
 namespace G3D
 {
@@ -49,6 +49,7 @@ namespace Movement
 
     extern void log_write(const char* fmt, ...);
     extern void log_console(const char* str, ...);
+    extern void log_write_trace();
 
     template<typename T, size_t N>
     inline size_t CountOf(const T (&t)[N])
@@ -61,6 +62,12 @@ namespace Movement
     #define CONCAT1(x, y) x##y
     #define static_assert(expr) typedef char CONCAT(static_assert_failed_at_line_, __LINE__) [(expr) ? 1 : -1]
 #endif
+
+#define mov_assert(expr)\
+    if (!(expr)){\
+        log_write("%s:%i Error: Assertion '%s' in %s failed", __FILE__, __LINE__, #expr, __FUNCTION__);\
+        log_write_trace();\
+    }\
 
     template<class T, T limit>
     class counter

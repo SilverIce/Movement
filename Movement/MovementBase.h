@@ -12,6 +12,8 @@
 #include "MoveListener.h"
 #include "LinkedList.h"
 #include "Location.h"
+#include <list>
+#include <algorithm>
 
 class WorldObject;
 
@@ -45,8 +47,11 @@ namespace Movement
 
         ~UpdatableMovement() { mov_assert(!IsUpdateScheduled());}
 
-        void CleanReferences()
+        void CleanReferences() { Dereference(m_updater);}
+
+        void Dereference(MoveUpdater * updater)
         {
+            mov_assert(updater == m_updater);
             UnScheduleUpdate();
             m_updater = NULL;
         }
@@ -55,10 +60,9 @@ namespace Movement
         void ScheduleUpdate();
         void UnScheduleUpdate();
         bool IsUpdateScheduled() const { return updater_link.linked();}
-
         MoveUpdater& GetUpdater() const { mov_assert(m_updater);return *m_updater;}
-        bool HasUpdater() const { return m_updater;}
-        void SetUpdater(MoveUpdater& upd) { /*mov_assert(m_updater == NULL);*/m_updater = &upd;}
+        bool HasUpdater() const { return m_updater != NULL;}
+        void SetUpdater(MoveUpdater& upd) { mov_assert(m_updater == NULL);m_updater = &upd;}
         void UpdateState() { m_strategy->UpdateState();}
     };
 
@@ -168,15 +172,15 @@ namespace Movement
 
     class Transport;
     class Transportable;
-    struct TransportLink
+    struct TransportData
     {
-        TransportLink() : transport(0), transportable(0) {}
+        TransportData() : transport(0), container(0) {}
 
-        TransportLink(MovementBase* transport_, Transportable* transportable_)
-            : transport(transport_), transportable(transportable_) {}
+        TransportData(MovementBase* transport_, Transport* _transport_container)
+            : transport(transport_), container(_transport_container) {}
 
         MovementBase* transport;
-        Transportable* transportable;
+        Transport* container;
     };
 
     class Transportable : public MovementBase
@@ -195,106 +199,118 @@ namespace Movement
             MovementBase::CleanReferences();
         }
 
-        virtual void BoardOn(Transport& m, const Location& local_position, int8 seatId);
-        virtual void Unboard();
+        virtual void BoardOn(const TransportData& m, const Location& local_position) = 0;
+        virtual void Unboard() = 0;
 
-        bool IsBoarded() const { return m_transport_link.linked();}
-        const MovementBase* GetTransport() const { return m_transport_link.Value.transport;}
+        bool IsBoarded() const { return m_transport != NULL;}
+        const MovementBase* GetTransport() const { return m_transport;}
 
         const Location& GetLocalPosition() const { return m_local_position;}
 
     protected:
 
-        void _board(Transport& m, const Location& local_position);
-        void _unboard();
+        void board(const TransportData& m, const Location& local_position);
+        void unboard();
 
         Location m_local_position;
     private:
-        LinkedListElement<TransportLink> m_transport_link;
+        MovementBase* m_transport;
+        Transport* m_transport_container;
     };
 
     class Transport
     {
     public:
 
-        void UnBoardAll()
-        {
-            struct _unboard{
-                inline void operator()(TransportLink& m) const { m.transportable->Unboard(); }
-            };
-            m_passenger_references.Iterate(_unboard());
-            mov_assert(Empty());
-        }
+        typedef std::vector<Transportable*> ContainerType;
 
-        void UpdatePassengerPositions()
+        struct PassengerRelocator
         {
-            struct PassengerRelocator
+            Location transport_pos;
+            Vector2 dir;
+
+            PassengerRelocator(const Location& transport_position)
+                : transport_pos(transport_position),
+                  dir(cos(transport_pos.orientation),sin(transport_pos.orientation))
             {
-                Location transport_pos;
-                Vector2 dir;
+            }
 
-                PassengerRelocator(const MovementBase& transport)
-                {
-                    transport_pos = transport.GetGlobalPosition();
-                    dir = Vector2(cos(transport_pos.orientation),sin(transport_pos.orientation));
-                }
+            inline void operator()(Transportable* ps)
+            {
+                ps->SetGlobalPosition(CoordTranslator::ToGlobal(transport_pos, dir, ps->GetLocalPosition()));            
+            }
+        };
 
-                inline void operator()(TransportLink& link)
-                {
-                    link.transportable->SetGlobalPosition(
-                        CoordTranslator::ToGlobal(transport_pos, dir, link.transportable->GetPosition()));            
-                }
-            };
-            if (!Empty())
-                m_passenger_references.Iterate(PassengerRelocator(Owner));
-        }
+        struct Unboarder{
+            inline void operator()(Transportable* ps) const { ps->Unboard(); }
+        };
 
-        void CleanReferences()
+        template<class T> void Iterate(T func)
         {
-            UnBoardAll();
+            if (!m_passengers.empty())
+            {
+                ContainerType copy(m_passengers);
+                std::for_each(copy.begin(),copy.end(),func);
+            }
         }
 
-        explicit Transport(MovementBase& _owner) : Owner(_owner) {}
+        explicit Transport() {}
         ~Transport() { mov_assert(Empty());}
 
-        bool Empty() const { return m_passenger_references.empty();}
-        MovementBase& Owner;
-        const Location& GetGlobalPosition() const { return Owner.GetGlobalPosition();}
+        bool Empty() const { return m_passengers.empty();}
 
-        void _link_transportable(LinkedListElement<TransportLink>& t) { m_passenger_references.link(t);}
+        void Add(Transportable* ps) { m_passengers.push_back(ps);}
+        void Remove(Transportable* ps) { m_passengers.erase(find(m_passengers.begin(),m_passengers.end(),ps));}
 
     private:
-        LinkedList<TransportLink> m_passenger_references;
+        ContainerType m_passengers;
     };
 
     class MO_Transport : public MovementBase, public IUpdatable
     {
     public:
 
-        explicit MO_Transport(WorldObject& owner);
+        explicit MO_Transport(WorldObjectType owner);
         virtual ~MO_Transport();
 
         virtual void CleanReferences()
         {
-            m_transport.CleanReferences();
-            MovementBase::CleanReferences();
+            UnBoardAll();
             updatable.CleanReferences();
+            MovementBase::CleanReferences();
         }
 
-        virtual void UpdateState();   // does nothing.. yet
+        virtual void UpdateState();
 
-        void Board(Transportable& t, const Location& local_position) { t.BoardOn(m_transport, local_position, -1);}
-        void UnBoardAll() { m_transport.UnBoardAll();}
+        void Board(Transportable& t, const Location& local_position)
+        {
+            t.BoardOn(TransportData(this,&m_transport), local_position);
+        }
 
-        void ScheduleUpdate() { updatable.ScheduleUpdate();}
-        void UnScheduleUpdate() { updatable.UnScheduleUpdate();}
-        bool HasUpdater() const { return updatable.HasUpdater();}
+        void UnBoardAll() { m_transport.Iterate(Transport::Unboarder());}
+
         void SetUpdater(MoveUpdater& upd) { updatable.SetUpdater(upd);}
 
     private:
 
         Transport m_transport;
         UpdatableMovement updatable;
+    };
+
+    class StationaryMovObject : public Transportable
+    {
+    public:
+        explicit StationaryMovObject(WorldObjectType owner) : Transportable(owner) {}
+
+        void BoardOn(const TransportData& m, const Location& local_position)
+        {
+            Transportable::board(m, local_position);
+        }
+
+        virtual void Unboard()
+        {
+            Transportable::unboard();
+        }
     };
 
 }

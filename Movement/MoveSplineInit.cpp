@@ -81,7 +81,7 @@ namespace Movement
 
     MoveSplineInit::MoveSplineInit(UnitMovement& m) : state(m)
     {
-        state.UpdateState();
+        //state.UpdateState();
     }
 
     void MoveSplineInit::SetAnimation(AnimType anim, float anim_time)
@@ -93,5 +93,25 @@ namespace Movement
     void MoveSplineInit::SetBackward()
     {
         args.flags.backward = true;
+    }
+
+    void MoveCommonInit::Launch()
+    {
+        if (state.IsFlying())
+            SetFly();
+
+        SetWalk(state.IsWalking());
+        MoveSplineInit::Launch();
+    }
+
+    void MoveCyclicInit::Launch()
+    {
+        SetCyclic();
+        if (state.IsFlying())
+            SetFly();
+        else
+            SetSmooth();
+        SetWalk(state.IsWalking());
+        MoveSplineInit::Launch();
     }
 }

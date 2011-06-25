@@ -1,13 +1,15 @@
 
 #include "UnitMovement.h"
-#include "Object.h"
+//#include "Object.h"
 #include "moveupdater.h"
 #include "MoveSpline.h"
 #include "ClientMovement.h"
 #include "MoveSplineInit.h"
+//#include "research.h"
 #include "MovementMessage.h"
 
 #include <sstream>
+#include "Object.h"
 
 namespace Movement
 {
@@ -78,8 +80,36 @@ namespace Movement
         }
     }
 
+    static const uint32 Mode2Flag_table[MoveModeMaxCount]=
+    {
+        UnitMoveFlag::Walk_Mode,            // MoveModeWalk
+        UnitMoveFlag::Root,                 // MoveModeRoot
+        UnitMoveFlag::Swimming,             // MoveModeSwim
+        UnitMoveFlag::Waterwalking,         // MoveModeWaterwalk
+        UnitMoveFlag::Can_Safe_Fall,        // MoveModeSlowfall
+        UnitMoveFlag::Hover,                // MoveModeHover
+        UnitMoveFlag::Flying,               // MoveModeFly
+        UnitMoveFlag::GravityDisabled,           // MoveModeLevitation
+        UnitMoveFlag::Can_Fly,              // MoveModeCanFly
+    };
+
+    void UnitMovement::ApplyMoveMode_NoBroadcast(MoveMode mode, bool apply)
+    {
+        if (apply)
+        {
+            moveFlags |= Mode2Flag_table[mode];
+            move_mode |= (1 << mode);
+        }
+        else
+        {
+            moveFlags &= ~Mode2Flag_table[mode];
+            move_mode &= ~(1 << mode);
+        }
+    }
+
     UnitMovement::UnitMovement(WorldObjectType owner) :
-        Transportable(owner), move_spline(*new MoveSpline()), m_transport(*this),
+        Transportable(owner),
+        move_spline(*new MoveSpline()),
         m_client(NULL)
     {
         updatable.SetUpdateStrategy(this);
@@ -121,7 +151,7 @@ namespace Movement
         }
 
         UnbindOrientation();
-        m_transport.CleanReferences();
+        UnboardAll();
         Transportable::CleanReferences();
         updatable.CleanReferences();
     }
@@ -130,6 +160,25 @@ namespace Movement
     {
         speed_type = UnitMovement::SelectSpeedType(moveFlags);
         m_float_values[Parameter_SpeedCurrent] = GetSpeed(speed_type);
+    }
+
+    const float AssumePosition_length_limit = 20.f;
+
+    Location UnitMovement::AssumePosition(float time) const
+    {
+        if (moveFlags.hasDirection() && time)
+        {
+            Location my_pos = this->GetPosition();
+            float length = std::min(time * GetCurrentSpeed(), AssumePosition_length_limit);
+
+            Vector3 dir2d = direction();
+
+            return Location(my_pos.x + dir2d.x * length,
+                my_pos.y + dir2d.y * length,
+                my_pos.z, my_pos.orientation);
+        }
+        else
+            return GetPosition();
     }
 
     Vector3 UnitMovement::direction() const
@@ -166,7 +215,11 @@ namespace Movement
     void UnitMovement::Initialize(const Location& pos, MoveUpdater& updater)
     {
         SetPosition(pos);
-        updatable.SetUpdater(updater);
+
+        if (!HasUpdater())   // currently called many times by mangos
+            updatable.SetUpdater(updater);
+
+        updatable.ScheduleUpdate();
         setLastUpdate(GetUpdater().TickTime());
     }
 
@@ -195,7 +248,7 @@ namespace Movement
             } 
             else
             {
-                // Unboard();
+                unboard();
             }
         }
 
@@ -228,8 +281,7 @@ namespace Movement
 
             if (position.w > G3D::twoPi())
                 position.w -= G3D::twoPi();
-        }
-    */
+        }*/
     }
 
     void UnitMovement::BindOrientationTo(MovementBase& target)
@@ -245,16 +297,15 @@ namespace Movement
         // can i target self?
         m_target_link.Value = TargetLink(&target, this);
         target._link_targeter(m_target_link);
-        Owner.SetUInt64Value(UNIT_FIELD_TARGET, target.Owner.GetGUID());
+        //Owner.SetUInt64Value(UNIT_FIELD_TARGET, target.Owner.GetGUID());
     }
 
     void UnitMovement::UnbindOrientation()
     {
         m_target_link.delink();
         m_target_link.Value = TargetLink();
-        Owner.SetUInt64Value(UNIT_FIELD_TARGET, 0);
+        //Owner.SetUInt64Value(UNIT_FIELD_TARGET, 0);
     }
-
 
     struct UnitMovement::MoveSplineUpdater
     {
@@ -302,14 +353,20 @@ namespace Movement
     {
         MSTime now = GetUpdater().TickTime();
 
+        if (now.time < getLastUpdate().time)
+        {
+            log_write("now.time < getLastUpdate().time");
+            return;
+        }
+
         if (SplineEnabled())
         {
-            int32 difftime = (now - getLastUpdate()).time;
-            if (move_spline.timeElapsed() <= difftime || difftime >= MoveSpline_UpdateDelay)
-            {
-                MoveSplineUpdater(*this, std::min(difftime,(int32)Maximum_update_difftime));
+            uint32 difftime = (now - getLastUpdate()).time;
+            //if (move_spline.timeElapsed() <= difftime || difftime >= MoveSpline_UpdateDelay)
+            //{
+                MoveSplineUpdater(*this, std::min<uint32>(difftime,Maximum_update_difftime));
                 setLastUpdate(now);
-            }
+            //}
         }
         else
         {
@@ -327,24 +384,46 @@ namespace Movement
             }
             setLastUpdate(now);
         }
+
+        m_transport.Iterate(Transport::PassengerRelocator(GetPosition()));
+        //if (IsServerControlled() && !GetTarget() && !SplineEnabled() && m_transport.Empty())
+            //updatable.UnScheduleUpdate();
     }
 
-    void UnitMovement::BoardOn(Transport& transport, const Location& local_position, int8 seatId)
+    void UnitMovement::BoardOn(const TransportData& m, const Location& local_position)
     {
-        _board(transport, local_position);
-        set_managed_position(m_local_position);
+        BoardOn(m, local_position, -1);
+    }
+
+    void UnitMovement::BoardOn(const TransportData& transport, const Location& local_position, int8 seatId)
+    {
+        board(transport, local_position);
+        managed_position = &m_local_position;
 
         m_unused.transport_seat = seatId;
         moveFlags.ontransport = true;
+
+        if (IsServerControlled())
+            MoveSplineInit(*this).Launch();
+        else
+            PacketBuilder::Send_HeartBeat(*this, MsgBroadcast(this));
     }
 
     void UnitMovement::Unboard()
     {
-        _unboard();
-        reset_managed_position();
+        if (!IsBoarded())
+            return;
+
+        unboard();
+        managed_position = (Location*)&GetGlobalPosition();
 
         m_unused.transport_seat = 0;
         moveFlags.ontransport = false;
+
+        if (IsServerControlled())
+            MoveSplineInit(*this).Launch();
+        else
+            PacketBuilder::Send_HeartBeat(*this, MsgBroadcast(this));
     }
 
     void UnitMovement::SetPosition(const Location& v)
@@ -367,22 +446,23 @@ namespace Movement
         UnitMoveFlag moveFlag_new;
         SpeedType speed_type_new;
         PrepareMoveSplineArgs(args, moveFlag_new, speed_type_new);
-
+      
         if (!args.Validate())
         {
             log_console("UnitMovement::LaunchMoveSpline: can't lauch, invalid movespline args");
             return;
         }
 
-        setLastUpdate(GetUpdater().TickTime());
-        speed_type = speed_type_new;
-        moveFlags = moveFlag_new;
+        if (getLastUpdate() != GetUpdater().TickTime())
+            UpdateState();  // migh be unsafe
 
         move_spline.Initialize(args);
-        updatable.ScheduleUpdate();
 
         SetParameter(Parameter_SpeedCurrent, args.velocity);
-        SetControl(MovControlServer);
+        speed_type = speed_type_new;
+        moveFlags = moveFlag_new | UnitMoveFlag::Spline_Enabled;
+        //setLastUpdate(GetUpdater().TickTime());
+        //updatable.ScheduleUpdate();
 
         PacketBuilder::SplinePathSend(*this, MsgBroadcast(this));
     }
@@ -392,10 +472,29 @@ namespace Movement
         args.path[0] = GetPosition3();    //correct first vertex
         args.splineId = GetUpdater().NewMoveSplineId();
 
-        moveFlag_new = moveFlags & ~(UnitMoveFlag::Mask_Directions | UnitMoveFlag::Mask_Moving) | UnitMoveFlag::Spline_Enabled;
-        moveFlag_new.backward = args.flags.backward;
-        moveFlag_new.forward = !args.flags.backward && !args.flags.falling;
-        moveFlag_new.walk_mode = args.flags.walkmode;
+        if (IsOrientationBinded() && !args.flags.isFacing())
+        {
+            //args.facing.target = GetTarget()->Owner.GetGUID();
+            args.flags.EnableFacingTarget();
+        }
+
+        /// mostly client logic:
+        {
+            // client removes only Backward, Pendingstop, Pendingforward, Pendingbackward flags 
+            moveFlag_new = moveFlags & ~(UnitMoveFlag::Mask_Directions|UnitMoveFlag::Mask_Moving|
+                UnitMoveFlag::Pendingforward|UnitMoveFlag::Pendingstop|UnitMoveFlag::Pendingbackward);
+            moveFlag_new.forward = !args.flags.falling && !args.flags.backward;
+            moveFlag_new.backward = args.flags.backward;
+            moveFlag_new.walk_mode = args.flags.walkmode;
+            /*if (args.flags.falling)
+            {
+                CMovement cm(moveFlag_new);
+                if (moveFlags.flying)
+                    cm.DisableFlying();
+                cm.CMovement__SetFallVelocity(0);
+                moveFlag_new = cm.moveFlags;
+            }*/
+        }
 
         // select velocity if was not set in SetVelocity
         if (args.velocity == 0.f)
@@ -439,6 +538,14 @@ namespace Movement
             st << move_spline.ToString();
 
         return st.str();
+    }
+
+    void UnitMovement::ApplyRootMode(bool apply)
+    {
+        ApplyMoveMode(MoveModeRoot, apply);
+
+        if (IsServerControlled())
+            MoveSplineInit(*this).Launch();
     }
 
     uint32 UnitMovement::MoveSplineId() const

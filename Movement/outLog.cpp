@@ -2,6 +2,9 @@
 #include <stdarg.h>
 #include <time.h>
 
+//#include "ace/Stack_Trace.h"
+
+
 namespace Movement{
 
     static bool MOV_LOG_FILE_ENABLED     = true;
@@ -63,6 +66,12 @@ namespace Movement{
         va_end(ap);
         printf( "\n" );
         fflush(stdout);
+    }
+
+    void log_write_trace()
+    {
+        //ACE_Stack_Trace st;
+        //log_write("Stack Trace:\n%s\n", st.c_str());
     }
 }
 
