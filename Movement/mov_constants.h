@@ -37,7 +37,7 @@ namespace Movement
         MoveModeSlowfall,
         MoveModeHover,
         MoveModeFly,
-        MoveModeLevitation,
+        MoveModeGravityDisabled,
         MoveModeCanFly,
         MoveModeMaxCount
     };

@@ -78,34 +78,6 @@ namespace Movement
         }
     }
 
-    static const uint32 Mode2Flag_table[MoveModeMaxCount]=
-    {
-        {/*WALK_BEGAN,*/        UnitMoveFlag::Walk_Mode},
-        {/*ROOT_BEGAN,*/        UnitMoveFlag::Root},
-        {/*SWIM_BEGAN,*/        UnitMoveFlag::Swimming},
-        {/*WATERWALK_MODE,*/    UnitMoveFlag::Waterwalking},
-        {/*SLOW_FALL_BEGAN,*/   UnitMoveFlag::Can_Safe_Fall},
-        {/*HOVER_BEGAN,*/       UnitMoveFlag::Hover},
-        {/*FLY_BEGAN, */        UnitMoveFlag::Flying},
-        {                       UnitMoveFlag::Levitating},
-        {                       UnitMoveFlag::Can_Fly},
-    };
-
-    void UnitMovement::ApplyMoveMode( MoveMode mode, bool apply )
-    {
-        if (apply)
-        {
-            moveFlags |= Mode2Flag_table[mode];
-            move_mode |= (1 << mode);
-        }
-        else
-        {
-            moveFlags &= ~Mode2Flag_table[mode];
-            move_mode &= ~(1 << mode);
-        }
-    }
-
-
     UnitMovement::UnitMovement(WorldObjectType owner) :
         Transportable(owner), move_spline(*new MoveSpline()), m_transport(*this),
         m_client(NULL)
@@ -493,27 +465,44 @@ namespace Movement
             return 0;
     }
 
+    ClientMoveState UnitMovement::ClientState() const
+    {
+        ClientMoveState state;
+        static_cast<_ClientMoveState>(state) = m_unused;
+        state.ms_time = getLastUpdate();
+        state.world_position = GetGlobalPosition();
+        state.moveFlags = moveFlags;
+
+        if (IsBoarded())
+        {
+            state.t_guid = GetTransport()->Owner.GetObjectGuid().GetRawValue();
+            state.transport_position = GetLocalPosition();
+        }
+        return state;
+    }
+
     struct ReqRespMsg
     {
-        uint16 request;
-        uint16 response;
+        uint16 smsg_request;
+        uint16 cmsg_response;
         uint16 msg;
+        uint16 smsg_spline;
     };
 
     /* request-response-msg order*/
-    #define CLIENT_VALUE_CHANGE(mode)   {SMSG_FORCE_##mode##_CHANGE, CMSG_FORCE_##mode##_CHANGE_ACK, MSG_MOVE_SET_##mode},
+    #define VALUE_CHANGE(mode)   {SMSG_FORCE_##mode##_CHANGE, CMSG_FORCE_##mode##_CHANGE_ACK, MSG_MOVE_SET_##mode,SMSG_SPLINE_SET_##mode},
     static const ReqRespMsg ValueChange2Opc_table[UnitMovement::Parameter_End] =
     {
-        CLIENT_VALUE_CHANGE(WALK_SPEED)
-        CLIENT_VALUE_CHANGE(RUN_SPEED)
-        CLIENT_VALUE_CHANGE(SWIM_BACK_SPEED)
-        CLIENT_VALUE_CHANGE(SWIM_SPEED)
-        CLIENT_VALUE_CHANGE(RUN_BACK_SPEED)
-        CLIENT_VALUE_CHANGE(FLIGHT_SPEED)
-        CLIENT_VALUE_CHANGE(FLIGHT_BACK_SPEED)
-        CLIENT_VALUE_CHANGE(TURN_RATE)
-        CLIENT_VALUE_CHANGE(PITCH_RATE)
-        {SMSG_MOVE_SET_COLLISION_HGT,CMSG_MOVE_SET_COLLISION_HGT_ACK,MSG_MOVE_SET_COLLISION_HGT},
+        VALUE_CHANGE(WALK_SPEED)
+        VALUE_CHANGE(RUN_SPEED)
+        VALUE_CHANGE(SWIM_BACK_SPEED)
+        VALUE_CHANGE(SWIM_SPEED)
+        VALUE_CHANGE(RUN_BACK_SPEED)
+        VALUE_CHANGE(FLIGHT_SPEED)
+        VALUE_CHANGE(FLIGHT_BACK_SPEED)
+        VALUE_CHANGE(TURN_RATE)
+        VALUE_CHANGE(PITCH_RATE)
+        {SMSG_MOVE_SET_COLLISION_HGT,CMSG_MOVE_SET_COLLISION_HGT_ACK,MSG_MOVE_SET_COLLISION_HGT,0},
     };
     #undef CLIENT_VALUE_CHANGE
 
@@ -523,21 +512,46 @@ namespace Movement
         UnitMovement::FloatParameter m_value_type;
         float m_value;
 
+        FloatValueChangeRequest(Client * client, UnitMovement::FloatParameter value_type, float value) :
+              RespHandler(ValueChange2Opc_table[value_type].cmsg_response),
+              m_value_type(value_type),
+              m_reqId(client->AddRespHandler(this)),
+              m_value(value)
+        { 
+            if (uint16 opcode = ValueChange2Opc_table[value_type].smsg_request)
+            {
+                WorldPacket data(opcode, 32);
+                data << client->controlled()->Owner.GetPackGUID();
+                data << m_reqId;
+                if (m_value_type == UnitMovement::Parameter_SpeedRun)
+                    data << int8(0);                               // new 2.1.0
+                data << m_value;
+                client->SendPacket(data);
+            }
+        }
+
     public:
 
-        FloatValueChangeRequest(Client * client, UnitMovement::FloatParameter _value_type, float _value) :
-              RespHandler(ValueChange2Opc_table[_value_type].response),
-              m_value_type(_value_type),
-              m_reqId(client->AddRespHandler(this)),
-              m_value(_value)
-        {     
-            WorldPacket data(ValueChange2Opc_table[m_value_type].request, 32);
-            data << client->controlled()->Owner.GetPackGUID();
-            data << m_reqId;
-            if (m_value_type == UnitMovement::Parameter_SpeedRun)
-                data << int8(0);                               // new 2.1.0
-            data << m_value;
-            client->SendPacket(data);
+        static void Launch(UnitMovement * mov, UnitMovement::FloatParameter value_type, float value)
+        {
+            if (mov->IsClientControlled())
+            {
+                new FloatValueChangeRequest(mov->client(), value_type, value);
+            }
+            else
+            {
+                // FIXME: currently there is no way to change speed of already moving server-side controlled unit (spline movement)
+                // there is only one hacky way - launch new spline movement.. that's how blizz doing this
+                // if (mov->SplineEnabled())
+                mov->SetParameter(value_type, value);
+                if (uint16 opcode = ValueChange2Opc_table[value_type].smsg_spline)
+                {
+                    WorldPacket data(opcode, 16);
+                    data << mov->Owner.GetPackGUID();
+                    data << value;
+                    MaNGOS_API::BroadcastMessage(&mov->Owner, data);
+                }
+            }
         }
 
         virtual void OnReply(Client * client, WorldPacket& data) override
@@ -550,7 +564,6 @@ namespace Movement
             data >> client_req_id;
             data >> client_state;
             data >> client_value;
-
             if (client_req_id != m_reqId)
             {
                 log_write("FloatValueChangeRequest::OnReply: wrong counter value: %u and should be: %u",client_req_id,m_reqId);
@@ -561,58 +574,163 @@ namespace Movement
                 log_write("FloatValueChangeRequest::OnReply: wrong float value(type %u): %f and should be: %f",m_value_type,client_value,m_value);
                 return;
             }
-
             client->QueueState(client_state);
             client->controlled()->SetParameter(m_value_type, m_value);
-            MovementMessage msg(client->controlled(), ValueChange2Opc_table[m_value_type].msg, 64);
-            msg << guid.WriteAsPacked();
-            msg << client_state;
-            msg << m_value;
-            client->BroadcastMessage(msg);
+            if (uint16 opcode = ValueChange2Opc_table[m_value_type].msg)
+            {
+                MovementMessage msg(client->controlled(), opcode, 64);
+                msg << guid.WriteAsPacked();
+                msg << client_state;
+                msg << m_value;
+                client->BroadcastMessage(msg);
+            }
         }
     };
 
     void UnitMovement::SetCollisionHeight(float value)
     {
-        if (m_client)
-            new FloatValueChangeRequest(m_client,Parameter_CollisionHeight,value);
-        else
-            SetParameter(Parameter_CollisionHeight,value);
+        FloatValueChangeRequest::Launch(this, Parameter_CollisionHeight, value);
     }
 
     void UnitMovement::SetSpeed(SpeedType type, float value)
     {
-        if (GetSpeed(type) == value)
-            return;
+        if (GetSpeed(type) != value)
+            FloatValueChangeRequest::Launch(this, (FloatParameter)type, value);
+    }
 
-        if (IsClientControlled())
+    struct ModeInfo
+    {
+        UnitMoveFlag::eUnitMoveFlags moveFlag;
+        uint16 smsg_apply[2];   // 0 is apply, 1 - unapply
+        uint16 cmsg_ack[2];
+        uint16 msg_apply[2];   // 0 is apply, 1 - unapply
+        uint16 smsg_spline_apply[2];   // 0 is apply, 1 - unapply
+    };
+
+    #define CLIENT_MODE_CHANGE(apply,unapply,ack,msg_apply)\
+            {SMSG_MOVE_##apply,SMSG_MOVE_##unapply,CMSG_MOVE_##ack##_ACK,MSG_MOVE_##msg_apply,MSG_MOVE_##msg_apply},\
+
+    const ModeInfo modeInfo[MoveModeMaxCount]=
+    {
         {
-            new FloatValueChangeRequest(m_client,(UnitMovement::FloatParameter)type,value);
-        }
-        else
+            UnitMoveFlag::Walk_Mode, 0, 0, 0, 0, 0, 0,
+            SMSG_SPLINE_MOVE_SET_WALK_MODE, SMSG_SPLINE_MOVE_SET_RUN_MODE
+        },
         {
-            // FIXME: currently there is no way to change speed of already moving server-side controlled unit (spline movement)
-            // there is only one hacky way - launch new spline movement.. that's how blizz doing this
+            UnitMoveFlag::Root, SMSG_FORCE_MOVE_ROOT, SMSG_FORCE_MOVE_UNROOT,
+            CMSG_FORCE_MOVE_ROOT_ACK, CMSG_FORCE_MOVE_ROOT_ACK,
+            MSG_MOVE_ROOT, MSG_MOVE_UNROOT,
+            SMSG_SPLINE_MOVE_ROOT, SMSG_SPLINE_MOVE_UNROOT
+        },
+        {
+            UnitMoveFlag::Swimming, 0, 0, 0, 0, 0, 0,
+            SMSG_SPLINE_MOVE_START_SWIM, SMSG_SPLINE_MOVE_STOP_SWIM
+        },
+        {
+            UnitMoveFlag::Waterwalking, SMSG_MOVE_WATER_WALK, SMSG_MOVE_LAND_WALK,
+            CMSG_MOVE_WATER_WALK_ACK, CMSG_MOVE_WATER_WALK_ACK,
+            MSG_MOVE_WATER_WALK, MSG_MOVE_WATER_WALK,
+            SMSG_SPLINE_MOVE_WATER_WALK, SMSG_SPLINE_MOVE_LAND_WALK
+        },
+        {
+            UnitMoveFlag::Can_Safe_Fall, SMSG_MOVE_FEATHER_FALL, SMSG_MOVE_NORMAL_FALL,
+            CMSG_MOVE_FEATHER_FALL_ACK, CMSG_MOVE_FEATHER_FALL_ACK,
+            MSG_MOVE_FEATHER_FALL, MSG_MOVE_FEATHER_FALL,
+            SMSG_SPLINE_MOVE_FEATHER_FALL, SMSG_SPLINE_MOVE_NORMAL_FALL
+        },
+        {
+            UnitMoveFlag::Hover, SMSG_MOVE_SET_HOVER, SMSG_MOVE_UNSET_HOVER,
+            CMSG_MOVE_HOVER_ACK, CMSG_MOVE_HOVER_ACK,
+            MSG_MOVE_HOVER, MSG_MOVE_HOVER,
+            SMSG_SPLINE_MOVE_SET_HOVER, SMSG_SPLINE_MOVE_UNSET_HOVER
+        },
+        {
+            UnitMoveFlag::Flying, 0, 0, 0, 0, 0,
+            SMSG_SPLINE_MOVE_SET_FLYING, SMSG_SPLINE_MOVE_UNSET_FLYING
+        },
+        {
+            UnitMoveFlag::GravityDisabled, SMSG_MOVE_GRAVITY_DISABLE, SMSG_MOVE_GRAVITY_ENABLE,
+            CMSG_MOVE_GRAVITY_DISABLE_ACK, CMSG_MOVE_GRAVITY_ENABLE_ACK,
+            MSG_MOVE_GRAVITY_CHNG, MSG_MOVE_GRAVITY_CHNG,
+            SMSG_SPLINE_MOVE_GRAVITY_DISABLE, SMSG_SPLINE_MOVE_GRAVITY_ENABLE
+        },
+        {
+            UnitMoveFlag::Can_Fly, SMSG_MOVE_SET_CAN_FLY, SMSG_MOVE_UNSET_CAN_FLY,
+            CMSG_MOVE_SET_CAN_FLY_ACK, CMSG_MOVE_SET_CAN_FLY_ACK,
+            MSG_MOVE_UPDATE_CAN_FLY, MSG_MOVE_UPDATE_CAN_FLY,
+            SMSG_SPLINE_MOVE_SET_FLYING, SMSG_SPLINE_MOVE_UNSET_FLYING
+        },
+    };
 
-            SetParameter((UnitMovement::FloatParameter)type, value);
+    class ModeChangeRequest : public RespHandler
+    {
+        uint32 m_reqId;
+        MoveMode m_mode;
+        bool m_apply;
 
-            #define SERVER_SPEED_CHANGE(mode)   {SMSG_SPLINE_SET_##mode},
-            const uint16 S_Speed2Opc_table[SpeedMaxCount]=
+        ModeChangeRequest(Client * client, MoveMode mode, bool apply) : RespHandler(modeInfo[mode].cmsg_ack[!apply]),
+            m_mode(mode), m_apply(apply), m_reqId(client->AddRespHandler(this))
+        {
+            if (uint16 opcode = modeInfo[mode].smsg_apply[!apply])
             {
-                SERVER_SPEED_CHANGE(WALK_SPEED)
-                SERVER_SPEED_CHANGE(RUN_SPEED)
-                SERVER_SPEED_CHANGE(SWIM_BACK_SPEED)
-                SERVER_SPEED_CHANGE(RUN_BACK_SPEED)
-                SERVER_SPEED_CHANGE(FLIGHT_SPEED)
-                SERVER_SPEED_CHANGE(FLIGHT_BACK_SPEED)
-                SERVER_SPEED_CHANGE(TURN_RATE)
-                SERVER_SPEED_CHANGE(PITCH_RATE)
-            };
-            #undef SERVER_SPEED_CHANGE
-            WorldPacket data(S_Speed2Opc_table[type], 16);
-            data << Owner.GetPackGUID();
-            data << value;
-            MaNGOS_API::BroadcastMessage(&Owner, data);
+                MovementMessage msg(NULL, opcode, 16);
+                msg << client->controlled()->Owner.GetPackGUID();
+                msg << m_reqId;
+                client->SendMoveMessage(msg);
+            }
         }
+
+    public:
+
+        static void Launch(UnitMovement * mov, MoveMode mode, bool apply)
+        {
+            if (mov->IsClientControlled())
+                new ModeChangeRequest(mov->client(), mode, apply);
+            else if (uint16 opcode = modeInfo[mode].smsg_spline_apply[!apply])
+            {
+                WorldPacket data(opcode, 12);
+                data << mov->Owner.GetPackGUID();
+                MaNGOS_API::BroadcastMessage(&mov->Owner, data);
+            }
+        }
+
+        virtual void OnReply(Client * client, WorldPacket& data) override
+        {
+            ClientMoveState client_state;
+            ObjectGuid guid;
+            uint32 client_req_id;
+
+            data >> guid.ReadAsPacked();
+            data >> client_req_id;
+            data >> client_state;
+            if (data.rpos() != data.size())
+                data >> Unused<float>();          // 0 or 1, unused
+            
+            if (client_req_id != m_reqId)
+            {
+                log_write("FloatValueChangeRequest::OnReply: wrong counter value: %u and should be: %u",client_req_id,m_reqId);
+                return;
+            }
+            if (modeInfo[m_mode].moveFlag != 0 && m_apply != (bool)(client_state.moveFlags & modeInfo[m_mode].moveFlag))
+            {
+                log_write("ModeChangeRequest::OnReply: wrong client's flag");
+                return;
+            }
+
+            client->QueueState(client_state);
+
+            if (uint16 opcode = modeInfo[m_mode].msg_apply[!m_apply])
+            {
+                MovementMessage msg(client->controlled(), opcode, 64);
+                msg << guid.WriteAsPacked();
+                msg << client_state;
+                client->BroadcastMessage(msg);
+            }
+        }
+    };
+
+    void UnitMovement::ApplyMoveMode(MoveMode mode, bool apply)
+    {
+        ModeChangeRequest::Launch(this, mode, apply);
     }
 }

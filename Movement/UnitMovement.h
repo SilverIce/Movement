@@ -96,7 +96,7 @@ namespace Movement
         bool IsWalking() const { return moveFlags.walk_mode;}
         bool IsMoving() const { return moveFlags & UnitMoveFlag::Mask_Moving;}
         bool IsTurning() const { return moveFlags & (UnitMoveFlag::Turn_Left | UnitMoveFlag::Turn_Right);}
-        bool IsFlying() const { return moveFlags & (UnitMoveFlag::Flying | UnitMoveFlag::Levitating);}
+        bool IsFlying() const { return moveFlags & (UnitMoveFlag::Flying | UnitMoveFlag::GravityDisabled);}
 
         void SetSpeed(SpeedType type, float s);
         float GetSpeed(SpeedType type) const { return m_float_values[0 + type]; }
@@ -146,8 +146,14 @@ namespace Movement
         float GetParameter(FloatParameter p) const { return m_float_values[p];}
 
         void _QueueState(const ClientMoveState& state) { m_moveEvents.QueueState(state);}       // only for call from Client code
+        ClientMoveState ClientState() const;
+
+        void SetPosition(const Location& v);
+        void SetPosition(const Vector3& v) { SetPosition(Location(v,managed_position->orientation));}
+
         Client* client() const { return m_client;}
         void client(Client* c) { m_client = c;}
+        bool IsClientControlled() const { return GetControl() == MovControlClient;}
     private:
         void ReCalculateCurrentSpeed();
         static SpeedType SelectSpeedType(UnitMoveFlag moveFlags);
@@ -158,15 +164,12 @@ namespace Movement
             return tt[(SplineEnabled() || !m_client)];
         }
 
-        bool IsClientControlled() const { return GetControl() == MovControlClient;}
         bool IsServerControlled() const { return GetControl() == MovControlServer;}
         bool SplineEnabled() const { return moveFlags.spline_enabled; }
         void DisableSpline() { moveFlags &= ~(UnitMoveFlag::Mask_Directions | UnitMoveFlag::Spline_Enabled);}
         void PrepareMoveSplineArgs(MoveSplineInitArgs&, UnitMoveFlag&, SpeedType&) const;
 
         void updateRotation();
-        void SetPosition(const Location& v);
-        void SetPosition(const Vector3& v) { SetPosition(Location(v,managed_position->orientation));}
         void reset_managed_position() { managed_position = (Location*)&GetGlobalPosition();}
 
     private:
