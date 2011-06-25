@@ -90,17 +90,18 @@ namespace Movement
         void ApplyFlyMode(bool apply) { ApplyMoveMode(MoveModeFly, apply); }
         void ApplyHoverMode(bool apply) { ApplyMoveMode(MoveModeHover, apply); }
 
+        void Teleport(const Location& loc);
         void SetCollisionHeight(float value);
         float GetCollisionHeight() const { return GetParameter(Parameter_CollisionHeight);}
 
         bool IsWalking() const { return moveFlags.walk_mode;}
         bool IsMoving() const { return moveFlags & UnitMoveFlag::Mask_Moving;}
         bool IsTurning() const { return moveFlags & (UnitMoveFlag::Turn_Left | UnitMoveFlag::Turn_Right);}
-        bool IsFlying() const { return moveFlags & (UnitMoveFlag::Flying | UnitMoveFlag::Levitating);}
+        bool IsFlying() const { return moveFlags & (UnitMoveFlag::Flying | UnitMoveFlag::GravityDisabled);}
 
         void SetSpeed(SpeedType type, float s);
-        float GetSpeed(SpeedType type) const { return m_float_values[0 + type]; }
-        float GetCurrentSpeed() const { return m_float_values[Parameter_SpeedCurrent]; }
+        float GetSpeed(SpeedType type) const { return GetParameter((FloatParameter)(0 + type)); }
+        float GetCurrentSpeed() const { return GetParameter(Parameter_SpeedCurrent); }
         SpeedType getCurrentSpeedType() const { return speed_type; }
 
         uint32 dbg_flags;
@@ -154,6 +155,7 @@ namespace Movement
         }
 
         void _QueueState(const ClientMoveState& state) { m_moveEvents.QueueState(state);}       // only for call from Client code
+        ClientMoveState ClientState() const;
 
         void SetPosition(const Location& v);
         void SetPosition(const Vector3& v) { SetPosition(Location(v,managed_position->orientation));}

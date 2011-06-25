@@ -29,7 +29,7 @@ namespace Movement
 
             Walk_Mode          = 0x00000100,
             Ontransport        = 0x00000200,
-            Levitating         = 0x00000400,
+            GravityDisabled    = 0x00000400,
             Root               = 0x00000800,
             Falling            = 0x00001000,
             Fallingfar         = 0x00002000,
@@ -89,7 +89,7 @@ namespace Movement
                 bool pitch_down          : 1;
                 bool walk_mode           : 1;
                 bool ontransport         : 1;
-                bool levitating          : 1;
+                bool gravity_disabled    : 1;
                 bool root                : 1;
                 bool falling             : 1;
                 bool fallingfar          : 1;
