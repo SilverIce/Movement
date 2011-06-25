@@ -733,4 +733,75 @@ namespace Movement
     {
         ModeChangeRequest::Launch(this, mode, apply);
     }
+
+    class TeleportRequest : public RespHandler
+    {
+        uint32 m_reqId;
+        Location m_location;
+
+        TeleportRequest(Client * client, const Location& loc) :
+            RespHandler(MSG_MOVE_TELEPORT_ACK),
+            m_reqId(client->AddRespHandler(this)),
+            m_location(loc)
+        {
+            ClientMoveState state(client->controlled()->ClientState());
+            // TODO: add set of functions for state modifying
+            if (state.moveFlags.ontransport)
+                state.transport_position = m_location;
+            else
+                state.world_position = m_location;
+
+            MovementMessage msg(NULL, MSG_MOVE_TELEPORT_ACK, 64);   // message source is null - client shouldn't skip that message
+            msg << client->controlled()->Owner.GetPackGUID();
+            msg << m_reqId;
+            msg << state;
+            client->SendMoveMessage(msg);
+        }
+
+    public:
+
+        static void Launch(UnitMovement * mov, const Location& loc)
+        {
+            if (mov->client())
+            {
+                new TeleportRequest(mov->client(), loc);
+            }
+            else
+            {
+                mov->SetPosition(loc);
+                MovementMessage msg(mov, MSG_MOVE_TELEPORT, 64);
+                msg << mov->Owner.GetPackGUID();
+                msg << mov->ClientState();
+                MaNGOS_API::BroadcastMessage(&mov->Owner, msg);
+            }
+        }
+
+        virtual void OnReply(Client * client, WorldPacket& data) override
+        {
+            ObjectGuid guid;
+            uint32 client_req_id;
+            MSTime client_time;
+            data >> guid.ReadAsPacked();
+            data >> client_req_id;
+            data >> client_time;
+
+            if (client_req_id != m_reqId)
+            {
+                log_write("FloatValueChangeRequest::OnReply: wrong counter value: %u and should be: %u",client_req_id,m_reqId);
+                return;
+            }
+
+            client->controlled()->SetPosition(m_location);
+
+            MovementMessage msg(client->controlled(), MSG_MOVE_TELEPORT, 64);
+            msg << guid.WriteAsPacked();
+            msg << client->controlled()->ClientState();
+            client->BroadcastMessage(msg);
+        }
+    };
+
+    void UnitMovement::Teleport(const Location& loc)
+    {
+        TeleportRequest::Launch(this, loc);
+    }
 }

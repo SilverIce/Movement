@@ -90,6 +90,7 @@ namespace Movement
         void ApplyFlyMode(bool apply) { ApplyMoveMode(MoveModeFly, apply); }
         void ApplyHoverMode(bool apply) { ApplyMoveMode(MoveModeHover, apply); }
 
+        void Teleport(const Location& loc);
         void SetCollisionHeight(float value);
         float GetCollisionHeight() const { return GetParameter(Parameter_CollisionHeight);}
 
@@ -99,8 +100,8 @@ namespace Movement
         bool IsFlying() const { return moveFlags & (UnitMoveFlag::Flying | UnitMoveFlag::GravityDisabled);}
 
         void SetSpeed(SpeedType type, float s);
-        float GetSpeed(SpeedType type) const { return m_float_values[0 + type]; }
-        float GetCurrentSpeed() const { return m_float_values[Parameter_SpeedCurrent]; }
+        float GetSpeed(SpeedType type) const { return GetParameter((FloatParameter)(0 + type)); }
+        float GetCurrentSpeed() const { return GetParameter(Parameter_SpeedCurrent); }
         SpeedType getCurrentSpeedType() const { return speed_type; }
 
         uint32 dbg_flags;
