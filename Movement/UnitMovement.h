@@ -56,9 +56,9 @@ namespace Movement
         bool IsOrientationBinded() const { return m_target_link.linked(); }
         const MovementBase* GetTarget() const { return m_target_link.Value.target;}
 
+        const Location& GetPosition() const { return IsBoarded() ? m_local_position : world_position;}
+        const Vector3& GetPosition3() const { return GetPosition();}
         virtual void BoardOn(Transport& transport, const Location& local_position, int8 seatId);
-        const Location& GetPosition() const { return *managed_position;}
-        const Vector3& GetPosition3() const { return *managed_position;}
         Vector3 direction() const;
         virtual void Unboard();
 
@@ -78,7 +78,7 @@ namespace Movement
     public:
         /** Seems it should be removed(or used for monster movement only), since it hard or impossible to get movement mode from incoming movement packets*/
         /// Move Modes
-        bool HasMode(MoveMode m) const { return move_mode & (1 << m);}
+        bool HasMode(MoveMode m) const;
         void ApplyMoveMode(MoveMode mode, bool apply);
 
         /// Apply/remove modes
@@ -146,19 +146,19 @@ namespace Movement
         void SetParameter(FloatParameter p, float value) { m_float_values[p] = value;}
         float GetParameter(FloatParameter p) const { return m_float_values[p];}
 
-        void ApplyMoveFlag(const UnitMoveFlag& f, bool apply)
+        void _ApplyMoveFlag(UnitMoveFlag::eUnitMoveFlags f, bool apply)
         {
             if (apply)
-                moveFlags |= f.raw;
+                moveFlags |= f;
             else
-                moveFlags &= ~f.raw;
+                moveFlags &= ~f;
         }
 
         void _QueueState(const ClientMoveState& state) { m_moveEvents.QueueState(state);}       // only for call from Client code
         ClientMoveState ClientState() const;
 
         void SetPosition(const Location& v);
-        void SetPosition(const Vector3& v) { SetPosition(Location(v,managed_position->orientation));}
+        void SetPosition(const Vector3& v) { SetPosition(Location(v,GetPosition().orientation));}
 
         Client* client() const { return m_client;}
         void client(Client* c) { m_client = c;}
@@ -179,13 +179,11 @@ namespace Movement
         void PrepareMoveSplineArgs(MoveSplineInitArgs&, UnitMoveFlag&, SpeedType&) const;
 
         void updateRotation();
-        void reset_managed_position() { managed_position = (Location*)&GetGlobalPosition();}
 
     private:
         friend class PacketBuilder;
 
         UpdatableMovement updatable;
-        Location * managed_position;
         MoveSpline& move_spline;
         Client* m_client;
         MSTime last_update_time;
@@ -193,7 +191,6 @@ namespace Movement
         Transport m_transport;
 
         UnitMoveFlag moveFlags;
-        uint32 move_mode;
         /** Data that cames from client. It affects nothing here but might be used in future. */
         _ClientMoveState m_unused; 
 

@@ -83,9 +83,6 @@ namespace Movement
         m_client(NULL)
     {
         updatable.SetUpdateStrategy(this);
-        reset_managed_position();
-
-        move_mode = 0;
 
         const float BaseValues[Parameter_End] =
         {
@@ -332,7 +329,6 @@ namespace Movement
     void UnitMovement::BoardOn(Transport& transport, const Location& local_position, int8 seatId)
     {
         _board(transport, local_position);
-        set_managed_position(m_local_position);
 
         m_unused.transport_seat = seatId;
         moveFlags.ontransport = true;
@@ -341,7 +337,6 @@ namespace Movement
     void UnitMovement::Unboard()
     {
         _unboard();
-        reset_managed_position();
 
         m_unused.transport_seat = 0;
         moveFlags.ontransport = false;
@@ -350,10 +345,10 @@ namespace Movement
     void UnitMovement::SetPosition(const Location& v)
     {
         // dirty code..
-        if (managed_position == &GetGlobalPosition())
-            SetGlobalPosition(v);
+        if (IsBoarded())
+            m_local_position = v;
         else
-            *managed_position = v;
+            SetGlobalPosition(v);
     }
 
     void UnitMovement::LaunchMoveSpline(MoveSplineInitArgs& args)
@@ -686,11 +681,15 @@ namespace Movement
         {
             if (mov->IsClientControlled())
                 new ModeChangeRequest(mov->client(), mode, apply);
-            else if (uint16 opcode = modeInfo[mode].smsg_spline_apply[!apply])
+            else
             {
-                WorldPacket data(opcode, 12);
-                data << mov->Owner.GetPackGUID();
-                MaNGOS_API::BroadcastMessage(&mov->Owner, data);
+                mov->_ApplyMoveFlag(modeInfo[mode].moveFlag, apply);
+                if (uint16 opcode = modeInfo[mode].smsg_spline_apply[!apply])
+                {
+                    WorldPacket data(opcode, 12);
+                    data << mov->Owner.GetPackGUID();
+                    MaNGOS_API::BroadcastMessage(&mov->Owner, data);
+                }
             }
         }
 
@@ -717,6 +716,8 @@ namespace Movement
                 return;
             }
 
+            // Should i queue state or apply it immediately?
+            // very often incoming client state is  from past time..
             client->QueueState(client_state);
 
             if (uint16 opcode = modeInfo[m_mode].msg_apply[!m_apply])
@@ -732,6 +733,11 @@ namespace Movement
     void UnitMovement::ApplyMoveMode(MoveMode mode, bool apply)
     {
         ModeChangeRequest::Launch(this, mode, apply);
+    }
+
+    bool UnitMovement::HasMode(MoveMode m) const
+    {
+        return moveFlags & modeInfo[m].moveFlag;
     }
 
     class TeleportRequest : public RespHandler
