@@ -1,7 +1,7 @@
 
 #include "spline.h"
 #include <sstream>
-#include "G3D\Matrix4.h"
+#include <G3D/Matrix4.h>
 
 namespace Movement{
 
