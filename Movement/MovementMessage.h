@@ -45,7 +45,7 @@ namespace Movement
         void operator << (const ClientMoveState& state)
         {
             original_time = state.ms_time;
-            time_position = m_packet.wpos() + sizeof(uint32)/*UnitMoveFlag*/ + sizeof(uint16)/*UnitMoveFlag2*/;
+            time_position = m_packet.wpos() + UnitMoveFlag::Size;
             PacketBuilder::WriteClientStatus(state, m_packet);
         }
 
@@ -93,5 +93,15 @@ namespace Movement
     inline void operator << (ByteBuffer& b, const MSTime& v)
     {
         b << v.time;
+    }
+
+    inline void operator >> (ByteBuffer& b, UnitMoveFlag& v)
+    {
+        b.read((uint8*)&v.raw, UnitMoveFlag::Size);
+    }
+
+    inline void operator << (ByteBuffer& b, const UnitMoveFlag& v)
+    {
+        b.append((const uint8*)&v.raw, UnitMoveFlag::Size);
     }
 }

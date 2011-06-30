@@ -411,7 +411,7 @@ namespace Movement
         if (moveFlags.ontransport)
             st << "Local  position: " << GetPosition().toString() << std::endl;
 
-        if (moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying) || m_unused.moveFlags2.allow_pitching)
+        if (moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying | UnitMoveFlag::Allow_Pitching))
         {
             st << "pitch angle " << m_unused.pitch << std::endl;
         }

@@ -115,7 +115,7 @@ namespace Movement
 
     #define STR(x) #x
 
-    const char * g_MovementFlag_names[32]=
+    const char * g_MovementFlag_names[]=
     {
         STR(Forward            ),// 0x00000001,
         STR(Backward           ),// 0x00000002,
@@ -150,10 +150,6 @@ namespace Movement
         STR(Safe_Fall          ),// 0x20000000,               // Active Rogue Safe Fall Spell (Passive)
         STR(Hover              ),// 0x40000000
         STR(Unknown13          ),// 0x80000000
-    };
-
-    const char * g_MovementFlag2_names[16]=
-    {
         STR(Unk1              ),
         STR(Unk2              ),
         STR(Unk3              ),
@@ -213,7 +209,7 @@ namespace Movement
     {
         for (int i = 0; i < (sizeof(Flags)*8); ++i)
         { 
-            if (t & (1 << i))
+            if ((t & (Flags)(1 << i)) && names[i] != NULL)
                 str.append(" ").append(names[i]);
         }
     }
@@ -229,13 +225,6 @@ namespace Movement
     {
         std::string str;
         print_flags(raw,g_SplineFlag_names,str);
-        return str;
-    }
-
-    std::string UnitMoveFlag2::ToString() const
-    {
-        std::string str;
-        print_flags(raw,g_MovementFlag2_names,str);
         return str;
     }
 }

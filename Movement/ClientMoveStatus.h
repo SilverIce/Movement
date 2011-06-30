@@ -23,7 +23,6 @@ namespace Movement
         float jump_cosAngle;
         float jump_xy_velocy;
         float spline_elevation;
-        UnitMoveFlag2 moveFlags2;
         int8 transport_seat;
     };
 

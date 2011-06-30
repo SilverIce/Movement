@@ -189,9 +189,7 @@ namespace Movement
 
     void PacketBuilder::ReadClientStatus(ClientMoveState& mov, ByteBuffer& data)
     {
-        data >> mov.moveFlags.raw;
-        data >> mov.moveFlags2.raw;
-
+        data >> mov.moveFlags;
         data >> mov.ms_time;
         data >> mov.world_position;
 
@@ -202,11 +200,11 @@ namespace Movement
             data >> mov.transport_time;
             data >> mov.transport_seat;
 
-            if (mov.moveFlags2.interp_move)
+            if (mov.moveFlags.interp_move)
                 data >> mov.transport_time2;
         }
 
-        if (mov.moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying) || mov.moveFlags2.allow_pitching)
+        if (mov.moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying | UnitMoveFlag::Allow_Pitching))
         {
             data >> mov.pitch;
         }
@@ -231,9 +229,7 @@ namespace Movement
     {
         const _ClientMoveState& un = mov.m_unused;
 
-        data << mov.moveFlags.raw;
-        data << un.moveFlags2.raw;
-
+        data << mov.moveFlags;
         data << mov.GetUpdater().TickTime(); // or mov.getLastUpdate() ?
         data << mov.GetGlobalPosition();
 
@@ -244,11 +240,11 @@ namespace Movement
             data << un.transport_time;
             data << un.transport_seat;
 
-            if (un.moveFlags2.interp_move)
+            if (mov.moveFlags.interp_move)
                 data << un.transport_time2;
         }
 
-        if (mov.moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying) || un.moveFlags2.allow_pitching)
+        if (mov.moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying | UnitMoveFlag::Allow_Pitching))
         {
             data << un.pitch;
         }
@@ -271,9 +267,7 @@ namespace Movement
 
     void PacketBuilder::WriteClientStatus(const ClientMoveState& mov, ByteBuffer& data)
     {
-        data << mov.moveFlags.raw;
-        data << mov.moveFlags2.raw;
-
+        data << mov.moveFlags;
         data << mov.ms_time;
         data << mov.world_position;
 
@@ -284,11 +278,11 @@ namespace Movement
             data << mov.transport_time;
             data << mov.transport_seat;
 
-            if (mov.moveFlags2.interp_move)
+            if (mov.moveFlags.interp_move)
                 data << mov.transport_time2;
         }
 
-        if (mov.moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying) || mov.moveFlags2.allow_pitching)
+        if (mov.moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying | UnitMoveFlag::Allow_Pitching))
         {
             data << mov.pitch;
         }

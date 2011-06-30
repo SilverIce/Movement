@@ -15,8 +15,10 @@ namespace Movement
     class UnitMoveFlag
     {
     public:
-        enum eUnitMoveFlags
-        {
+        typedef uint64 eUnitMoveFlags;
+
+        static const eUnitMoveFlags
+
             None               = 0x00000000,
             Forward            = 0x00000001,
             Backward           = 0x00000002,
@@ -52,30 +54,52 @@ namespace Movement
             Hover              = 0x40000000,
             Flag_x80000000     = 0x80000000,
 
+            Unk1               = 0x000100000000L,
+            Unk2               = 0x000200000000L,
+            Unk3               = 0x000400000000L,
+            Fullspeedturning   = 0x000800000000L,
+            Fullspeedpitching  = 0x001000000000L,
+            Allow_Pitching     = 0x002000000000L,
+            Unk4               = 0x004000000000L,
+            Unk5               = 0x008000000000L,
+            Unk6               = 0x010000000000L,
+            Unk7               = 0x020000000000L,
+            Interp_Move        = 0x040000000000L,
+            Interp_Turning     = 0x080000000000L,
+            Interp_Pitching    = 0x100000000000L,
+            Unk8               = 0x200000000000L,
+            Unk9               = 0x400000000000L,
+            Unk10              = 0x800000000000L,
+
+            Mask_Interp     = Interp_Move | Interp_Turning | Interp_Pitching,
             Mask_Directions = Forward | Backward | Strafe_Left | Strafe_Right | Turn_Left | Turn_Right | Pitch_Up | Pitch_Down,
-            Mask_Moving     = Forward | Backward | Strafe_Left | Strafe_Right | Turn_Left | Turn_Right | Falling | Fallingfar | Ascending | Descending,
+            Mask_Moving     = Forward | Backward | Strafe_Left | Strafe_Right | Turn_Left | Turn_Right | Falling | Fallingfar | Ascending | Descending
+        ;
+
+        enum {
+            Size = sizeof(uint32) + sizeof(uint16),
         };
 
         UnitMoveFlag() : raw(0) {}
-        UnitMoveFlag(uint32 f) : raw(f) {}
+        UnitMoveFlag(uint64 f) : raw(f) {}
         UnitMoveFlag(const UnitMoveFlag& f) : raw(f.raw) {}
 
         // Constant interface
 
         bool hasDirection() const { return raw & Mask_Directions;}
 
-        uint32 operator & (uint32 f) const { return (raw & f);}
-        uint32 operator | (uint32 f) const { return (raw | f);}
+        uint64 operator & (uint64 f) const { return (raw & f);}
+        uint64 operator | (uint64 f) const { return (raw | f);}
         std::string ToString() const;
 
         // Not constant interface
 
-        void operator &= (uint32 f) { raw &= f;}
-        void operator |= (uint32 f) { raw |= f;}
+        void operator &= (uint64 f) { raw &= f;}
+        void operator |= (uint64 f) { raw |= f;}
 
         union
         {
-            uint32 raw;
+            uint64 raw;
 
             struct
             {
@@ -111,73 +135,24 @@ namespace Movement
                 bool can_safe_fall       : 1;
                 bool hover               : 1;
                 bool flag_x80000000      : 1;
-            };
-        };
-    };
 
-    class UnitMoveFlag2
-    {
-    public:
-        enum eUnitMoveFlags2
-        {
-            None              = 0x0000,
-            Unk1              = 0x0001,
-            Unk2              = 0x0002,
-            Unk3              = 0x0004,
-            Fullspeedturning  = 0x0008,
-            Fullspeedpitching = 0x0010,
-            Allow_Pitching    = 0x0020,
-            Unk4              = 0x0040,
-            Unk5              = 0x0080,
-            Unk6              = 0x0100,
-            Unk7              = 0x0200,
-            Interp_Move       = 0x0400,
-            Interp_Turning    = 0x0800,
-            Interp_Pitching   = 0x1000,
-            Unk8              = 0x2000,
-            Unk9              = 0x4000,
-            Unk10             = 0x8000,
-            Mask_Interp       = Interp_Move | Interp_Turning | Interp_Pitching
-        };
-
-        UnitMoveFlag2() : raw(0) {}
-        UnitMoveFlag2(uint16 f) : raw(f) {}
-        UnitMoveFlag2(const UnitMoveFlag2& f) : raw(f.raw) {}
-
-        // Constant interface
-
-        uint32 operator & (uint32 f) const { return (raw & f);}
-        uint32 operator | (uint32 f) const { return (raw | f);}
-        std::string ToString() const;
-
-        // Not constant interface
-
-        void operator &= (uint32 f) { raw &= f;}
-        void operator |= (uint32 f) { raw |= f;}
-
-
-        union
-        {
-            uint16 raw;
-
-            struct 
-            {
-                bool unk1              : 1;
-                bool unk2              : 1;
-                bool unk3              : 1;
-                bool fullspeedturning  : 1;
-                bool fullspeedpitching : 1;
-                bool allow_pitching    : 1;
-                bool unk4              : 1;
-                bool unk5              : 1;
-                bool unk6              : 1;
-                bool unk7              : 1;
-                bool interp_move       : 1;
-                bool interp_turning    : 1;
-                bool interp_pitching   : 1;
-                bool unk8              : 1;
-                bool unk9              : 1;
-                bool unk10             : 1;
+                bool unk1                : 1;
+                bool unk2                : 1;
+                bool unk3                : 1;
+                bool fullspeedturning    : 1;
+                bool fullspeedpitching   : 1;
+                bool allow_pitching      : 1;
+                bool unk4                : 1;
+                bool unk5                : 1;
+                bool unk6                : 1;
+                bool unk7                : 1;
+                bool interp_move         : 1;
+                bool interp_turning      : 1;
+                bool interp_pitching     : 1;
+                bool unk8                : 1;
+                bool unk9                : 1;
+                bool unk10               : 1;
+                uint16 unused;
             };
         };
     };
