@@ -3,7 +3,7 @@
 #include "Object.h"
 #include "moveupdater.h"
 #include "MoveSpline.h"
-#include "ClientMovement.h"
+#include "ClientImpl.h"
 #include "MoveSplineInit.h"
 #include "MovementMessage.h"
 

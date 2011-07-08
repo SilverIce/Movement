@@ -267,11 +267,11 @@
 			</File>
 		</Filter>
 		<File
-			RelativePath="..\Movement\ClientMovement.cpp"
+			RelativePath="..\Movement\ClientImpl.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\Movement\ClientMovement.h"
+			RelativePath="..\Movement\ClientImpl.h"
 			>
 		</File>
 		<File
