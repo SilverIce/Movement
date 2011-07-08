@@ -10,7 +10,6 @@
 
 #include "typedefs.h"
 #include "MaNGOS_API.h"
-#include "ClientMoveStatus.h"
 #include "UnitMovementImpl.h"
 
 class ByteBuffer;
@@ -20,21 +19,7 @@ namespace Movement
 {
     class MovementMessage;
     class UnitMovementImpl;
-    class ClientImpl;
-
-    class RespHandler
-    {
-    protected:
-        uint32 opcode;
-        //MSTime time;
-    public:
-
-        explicit RespHandler(uint32 _opcode) : opcode(_opcode) {}
-
-        bool CanHandle(uint32 _opcode) const { return opcode == _opcode;}
-        //virtual void OnTimeout() {}
-        virtual void OnReply(ClientImpl * client, WorldPacket& data) = 0;
-    };
+    class RespHandler;
 
     class ClientImpl
     {
@@ -65,11 +50,7 @@ namespace Movement
             m_controlled->_QueueState(client_state);
         }
 
-        uint32 AddRespHandler(RespHandler* req)
-        {
-            m_resp_handlers.push_back(req);
-            return request_counter.NewId();
-        }
+        uint32 AddRespHandler(RespHandler* req);
 
         inline void BroadcastMessage(MovementMessage& msg) const { MaNGOS_API::BroadcastMessage(&m_controlled->Owner, msg);}
         inline void BroadcastMessage(WorldPacket& data) const { MaNGOS_API::BroadcastMessage(&m_controlled->Owner, data);}
@@ -102,5 +83,22 @@ namespace Movement
         void HandleOutcomingMessage(WorldPacket& recv_data);
 
         void HandleMoveTimeSkipped(WorldPacket & recv_data);
+    };
+
+    class RespHandler
+    {
+    protected:
+        uint32 opcode;
+        uint32 m_reqId;
+    public:
+
+        explicit RespHandler(uint32 _opcode, ClientImpl * client) : opcode(_opcode)
+        {
+            m_reqId = client->AddRespHandler(this);
+        }
+
+        bool CanHandle(uint32 _opcode) const { return opcode == _opcode;}
+        //virtual void OnTimeout() {}
+        virtual void OnReply(ClientImpl * client, WorldPacket& data) = 0;
     };
 }

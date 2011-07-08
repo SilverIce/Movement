@@ -327,6 +327,10 @@
 			>
 		</File>
 		<File
+			RelativePath="..\Movement\UnitMovement.Requests.cpp"
+			>
+		</File>
+		<File
 			RelativePath="..\Movement\UnitMovementImpl.cpp"
 			>
 		</File>

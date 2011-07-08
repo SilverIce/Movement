@@ -12,13 +12,12 @@ namespace Movement
 {
     class TimeSyncRequest : public RespHandler
     {
-        uint32 reqId;
     public:
 
-        TimeSyncRequest(ClientImpl * client) : RespHandler(CMSG_TIME_SYNC_RESP), reqId(client->AddRespHandler(this))
+        TimeSyncRequest(ClientImpl * client) : RespHandler(CMSG_TIME_SYNC_RESP, client)
         {     
             WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
-            data << reqId;
+            data << m_reqId;
             client->SendPacket(data);
         }
 
@@ -28,9 +27,9 @@ namespace Movement
             MSTime client_ticks;
             data >> client_req_id;
             data >> client_ticks;
-            if (client_req_id != reqId)
+            if (client_req_id != m_reqId)
             {
-                log_write("TimeSyncRequest::OnReply: wrong counter value: %u and should be: %u", client_req_id, reqId);
+                log_write("TimeSyncRequest::OnReply: wrong counter value: %u and should be: %u", client_req_id, m_reqId);
                 return;
             }
             client->SetClientTime(client_ticks);
@@ -182,6 +181,13 @@ namespace Movement
         };
 
         m_resp_handlers.erase(std::find_if(m_resp_handlers.begin(),m_resp_handlers.end(),_handler(this,data)));
+    }
+
+    uint32 ClientImpl::AddRespHandler(RespHandler* req)
+    {
+        req->create_time = ServerTime();
+        m_resp_handlers.push_back(req);
+        return request_counter.NewId();
     }
 
     std::string Client::ToString() const
