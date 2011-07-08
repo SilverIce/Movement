@@ -75,6 +75,9 @@ namespace Movement
         const Vector3& MoveSplineDest() const;
         int32 MoveSplineTimeElapsed() const;
 
+        void SetListener(IListener * l) { m_listener = l;}
+        void ResetLisener() { m_listener = NULL; }
+
     public:
         /** Seems it should be removed(or used for monster movement only), since it hard or impossible to get movement mode from incoming movement packets*/
         /// Move Modes
@@ -188,6 +191,7 @@ namespace Movement
 
         UpdatableMovement updatable;
         MoveSpline move_spline;
+        IListener* m_listener;
         ClientImpl* m_client;
         MSTime last_update_time;
         MoveStateSet m_moveEvents;

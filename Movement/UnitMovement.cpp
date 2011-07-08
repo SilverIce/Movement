@@ -107,11 +107,6 @@ namespace Movement
         m.Board(ps.Impl(), local_pos, seat);
     }
 
-    void UnitMovement::LaunchMoveSpline(MoveSplineInitArgs& args)
-    {
-        m.LaunchMoveSpline(args);
-    }
-
     uint32 UnitMovement::MoveSplineId() const
     {
         return m.MoveSplineId();

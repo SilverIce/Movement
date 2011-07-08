@@ -79,6 +79,7 @@ namespace Movement
 
     UnitMovementImpl::UnitMovementImpl(WorldObjectType owner) :
         Transportable(owner), m_transport(*this),
+        m_listener(NULL),
         m_client(NULL)
     {
         updatable.SetUpdateStrategy(this);
@@ -263,17 +264,17 @@ namespace Movement
             {
             case MoveSpline::Result_NextSegment:
                 //log_console("UpdateState: segment %d is on hold, position: %s", move_spline.currentSplineSegment(),GetPosition3().toString().c_str());
-                if (mov.listener)
-                    mov.listener->OnEvent( OnEventArgs::OnPoint(move_spline.GetId(),move_spline.currentPathIdx()) );
+                if (mov.m_listener)
+                    mov.m_listener->OnEvent( OnEventArgs::OnPoint(move_spline.GetId(),move_spline.currentPathIdx()) );
                 break;
             case MoveSpline::Result_Arrived:
                 //log_console("UpdateState: spline done, position: %s", GetPosition3().toString().c_str());
                 mov.DisableSpline();
-                if (mov.listener)
+                if (mov.m_listener)
                 {
                     // it's never possible to have 'current point == last point', need send point+1 here
-                    mov.listener->OnEvent( OnEventArgs::OnPoint(move_spline.GetId(),move_spline.currentPathIdx()+1) );
-                    mov.listener->OnEvent( OnEventArgs::OnArrived(move_spline.GetId()) );
+                    mov.m_listener->OnEvent( OnEventArgs::OnPoint(move_spline.GetId(),move_spline.currentPathIdx()+1) );
+                    mov.m_listener->OnEvent( OnEventArgs::OnArrived(move_spline.GetId()) );
                 }
                 break;
             case MoveSpline::Result_NextCycle:

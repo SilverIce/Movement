@@ -46,10 +46,6 @@ namespace Movement{
         MaNGOS_API::UpdateMapPosition(&Owner, loc);
     }
 
-    MovementBase::MovementBase(WorldObjectType owner) : Owner(owner), listener(NULL)
-    {
-    }
-
     MO_Transport::MO_Transport(WorldObjectType owner) : MovementBase(owner)
     {
         updatable.SetUpdateStrategy(this);

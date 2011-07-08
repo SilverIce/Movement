@@ -142,7 +142,9 @@ namespace Movement
     {
     public:
 
-        explicit MovementBase(WorldObjectType owner);
+        explicit MovementBase(WorldObjectType owner) : Owner(owner)
+        {
+        }
 
         virtual ~MovementBase() { mov_assert(m_targeter_references.empty());}
         virtual void CleanReferences();
@@ -150,16 +152,12 @@ namespace Movement
         const Location& GetGlobalPosition() const { return world_position;}
         void SetGlobalPosition(const Location& loc);
 
-        void SetListener(IListener * l) { listener = l;}
-        void ResetLisener() { listener = NULL; }
-
         WorldObjectType Owner;
 
         void _link_targeter(LinkedListElement<TargetLink>& t) { m_targeter_references.link(t);}
 
     protected:
 
-        IListener * listener;
         Location world_position;
     private:
         LinkedList<TargetLink> m_targeter_references;

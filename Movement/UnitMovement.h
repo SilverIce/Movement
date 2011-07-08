@@ -53,7 +53,6 @@ namespace Movement
 
     public:
         // Used by server side controlled movement
-        void LaunchMoveSpline(MoveSplineInitArgs& args);
         uint32 MoveSplineId() const;
         const Vector3& MoveSplineDest() const;
         int32 MoveSplineTimeElapsed() const;
