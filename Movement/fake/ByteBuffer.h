@@ -14,6 +14,11 @@ using Movement::uint32;
 using Movement::uint64;
 using Movement::int64;
 
+template<class T>
+struct Unused
+{
+};
+
 class ByteBuffer
 {
 public:
@@ -28,6 +33,8 @@ public:
     template<class T> void put(size_t, T&) {}
     template<class T> T read(int) { return T();}
     template<class T> T read() { return T();}
+    template<class T> void read(T, size_t) {}
+    template<class T> void write(T, size_t) {}
 
     template<class T>
     ByteBuffer& operator << (const T&)

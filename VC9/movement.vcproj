@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="movement"
 	ProjectGUID="{A395F7CE-51DF-4819-8760-C1C95726C8C1}"
 	RootNamespace="main"
@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\dep\g3dlite\include\"
+				AdditionalIncludeDirectories="..\dep\g3dlite\include\;..\Movement\fake\;..\Movement\"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;USE_FAKE_CLASSES"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -110,7 +110,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="false"
 				WholeProgramOptimization="false"
-				AdditionalIncludeDirectories="..\dep\g3dlite\include\"
+				AdditionalIncludeDirectories="..\dep\g3dlite\include\;..\Movement\fake\;..\Movement\"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;USE_FAKE_CLASSES"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -151,30 +151,14 @@
 	</References>
 	<Files>
 		<Filter
-			Name="util"
-			>
-			<File
-				RelativePath="..\Movement\outLog.cpp"
-				>
-			</File>
-		</Filter>
-		<Filter
 			Name="constants"
 			>
-			<File
-				RelativePath="..\Movement\globals.cpp"
-				>
-			</File>
 			<File
 				RelativePath="..\Movement\mov_constants.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\opcodes.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\Movement\opcodes.h"
+				RelativePath="..\Movement\util.cpp"
 				>
 			</File>
 		</Filter>
@@ -222,23 +206,35 @@
 			Name="fake"
 			>
 			<File
-				RelativePath="..\Movement\ByteBuffer.h"
+				RelativePath="..\Movement\fake\ByteBuffer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\Object.h"
+				RelativePath="..\Movement\fake\MaNGOS_API.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\ObjectGuid.h"
+				RelativePath="..\Movement\fake\Object.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\UpdateFields.h"
+				RelativePath="..\Movement\fake\ObjectGuid.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\WorldPacket.h"
+				RelativePath="..\Movement\fake\opcodes.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Movement\fake\opcodes.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Movement\fake\UpdateFields.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Movement\fake\WorldPacket.h"
 				>
 			</File>
 		</Filter>
@@ -280,6 +276,10 @@
 		</File>
 		<File
 			RelativePath="..\Movement\LinkedList.h"
+			>
+		</File>
+		<File
+			RelativePath="..\Movement\MaNGOS_API.h"
 			>
 		</File>
 		<File

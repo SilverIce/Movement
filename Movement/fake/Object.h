@@ -5,6 +5,7 @@
 #include "typedefs.h"
 #include "ByteBuffer.h"
 #include "UpdateFields.h"
+#include "ObjectGuid.h"
 
 using Movement::int8;
 using Movement::uint8;
@@ -24,6 +25,10 @@ class Player;
 class WorldObject
 {
 public:
+
+    void SetGuidValue(uint32, ObjectGuid) {}
+    ObjectGuid GetGuidValue(uint32) const { return ObjectGuid();}
+    ObjectGuid GetObjectGuid() const { return ObjectGuid();}
 
     const ByteBuffer& GetPackGUID() const { return m_packGuid; }
 
