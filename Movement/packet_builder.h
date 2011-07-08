@@ -25,12 +25,6 @@ namespace Movement
 
     class PacketBuilder
     {
-        static void Client_SpeedUpdate(const UnitMovementImpl& mov, SpeedType type, WorldPacket&);
-        static void Client_MoveModeUpdate(const UnitMovementImpl& mov, MoveMode mode, WorldPacket&);
-
-        static void Spline_SpeedUpdate(const UnitMovementImpl& mov, SpeedType type, WorldPacket&);
-        static void Spline_MoveModeUpdate(const UnitMovementImpl& mov, MoveMode mode, WorldPacket&);
-
         static void WriteCommonMonsterMovePart(const UnitMovementImpl& mov, WorldPacket& data);
         static void WriteLinearPath(const Spline<int32>& spline, ByteBuffer& data);
         static void WriteCatmullRomPath(const Spline<int32>& spline, ByteBuffer& data);
@@ -38,8 +32,6 @@ namespace Movement
 
     public:
 
-        static void SpeedUpdate(const UnitMovementImpl& mov, SpeedType type, MsgDeliverer&);
-        static void MoveModeUpdate(const UnitMovementImpl& mov, MoveMode mode, MsgDeliverer&);
         static void SplinePathSend(const UnitMovementImpl& mov, MsgDeliverer&);
         static void SplineSyncSend(const UnitMovementImpl& mov, MsgDeliverer&);
         static void FullUpdate(const UnitMovementImpl& mov, ByteBuffer& );
