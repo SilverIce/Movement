@@ -11,6 +11,7 @@
 #include "MovementBase.h"
 #include "mov_constants.h"
 #include "ClientMoveStatus.h"
+#include "MoveSpline.h"
 
 namespace Movement
 {
@@ -105,8 +106,6 @@ namespace Movement
         float GetSpeed(SpeedType type) const { return GetParameter((FloatParameter)(0 + type)); }
         float GetCurrentSpeed() const { return GetParameter(Parameter_SpeedCurrent); }
 
-        uint32 dbg_flags;
-
         #pragma region Impl
     private:
         enum{
@@ -188,7 +187,7 @@ namespace Movement
         friend class UnitMovement;
 
         UpdatableMovement updatable;
-        MoveSpline& move_spline;
+        MoveSpline move_spline;
         ClientImpl* m_client;
         MSTime last_update_time;
         MoveStateSet m_moveEvents;

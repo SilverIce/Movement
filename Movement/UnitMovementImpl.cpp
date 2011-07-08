@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Object.h"
-#include "MoveSpline.h"
 #include "ClientImpl.h"
 #include "MoveSplineInit.h"
 #include "packet_builder.h"
@@ -79,7 +78,7 @@ namespace Movement
     }
 
     UnitMovementImpl::UnitMovementImpl(WorldObjectType owner) :
-        Transportable(owner), move_spline(*new MoveSpline()), m_transport(*this),
+        Transportable(owner), m_transport(*this),
         m_client(NULL)
     {
         updatable.SetUpdateStrategy(this);
@@ -100,12 +99,10 @@ namespace Movement
         };
 
         memcpy(m_float_values,BaseValues, sizeof m_float_values);
-        dbg_flags = 0;
     }
 
     UnitMovementImpl::~UnitMovementImpl()
     {
-        delete &move_spline;
     }
 
     void UnitMovementImpl::CleanReferences()
