@@ -17,7 +17,7 @@
 namespace Movement
 {
     class MoveSpline;
-    class Client;
+    class ClientImpl;
 
     // Manages by sequential set of client movement states
     class MoveStateSet
@@ -36,12 +36,12 @@ namespace Movement
     };
 
     // class for unit's movement
-    class UnitMovement : public Transportable, public IUpdatable
+    class UnitMovementImpl : public Transportable, public IUpdatable
     {
     public:
 
-        explicit UnitMovement(WorldObjectType owner);
-        virtual ~UnitMovement();
+        explicit UnitMovementImpl(WorldObjectType owner);
+        virtual ~UnitMovementImpl();
 
         virtual void CleanReferences();
         virtual void UpdateState();
@@ -160,8 +160,8 @@ namespace Movement
         void SetPosition(const Location& v);
         void SetPosition(const Vector3& v) { SetPosition(Location(v,GetPosition().orientation));}
 
-        Client* client() const { return m_client;}
-        void client(Client* c) { m_client = c;}
+        ClientImpl* client() const { return m_client;}
+        void client(ClientImpl* c) { m_client = c;}
         bool IsClientControlled() const { return GetControl() == MovControlClient;}
     private:
         void ReCalculateCurrentSpeed();
@@ -185,7 +185,7 @@ namespace Movement
 
         UpdatableMovement updatable;
         MoveSpline& move_spline;
-        Client* m_client;
+        ClientImpl* m_client;
         MSTime last_update_time;
         MoveStateSet m_moveEvents;
         Transport m_transport;

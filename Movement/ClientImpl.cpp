@@ -2,7 +2,7 @@
 
 #include "ClientImpl.h"
 #include "MovementMessage.h"
-#include "UnitMovement.h"
+#include "UnitMovementImpl.h"
 #include "ClientMovementImpl.h"
 
 #include "ObjectGuid.h"
@@ -15,14 +15,14 @@ namespace Movement
         uint32 reqId;
     public:
 
-        TimeSyncRequest(Client * client) : RespHandler(CMSG_TIME_SYNC_RESP), reqId(client->AddRespHandler(this))
+        TimeSyncRequest(ClientImpl * client) : RespHandler(CMSG_TIME_SYNC_RESP), reqId(client->AddRespHandler(this))
         {     
             WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
             data << reqId;
             client->SendPacket(data);
         }
 
-        virtual void OnReply(Client * client, WorldPacket& data) override
+        virtual void OnReply(ClientImpl * client, WorldPacket& data) override
         {
             uint32 client_req_id;
             MSTime client_ticks;
@@ -37,7 +37,7 @@ namespace Movement
         }
     };
 
-    void Client::HandleOutcomingMessage(WorldPacket& recv_data)
+    void ClientImpl::HandleOutcomingMessage(WorldPacket& recv_data)
     {
         if (!m_controlled)
             return;
@@ -62,7 +62,7 @@ namespace Movement
     static MSTime timestamp_incr = 5000;
     static MSTime timestamp_decr = 0;
 
-    void Client::SendMoveMessage(MovementMessage& msg) const
+    void ClientImpl::SendMoveMessage(MovementMessage& msg) const
     {
         if (msg.Source() == m_controlled && !send_self)
             return;
@@ -75,7 +75,7 @@ namespace Movement
         SendPacket(msg.Packet());
     }
 
-    void Client::CleanReferences()
+    void ClientImpl::CleanReferences()
     {
         while(!m_resp_handlers.empty())
         {
@@ -87,7 +87,7 @@ namespace Movement
         m_socket = NULL;
     }
 
-    void Client::Dereference(const UnitMovementImpl * m)
+    void ClientImpl::Dereference(const UnitMovementImpl * m)
     {
         if (m != m_controlled || m_controlled->client() != this)
         {
@@ -98,7 +98,7 @@ namespace Movement
         LostControl();
     }
 
-    void Client::SetControl(UnitMovementImpl * newly_controlled)
+    void ClientImpl::SetControl(UnitMovementImpl * newly_controlled)
     {
         LostControl();
         m_controlled = newly_controlled;
@@ -107,20 +107,20 @@ namespace Movement
         new TimeSyncRequest(this);
     }
 
-    void Client::LostControl()
+    void ClientImpl::LostControl()
     {
         if (m_controlled && m_controlled->client() == this)
             m_controlled->client(NULL);
         m_controlled = NULL;
     }
 
-    Client::Client(HANDLE socket) :
+    ClientImpl::ClientImpl(HANDLE socket) :
         m_socket(socket),
         m_controlled(NULL)
     {
     }
 
-    void Client::_OnUpdate()
+    void ClientImpl::_OnUpdate()
     {
         MSTime now = ServerTime();
 
@@ -137,7 +137,7 @@ namespace Movement
         }*/
     }
 
-    void Client::HandleMoveTimeSkipped(WorldPacket & recv_data)
+    void ClientImpl::HandleMoveTimeSkipped(WorldPacket & recv_data)
     {
         ObjectGuid guid;
         int32 time;
@@ -151,7 +151,7 @@ namespace Movement
         BroadcastMessage(data);
     }
 
-    std::string Client::ToString() const
+    std::string ClientImpl::ToString() const
     {
         std::stringstream str;
         str << "Server-side time: " << ServerTime().time << " Client-side time: " << ClientTime().time << std::endl;
@@ -159,17 +159,17 @@ namespace Movement
         return str.str();
     }
 
-    void Client::HandleResponse(WorldPacket& data)
+    void ClientImpl::HandleResponse(WorldPacket& data)
     {
         if (!m_controlled)
             return;
 
         struct _handler
         {
-            Client * client;
+            ClientImpl * client;
             WorldPacket& data;
 
-            _handler(Client * c, WorldPacket& _data) : client(c), data(_data) {}
+            _handler(ClientImpl * c, WorldPacket& _data) : client(c), data(_data) {}
 
             inline bool operator()(RespHandler* hdl)
             {
@@ -184,51 +184,51 @@ namespace Movement
         m_resp_handlers.erase(std::find_if(m_resp_handlers.begin(),m_resp_handlers.end(),_handler(this,data)));
     }
 
-    std::string Client::ToString() const
+    std::string ClientImpl::ToString() const
     {
         return m.ToString();
     }
 
-    void Client::LostControl()
+    void ClientImpl::LostControl()
     {
         m.LostControl();
     }
 
-    void Client::SetControl(UnitMovement * mov)
+    void ClientImpl::SetControl(UnitMovementImpl * mov)
     {
         m.SetControl(&mov->Impl());
     }
 
-    void Client::HandleResponse( WorldPacket& data )
+    void ClientImpl::HandleResponse( WorldPacket& data )
     {
         m.HandleResponse(data);
     }
 
-    void Client::SendMoveMessage( MovementMessage& msg ) const
+    void ClientImpl::SendMoveMessage( MovementMessage& msg ) const
     {
         m.SendMoveMessage(msg);
     }
 
-    void Client::HandleOutcomingMessage(WorldPacket& recv_data)
+    void ClientImpl::HandleOutcomingMessage(WorldPacket& recv_data)
     {
         m.HandleOutcomingMessage(recv_data);
     }
 
-    void Client::HandleMoveTimeSkipped(WorldPacket & recv_data)
+    void ClientImpl::HandleMoveTimeSkipped(WorldPacket & recv_data)
     {
         m.HandleMoveTimeSkipped(recv_data);
     }
 
-    Client* Client::create(void * socket)
+    ClientImpl* ClientImpl::create(void * socket)
     {
-        char* data = new char[sizeof(Client) + sizeof(Client)];
-        Client * impl = new(data+sizeof(Client))Client(socket);
-        Client * client = new(data)Client(*impl);
+        char* data = new char[sizeof(ClientImpl) + sizeof(ClientImpl)];
+        ClientImpl * impl = new(data+sizeof(ClientImpl))ClientImpl(socket);
+        ClientImpl * client = new(data)ClientImpl(*impl);
         return client;
     }
 
-    Client::~Client()
+    ClientImpl::~ClientImpl()
     {
-        m.~Client();
+        m.~ClientImpl();
     }
 }

@@ -28,10 +28,10 @@ Vector3 nodes2[] =
 struct WP_test : public TestArea, public IListener 
 {
     WorldObject *fake;
-    UnitMovement& st;
+    UnitMovementImpl& st;
     MoveUpdater updater;
 
-    WP_test() : fake(NULL), st(*UnitMovement::create(*fake))
+    WP_test() : fake(NULL), st(*UnitMovementImpl::create(*fake))
     {
         st.SetListener(this);
         st.Initialize(Location(nodes2[0]),updater);

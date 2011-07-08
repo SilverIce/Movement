@@ -15,8 +15,8 @@ namespace Movement
     class GameobjectMovement;
     class Transportable;
     class MO_Transport;
-    class UnitMovement;
-    class Client;
+    class UnitMovementImpl;
+    class ClientImpl;
     struct Location;
 }
 

@@ -22,7 +22,7 @@ namespace Movement
     class UpdatableMovement;
     class Transportable;
     class IListener;
-    class UnitMovement;
+    class UnitMovementImpl;
 
     struct IUpdatable 
     {
@@ -127,11 +127,11 @@ namespace Movement
     {
         TargetLink() : target(0), targeter(0) {}
 
-        TargetLink(MovementBase* target_, UnitMovement* targeter_)
+        TargetLink(MovementBase* target_, UnitMovementImpl* targeter_)
             : target(target_), targeter(targeter_) {}
 
         MovementBase* target;
-        UnitMovement* targeter;
+        UnitMovementImpl* targeter;
     };
 
     typedef WorldObject& WorldObjectType;

@@ -38,7 +38,7 @@ namespace Movement
         return true;
     }
 
-    SpeedType UnitMovement::SelectSpeedType(UnitMoveFlag moveFlags)
+    SpeedType UnitMovementImpl::SelectSpeedType(UnitMoveFlag moveFlags)
     {
         // g_moveFlags_mask - some global client's moveflag mask
         // TODO: get real value
@@ -78,7 +78,7 @@ namespace Movement
         }
     }
 
-    UnitMovement::UnitMovement(WorldObjectType owner) :
+    UnitMovementImpl::UnitMovementImpl(WorldObjectType owner) :
         Transportable(owner), move_spline(*new MoveSpline()), m_transport(*this),
         m_client(NULL)
     {
@@ -104,12 +104,12 @@ namespace Movement
         dbg_flags = 0;
     }
 
-    UnitMovement::~UnitMovement()
+    UnitMovementImpl::~UnitMovementImpl()
     {
         delete &move_spline;
     }
 
-    void UnitMovement::CleanReferences()
+    void UnitMovementImpl::CleanReferences()
     {
         if (m_client)
         {
@@ -123,13 +123,13 @@ namespace Movement
         updatable.CleanReferences();
     }
 
-    void UnitMovement::ReCalculateCurrentSpeed()
+    void UnitMovementImpl::ReCalculateCurrentSpeed()
     {
-        speed_type = UnitMovement::SelectSpeedType(moveFlags);
+        speed_type = UnitMovementImpl::SelectSpeedType(moveFlags);
         m_float_values[Parameter_SpeedCurrent] = GetSpeed(speed_type);
     }
 
-    Vector3 UnitMovement::direction() const
+    Vector3 UnitMovementImpl::direction() const
     {
         if (!moveFlags.hasDirection())
             return Vector3();
@@ -160,14 +160,14 @@ namespace Movement
         return Vector3(cos(dest_angle), sin(dest_angle), 0);
     }
 
-    void UnitMovement::Initialize(const Location& pos, MoveUpdater& updater)
+    void UnitMovementImpl::Initialize(const Location& pos, MoveUpdater& updater)
     {
         SetPosition(pos);
         updatable.SetUpdater(updater);
         setLastUpdate(GetUpdater().TickTime());
     }
 
-    void UnitMovement::ApplyState(const ClientMoveState& new_state)
+    void UnitMovementImpl::ApplyState(const ClientMoveState& new_state)
     {
         if (SplineEnabled())
         {
@@ -202,7 +202,7 @@ namespace Movement
         ReCalculateCurrentSpeed();
     }
 
-    void UnitMovement::updateRotation()
+    void UnitMovementImpl::updateRotation()
     {
         if (!IsOrientationBinded())
             return;
@@ -229,7 +229,7 @@ namespace Movement
     */
     }
 
-    void UnitMovement::BindOrientationTo(MovementBase& target)
+    void UnitMovementImpl::BindOrientationTo(MovementBase& target)
     {
         UnbindOrientation();
 
@@ -245,7 +245,7 @@ namespace Movement
         Owner.SetUInt64Value(UNIT_FIELD_TARGET, target.Owner.GetGUID());
     }
 
-    void UnitMovement::UnbindOrientation()
+    void UnitMovementImpl::UnbindOrientation()
     {
         m_target_link.delink();
         m_target_link.Value = TargetLink();
@@ -253,13 +253,13 @@ namespace Movement
     }
 
 
-    struct UnitMovement::MoveSplineUpdater
+    struct UnitMovementImpl::MoveSplineUpdater
     {
-        UnitMovement& mov;
+        UnitMovementImpl& mov;
         MoveSpline& move_spline;
         bool NeedSync;
 
-        explicit MoveSplineUpdater(UnitMovement& movement, int32 difftime) :
+        explicit MoveSplineUpdater(UnitMovementImpl& movement, int32 difftime) :
             mov(movement), NeedSync(false), move_spline(mov.move_spline)
         {
             move_spline.updateState(difftime, *this);
@@ -295,7 +295,7 @@ namespace Movement
         }
     };
 
-    void UnitMovement::UpdateState()
+    void UnitMovementImpl::UpdateState()
     {
         MSTime now = GetUpdater().TickTime();
 
@@ -326,7 +326,7 @@ namespace Movement
         }
     }
 
-    void UnitMovement::BoardOn(Transport& transport, const Location& local_position, int8 seatId)
+    void UnitMovementImpl::BoardOn(Transport& transport, const Location& local_position, int8 seatId)
     {
         _board(transport, local_position);
 
@@ -334,7 +334,7 @@ namespace Movement
         moveFlags.ontransport = true;
     }
 
-    void UnitMovement::Unboard()
+    void UnitMovementImpl::Unboard()
     {
         _unboard();
 
@@ -342,7 +342,7 @@ namespace Movement
         moveFlags.ontransport = false;
     }
 
-    void UnitMovement::SetPosition(const Location& v)
+    void UnitMovementImpl::SetPosition(const Location& v)
     {
         // dirty code..
         if (IsBoarded())
@@ -351,7 +351,7 @@ namespace Movement
             SetGlobalPosition(v);
     }
 
-    void UnitMovement::LaunchMoveSpline(MoveSplineInitArgs& args)
+    void UnitMovementImpl::LaunchMoveSpline(MoveSplineInitArgs& args)
     {
         if (!HasUpdater())
         {
@@ -382,7 +382,7 @@ namespace Movement
         PacketBuilder::SplinePathSend(*this, MsgBroadcast(this));
     }
 
-    void UnitMovement::PrepareMoveSplineArgs(MoveSplineInitArgs& args, UnitMoveFlag& moveFlag_new, SpeedType& speed_type_new) const
+    void UnitMovementImpl::PrepareMoveSplineArgs(MoveSplineInitArgs& args, UnitMoveFlag& moveFlag_new, SpeedType& speed_type_new) const
     {
         args.path[0] = GetPosition3();    //correct first vertex
         args.splineId = GetUpdater().NewMoveSplineId();
@@ -395,14 +395,14 @@ namespace Movement
         // select velocity if was not set in SetVelocity
         if (args.velocity == 0.f)
         {
-            speed_type_new = UnitMovement::SelectSpeedType(moveFlag_new);
+            speed_type_new = UnitMovementImpl::SelectSpeedType(moveFlag_new);
             args.velocity = GetSpeed(speed_type_new);
         }
         else
             speed_type_new = SpeedNotStandart;
     }
 
-    std::string UnitMovement::ToString() const
+    std::string UnitMovementImpl::ToString() const
     {
         std::stringstream st;
         st << "Movement  flags: " << moveFlags.ToString() << std::endl;
@@ -436,7 +436,7 @@ namespace Movement
         return st.str();
     }
 
-    uint32 UnitMovement::MoveSplineId() const
+    uint32 UnitMovementImpl::MoveSplineId() const
     {
         if (SplineEnabled())
             return move_spline.GetId();
@@ -444,7 +444,7 @@ namespace Movement
             return 0;
     }
 
-    const Vector3& UnitMovement::MoveSplineDest() const
+    const Vector3& UnitMovementImpl::MoveSplineDest() const
     {
         if (SplineEnabled())
             return move_spline.FinalDestination();
@@ -452,7 +452,7 @@ namespace Movement
             return GetPosition3();
     }
 
-    int32 UnitMovement::MoveSplineTimeElapsed() const
+    int32 UnitMovementImpl::MoveSplineTimeElapsed() const
     {
         if (SplineEnabled())
             return move_spline.timeElapsed();
@@ -460,7 +460,7 @@ namespace Movement
             return 0;
     }
 
-    ClientMoveState UnitMovement::ClientState() const
+    ClientMoveState UnitMovementImpl::ClientState() const
     {
         ClientMoveState state;
         static_cast<_ClientMoveState>(state) = m_unused;
@@ -486,7 +486,7 @@ namespace Movement
 
     /* request-response-msg order*/
     #define VALUE_CHANGE(mode)   {SMSG_FORCE_##mode##_CHANGE, CMSG_FORCE_##mode##_CHANGE_ACK, MSG_MOVE_SET_##mode,SMSG_SPLINE_SET_##mode},
-    static const ReqRespMsg ValueChange2Opc_table[UnitMovement::Parameter_End] =
+    static const ReqRespMsg ValueChange2Opc_table[UnitMovementImpl::Parameter_End] =
     {
         VALUE_CHANGE(WALK_SPEED)
         VALUE_CHANGE(RUN_SPEED)
@@ -504,10 +504,10 @@ namespace Movement
     class FloatValueChangeRequest : public RespHandler
     {
         uint32 m_reqId;
-        UnitMovement::FloatParameter m_value_type;
+        UnitMovementImpl::FloatParameter m_value_type;
         float m_value;
 
-        FloatValueChangeRequest(Client * client, UnitMovement::FloatParameter value_type, float value) :
+        FloatValueChangeRequest(ClientImpl * client, UnitMovementImpl::FloatParameter value_type, float value) :
               RespHandler(ValueChange2Opc_table[value_type].cmsg_response),
               m_value_type(value_type),
               m_reqId(client->AddRespHandler(this)),
@@ -518,7 +518,7 @@ namespace Movement
                 WorldPacket data(opcode, 32);
                 data << client->controlled()->Owner.GetPackGUID();
                 data << m_reqId;
-                if (m_value_type == UnitMovement::Parameter_SpeedRun)
+                if (m_value_type == UnitMovementImpl::Parameter_SpeedRun)
                     data << int8(0);                               // new 2.1.0
                 data << m_value;
                 client->SendPacket(data);
@@ -527,7 +527,7 @@ namespace Movement
 
     public:
 
-        static void Launch(UnitMovement * mov, UnitMovement::FloatParameter value_type, float value)
+        static void Launch(UnitMovementImpl * mov, UnitMovementImpl::FloatParameter value_type, float value)
         {
             if (mov->IsClientControlled())
             {
@@ -549,7 +549,7 @@ namespace Movement
             }
         }
 
-        virtual void OnReply(Client * client, WorldPacket& data) override
+        virtual void OnReply(ClientImpl * client, WorldPacket& data) override
         {
             ClientMoveState client_state;
             ObjectGuid guid;
@@ -582,12 +582,12 @@ namespace Movement
         }
     };
 
-    void UnitMovement::SetCollisionHeight(float value)
+    void UnitMovementImpl::SetCollisionHeight(float value)
     {
         FloatValueChangeRequest::Launch(this, Parameter_CollisionHeight, value);
     }
 
-    void UnitMovement::SetSpeed(SpeedType type, float value)
+    void UnitMovementImpl::SetSpeed(SpeedType type, float value)
     {
         if (GetSpeed(type) != value)
             FloatValueChangeRequest::Launch(this, (FloatParameter)type, value);
@@ -663,7 +663,7 @@ namespace Movement
         MoveMode m_mode;
         bool m_apply;
 
-        ModeChangeRequest(Client * client, MoveMode mode, bool apply) : RespHandler(modeInfo[mode].cmsg_ack[!apply]),
+        ModeChangeRequest(ClientImpl * client, MoveMode mode, bool apply) : RespHandler(modeInfo[mode].cmsg_ack[!apply]),
             m_mode(mode), m_apply(apply), m_reqId(client->AddRespHandler(this))
         {
             if (uint16 opcode = modeInfo[mode].smsg_apply[!apply])
@@ -677,7 +677,7 @@ namespace Movement
 
     public:
 
-        static void Launch(UnitMovement * mov, MoveMode mode, bool apply)
+        static void Launch(UnitMovementImpl * mov, MoveMode mode, bool apply)
         {
             if (mov->IsClientControlled())
                 new ModeChangeRequest(mov->client(), mode, apply);
@@ -693,7 +693,7 @@ namespace Movement
             }
         }
 
-        virtual void OnReply(Client * client, WorldPacket& data) override
+        virtual void OnReply(ClientImpl * client, WorldPacket& data) override
         {
             ClientMoveState client_state;
             ObjectGuid guid;
@@ -730,12 +730,12 @@ namespace Movement
         }
     };
 
-    void UnitMovement::ApplyMoveMode(MoveMode mode, bool apply)
+    void UnitMovementImpl::ApplyMoveMode(MoveMode mode, bool apply)
     {
         ModeChangeRequest::Launch(this, mode, apply);
     }
 
-    bool UnitMovement::HasMode(MoveMode m) const
+    bool UnitMovementImpl::HasMode(MoveMode m) const
     {
         return moveFlags & modeInfo[m].moveFlag;
     }
@@ -745,7 +745,7 @@ namespace Movement
         uint32 m_reqId;
         Location m_location;
 
-        TeleportRequest(Client * client, const Location& loc) :
+        TeleportRequest(ClientImpl * client, const Location& loc) :
             RespHandler(MSG_MOVE_TELEPORT_ACK),
             m_reqId(client->AddRespHandler(this)),
             m_location(loc)
@@ -766,7 +766,7 @@ namespace Movement
 
     public:
 
-        static void Launch(UnitMovement * mov, const Location& loc)
+        static void Launch(UnitMovementImpl * mov, const Location& loc)
         {
             if (mov->client())
             {
@@ -782,7 +782,7 @@ namespace Movement
             }
         }
 
-        virtual void OnReply(Client * client, WorldPacket& data) override
+        virtual void OnReply(ClientImpl * client, WorldPacket& data) override
         {
             ObjectGuid guid;
             uint32 client_req_id;
@@ -806,7 +806,7 @@ namespace Movement
         }
     };
 
-    void UnitMovement::Teleport(const Location& loc)
+    void UnitMovementImpl::Teleport(const Location& loc)
     {
         TeleportRequest::Launch(this, loc);
     }

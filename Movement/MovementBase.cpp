@@ -1,6 +1,6 @@
 #include "MovementBase.h"
 #include "MoveUpdater.h"
-#include "UnitMovement.h"
+#include "UnitMovementImpl.h"
 #include <float.h>
 #include "MaNGOS_API.h"
 

@@ -1,5 +1,5 @@
 
-#include "UnitMovement.h"
+#include "UnitMovementImpl.h"
 #include "MoveSpline.h"
 #include "MovementMessage.h"
 #include "Object.h"
@@ -7,7 +7,7 @@
 
 namespace Movement
 {
-    void PacketBuilder::WriteCommonMonsterMovePart(const UnitMovement& mov, WorldPacket& data)
+    void PacketBuilder::WriteCommonMonsterMovePart(const UnitMovementImpl& mov, WorldPacket& data)
     {
         const MoveSpline& move_spline = mov.move_spline;
         MoveSplineFlag splineflags = move_spline.splineflags;
@@ -120,7 +120,7 @@ namespace Movement
         data.append<Vector3>(&spline.getPoint(1), count);
     }
 
-    void PacketBuilder::SplinePathSend(const UnitMovement& mov, MsgDeliverer& broadcast)
+    void PacketBuilder::SplinePathSend(const UnitMovementImpl& mov, MsgDeliverer& broadcast)
     {
         mov_assert(mov.SplineEnabled() && mov.move_spline.Initialized());
 
@@ -143,7 +143,7 @@ namespace Movement
         broadcast(data);
     }
 
-    void PacketBuilder::FullUpdate(const UnitMovement& mov, ByteBuffer& data)
+    void PacketBuilder::FullUpdate(const UnitMovementImpl& mov, ByteBuffer& data)
     {
         WriteClientStatus(mov,data);
 
@@ -225,7 +225,7 @@ namespace Movement
         }
     }
 
-    void PacketBuilder::WriteClientStatus(const UnitMovement& mov, ByteBuffer& data)
+    void PacketBuilder::WriteClientStatus(const UnitMovementImpl& mov, ByteBuffer& data)
     {
         const _ClientMoveState& un = mov.m_unused;
 
@@ -303,7 +303,7 @@ namespace Movement
         }
     }
 
-    void PacketBuilder::SplineSyncSend(const UnitMovement& mov, MsgDeliverer& broadcast)
+    void PacketBuilder::SplineSyncSend(const UnitMovementImpl& mov, MsgDeliverer& broadcast)
     {
         mov_assert(mov.SplineEnabled());
         const MoveSpline& move_spline = mov.move_spline;
@@ -314,7 +314,7 @@ namespace Movement
         broadcast(data);
     }
 
-    void PacketBuilder::Send_HeartBeat(const UnitMovement& mov, MsgDeliverer& broadcast)
+    void PacketBuilder::Send_HeartBeat(const UnitMovementImpl& mov, MsgDeliverer& broadcast)
     {
         WorldPacket data(MSG_MOVE_HEARTBEAT, 64);
         data << mov.Owner.GetPackGUID();

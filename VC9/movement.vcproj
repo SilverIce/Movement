@@ -319,11 +319,11 @@
 			>
 		</File>
 		<File
-			RelativePath="..\Movement\UnitMovement.cpp"
+			RelativePath="..\Movement\UnitMovementImpl.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\Movement\UnitMovement.h"
+			RelativePath="..\Movement\UnitMovementImpl.h"
 			>
 		</File>
 	</Files>

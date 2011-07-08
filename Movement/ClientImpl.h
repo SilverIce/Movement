@@ -8,7 +8,7 @@
 
 #include "typedefs.h"
 #include "MaNGOS_API.h"
-#include "UnitMovement.h"
+#include "UnitMovementImpl.h"
 
 class ByteBuffer;
 class WorldPacket;
@@ -16,7 +16,7 @@ class WorldPacket;
 namespace Movement
 {
     class MovementMessage;
-    class UnitMovement;
+    class UnitMovementImpl;
 
     class RespHandler
     {
@@ -29,15 +29,15 @@ namespace Movement
 
         bool CanHandle(uint32 _opcode) const { return opcode == _opcode;}
         //virtual void OnTimeout() {}
-        virtual void OnReply(Client * client, WorldPacket& data) = 0;
+        virtual void OnReply(ClientImpl * client, WorldPacket& data) = 0;
     };
 
-    class Client
+    class ClientImpl
     {
         #pragma region Impl
     private:
         HANDLE m_socket;
-        UnitMovement * m_controlled;
+        UnitMovementImpl * m_controlled;
         MSTime m_time_diff;             // difference between client and server time: diff = client_ticks - server_ticks
         MSTime m_last_sync_time;
         UInt32Counter request_counter;
@@ -52,7 +52,7 @@ namespace Movement
 
     public:
 
-        UnitMovement* controlled() const { return m_controlled;}
+        UnitMovementImpl* controlled() const { return m_controlled;}
         void SetClientTime(const MSTime& client_time) { m_time_diff = client_time - ServerTime();}
 
         void QueueState(ClientMoveState& client_state)
@@ -72,15 +72,15 @@ namespace Movement
         inline void SendPacket(const WorldPacket& data) const { MaNGOS_API::SendPacket(m_socket, data);}
 
         void CleanReferences();
-        void Dereference(const UnitMovement * m);
+        void Dereference(const UnitMovementImpl * m);
         void _OnUpdate();
         #pragma endregion
     public:
 
         /** Client's lifetime bounded to WorldSession lifetime */
-        Client(HANDLE socket);
+        ClientImpl(HANDLE socket);
 
-        ~Client()
+        ~ClientImpl()
         {
             CleanReferences();
         }
@@ -88,7 +88,7 @@ namespace Movement
         std::string ToString() const;
 
         void LostControl();
-        void SetControl(UnitMovement * mov);
+        void SetControl(UnitMovementImpl * mov);
 
         void HandleResponse(WorldPacket& data);
 

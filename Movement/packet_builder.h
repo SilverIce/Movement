@@ -19,34 +19,34 @@ namespace Movement
         virtual void operator()(WorldPacket&) = 0;
     };
 
-    class UnitMovement;
+    class UnitMovementImpl;
     struct ClientMoveState;
     template<class T> class Spline;
 
     class PacketBuilder
     {
-        static void Client_SpeedUpdate(const UnitMovement& mov, SpeedType type, WorldPacket&);
-        static void Client_MoveModeUpdate(const UnitMovement& mov, MoveMode mode, WorldPacket&);
+        static void Client_SpeedUpdate(const UnitMovementImpl& mov, SpeedType type, WorldPacket&);
+        static void Client_MoveModeUpdate(const UnitMovementImpl& mov, MoveMode mode, WorldPacket&);
 
-        static void Spline_SpeedUpdate(const UnitMovement& mov, SpeedType type, WorldPacket&);
-        static void Spline_MoveModeUpdate(const UnitMovement& mov, MoveMode mode, WorldPacket&);
+        static void Spline_SpeedUpdate(const UnitMovementImpl& mov, SpeedType type, WorldPacket&);
+        static void Spline_MoveModeUpdate(const UnitMovementImpl& mov, MoveMode mode, WorldPacket&);
 
-        static void WriteCommonMonsterMovePart(const UnitMovement& mov, WorldPacket& data);
+        static void WriteCommonMonsterMovePart(const UnitMovementImpl& mov, WorldPacket& data);
         static void WriteLinearPath(const Spline<int32>& spline, ByteBuffer& data);
         static void WriteCatmullRomPath(const Spline<int32>& spline, ByteBuffer& data);
         static void WriteCatmullRomCyclicPath(const Spline<int32>& spline, ByteBuffer& data);
 
     public:
 
-        static void SpeedUpdate(const UnitMovement& mov, SpeedType type, MsgDeliverer&);
-        static void MoveModeUpdate(const UnitMovement& mov, MoveMode mode, MsgDeliverer&);
-        static void SplinePathSend(const UnitMovement& mov, MsgDeliverer&);
-        static void SplineSyncSend(const UnitMovement& mov, MsgDeliverer&);
-        static void FullUpdate(const UnitMovement& mov, ByteBuffer& );
+        static void SpeedUpdate(const UnitMovementImpl& mov, SpeedType type, MsgDeliverer&);
+        static void MoveModeUpdate(const UnitMovementImpl& mov, MoveMode mode, MsgDeliverer&);
+        static void SplinePathSend(const UnitMovementImpl& mov, MsgDeliverer&);
+        static void SplineSyncSend(const UnitMovementImpl& mov, MsgDeliverer&);
+        static void FullUpdate(const UnitMovementImpl& mov, ByteBuffer& );
 
-        static void WriteClientStatus(const UnitMovement& mov, ByteBuffer& data);
+        static void WriteClientStatus(const UnitMovementImpl& mov, ByteBuffer& data);
         static void WriteClientStatus(const ClientMoveState& mov, ByteBuffer& data);
         static void ReadClientStatus(ClientMoveState& state, ByteBuffer& data);
-        static void Send_HeartBeat(const UnitMovement& mov, MsgDeliverer&);     // actually i shouldn't use it: only client is author of such packets
+        static void Send_HeartBeat(const UnitMovementImpl& mov, MsgDeliverer&);     // actually i shouldn't use it: only client is author of such packets
     };
 }

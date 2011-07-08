@@ -13,7 +13,7 @@
 namespace Movement
 {
     class MovementBase;
-    class UnitMovement;
+    class UnitMovementImpl;
 
     /*  Initializes and launches spline movement
      */
@@ -21,7 +21,7 @@ namespace Movement
     {
     public:
 
-        explicit MoveSplineInit(UnitMovement& m);
+        explicit MoveSplineInit(UnitMovementImpl& m);
         
         /*  Final pass of initialization that launches spline movement.
          */
@@ -88,7 +88,7 @@ namespace Movement
         void SetVelocity(float velocity);
 
         PointsArray& Path() { return args.path; }
-        const UnitMovement& Movement() { return state; }
+        const UnitMovementImpl& Movement() { return state; }
 
         template<typename InitStrategy>
         inline MoveSplineInit& operator << (InitStrategy init)
@@ -100,10 +100,10 @@ namespace Movement
     private:
 
         MoveSplineInitArgs args;
-        UnitMovement&  state;
+        UnitMovementImpl&  state;
     };
 
-    inline void MoveJumpInit(UnitMovement& st, const Vector3& dest, float velocity, float parabolic_heigth = 0.5f)
+    inline void MoveJumpInit(UnitMovementImpl& st, const Vector3& dest, float velocity, float parabolic_heigth = 0.5f)
     {
         MoveSplineInit init(st);
         init.MoveTo(dest);
