@@ -71,6 +71,7 @@ namespace Movement
             Unk9               = 0x400000000000L,
             Unk10              = 0x800000000000L,
 
+            Mask_Speed      = Backward | Flying | Walk_Mode | Swimming,
             Mask_Interp     = Interp_Move | Interp_Turning | Interp_Pitching,
             Mask_Directions = Forward | Backward | Strafe_Left | Strafe_Right | Turn_Left | Turn_Right | Pitch_Up | Pitch_Down,
             Mask_Moving     = Forward | Backward | Strafe_Left | Strafe_Right | Turn_Left | Turn_Right | Falling | Fallingfar | Ascending | Descending

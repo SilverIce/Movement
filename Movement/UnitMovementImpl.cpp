@@ -100,7 +100,6 @@ namespace Movement
         };
 
         memcpy(m_float_values,BaseValues, sizeof m_float_values);
-        speed_type = SpeedRun;
         dbg_flags = 0;
     }
 
@@ -121,12 +120,6 @@ namespace Movement
         m_transport.CleanReferences();
         Transportable::CleanReferences();
         updatable.CleanReferences();
-    }
-
-    void UnitMovementImpl::ReCalculateCurrentSpeed()
-    {
-        speed_type = UnitMovementImpl::SelectSpeedType(moveFlags);
-        m_float_values[Parameter_SpeedCurrent] = GetSpeed(speed_type);
     }
 
     Vector3 UnitMovementImpl::direction() const
@@ -196,10 +189,9 @@ namespace Movement
             }
         }
 
-        moveFlags = new_flags;
+        SetMoveFlag(new_flags);
         m_local_position = new_state.transport_position;
         m_unused = new_state;
-        ReCalculateCurrentSpeed();
     }
 
     void UnitMovementImpl::updateRotation()
@@ -330,7 +322,7 @@ namespace Movement
         _board(transport, local_position);
 
         m_unused.transport_seat = seatId;
-        moveFlags.ontransport = true;
+        ApplyMoveFlag(UnitMoveFlag::Ontransport, true);
     }
 
     void UnitMovementImpl::Unboard()
@@ -338,7 +330,7 @@ namespace Movement
         _unboard();
 
         m_unused.transport_seat = 0;
-        moveFlags.ontransport = false;
+        ApplyMoveFlag(UnitMoveFlag::Ontransport, false);
     }
 
     void UnitMovementImpl::SetPosition(const Location& v)
@@ -359,29 +351,25 @@ namespace Movement
         }
 
         UnitMoveFlag moveFlag_new;
-        SpeedType speed_type_new;
-        PrepareMoveSplineArgs(args, moveFlag_new, speed_type_new);
-
+        PrepareMoveSplineArgs(args, moveFlag_new);
+      
         if (!args.Validate())
         {
             log_console("UnitMovement::LaunchMoveSpline: can't lauch, invalid movespline args");
             return;
         }
 
-        setLastUpdate(GetUpdater().TickTime());
-        speed_obj.current = args.velocity;
-        speed_type = speed_type_new;
-        moveFlags = moveFlag_new;
 
         move_spline.Initialize(args);
-        updatable.ScheduleUpdate();
 
-        SetControl(MovControlServer);
+        SetMoveFlag(moveFlag_new | UnitMoveFlag::Spline_Enabled);
+        //setLastUpdate(GetUpdater().TickTime());
+        //updatable.ScheduleUpdate();
 
         PacketBuilder::SplinePathSend(*this, MsgBroadcast(this));
     }
 
-    void UnitMovementImpl::PrepareMoveSplineArgs(MoveSplineInitArgs& args, UnitMoveFlag& moveFlag_new, SpeedType& speed_type_new) const
+    void UnitMovementImpl::PrepareMoveSplineArgs(MoveSplineInitArgs& args, UnitMoveFlag& moveFlag_new) const
     {
         args.path[0] = GetPosition3();    //correct first vertex
         args.splineId = GetUpdater().NewMoveSplineId();
@@ -393,12 +381,7 @@ namespace Movement
 
         // select velocity if was not set in SetVelocity
         if (args.velocity == 0.f)
-        {
-            speed_type_new = UnitMovementImpl::SelectSpeedType(moveFlag_new);
-            args.velocity = GetSpeed(speed_type_new);
-        }
-        else
-            speed_type_new = SpeedNotStandart;
+            args.velocity = GetSpeed(UnitMovementImpl::SelectSpeedType(moveFlag_new));
     }
 
     std::string UnitMovementImpl::ToString() const
@@ -457,6 +440,16 @@ namespace Movement
             return move_spline.timeElapsed();
         else
             return 0;
+    }
+
+    void UnitMovementImpl::SetMoveFlag(const UnitMoveFlag& newFlags)
+    {
+        if ((moveFlags & UnitMoveFlag::Mask_Speed) != (newFlags & UnitMoveFlag::Mask_Speed))
+        {
+            SpeedType speed_type = UnitMovementImpl::SelectSpeedType(newFlags);
+            m_float_values[Parameter_SpeedCurrent] = GetSpeed(speed_type);
+        }
+        moveFlags = newFlags;
     }
 
     ClientMoveState UnitMovementImpl::ClientState() const
@@ -682,7 +675,7 @@ namespace Movement
                 new ModeChangeRequest(mov->client(), mode, apply);
             else
             {
-                mov->_ApplyMoveFlag(modeInfo[mode].moveFlag, apply);
+                mov->ApplyMoveFlag(modeInfo[mode].moveFlag, apply);
                 if (uint16 opcode = modeInfo[mode].smsg_spline_apply[!apply])
                 {
                     WorldPacket data(opcode, 12);

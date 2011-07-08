@@ -104,7 +104,6 @@ namespace Movement
         void SetSpeed(SpeedType type, float s);
         float GetSpeed(SpeedType type) const { return GetParameter((FloatParameter)(0 + type)); }
         float GetCurrentSpeed() const { return GetParameter(Parameter_SpeedCurrent); }
-        SpeedType getCurrentSpeedType() const { return speed_type; }
 
         uint32 dbg_flags;
 
@@ -149,13 +148,15 @@ namespace Movement
         void SetParameter(FloatParameter p, float value) { m_float_values[p] = value;}
         float GetParameter(FloatParameter p) const { return m_float_values[p];}
 
-        void _ApplyMoveFlag(UnitMoveFlag::eUnitMoveFlags f, bool apply)
+        void ApplyMoveFlag(UnitMoveFlag::eUnitMoveFlags f, bool apply)
         {
             if (apply)
-                moveFlags |= f;
+                SetMoveFlag(moveFlags | f);
             else
-                moveFlags &= ~f;
+                SetMoveFlag(moveFlags & ~f);
         }
+
+        void SetMoveFlag(const UnitMoveFlag& newFlags);
 
         void _QueueState(const ClientMoveState& state) { m_moveEvents.QueueState(state);}       // only for call from Client code
         ClientMoveState ClientState() const;
@@ -167,7 +168,6 @@ namespace Movement
         void client(ClientImpl* c) { m_client = c;}
         bool IsClientControlled() const { return GetControl() == MovControlClient;}
     private:
-        void ReCalculateCurrentSpeed();
         static SpeedType SelectSpeedType(UnitMoveFlag moveFlags);
 
         MovControlType GetControl() const
@@ -179,7 +179,7 @@ namespace Movement
         bool IsServerControlled() const { return GetControl() == MovControlServer;}
         bool SplineEnabled() const { return moveFlags.spline_enabled; }
         void DisableSpline() { moveFlags &= ~(UnitMoveFlag::Mask_Directions | UnitMoveFlag::Spline_Enabled);}
-        void PrepareMoveSplineArgs(MoveSplineInitArgs&, UnitMoveFlag&, SpeedType&) const;
+        void PrepareMoveSplineArgs(MoveSplineInitArgs&, UnitMoveFlag&) const;
 
         void updateRotation();
 
@@ -199,7 +199,6 @@ namespace Movement
         _ClientMoveState m_unused; 
 
         LinkedListElement<TargetLink> m_target_link;
-        SpeedType speed_type;
         float m_float_values[Parameter_End];
         #pragma endregion
     };
