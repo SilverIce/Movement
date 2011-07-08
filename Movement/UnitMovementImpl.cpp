@@ -1,5 +1,5 @@
+#pragma once
 
-#include "UnitMovement.h"
 #include "Object.h"
 #include "moveupdater.h"
 #include "MoveSpline.h"
@@ -242,16 +242,15 @@ namespace Movement
         // can i target self?
         m_target_link.Value = TargetLink(&target, this);
         target._link_targeter(m_target_link);
-        Owner.SetUInt64Value(UNIT_FIELD_TARGET, target.Owner.GetGUID());
+        Owner.SetGuidValue(UNIT_FIELD_TARGET, target.Owner.GetObjectGuid());
     }
 
     void UnitMovementImpl::UnbindOrientation()
     {
         m_target_link.delink();
         m_target_link.Value = TargetLink();
-        Owner.SetUInt64Value(UNIT_FIELD_TARGET, 0);
+        Owner.SetGuidValue(UNIT_FIELD_TARGET, ObjectGuid());
     }
-
 
     struct UnitMovementImpl::MoveSplineUpdater
     {
@@ -501,7 +500,7 @@ namespace Movement
     };
     #undef CLIENT_VALUE_CHANGE
 
-    class FloatValueChangeRequest : public RespHandler
+    class UnitMovementImpl::FloatValueChangeRequest : public RespHandler
     {
         uint32 m_reqId;
         UnitMovementImpl::FloatParameter m_value_type;

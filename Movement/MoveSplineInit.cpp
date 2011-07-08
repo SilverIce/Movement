@@ -1,3 +1,4 @@
+#include "UnitMovement.h"
 #include "UnitMovementImpl.h"
 #include "MoveSplineInit.h"
 
@@ -79,7 +80,7 @@ namespace Movement
         args.flags.EnableFacingPoint();
     }
 
-    MoveSplineInit::MoveSplineInit(UnitMovementImpl& m) : state(m)
+    MoveSplineInit::MoveSplineInit(UnitMovement& m) : state(m.Impl())
     {
         state.UpdateState();
     }

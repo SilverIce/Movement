@@ -6,8 +6,11 @@
   created:      20:2:2011
 */
 
+#pragma once
+
 #include "typedefs.h"
 #include "MaNGOS_API.h"
+#include "ClientMoveStatus.h"
 #include "UnitMovementImpl.h"
 
 class ByteBuffer;
@@ -17,6 +20,7 @@ namespace Movement
 {
     class MovementMessage;
     class UnitMovementImpl;
+    class ClientImpl;
 
     class RespHandler
     {
@@ -36,7 +40,7 @@ namespace Movement
     {
         #pragma region Impl
     private:
-        HANDLE m_socket;
+        void * m_socket;
         UnitMovementImpl * m_controlled;
         MSTime m_time_diff;             // difference between client and server time: diff = client_ticks - server_ticks
         MSTime m_last_sync_time;

@@ -8,16 +8,15 @@
 
 #pragma once
 
-#include <list>
 #include "MovementBase.h"
 #include "mov_constants.h"
-#include "MoveSplineInit.h"
 #include "ClientMoveStatus.h"
 
 namespace Movement
 {
     class MoveSpline;
     class ClientImpl;
+    struct MoveSplineInitArgs;
 
     // Manages by sequential set of client movement states
     class MoveStateSet
@@ -82,7 +81,7 @@ namespace Movement
         void ApplyMoveMode(MoveMode mode, bool apply);
 
         /// Apply/remove modes
-        void ApplyRootMode(bool apply) { ApplyMoveMode(MoveModeRoot, apply); }
+        void ApplyRootMode(bool apply);
         void ApplySwimMode(bool apply) { ApplyMoveMode(MoveModeSwim, apply); }
         void ApplyWalkMode(bool apply) { ApplyMoveMode(MoveModeWalk, apply); }
         void ApplyWaterWalkMode(bool apply) { ApplyMoveMode(MoveModeWaterwalk, apply); }
@@ -91,13 +90,16 @@ namespace Movement
         void ApplyHoverMode(bool apply) { ApplyMoveMode(MoveModeHover, apply); }
 
         void Teleport(const Location& loc);
-        void SetCollisionHeight(float value);
-        float GetCollisionHeight() const { return GetParameter(Parameter_CollisionHeight);}
 
-        bool IsWalking() const { return moveFlags.walk_mode;}
+        /*bool IsWalking() const { return moveFlags.walk_mode;}
         bool IsMoving() const { return moveFlags & UnitMoveFlag::Mask_Moving;}
         bool IsTurning() const { return moveFlags & (UnitMoveFlag::Turn_Left | UnitMoveFlag::Turn_Right);}
         bool IsFlying() const { return moveFlags & (UnitMoveFlag::Flying | UnitMoveFlag::GravityDisabled);}
+        bool IsFalling() const { return moveFlags & (UnitMoveFlag::Falling);}
+        bool IsFallingFar() const { return moveFlags & (UnitMoveFlag::Fallingfar);}*/
+
+        void SetCollisionHeight(float value);
+        float GetCollisionHeight() const { return GetParameter(Parameter_CollisionHeight);}
 
         void SetSpeed(SpeedType type, float s);
         float GetSpeed(SpeedType type) const { return GetParameter((FloatParameter)(0 + type)); }
@@ -117,7 +119,8 @@ namespace Movement
             Maximum_update_difftime = 10000,
         };
 
-        struct MoveSplineUpdater; 
+        struct MoveSplineUpdater;
+        class FloatValueChangeRequest;
 
         void setLastUpdate(MSTime time) { last_update_time = time;}
         MSTime getLastUpdate() const { return last_update_time;}
@@ -182,6 +185,7 @@ namespace Movement
 
     private:
         friend class PacketBuilder;
+        friend class UnitMovement;
 
         UpdatableMovement updatable;
         MoveSpline& move_spline;

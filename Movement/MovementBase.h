@@ -45,8 +45,11 @@ namespace Movement
 
         ~UpdatableMovement() { mov_assert(!IsUpdateScheduled());}
 
-        void CleanReferences()
+        void CleanReferences() { Dereference(m_updater);}
+
+        void Dereference(MoveUpdater * updater)
         {
+            mov_assert(updater == m_updater);
             UnScheduleUpdate();
             m_updater = NULL;
         }
@@ -55,10 +58,9 @@ namespace Movement
         void ScheduleUpdate();
         void UnScheduleUpdate();
         bool IsUpdateScheduled() const { return updater_link.linked();}
-
         MoveUpdater& GetUpdater() const { mov_assert(m_updater);return *m_updater;}
-        bool HasUpdater() const { return m_updater;}
-        void SetUpdater(MoveUpdater& upd) { /*mov_assert(m_updater == NULL);*/m_updater = &upd;}
+        bool HasUpdater() const { return m_updater != NULL;}
+        void SetUpdater(MoveUpdater& upd) { mov_assert(m_updater == NULL);m_updater = &upd;}
         void UpdateState() { m_strategy->UpdateState();}
     };
 

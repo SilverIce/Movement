@@ -11,18 +11,19 @@
 #include "WorldPacket.h"
 #include "typedefs.h"
 #include "Location.h"
-#include "packet_builder.h"
 #include "opcodes.h"
+#include "packet_builder.h"
+#include "ClientMoveStatus.h"
 
 namespace Movement
 {
-    class UnitMovement;
+    class UnitMovementImpl;
     struct ClientMoveState;
 
     class MovementMessage
     {
     public:
-        typedef const UnitMovement* MessageSource;
+        typedef const UnitMovementImpl* MessageSource;
     private:
         WorldPacket m_packet;
         MessageSource m_source;

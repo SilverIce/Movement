@@ -1,8 +1,8 @@
 #include "MovementBase.h"
 #include "MoveUpdater.h"
-#include "UnitMovementImpl.h"
 #include <float.h>
 #include "MaNGOS_API.h"
+#include "UnitMovementImpl.h"
 
 namespace Movement{
 

@@ -1,9 +1,9 @@
 #pragma once
 
+#include "Client.h"
 #include "ClientImpl.h"
 #include "MovementMessage.h"
-#include "UnitMovementImpl.h"
-#include "ClientMovementImpl.h"
+#include "UnitMovement.h"
 
 #include "ObjectGuid.h"
 #include <sstream>
@@ -184,50 +184,50 @@ namespace Movement
         m_resp_handlers.erase(std::find_if(m_resp_handlers.begin(),m_resp_handlers.end(),_handler(this,data)));
     }
 
-    std::string ClientImpl::ToString() const
+    std::string Client::ToString() const
     {
         return m.ToString();
     }
 
-    void ClientImpl::LostControl()
+    void Client::LostControl()
     {
         m.LostControl();
     }
 
-    void ClientImpl::SetControl(UnitMovementImpl * mov)
+    void Client::SetControl(UnitMovement * mov)
     {
         m.SetControl(&mov->Impl());
     }
 
-    void ClientImpl::HandleResponse( WorldPacket& data )
+    void Client::HandleResponse( WorldPacket& data )
     {
         m.HandleResponse(data);
     }
 
-    void ClientImpl::SendMoveMessage( MovementMessage& msg ) const
+    void Client::SendMoveMessage( MovementMessage& msg ) const
     {
         m.SendMoveMessage(msg);
     }
 
-    void ClientImpl::HandleOutcomingMessage(WorldPacket& recv_data)
+    void Client::HandleOutcomingMessage(WorldPacket& recv_data)
     {
         m.HandleOutcomingMessage(recv_data);
     }
 
-    void ClientImpl::HandleMoveTimeSkipped(WorldPacket & recv_data)
+    void Client::HandleMoveTimeSkipped(WorldPacket & recv_data)
     {
         m.HandleMoveTimeSkipped(recv_data);
     }
 
-    ClientImpl* ClientImpl::create(void * socket)
+    Client* Client::create(void * socket)
     {
-        char* data = new char[sizeof(ClientImpl) + sizeof(ClientImpl)];
-        ClientImpl * impl = new(data+sizeof(ClientImpl))ClientImpl(socket);
-        ClientImpl * client = new(data)ClientImpl(*impl);
+        char* data = new char[sizeof(Client) + sizeof(ClientImpl)];
+        ClientImpl * impl = new(data+sizeof(Client))ClientImpl(socket);
+        Client * client = new(data)Client(*impl);
         return client;
     }
 
-    ClientImpl::~ClientImpl()
+    Client::~Client()
     {
         m.~ClientImpl();
     }
