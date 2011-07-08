@@ -307,7 +307,7 @@
 			>
 		</File>
 		<File
-			RelativePath="..\Movement\Session.h"
+			RelativePath="..\Movement\MSTime.h"
 			>
 		</File>
 		<File
@@ -320,6 +320,10 @@
 		</File>
 		<File
 			RelativePath="..\Movement\UnitMovement.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\Movement\UnitMovement.h"
 			>
 		</File>
 		<File

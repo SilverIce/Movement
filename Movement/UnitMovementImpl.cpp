@@ -30,7 +30,7 @@ namespace Movement
 
     bool MoveStateSet::Next(ClientMoveState& state, MSTime time_now)
     {
-        if (m_state_queue.empty() || CurrentState().ms_time.time > time_now.time)
+        if (m_state_queue.empty() || CurrentState().ms_time > time_now)
             return false;
 
         state = CurrentState();

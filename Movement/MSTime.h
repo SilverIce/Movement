@@ -6,8 +6,7 @@ namespace Movement
 {
     struct MSTime
     {
-        uint32 time;
-
+    private:
         static uint32 decrease(const uint32& value, const uint32& decrement)
         {
             if (decrement > value)
@@ -24,6 +23,9 @@ namespace Movement
                 return increment - (0xFFFFFFFF - value);
         }
 
+    public:
+        uint32 time;
+    
         MSTime(const uint32& t) : time(t) {}
         MSTime() : time(0) {}
 
@@ -37,5 +39,10 @@ namespace Movement
 
         bool operator != (const MSTime& t) const { return time != t.time;}
         bool operator == (const MSTime& t) const { return time == t.time;}
+
+        bool operator < (const MSTime& t) const { return time < t.time;}
+        bool operator > (const MSTime& t) const { return time > t.time;}
+        bool operator <= (const MSTime& t) const { return time <= t.time;}
+        bool operator >= (const MSTime& t) const { return time >= t.time;}
     };
 }

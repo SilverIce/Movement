@@ -124,7 +124,7 @@ namespace Movement
     {
         MSTime now = ServerTime();
 
-        if ((now - m_last_sync_time).time > 10000)
+        if ((now - m_last_sync_time) > 10000)
         {
             m_last_sync_time = now;
             new TimeSyncRequest(this);
