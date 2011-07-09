@@ -145,45 +145,45 @@ namespace Movement
                 CMSG_FORCE_MOVE_ROOT_ACK, CMSG_FORCE_MOVE_ROOT_ACK,
                 MSG_MOVE_ROOT, MSG_MOVE_UNROOT,
                 SMSG_SPLINE_MOVE_ROOT, SMSG_SPLINE_MOVE_UNROOT
-            },
-            {
-                UnitMoveFlag::Swimming, 0, 0, 0, 0, 0, 0,
-                    SMSG_SPLINE_MOVE_START_SWIM, SMSG_SPLINE_MOVE_STOP_SWIM
-            },
-            {
-                UnitMoveFlag::Waterwalking, SMSG_MOVE_WATER_WALK, SMSG_MOVE_LAND_WALK,
-                    CMSG_MOVE_WATER_WALK_ACK, CMSG_MOVE_WATER_WALK_ACK,
-                    MSG_MOVE_WATER_WALK, MSG_MOVE_WATER_WALK,
-                    SMSG_SPLINE_MOVE_WATER_WALK, SMSG_SPLINE_MOVE_LAND_WALK
-                },
-                {
-                    UnitMoveFlag::Can_Safe_Fall, SMSG_MOVE_FEATHER_FALL, SMSG_MOVE_NORMAL_FALL,
-                        CMSG_MOVE_FEATHER_FALL_ACK, CMSG_MOVE_FEATHER_FALL_ACK,
-                        MSG_MOVE_FEATHER_FALL, MSG_MOVE_FEATHER_FALL,
-                        SMSG_SPLINE_MOVE_FEATHER_FALL, SMSG_SPLINE_MOVE_NORMAL_FALL
-                },
-                {
-                    UnitMoveFlag::Hover, SMSG_MOVE_SET_HOVER, SMSG_MOVE_UNSET_HOVER,
-                        CMSG_MOVE_HOVER_ACK, CMSG_MOVE_HOVER_ACK,
-                        MSG_MOVE_HOVER, MSG_MOVE_HOVER,
-                        SMSG_SPLINE_MOVE_SET_HOVER, SMSG_SPLINE_MOVE_UNSET_HOVER
-                    },
-                    {
-                        UnitMoveFlag::Flying, 0, 0, 0, 0, 0,
-                            SMSG_SPLINE_MOVE_SET_FLYING, SMSG_SPLINE_MOVE_UNSET_FLYING
-                    },
-                    {
-                        UnitMoveFlag::GravityDisabled, SMSG_MOVE_GRAVITY_DISABLE, SMSG_MOVE_GRAVITY_ENABLE,
-                            CMSG_MOVE_GRAVITY_DISABLE_ACK, CMSG_MOVE_GRAVITY_ENABLE_ACK,
-                            MSG_MOVE_GRAVITY_CHNG, MSG_MOVE_GRAVITY_CHNG,
-                            SMSG_SPLINE_MOVE_GRAVITY_DISABLE, SMSG_SPLINE_MOVE_GRAVITY_ENABLE
-                        },
-                        {
-                            UnitMoveFlag::Can_Fly, SMSG_MOVE_SET_CAN_FLY, SMSG_MOVE_UNSET_CAN_FLY,
-                                CMSG_MOVE_SET_CAN_FLY_ACK, CMSG_MOVE_SET_CAN_FLY_ACK,
-                                MSG_MOVE_UPDATE_CAN_FLY, MSG_MOVE_UPDATE_CAN_FLY,
-                                SMSG_SPLINE_MOVE_SET_FLYING, SMSG_SPLINE_MOVE_UNSET_FLYING
-                        },
+        },
+        {
+            UnitMoveFlag::Swimming, 0, 0, 0, 0, 0, 0,
+                SMSG_SPLINE_MOVE_START_SWIM, SMSG_SPLINE_MOVE_STOP_SWIM
+        },
+        {
+            UnitMoveFlag::Waterwalking, SMSG_MOVE_WATER_WALK, SMSG_MOVE_LAND_WALK,
+                CMSG_MOVE_WATER_WALK_ACK, CMSG_MOVE_WATER_WALK_ACK,
+                MSG_MOVE_WATER_WALK, MSG_MOVE_WATER_WALK,
+                SMSG_SPLINE_MOVE_WATER_WALK, SMSG_SPLINE_MOVE_LAND_WALK
+        },
+        {
+            UnitMoveFlag::Can_Safe_Fall, SMSG_MOVE_FEATHER_FALL, SMSG_MOVE_NORMAL_FALL,
+                CMSG_MOVE_FEATHER_FALL_ACK, CMSG_MOVE_FEATHER_FALL_ACK,
+                MSG_MOVE_FEATHER_FALL, MSG_MOVE_FEATHER_FALL,
+                SMSG_SPLINE_MOVE_FEATHER_FALL, SMSG_SPLINE_MOVE_NORMAL_FALL
+        },
+        {
+            UnitMoveFlag::Hover, SMSG_MOVE_SET_HOVER, SMSG_MOVE_UNSET_HOVER,
+                CMSG_MOVE_HOVER_ACK, CMSG_MOVE_HOVER_ACK,
+                MSG_MOVE_HOVER, MSG_MOVE_HOVER,
+                SMSG_SPLINE_MOVE_SET_HOVER, SMSG_SPLINE_MOVE_UNSET_HOVER
+        },
+        {
+            UnitMoveFlag::Flying, 0, 0, 0, 0, 0,
+                SMSG_SPLINE_MOVE_SET_FLYING, SMSG_SPLINE_MOVE_UNSET_FLYING
+        },
+        {
+            UnitMoveFlag::GravityDisabled, SMSG_MOVE_GRAVITY_DISABLE, SMSG_MOVE_GRAVITY_ENABLE,
+            CMSG_MOVE_GRAVITY_DISABLE_ACK, CMSG_MOVE_GRAVITY_ENABLE_ACK,
+            MSG_MOVE_GRAVITY_CHNG, MSG_MOVE_GRAVITY_CHNG,
+            SMSG_SPLINE_MOVE_GRAVITY_DISABLE, SMSG_SPLINE_MOVE_GRAVITY_ENABLE
+        },
+        {
+            UnitMoveFlag::Can_Fly, SMSG_MOVE_SET_CAN_FLY, SMSG_MOVE_UNSET_CAN_FLY,
+                CMSG_MOVE_SET_CAN_FLY_ACK, CMSG_MOVE_SET_CAN_FLY_ACK,
+                MSG_MOVE_UPDATE_CAN_FLY, MSG_MOVE_UPDATE_CAN_FLY,
+                SMSG_SPLINE_MOVE_SET_FLYING, SMSG_SPLINE_MOVE_UNSET_FLYING
+        },
     };
 
     class ModeChangeRequest : public RespHandler
@@ -201,6 +201,8 @@ namespace Movement
                 msg << m_reqId;
                 client->SendMoveMessage(msg);
             }
+            else
+                log_write("ModeChangeRequest: no opcode for mode %u", mode);
         }
 
     public:
@@ -211,13 +213,15 @@ namespace Movement
                 new ModeChangeRequest(mov->client(), mode, apply);
             else
             {
-                mov->ApplyMoveFlag(modeInfo[mode].moveFlag, apply);
                 if (uint16 opcode = modeInfo[mode].smsg_spline_apply[!apply])
                 {
+                    mov->ApplyMoveFlag(modeInfo[mode].moveFlag, apply);
                     WorldPacket data(opcode, 12);
                     data << mov->Owner.GetPackGUID();
                     MaNGOS_API::BroadcastMessage(&mov->Owner, data);
                 }
+                else
+                    log_write("ModeChangeRequest: no opcode for mode %u", mode);
             }
         }
 

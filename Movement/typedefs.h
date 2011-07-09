@@ -56,7 +56,7 @@ namespace Movement
 #ifndef static_assert
     #define CONCAT(x, y) CONCAT1 (x, y)
     #define CONCAT1(x, y) x##y
-    #define static_assert(expr) typedef char CONCAT(static_assert_failed_at_line_, __LINE__) [(expr) ? 1 : -1]
+    #define static_assert(expr, msg) typedef char CONCAT(static_assert_failed_at_line_, __LINE__) [(expr) ? 1 : -1]
 #endif
 
 #define mov_assert(expr)\

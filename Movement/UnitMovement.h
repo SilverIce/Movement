@@ -20,7 +20,7 @@ namespace Movement
     class UnitMovement
     {
         UnitMovementImpl& m;
-        UnitMovement(UnitMovementImpl& impl) : m(impl) {}
+        UnitMovement(UnitMovementImpl& impl) : m(impl), dbg_flags(0) {}
         UnitMovement(const UnitMovement&);
         UnitMovement& operator = (const UnitMovement&);
     public:

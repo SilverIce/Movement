@@ -303,6 +303,10 @@
 			>
 		</File>
 		<File
+			RelativePath="..\Movement\Location.h"
+			>
+		</File>
+		<File
 			RelativePath="..\Movement\MaNGOS_API.h"
 			>
 		</File>

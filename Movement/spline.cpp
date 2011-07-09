@@ -5,7 +5,7 @@
 
 namespace Movement{
 
-SplineBase::EvaluationMethtod SplineBase::evaluators[SplineBase::ModesCount] =
+SplineBase::EvaluationMethtod SplineBase::evaluators[SplineBase::ModeEnd] =
 {
     &SplineBase::EvaluateLinear,
     &SplineBase::EvaluateCatmullRom,
@@ -13,7 +13,7 @@ SplineBase::EvaluationMethtod SplineBase::evaluators[SplineBase::ModesCount] =
     (EvaluationMethtod)&SplineBase::UninitializedSpline,
 };
 
-SplineBase::EvaluationMethtod SplineBase::derivative_evaluators[SplineBase::ModesCount] =
+SplineBase::EvaluationMethtod SplineBase::derivative_evaluators[SplineBase::ModeEnd] =
 {
     &SplineBase::EvaluateDerivativeLinear,
     &SplineBase::EvaluateDerivativeCatmullRom,
@@ -21,7 +21,7 @@ SplineBase::EvaluationMethtod SplineBase::derivative_evaluators[SplineBase::Mode
     (EvaluationMethtod)&SplineBase::UninitializedSpline,
 };
 
-SplineBase::SegLenghtMethtod SplineBase::seglengths[SplineBase::ModesCount] =
+SplineBase::SegLenghtMethtod SplineBase::seglengths[SplineBase::ModeEnd] =
 {
     &SplineBase::SegLengthLinear,
     &SplineBase::SegLengthCatmullRom,
@@ -29,7 +29,7 @@ SplineBase::SegLenghtMethtod SplineBase::seglengths[SplineBase::ModesCount] =
     (SegLenghtMethtod)&SplineBase::UninitializedSpline,
 };
 
-SplineBase::InitMethtod SplineBase::initializers[SplineBase::ModesCount] =
+SplineBase::InitMethtod SplineBase::initializers[SplineBase::ModeEnd] =
 {
     //&SplineBase::InitLinear,
     &SplineBase::InitCatmullRom,    // we should use catmullrom initializer even for linear mode! (client's internal structure limitation)
@@ -282,7 +282,7 @@ void SplineBase::clear()
 std::string SplineBase::ToString() const
 {
     std::stringstream str;
-    const char * mode_str[ModesCount] = {"Linear", "CatmullRom", "Bezier3", "Uninitialized"};
+    const char * mode_str[ModeEnd] = {"Linear", "CatmullRom", "Bezier3", "Uninitialized"};
 
     index_type count = this->points.size();
     str << "mode: " << mode_str[mode()] << std::endl;
