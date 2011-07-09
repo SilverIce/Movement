@@ -13,6 +13,9 @@ namespace Movement
     class TimeSyncRequest : public RespHandler
     {
     public:
+        enum{
+            SyncTimePeriod = 10000, // 10 seconds
+        };
 
         TimeSyncRequest(ClientImpl * client) : RespHandler(CMSG_TIME_SYNC_RESP, client)
         {     
@@ -123,17 +126,16 @@ namespace Movement
     {
         MSTime now = ServerTime();
 
-        if ((now - m_last_sync_time) > 10000)
+        if (now > m_next_sync_time)
         {
-            m_last_sync_time = now;
+            m_next_sync_time = now + (MSTime)TimeSyncRequest::SyncTimePeriod;
             new TimeSyncRequest(this);
         }
 
-        /*enum{response_timeout_max = 1000};
-        if (!m_resp_handlers.empty() && (now - m_resp_handlers.front()->create_time).time > response_timeout_max)
+        if (!m_resp_handlers.empty() && now > m_resp_handlers.front()->timeout)
         {
             // kick client here
-        }*/
+        }
     }
 
     void ClientImpl::HandleMoveTimeSkipped(WorldPacket & recv_data)
@@ -183,11 +185,11 @@ namespace Movement
         m_resp_handlers.erase(std::find_if(m_resp_handlers.begin(),m_resp_handlers.end(),_handler(this,data)));
     }
 
-    uint32 ClientImpl::AddRespHandler(RespHandler* req)
+    void ClientImpl::AddRespHandler(RespHandler* req)
     {
-        req->create_time = ServerTime();
+        req->m_reqId = request_counter.NewId();
+        req->timeout = ServerTime() + (MSTime)RespHandler::Timeout;
         m_resp_handlers.push_back(req);
-        return request_counter.NewId();
     }
 
     std::string Client::ToString() const

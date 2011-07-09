@@ -28,7 +28,7 @@ namespace Movement
         void * m_socket;
         UnitMovementImpl * m_controlled;
         MSTime m_time_diff;             // difference between client and server time: diff = client_ticks - server_ticks
-        MSTime m_last_sync_time;
+        MSTime m_next_sync_time;
         UInt32Counter request_counter;
         //int32 time_skipped;
         typedef std::list<RespHandler*> RespHdlContainer;
@@ -50,7 +50,7 @@ namespace Movement
             m_controlled->_QueueState(client_state);
         }
 
-        uint32 AddRespHandler(RespHandler* req);
+        void AddRespHandler(RespHandler* req);
 
         inline void BroadcastMessage(MovementMessage& msg) const { MaNGOS_API::BroadcastMessage(&m_controlled->Owner, msg);}
         inline void BroadcastMessage(WorldPacket& data) const { MaNGOS_API::BroadcastMessage(&m_controlled->Owner, data);}
@@ -89,12 +89,18 @@ namespace Movement
     {
     protected:
         uint32 opcode;
-        uint32 m_reqId;
     public:
+        uint32 m_reqId;
+        MSTime timeout;
+
+        enum{
+            /* Default timeout value, milliseconds */
+            Timeout = 500,
+        };
 
         explicit RespHandler(uint32 _opcode, ClientImpl * client) : opcode(_opcode)
         {
-            m_reqId = client->AddRespHandler(this);
+            client->AddRespHandler(this);
         }
 
         bool CanHandle(uint32 _opcode) const { return opcode == _opcode;}

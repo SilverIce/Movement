@@ -5,6 +5,7 @@
 #include "MoveSplineInit.h"
 #include "packet_builder.h"
 #include "moveupdater.h"
+#include "MoveListener.h"
 
 #include <sstream>
 
