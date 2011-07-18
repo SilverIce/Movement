@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <string>
-
 class WorldPacket;
 
 namespace Movement
@@ -31,8 +29,6 @@ namespace Movement
         ~Client();
 
         ClientImpl& Impl() { return m;}
-
-        std::string ToString() const;
 
         void LostControl();
         void SetControl(UnitMovement * mov);

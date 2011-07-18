@@ -192,11 +192,6 @@ namespace Movement
         m_resp_handlers.push_back(req);
     }
 
-    std::string Client::ToString() const
-    {
-        return m.ToString();
-    }
-
     void Client::LostControl()
     {
         m.LostControl();

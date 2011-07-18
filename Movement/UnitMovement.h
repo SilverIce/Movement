@@ -13,8 +13,6 @@ class ByteBuffer;
 namespace Movement
 {
     class MoveUpdater;
-    class MovementBase;
-    struct MoveSplineInitArgs;
     class UnitMovementImpl;
 
     class UnitMovement
@@ -28,7 +26,7 @@ namespace Movement
         static UnitMovement* create(WorldObject& owner);
         ~UnitMovement();
 
-        UnitMovementImpl& Impl() { return m;}
+        inline UnitMovementImpl& Impl() { return m;}
         inline const UnitMovementImpl& Impl() const { return m;}
 
         void CleanReferences();

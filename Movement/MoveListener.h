@@ -18,5 +18,4 @@ namespace Movement
     public:
         virtual void OnEvent(const OnEventArgs& args) = 0;
     };
-
 }

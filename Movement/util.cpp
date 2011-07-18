@@ -206,10 +206,10 @@ namespace Movement
         STR(Unknown13    ),// 0x80000000,
     };
 
-    template<class Flags>
-    void print_flags(Flags t, const char * names[], std::string& str)
+    template<class Flags, int N>
+    void print_flags(Flags t, const char * (&names)[N], std::string& str)
     {
-        for (int i = 0; i < (sizeof(Flags)*8); ++i)
+        for (int i = 0; i < N; ++i)
         { 
             if ((t & (Flags)(1 << i)) && names[i] != NULL)
                 str.append(" ").append(names[i]);

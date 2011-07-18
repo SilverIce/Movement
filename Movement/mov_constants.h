@@ -10,15 +10,6 @@
 
 namespace Movement
 {
-    enum MonsterMoveType
-    {
-        MonsterMoveNormal       = 0,
-        MonsterMoveStop         = 1,
-        MonsterMoveFacingSpot   = 2,
-        MonsterMoveFacingTarget = 3,
-        MonsterMoveFacingAngle  = 4
-    };
-
     // used with 0x00200000 flag (SPLINEFLAG_ANIMATION) in monster move packet
     enum AnimType
     {
@@ -44,8 +35,6 @@ namespace Movement
 
     enum SpeedType
     {
-        SpeedNotStandart    =-1,
-
         SpeedWalk           = 0,
         SpeedRun            = 1,
         SpeedSwimBack       = 2,
@@ -56,7 +45,6 @@ namespace Movement
         SpeedTurn           = 7,
         SpeedPitch          = 8,
 
-        SpeedDefault        = SpeedWalk,
         SpeedMaxCount       = 9,
     };
 
