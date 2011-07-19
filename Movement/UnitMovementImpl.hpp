@@ -1,14 +1,5 @@
 #pragma once
 
-#include "Object.h"
-#include "ClientImpl.h"
-#include "MoveSplineInit.h"
-#include "packet_builder.h"
-#include "moveupdater.h"
-#include "MoveListener.h"
-
-#include <sstream>
-
 namespace Movement
 {
     struct MsgBroadcast : public MsgDeliverer
@@ -105,6 +96,8 @@ namespace Movement
 
     UnitMovementImpl::~UnitMovementImpl()
     {
+        mov_assert(m_targeter_references.empty());
+        mov_assert(m_client == NULL);
     }
 
     void UnitMovementImpl::CleanReferences()
@@ -114,6 +107,11 @@ namespace Movement
             m_client->Dereference(this);
             m_client = NULL;
         }
+
+        struct unbinder{
+            inline void operator()(TargetLink& link) { link.targeter->UnbindOrientation();}
+        };
+        m_targeter_references.Iterate(unbinder());
 
         UnbindOrientation();
         m_transport.CleanReferences();
@@ -220,7 +218,7 @@ namespace Movement
     */
     }
 
-    void UnitMovementImpl::BindOrientationTo(MovementBase& target)
+    void UnitMovementImpl::BindOrientationTo(UnitMovementImpl& target)
     {
         UnbindOrientation();
 

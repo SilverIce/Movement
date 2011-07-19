@@ -51,10 +51,11 @@ namespace Movement
         void Initialize(const Location& position, MoveUpdater& updater);
 
         /* Needed for monster movement only*/
-        void BindOrientationTo(MovementBase& target);
+        void BindOrientationTo(UnitMovementImpl& target);
         void UnbindOrientation();
         bool IsOrientationBinded() const { return m_target_link.linked(); }
         const MovementBase* GetTarget() const { return m_target_link.Value.target;}
+        void _link_targeter(LinkedListElement<TargetLink>& t) { m_targeter_references.link(t);}
 
         const Location& GetPosition() const { return IsBoarded() ? m_local_position : world_position;}
         const Vector3& GetPosition3() const { return GetPosition();}
@@ -201,8 +202,9 @@ namespace Movement
         /** Data that cames from client. It affects nothing here but might be used in future. */
         _ClientMoveState m_unused; 
 
-        LinkedListElement<TargetLink> m_target_link;
         float m_float_values[Parameter_End];
+        LinkedListElement<TargetLink> m_target_link;
+        LinkedList<TargetLink> m_targeter_references;
         #pragma endregion
     };
 

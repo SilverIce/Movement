@@ -1,9 +1,4 @@
-#include "UnitMovementImpl.h"
-#include "WorldPacket.h"
-#include "MovementMessage.h"
-#include "ClientImpl.h"
-#include "Object.h"
-#include "MoveSplineInit.h"
+#pragma once
 
 namespace Movement
 {

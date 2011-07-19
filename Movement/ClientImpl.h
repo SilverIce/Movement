@@ -9,8 +9,6 @@
 #pragma once
 
 #include "typedefs.h"
-#include "MaNGOS_API.h"
-#include "UnitMovementImpl.h"
 
 class ByteBuffer;
 class WorldPacket;

@@ -8,13 +8,6 @@
 
 #pragma once
 
-#include "WorldPacket.h"
-#include "typedefs.h"
-#include "Location.h"
-#include "opcodes.h"
-#include "packet_builder.h"
-#include "ClientMoveStatus.h"
-
 namespace Movement
 {
     class UnitMovementImpl;

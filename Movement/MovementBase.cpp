@@ -2,7 +2,6 @@
 #include "MoveUpdater.h"
 #include <float.h>
 #include "MaNGOS_API.h"
-#include "UnitMovementImpl.h"
 
 namespace Movement{
 
@@ -23,14 +22,6 @@ namespace Movement{
             m_updater->Unregister(updater_link);
         else
             log_write("UpdatableMovement::UnSheduleUpdate called, but updater is null");
-    }
-
-    void MovementBase::CleanReferences()
-    {
-        struct unbinder{
-            inline void operator()(TargetLink& link) { link.targeter->UnbindOrientation();}
-        };
-        m_targeter_references.Iterate(unbinder());
     }
 
     // for debugging:

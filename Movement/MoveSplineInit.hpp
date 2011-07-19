@@ -1,6 +1,4 @@
-#include "UnitMovement.h"
-#include "UnitMovementImpl.h"
-#include "MoveSplineInit.h"
+#pragma once
 
 namespace Movement
 {

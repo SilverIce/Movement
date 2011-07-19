@@ -1,13 +1,5 @@
 #pragma once
 
-#include "Client.h"
-#include "ClientImpl.h"
-#include "MovementMessage.h"
-#include "UnitMovement.h"
-
-#include "ObjectGuid.h"
-#include <sstream>
-
 namespace Movement
 {
     class TimeSyncRequest : public RespHandler

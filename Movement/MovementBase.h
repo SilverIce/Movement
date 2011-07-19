@@ -9,7 +9,6 @@
 #pragma once
 
 #include "typedefs.h"
-#include "MoveListener.h"
 #include "LinkedList.h"
 #include "Location.h"
 
@@ -125,17 +124,6 @@ namespace Movement
         }
     };
 
-    struct TargetLink
-    {
-        TargetLink() : target(0), targeter(0) {}
-
-        TargetLink(MovementBase* target_, UnitMovementImpl* targeter_)
-            : target(target_), targeter(targeter_) {}
-
-        MovementBase* target;
-        UnitMovementImpl* targeter;
-    };
-
     typedef WorldObject& WorldObjectType;
 
     class MovementBase
@@ -146,22 +134,17 @@ namespace Movement
         {
         }
 
-        virtual ~MovementBase() { mov_assert(m_targeter_references.empty());}
-        virtual void CleanReferences();
+        virtual ~MovementBase() {}
+        virtual void CleanReferences() {}
 
         const Location& GetGlobalPosition() const { return world_position;}
         void SetGlobalPosition(const Location& loc);
 
         WorldObjectType Owner;
 
-        void _link_targeter(LinkedListElement<TargetLink>& t) { m_targeter_references.link(t);}
-
     protected:
 
         Location world_position;
-    private:
-        LinkedList<TargetLink> m_targeter_references;
-
         MovementBase(const MovementBase&);
         MovementBase& operator = (const MovementBase&);
     };
