@@ -79,7 +79,7 @@ namespace Movement
             }
         }
 
-        virtual void OnReply(ClientImpl * client, WorldPacket& data) override
+        virtual bool OnReply(ClientImpl * client, WorldPacket& data) override
         {
             ClientMoveState client_state;
             ObjectGuid guid;
@@ -92,12 +92,12 @@ namespace Movement
             if (client_req_id != m_reqId)
             {
                 log_write("FloatValueChangeRequest::OnReply: wrong counter value: %u and should be: %u",client_req_id,m_reqId);
-                return;
+                return false;
             }
             if (client_value != m_value)
             {
                 log_write("FloatValueChangeRequest::OnReply: wrong float value(type %u): %f and should be: %f",m_value_type,client_value,m_value);
-                return;
+                return false;
             }
             client->QueueState(client_state);
             client->controlled()->SetParameter(m_value_type, m_value);
@@ -109,6 +109,7 @@ namespace Movement
                 msg << m_value;
                 client->BroadcastMessage(msg);
             }
+            return true;
         }
     };
 
@@ -131,9 +132,6 @@ namespace Movement
         uint16 msg_apply[2];   // 0 is apply, 1 - unapply
         uint16 smsg_spline_apply[2];   // 0 is apply, 1 - unapply
     };
-
-#define CLIENT_MODE_CHANGE(apply,unapply,ack,msg_apply)\
-    {SMSG_MOVE_##apply,SMSG_MOVE_##unapply,CMSG_MOVE_##ack##_ACK,MSG_MOVE_##msg_apply,MSG_MOVE_##msg_apply},\
 
     const ModeInfo modeInfo[MoveModeMaxCount]=
     {
@@ -226,7 +224,7 @@ namespace Movement
             }
         }
 
-        virtual void OnReply(ClientImpl * client, WorldPacket& data) override
+        virtual bool OnReply(ClientImpl * client, WorldPacket& data) override
         {
             ClientMoveState client_state;
             ObjectGuid guid;
@@ -241,12 +239,12 @@ namespace Movement
             if (client_req_id != m_reqId)
             {
                 log_write("FloatValueChangeRequest::OnReply: wrong counter value: %u and should be: %u",client_req_id,m_reqId);
-                return;
+                return false;
             }
             if (modeInfo[m_mode].moveFlag != 0 && m_apply != (bool)(client_state.moveFlags & modeInfo[m_mode].moveFlag))
             {
                 log_write("ModeChangeRequest::OnReply: wrong client's flag");
-                return;
+                return false;
             }
 
             // Should i queue state or apply it immediately?
@@ -260,6 +258,7 @@ namespace Movement
                 msg << client_state;
                 client->BroadcastMessage(msg);
             }
+            return true;
         }
     };
 
@@ -312,7 +311,7 @@ namespace Movement
             }
         }
 
-        virtual void OnReply(ClientImpl * client, WorldPacket& data) override
+        virtual bool OnReply(ClientImpl * client, WorldPacket& data) override
         {
             ObjectGuid guid;
             uint32 client_req_id;
@@ -324,7 +323,7 @@ namespace Movement
             if (client_req_id != m_reqId)
             {
                 log_write("FloatValueChangeRequest::OnReply: wrong counter value: %u and should be: %u",client_req_id,m_reqId);
-                return;
+                return false;
             }
 
             client->controlled()->SetPosition(m_location);
@@ -333,6 +332,7 @@ namespace Movement
             msg << guid.WriteAsPacked();
             msg << client->controlled()->ClientState();
             client->BroadcastMessage(msg);
+            return true;
         }
     };
 

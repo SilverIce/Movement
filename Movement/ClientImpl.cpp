@@ -24,7 +24,7 @@ namespace Movement
             client->SendPacket(data);
         }
 
-        virtual void OnReply(ClientImpl * client, WorldPacket& data) override
+        virtual bool OnReply(ClientImpl * client, WorldPacket& data) override
         {
             uint32 client_req_id;
             MSTime client_ticks;
@@ -33,9 +33,10 @@ namespace Movement
             if (client_req_id != m_reqId)
             {
                 log_write("TimeSyncRequest::OnReply: wrong counter value: %u and should be: %u", client_req_id, m_reqId);
-                return;
+                return false;
             }
             client->SetClientTime(client_ticks);
+            return true;
         }
     };
 
@@ -135,6 +136,7 @@ namespace Movement
         if (!m_resp_handlers.empty() && now > m_resp_handlers.front()->timeout)
         {
             // kick client here
+            //Kick();
         }
     }
 
@@ -174,9 +176,8 @@ namespace Movement
 
             inline bool operator()(RespHandler* hdl)
             {
-                if (!hdl->CanHandle(data.GetOpcode()))
-                    return false;
-                hdl->OnReply(client, data);
+                if (!hdl->CanHandle(data.GetOpcode()) || !hdl->OnReply(client, data))
+                    client->Kick();
                 delete hdl;
                 return true;
             }

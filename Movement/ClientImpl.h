@@ -51,6 +51,7 @@ namespace Movement
         }
 
         void AddRespHandler(RespHandler* req);
+        void Kick() {}  // not implemented
 
         inline void BroadcastMessage(MovementMessage& msg) const { MaNGOS_API::BroadcastMessage(&m_controlled->Owner, msg);}
         inline void BroadcastMessage(WorldPacket& data) const { MaNGOS_API::BroadcastMessage(&m_controlled->Owner, data);}
@@ -105,6 +106,6 @@ namespace Movement
 
         bool CanHandle(uint32 _opcode) const { return opcode == _opcode;}
         //virtual void OnTimeout() {}
-        virtual void OnReply(ClientImpl * client, WorldPacket& data) = 0;
+        virtual bool OnReply(ClientImpl * client, WorldPacket& data) = 0;
     };
 }
