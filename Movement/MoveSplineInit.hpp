@@ -56,12 +56,11 @@ namespace Movement
         state.LaunchMoveSpline(args);
     }
 
-    void MoveSplineInit::SetParabolic(float amplitude, float time_shift, bool is_knockback)
+    void MoveSplineInit::SetParabolic(float amplitude, float time_shift)
     {
         args.time_perc = time_shift;
         args.parabolic_amplitude = amplitude;
         args.flags.EnableParabolic();
-        args.flags.knockback = is_knockback;
     }
 
     void MoveSplineInit::SetFacing(float o)
@@ -92,5 +91,10 @@ namespace Movement
     void MoveSplineInit::SetBackward()
     {
         args.flags.backward = true;
+    }
+
+    void MoveSplineInit::SetOrientationFixed(bool enable)
+    {
+        args.flags.rotation_fixed = enable;
     }
 }

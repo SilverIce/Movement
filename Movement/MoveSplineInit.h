@@ -34,7 +34,7 @@ namespace Movement
          * @param start_time - delay between movement starting time and beginning to move by parabolic trajectory
          * can't be combined with final animation
          */ 
-        void SetParabolic(float amplitude, float start_time, bool is_knockback = false);
+        void SetParabolic(float amplitude, float start_time);
         /* Plays animation after start_time delay passed (delay since movement starting time)
          * can't be combined with parabolic movement
          */
@@ -78,9 +78,12 @@ namespace Movement
         /* Enables falling mode
          */
         void SetFall();
-        /* 
+        /* Inverses unit model orientation
          */
         void SetBackward();
+        /* Prevents unit model from being oriented. Disabled by default
+         */
+        void SetOrientationFixed(bool enable);
 
         /* Sets the velocity (in case you want to have custom movement velocity)
          * if no set, speed will be selected based on unit's speeds and current movement mode
@@ -108,7 +111,7 @@ namespace Movement
     {
         MoveSplineInit init(st);
         init.MoveTo(dest);
-        init.SetParabolic(parabolic_heigth,0,false);
+        init.SetParabolic(parabolic_heigth,0);
         init.SetVelocity(velocity);
         init.Launch();
     }
