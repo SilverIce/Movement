@@ -234,6 +234,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Movement\MoveSplineInit.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Movement\MoveSplineInit.hpp"
 				>
 			</File>
@@ -274,10 +278,6 @@
 				</File>
 				<File
 					RelativePath="..\Movement\MoveSplineFlag.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Movement\MoveSplineInit.h"
 					>
 				</File>
 				<File

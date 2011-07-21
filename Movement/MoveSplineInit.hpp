@@ -79,7 +79,14 @@ namespace Movement
 
     MoveSplineInit::MoveSplineInit(UnitMovement& m) : state(m.Impl())
     {
-        state.UpdateState();
+        args.flags.walkmode = m.IsWalking();
+        args.flags.flying = m.IsFlying();
+    }
+
+    MoveSplineInit::MoveSplineInit(UnitMovementImpl& m) : state(m)
+    {
+        args.flags.walkmode = m.IsWalking();
+        args.flags.flying = m.IsFlying();
     }
 
     void MoveSplineInit::SetAnimation(AnimType anim, float anim_time)

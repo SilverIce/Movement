@@ -23,7 +23,7 @@ namespace Movement
     public:
 
         explicit MoveSplineInit(UnitMovement& m);
-        explicit MoveSplineInit(UnitMovementImpl& m) : state(m) {}
+        explicit MoveSplineInit(UnitMovementImpl& m);
         
         /*  Final pass of initialization that launches spline movement.
          */
@@ -69,7 +69,7 @@ namespace Movement
         /* Enables CatmullRom spline interpolation mode, enables flying animation
          */ 
         void SetFly();
-        /* Enables walk mode. Disabled by default
+        /* Enables walk mode
          */ 
         void SetWalk(bool enable);
         /* Makes movement cyclic
