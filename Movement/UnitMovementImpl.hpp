@@ -251,7 +251,7 @@ namespace Movement
             mov(movement), NeedSync(false), move_spline(mov.move_spline)
         {
             move_spline.updateState(difftime, *this);
-            mov.SetPosition(move_spline.ComputePosition());
+            mov.SetPosition(move_spline.ComputePosition(mov.GetPosition()));
 
             if (NeedSync)
                 PacketBuilder::SplineSyncSend(mov, MsgBroadcast(mov));

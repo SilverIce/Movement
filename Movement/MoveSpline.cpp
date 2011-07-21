@@ -5,7 +5,7 @@
 
 namespace Movement{
 
-Location MoveSpline::ComputePosition() const
+Location MoveSpline::ComputePosition(const Location& loc) const
 {
     mov_assert(Initialized());
 
@@ -13,7 +13,7 @@ Location MoveSpline::ComputePosition() const
     int32 seg_time = spline.length(point_Idx,point_Idx+1);
     if (seg_time > 0)
         u = (time_passed - spline.length(point_Idx)) / (float)seg_time;
-    Location c;
+    Location c(loc);
     spline.evaluate_percent(point_Idx, u, c);
 
     if (splineflags.animation)

@@ -89,7 +89,7 @@ namespace Movement {
             while(difftime > 0);
         }
 
-        Location ComputePosition() const;
+        Location ComputePosition(const Location& loc) const;
 
         uint32 GetId() const { return m_Id;}
         bool Finalized() const { return splineflags.done; }
