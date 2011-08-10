@@ -220,7 +220,7 @@ namespace Movement
             data >> mov.jump_velocity;
             data >> mov.jump_sinAngle;
             data >> mov.jump_cosAngle;
-            data >> mov.jump_xy_velocy;
+            data >> mov.jump_xy_velocity;
         }
 
         if (mov.moveFlags.spline_elevation)
@@ -260,7 +260,7 @@ namespace Movement
             data << un.jump_velocity;
             data << un.jump_sinAngle;
             data << un.jump_cosAngle;
-            data << un.jump_xy_velocy;
+            data << un.jump_xy_velocity;
         }
 
         if (mov.moveFlags.spline_elevation)
@@ -298,7 +298,7 @@ namespace Movement
             data << mov.jump_velocity;
             data << mov.jump_sinAngle;
             data << mov.jump_cosAngle;
-            data << mov.jump_xy_velocy;
+            data << mov.jump_xy_velocity;
         }
 
         if (mov.moveFlags.spline_elevation)

@@ -230,7 +230,7 @@ namespace Movement
 
         // can i target self?
         m_target_link.Value = TargetLink(&target, this);
-        target._link_targeter(m_target_link);
+        target.m_targeter_references.link(m_target_link);
         Owner.SetGuidValue(UNIT_FIELD_TARGET, target.Owner.GetObjectGuid());
     }
 
@@ -384,34 +384,14 @@ namespace Movement
     std::string UnitMovementImpl::ToString() const
     {
         std::stringstream st;
-        st << "Movement  flags: " << moveFlags.ToString() << std::endl;
-        st << "Global position: " << GetGlobalPosition().toString() << std::endl;
-
-        if (moveFlags.ontransport)
-            st << "Local  position: " << GetPosition().toString() << std::endl;
-
-        if (moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying | UnitMoveFlag::Allow_Pitching))
-        {
-            st << "pitch angle " << m_unused.pitch << std::endl;
-        }
-
-        if (moveFlags.falling)
-        {
-            st << "jump z  vel " << m_unused.jump_velocity << std::endl;
-            st << "jump    sin " << m_unused.jump_sinAngle << std::endl;
-            st << "jump    cos " << m_unused.jump_cosAngle << std::endl;
-            st << "jump xy vel " << m_unused.jump_xy_velocy << std::endl;
-        }
-
+        st << ClientState().ToString();
         if (m_moveEvents.Size() != 0)
             st << "states count: " << m_moveEvents.Size() << std::endl;
 
         if (m_client)
             st << m_client->ToString();
-
         if (SplineEnabled())
             st << move_spline.ToString();
-
         return st.str();
     }
 

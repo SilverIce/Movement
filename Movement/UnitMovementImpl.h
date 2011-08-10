@@ -55,7 +55,6 @@ namespace Movement
         void UnbindOrientation();
         bool IsOrientationBinded() const { return m_target_link.linked(); }
         const MovementBase* GetTarget() const { return m_target_link.Value.target;}
-        void _link_targeter(LinkedListElement<TargetLink>& t) { m_targeter_references.link(t);}
 
         const Location& GetPosition() const { return IsBoarded() ? m_local_position : world_position;}
         const Vector3& GetPosition3() const { return GetPosition();}
@@ -96,12 +95,13 @@ namespace Movement
 
         void Teleport(const Location& loc);
 
-        /*bool IsWalking() const { return moveFlags.walk_mode;}
-        bool IsMoving() const { return moveFlags & UnitMoveFlag::Mask_Moving;}
-        bool IsTurning() const { return moveFlags & (UnitMoveFlag::Turn_Left | UnitMoveFlag::Turn_Right);}
+        bool IsWalking() const { return moveFlags.walk_mode;}
         bool IsFlying() const { return moveFlags & (UnitMoveFlag::Flying | UnitMoveFlag::GravityDisabled);}
+        bool IsMoving() const { return moveFlags & UnitMoveFlag::Mask_Moving;}
+        bool SplineEnabled() const { return moveFlags.spline_enabled; }
+        bool IsTurning() const { return moveFlags & (UnitMoveFlag::Turn_Left | UnitMoveFlag::Turn_Right);}
         bool IsFalling() const { return moveFlags & (UnitMoveFlag::Falling);}
-        bool IsFallingFar() const { return moveFlags & (UnitMoveFlag::Fallingfar);}*/
+        bool IsFallingFar() const { return moveFlags & (UnitMoveFlag::Fallingfar);}
 
         void SetCollisionHeight(float value);
         float GetCollisionHeight() const { return GetParameter(Parameter_CollisionHeight);}
@@ -180,7 +180,6 @@ namespace Movement
         }
 
         bool IsServerControlled() const { return GetControl() == MovControlServer;}
-        bool SplineEnabled() const { return moveFlags.spline_enabled; }
         void DisableSpline() { moveFlags &= ~(UnitMoveFlag::Mask_Directions | UnitMoveFlag::Spline_Enabled);}
         void PrepareMoveSplineArgs(MoveSplineInitArgs&, UnitMoveFlag&) const;
 

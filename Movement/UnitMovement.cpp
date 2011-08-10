@@ -11,8 +11,9 @@
 #include "opcodes.h"
 #include "MaNGOS_API.h"
 #include "MoveListener.h"
-#include "ClientMoveStatus.h"
+#include "UnitMoveFlags.h"
 
+#include "ClientMoveStatus.h"
 #include "packet_builder.h"
 #include "MoveSplineInit.h"
 #include "UnitMovementImpl.h"

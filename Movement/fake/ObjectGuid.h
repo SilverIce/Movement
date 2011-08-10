@@ -10,5 +10,12 @@ public:
     uint64 GetRawValue() const { return 0;}
 };
 
+struct PackedGuid 
+{
+    PackedGuid(){}
+    PackedGuid(int){}
+};
+
+
 #endif
 
