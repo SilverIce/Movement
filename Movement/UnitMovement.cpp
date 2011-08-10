@@ -30,7 +30,7 @@ namespace Movement
 {
     UnitMovement* UnitMovement::create(WorldObject& owner)
     {
-        char * data = new char[sizeof(UnitMovement) + sizeof(UnitMovementImpl)];
+        char * data = (char*)operator new(sizeof(UnitMovement) + sizeof(UnitMovementImpl));
         UnitMovementImpl* impl = new(data + sizeof(UnitMovement))UnitMovementImpl(owner);
         return new(data)UnitMovement(*impl);
     }

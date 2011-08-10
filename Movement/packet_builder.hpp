@@ -149,7 +149,7 @@ namespace Movement
 
     void PacketBuilder::FullUpdate(const UnitMovementImpl& mov, ByteBuffer& data)
     {
-        WriteClientStatus(mov,data);
+        WriteClientStatus(mov.ClientState(),data);
 
         data.append<float>(&mov.m_float_values[SpeedWalk], SpeedMaxCount);
 
@@ -229,46 +229,6 @@ namespace Movement
         }
     }
 
-    void PacketBuilder::WriteClientStatus(const UnitMovementImpl& mov, ByteBuffer& data)
-    {
-        const _ClientMoveState& un = mov.m_unused;
-
-        data << mov.moveFlags;
-        data << mov.GetUpdater().TickTime(); // or mov.getLastUpdate() ?
-        data << mov.GetGlobalPosition();
-
-        if (mov.moveFlags.ontransport)
-        {
-            data << mov.GetTransport()->Owner.GetPackGUID();
-            data << mov.GetLocalPosition();
-            data << un.transport_time;
-            data << un.transport_seat;
-
-            if (mov.moveFlags.interp_move)
-                data << un.transport_time2;
-        }
-
-        if (mov.moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying | UnitMoveFlag::Allow_Pitching))
-        {
-            data << un.pitch;
-        }
-
-        data << un.fallTime;
-
-        if (mov.moveFlags.falling)
-        {
-            data << un.jump_velocity;
-            data << un.jump_sinAngle;
-            data << un.jump_cosAngle;
-            data << un.jump_xy_velocity;
-        }
-
-        if (mov.moveFlags.spline_elevation)
-        {
-            data << un.spline_elevation;
-        }
-    }
-
     void PacketBuilder::WriteClientStatus(const ClientMoveState& mov, ByteBuffer& data)
     {
         data << mov.moveFlags;
@@ -322,7 +282,7 @@ namespace Movement
     {
         WorldPacket data(MSG_MOVE_HEARTBEAT, 64);
         data << mov.Owner.GetPackGUID();
-        WriteClientStatus(mov, data);
+        WriteClientStatus(mov.ClientState(), data);
         broadcast(data);
     }
 }

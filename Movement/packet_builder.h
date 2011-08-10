@@ -36,7 +36,6 @@ namespace Movement
         static void SplineSyncSend(const UnitMovementImpl& mov, MsgDeliverer&);
         static void FullUpdate(const UnitMovementImpl& mov, ByteBuffer& );
 
-        static void WriteClientStatus(const UnitMovementImpl& mov, ByteBuffer& data);
         static void WriteClientStatus(const ClientMoveState& mov, ByteBuffer& data);
         static void ReadClientStatus(ClientMoveState& state, ByteBuffer& data);
         static void Send_HeartBeat(const UnitMovementImpl& mov, MsgDeliverer&);     // actually i shouldn't use it: only client is author of such packets

@@ -217,7 +217,7 @@ namespace Movement
 
     Client* Client::create(void * socket)
     {
-        char* data = new char[sizeof(Client) + sizeof(ClientImpl)];
+        char * data = (char*)operator new(sizeof(Client) + sizeof(ClientImpl));
         ClientImpl * impl = new(data+sizeof(Client))ClientImpl(socket);
         Client * client = new(data)Client(*impl);
         return client;
