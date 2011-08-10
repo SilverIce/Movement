@@ -12,6 +12,7 @@
 #include "mov_constants.h"
 #include "ClientMoveStatus.h"
 #include "MoveSpline.h"
+#include <list>
 
 namespace Movement
 {
@@ -35,6 +36,16 @@ namespace Movement
         size_t Size() const { return m_state_queue.size();}
     };
 
+    struct TargetLink
+    {
+        TargetLink() : target(0), targeter(0) {}
+        TargetLink(UnitMovementImpl* target_, UnitMovementImpl* targeter_)
+            : target(target_), targeter(targeter_) {}
+
+        UnitMovementImpl* target;
+        UnitMovementImpl* targeter;
+    };
+
     // class for unit's movement
     class UnitMovementImpl : public Transportable, public IUpdatable
     {
@@ -54,19 +65,16 @@ namespace Movement
         void BindOrientationTo(UnitMovementImpl& target);
         void UnbindOrientation();
         bool IsOrientationBinded() const { return m_target_link.linked(); }
-        const MovementBase* GetTarget() const { return m_target_link.Value.target;}
+        const UnitMovementImpl* GetTarget() const { return m_target_link.Value.target;}
 
         const Location& GetPosition() const { return IsBoarded() ? m_local_position : world_position;}
         const Vector3& GetPosition3() const { return GetPosition();}
-        virtual void BoardOn(Transport& transport, const Location& local_position, int8 seatId);
         Vector3 direction() const;
+
+        virtual void BoardOn(Transport& transport, const Location& local_position, int8 seatId);
         virtual void Unboard();
-
+        void UnboardAll() { m_transport.UnBoardAll();}
         void Board(Transportable& t, const Location& local_position, int8 seatId) { t.BoardOn(m_transport, local_position, seatId);}
-
-    public:
-
-
 
     public:
         // Used by server side controlled movement

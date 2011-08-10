@@ -166,7 +166,7 @@ namespace Movement
     {
     public:
 
-        explicit Transportable(WorldObjectType owner) : MovementBase(owner), m_transport(NULL), m_transport_container(NULL)
+        explicit Transportable(WorldObjectType owner) : MovementBase(owner)
         {
         }
 
@@ -225,7 +225,7 @@ namespace Movement
                 inline void operator()(TransportLink& link)
                 {
                     link.transportable->SetGlobalPosition(
-                        CoordTranslator::ToGlobal(transport_pos, dir, link.transportable->GetPosition()));            
+                        CoordTranslator::ToGlobal(transport_pos, dir, link.transportable->GetLocalPosition()));
                 }
             };
             if (!Empty())
