@@ -78,9 +78,9 @@ namespace Movement
         /* Enables falling mode
          */
         void SetFall();
-        /* Inverses unit model orientation
+        /* Inverses unit model orientation. Disabled by default
          */
-        void SetBackward();
+        void SetOrientationInversed();
         /* Prevents unit model from being oriented. Disabled by default
          */
         void SetOrientationFixed(bool enable);

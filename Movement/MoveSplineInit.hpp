@@ -95,7 +95,7 @@ namespace Movement
         args.flags.EnableAnimation(anim);
     }
 
-    void MoveSplineInit::SetBackward()
+    void MoveSplineInit::SetOrientationInversed()
     {
         args.flags.backward = true;
     }

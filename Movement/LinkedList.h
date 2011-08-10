@@ -71,18 +71,13 @@ protected:
 template<class T> class LinkedList;
 
 template<class T>
-class LinkedListElement : public LinkedListElementBase
+class LinkedListElement : private LinkedListElementBase
 {
 public:
-    typedef typename T value_type;
+    typedef T value_type;
     typedef LinkedListElement element_type;
 
     explicit LinkedListElement() {}
-
-    ~LinkedListElement()
-    {
-        // delink();
-    }
 
     T Value;
 
@@ -113,7 +108,7 @@ class LinkedList
 public:
 
     typedef LinkedListElement<T> element_type;
-    typedef typename element_type::value_type value_type;
+    typedef T value_type;
 
     LinkedList()
     {

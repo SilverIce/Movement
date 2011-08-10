@@ -26,7 +26,7 @@ namespace Movement
         {SMSG_MOVE_SET_COLLISION_HGT,CMSG_MOVE_SET_COLLISION_HGT_ACK,MSG_MOVE_SET_COLLISION_HGT,0},
         {0,0,0,0},
     };
-#undef CLIENT_VALUE_CHANGE
+#undef VALUE_CHANGE
 
     class UnitMovementImpl::FloatValueChangeRequest : public RespHandler
     {
