@@ -82,6 +82,7 @@ namespace Movement
         uint32 MoveSplineId() const;
         const Vector3& MoveSplineDest() const;
         int32 MoveSplineTimeElapsed() const;
+        void DisableSpline() { moveFlags &= ~(UnitMoveFlag::Mask_Moving | UnitMoveFlag::Spline_Enabled);}
 
         void SetListener(IListener * l) { m_listener = l;}
         void ResetLisener() { m_listener = NULL; }
@@ -135,9 +136,6 @@ namespace Movement
         void setLastUpdate(MSTime time) { last_update_time = time;}
         MSTime getLastUpdate() const { return last_update_time;}
 
-        bool HasUpdater() const { return updatable.HasUpdater();}
-        MoveUpdater& GetUpdater() const { return updatable.GetUpdater();}
-
         void ApplyState(const ClientMoveState& state);
     public:
         enum FloatParameter
@@ -172,22 +170,18 @@ namespace Movement
         void _QueueState(const ClientMoveState& state) { m_moveEvents.QueueState(state);}       // only for call from Client code
         ClientMoveState ClientState() const;
 
+        bool HasUpdater() const { return updatable.HasUpdater();}
+        MoveUpdater& GetUpdater() const { return updatable.GetUpdater();}
         void SetPosition(const Location& v);
         void SetPosition(const Vector3& v) { SetPosition(Location(v,GetPosition().orientation));}
 
         ClientImpl* client() const { return m_client;}
         void client(ClientImpl* c) { m_client = c;}
-        bool IsClientControlled() const { return GetControl() == MovControlClient;}
+        bool IsClientControlled() const { return m_client && !SplineEnabled();}
+        bool IsServerControlled() const { return !m_client;}
     private:
         static SpeedType SelectSpeedType(UnitMoveFlag moveFlags);
 
-        MovControlType GetControl() const
-        {
-            const MovControlType tt[] = {MovControlClient,MovControlServer};
-            return tt[(SplineEnabled() || !m_client)];
-        }
-
-        bool IsServerControlled() const { return GetControl() == MovControlServer;}
         void DisableSpline() { moveFlags &= ~(UnitMoveFlag::Mask_Directions | UnitMoveFlag::Spline_Enabled);}
         void PrepareMoveSplineArgs(MoveSplineInitArgs&, UnitMoveFlag&) const;
 
