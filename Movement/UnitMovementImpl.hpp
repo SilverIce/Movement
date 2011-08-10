@@ -70,7 +70,7 @@ namespace Movement
     }
 
     UnitMovementImpl::UnitMovementImpl(WorldObjectType owner) :
-        Transportable(owner), m_transport(*this),
+        MovementBase(owner),
         m_listener(NULL),
         m_client(NULL)
     {
@@ -114,8 +114,7 @@ namespace Movement
         m_targeter_references.Iterate(unbinder());
 
         UnbindOrientation();
-        m_transport.CleanReferences();
-        Transportable::CleanReferences();
+        MovementBase::CleanReferences();
         updatable.CleanReferences();
     }
 
@@ -187,7 +186,6 @@ namespace Movement
         }
 
         SetMoveFlag(new_flags);
-        m_local_position = new_state.transport_position;
         m_unused = new_state;
     }
 
@@ -204,18 +202,14 @@ namespace Movement
         // server-side conrolled unit has instant rotation speed, i.e. unit are everytime face to the target
         /*float limit_angle = G3D::wrap(atan2(t_pos.y - position.y, t_pos.x - position.x), 0.f, (float)G3D::twoPi());
         float total_angle_diff = fabs(position.w - limit_angle);
-
         if (total_angle_diff > 10.f/180.f * G3D::pi())
         {
             float passed_angle_diff = ms_time_diff / 1000.f * speed_obj.turn;
             passed_angle_diff = std::min(passed_angle_diff, total_angle_diff);
-
             position.w += passed_angle_diff;
-
             if (position.w > G3D::twoPi())
                 position.w -= G3D::twoPi();
-        }
-    */
+        }*/
     }
 
     void UnitMovementImpl::BindOrientationTo(UnitMovementImpl& target)
@@ -312,31 +306,6 @@ namespace Movement
             }
             setLastUpdate(now);
         }
-    }
-
-    void UnitMovementImpl::BoardOn(Transport& transport, const Location& local_position, int8 seatId)
-    {
-        _board(transport, local_position);
-
-        m_unused.transport_seat = seatId;
-        ApplyMoveFlag(UnitMoveFlag::Ontransport, true);
-    }
-
-    void UnitMovementImpl::Unboard()
-    {
-        _unboard();
-
-        m_unused.transport_seat = 0;
-        ApplyMoveFlag(UnitMoveFlag::Ontransport, false);
-    }
-
-    void UnitMovementImpl::SetPosition(const Location& v)
-    {
-        // dirty code..
-        if (IsBoarded())
-            m_local_position = v;
-        else
-            SetGlobalPosition(v);
     }
 
     void UnitMovementImpl::LaunchMoveSpline(MoveSplineInitArgs& args)
@@ -437,11 +406,8 @@ namespace Movement
         state.world_position = GetGlobalPosition();
         state.moveFlags = moveFlags;
 
-        if (IsBoarded())
-        {
-            state.t_guid = GetTransport()->Owner.GetObjectGuid().GetRawValue();
-            state.transport_position = GetLocalPosition();
-        }
+        // correct copyed data
+        state.moveFlags.ontransport = IsBoarded();
         return state;
     }
 }

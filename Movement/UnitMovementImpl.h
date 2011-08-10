@@ -47,7 +47,7 @@ namespace Movement
     };
 
     // class for unit's movement
-    class UnitMovementImpl : public Transportable, public IUpdatable
+    class UnitMovementImpl : public MovementBase, public IUpdatable
     {
     public:
 
@@ -67,14 +67,16 @@ namespace Movement
         bool IsOrientationBinded() const { return m_target_link.linked(); }
         const UnitMovementImpl* GetTarget() const { return m_target_link.Value.target;}
 
-        const Location& GetPosition() const { return IsBoarded() ? m_local_position : world_position;}
-        const Vector3& GetPosition3() const { return GetPosition();}
         Vector3 direction() const;
 
-        virtual void BoardOn(Transport& transport, const Location& local_position, int8 seatId);
-        virtual void Unboard();
-        void UnboardAll() { m_transport.UnBoardAll();}
-        void Board(Transportable& t, const Location& local_position, int8 seatId) { t.BoardOn(m_transport, local_position, seatId);}
+    public:
+        const Location& GetLocalPosition() const { return world_position;}
+        const Location& GetPosition() const { return world_position;}
+        const Vector3& GetPosition3() const { return world_position;}
+        void SetPosition(const Location& v) { SetGlobalPosition(v); }
+
+        bool IsBoarded() const { return false;}
+        MovementBase* GetTransport() const { mov_assert(false); return NULL; }
 
     public:
         // Used by server side controlled movement
@@ -172,8 +174,6 @@ namespace Movement
 
         bool HasUpdater() const { return updatable.HasUpdater();}
         MoveUpdater& GetUpdater() const { return updatable.GetUpdater();}
-        void SetPosition(const Location& v);
-        void SetPosition(const Vector3& v) { SetPosition(Location(v,GetPosition().orientation));}
 
         ClientImpl* client() const { return m_client;}
         void client(ClientImpl* c) { m_client = c;}
@@ -182,9 +182,7 @@ namespace Movement
     private:
         static SpeedType SelectSpeedType(UnitMoveFlag moveFlags);
 
-        void DisableSpline() { moveFlags &= ~(UnitMoveFlag::Mask_Directions | UnitMoveFlag::Spline_Enabled);}
         void PrepareMoveSplineArgs(MoveSplineInitArgs&, UnitMoveFlag&) const;
-
         void updateRotation();
 
     private:
@@ -197,7 +195,6 @@ namespace Movement
         ClientImpl* m_client;
         MSTime last_update_time;
         MoveStateSet m_moveEvents;
-        Transport m_transport;
 
         UnitMoveFlag moveFlags;
         /** Data that cames from client. It affects nothing here but might be used in future. */

@@ -97,7 +97,6 @@ namespace Movement
 
     void UnitMovement::UnboardAll()
     {
-        m.UnboardAll();
     }
 
     std::string UnitMovement::ToString() const
@@ -122,12 +121,10 @@ namespace Movement
 
     void UnitMovement::Unboard()
     {
-        m.Unboard();
     }
 
     void UnitMovement::Board(UnitMovement& ps, const Location& local_pos, int8 seat)
     {
-        m.Board(ps.Impl(), local_pos, seat);
     }
 
     uint32 UnitMovement::MoveSplineId() const
