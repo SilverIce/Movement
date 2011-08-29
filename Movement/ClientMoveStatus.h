@@ -6,7 +6,7 @@ namespace Movement
     struct _ClientMoveState
     {
         _ClientMoveState() : pitch(0), fallTime(0),
-            jump_velocity(0), jump_sinAngle(0), jump_cosAngle(0), jump_xy_velocity(0), spline_elevation(0),
+            jump_velocity(0), jump_sinAngle(0), jump_cosAngle(0), jump_fall_velocity(0), spline_elevation(0),
             transport_time(0), transport_seat(0), transport_time2(0)
         {
         }
@@ -16,9 +16,9 @@ namespace Movement
         float pitch;
         uint32 fallTime;
         float jump_velocity;
-        float jump_sinAngle;
         float jump_cosAngle;
-        float jump_xy_velocity;
+        float jump_sinAngle;
+        float jump_fall_velocity;
         float spline_elevation;
         int8 transport_seat;
     };
@@ -58,7 +58,7 @@ namespace Movement
             st << "jump z  vel " << jump_velocity << std::endl;
             st << "jump    sin " << jump_sinAngle << std::endl;
             st << "jump    cos " << jump_cosAngle << std::endl;
-            st << "jump xy vel " << jump_xy_velocity << std::endl;
+            st << "jump fall vel " << jump_fall_velocity << std::endl;
         }
         return st.str();
     }

@@ -218,9 +218,9 @@ namespace Movement
         if (mov.moveFlags.falling)
         {
             data >> mov.jump_velocity;
-            data >> mov.jump_sinAngle;
             data >> mov.jump_cosAngle;
-            data >> mov.jump_xy_velocity;
+            data >> mov.jump_sinAngle;
+            data >> mov.jump_fall_velocity;
         }
 
         if (mov.moveFlags.spline_elevation)
@@ -256,9 +256,9 @@ namespace Movement
         if (mov.moveFlags.falling)
         {
             data << mov.jump_velocity;
-            data << mov.jump_sinAngle;
             data << mov.jump_cosAngle;
-            data << mov.jump_xy_velocity;
+            data << mov.jump_sinAngle;
+            data << mov.jump_fall_velocity;
         }
 
         if (mov.moveFlags.spline_elevation)
