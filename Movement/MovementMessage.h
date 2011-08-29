@@ -91,11 +91,13 @@ namespace Movement
 
     inline void operator >> (ByteBuffer& b, UnitMoveFlag& v)
     {
-        b.read((uint8*)&v.raw, UnitMoveFlag::Size);
+        b.read((uint8*)&v.raw, sizeof uint32);
+        b.read((uint8*)&v.raw + sizeof uint32, sizeof uint16);
     }
 
     inline void operator << (ByteBuffer& b, const UnitMoveFlag& v)
     {
-        b.append((const uint8*)&v.raw, UnitMoveFlag::Size);
+        b.append((const uint8*)&v.raw, sizeof uint32);
+        b.append((const uint8*)&v.raw + sizeof uint32, sizeof uint16);
     }
 }

@@ -205,37 +205,4 @@ namespace Movement
         LinkedList<TargetLink> m_targeter_references;
         #pragma endregion
     };
-
-
-
-
-
-
-    struct OnEventArgs
-    {
-        enum EventType{
-            PointDone,
-            Arrived,
-        };
-
-        static OnEventArgs OnArrived(uint32 splineId)
-        {
-            OnEventArgs args = {Arrived, splineId, 0};
-            return args;
-        }
-
-        static OnEventArgs OnPoint(uint32 splineId, int32 pointId)
-        {
-            OnEventArgs args = {PointDone, splineId, pointId};
-            return args;
-        }
-
-        bool isArrived() const { return type == Arrived;}
-        bool isPointDone() const { return type == PointDone;}
-
-        EventType type;
-        uint32 splineId;
-        int32 data;
-    };
-
 }

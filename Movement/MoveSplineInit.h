@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "mov_constants.h"
 #include "MoveSplineInitArgs.h"
 
 namespace Movement
@@ -15,6 +14,14 @@ namespace Movement
     class MovementBase;
     class UnitMovement;
     class UnitMovementImpl;
+
+    enum AnimType
+    {
+        UNK0 = 0, // 460 = ToGround, index of AnimationData.dbc
+        UNK1 = 1, // 461 = FlyToFly?
+        UNK2 = 2, // 458 = ToFly
+        UNK3 = 3, // 463 = FlyToGround
+    };
 
     /*  Initializes and launches spline movement
      */
@@ -115,4 +122,31 @@ namespace Movement
         init.SetVelocity(velocity);
         init.Launch();
     }
+
+    struct OnEventArgs
+    {
+        enum EventType{
+            PointDone,
+            Arrived,
+        };
+
+        static OnEventArgs OnArrived(uint32 splineId)
+        {
+            OnEventArgs args = {Arrived, splineId, 0};
+            return args;
+        }
+
+        static OnEventArgs OnPoint(uint32 splineId, int32 pointId)
+        {
+            OnEventArgs args = {PointDone, splineId, pointId};
+            return args;
+        }
+
+        bool isArrived() const { return type == Arrived;}
+        bool isPointDone() const { return type == PointDone;}
+
+        EventType type;
+        uint32 splineId;
+        int32 data;
+    };
 }

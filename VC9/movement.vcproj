@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="movement"
 	ProjectGUID="{A395F7CE-51DF-4819-8760-C1C95726C8C1}"
 	RootNamespace="main"
@@ -151,155 +151,191 @@
 	</References>
 	<Files>
 		<Filter
-			Name="Spline"
+			Name="Impl"
 			>
 			<File
-				RelativePath="..\Movement\g3d_based.cpp"
+				RelativePath="..\Movement\LinkedList.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\g3d_based.h"
+				RelativePath="..\Movement\MaNGOS_API.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\spline.cpp"
+				RelativePath="..\Movement\movement_lib.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\spline.h"
+				RelativePath="..\Movement\MovementBase.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\spline.impl.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="fake"
-			>
-			<File
-				RelativePath="..\Movement\fake\ByteBuffer.h"
+				RelativePath="..\Movement\MovementBase.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\fake\MaNGOS_API.cpp"
+				RelativePath="..\Movement\MoveUpdater.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\fake\Object.h"
+				RelativePath="..\Movement\MoveUpdater.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\fake\ObjectGuid.h"
+				RelativePath="..\Movement\MSTime.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\fake\opcodes.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\Movement\fake\opcodes.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Movement\fake\UpdateFields.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Movement\fake\WorldPacket.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="UnitMovement"
-			>
-			<File
-				RelativePath="..\Movement\Client.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Movement\ClientImpl.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Movement\ClientImpl.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\Movement\mov_constants.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Movement\MovementMessage.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Movement\MoveSplineInit.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Movement\MoveSplineInit.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\Movement\UnitMoveFlags.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Movement\UnitMovement.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\Movement\UnitMovement.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Movement\UnitMovement.Requests.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\Movement\UnitMovementImpl.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Movement\UnitMovementImpl.hpp"
+				RelativePath="..\Movement\util.cpp"
 				>
 			</File>
 			<Filter
-				Name="MoveSpline"
+				Name="UnitMovement"
 				>
 				<File
-					RelativePath="..\Movement\MoveSpline.cpp"
+					RelativePath="..\Movement\ClientImpl.h"
 					>
 				</File>
 				<File
-					RelativePath="..\Movement\MoveSpline.h"
+					RelativePath="..\Movement\ClientImpl.hpp"
 					>
 				</File>
 				<File
-					RelativePath="..\Movement\MoveSplineFlag.h"
+					RelativePath="..\Movement\ClientMoveStatus.h"
 					>
 				</File>
 				<File
-					RelativePath="..\Movement\MoveSplineInitArgs.h"
+					RelativePath="..\Movement\mov_constants.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\MovementMessage.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\MoveSplineInit.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\UnitMoveFlags.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\UnitMovement.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\UnitMovement.Requests.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\UnitMovementImpl.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\UnitMovementImpl.hpp"
+					>
+				</File>
+				<Filter
+					Name="MoveSpline"
+					>
+					<File
+						RelativePath="..\Movement\MoveSpline.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\Movement\MoveSpline.h"
+						>
+					</File>
+					<File
+						RelativePath="..\Movement\MoveSplineFlag.h"
+						>
+					</File>
+					<File
+						RelativePath="..\Movement\MoveSplineInitArgs.h"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="packet_builder"
+					>
+					<File
+						RelativePath="..\Movement\packet_builder.h"
+						>
+					</File>
+					<File
+						RelativePath="..\Movement\packet_builder.hpp"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="scketches"
+				>
+			</Filter>
+			<Filter
+				Name="fake"
+				>
+				<File
+					RelativePath="..\Movement\fake\ByteBuffer.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\fake\MaNGOS_API.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\fake\Object.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\fake\ObjectGuid.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\fake\opcodes.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\fake\opcodes.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\fake\UpdateFields.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\fake\WorldPacket.h"
 					>
 				</File>
 			</Filter>
 			<Filter
-				Name="packet_builder"
+				Name="Spline"
 				>
 				<File
-					RelativePath="..\Movement\packet_builder.h"
+					RelativePath="..\Movement\g3d_based.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\Movement\packet_builder.hpp"
+					RelativePath="..\Movement\g3d_based.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\spline.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\spline.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\spline.impl.h"
 					>
 				</File>
 			</Filter>
 		</Filter>
 		<File
-			RelativePath="..\Movement\LinkedList.h"
+			RelativePath="..\Movement\Client.h"
 			>
 		</File>
 		<File
@@ -307,35 +343,11 @@
 			>
 		</File>
 		<File
-			RelativePath="..\Movement\MaNGOS_API.h"
-			>
-		</File>
-		<File
 			RelativePath="..\Movement\MoveListener.h"
 			>
 		</File>
 		<File
-			RelativePath="..\Movement\movement_lib.h"
-			>
-		</File>
-		<File
-			RelativePath="..\Movement\MovementBase.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\Movement\MovementBase.h"
-			>
-		</File>
-		<File
-			RelativePath="..\Movement\MoveUpdater.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\Movement\MoveUpdater.h"
-			>
-		</File>
-		<File
-			RelativePath="..\Movement\MSTime.h"
+			RelativePath="..\Movement\MoveSplineInit.h"
 			>
 		</File>
 		<File
@@ -343,7 +355,7 @@
 			>
 		</File>
 		<File
-			RelativePath="..\Movement\util.cpp"
+			RelativePath="..\Movement\UnitMovement.h"
 			>
 		</File>
 	</Files>

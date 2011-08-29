@@ -19,7 +19,8 @@ namespace Movement
             None         = 0x00000000,
                                                  // x00-xFF(first byte) used as animation Ids storage in pair with Animation flag
             Done         = 0x00000100,
-            Falling      = 0x00000200,           // Affects elevation computation, can't be combined with Parabolic flag, also has same effect as RotationFixed flag
+            Falling      = 0x00000200,           // Affects elevation computation, can't be combined with Parabolic flag, also has same effect as RotationFixed flag,
+                                                 // also causes unit to fall from transport
             No_Spline    = 0x00000400,
             Parabolic    = 0x00000800,           // Affects elevation computation, can't be combined with Falling flag
             Walkmode     = 0x00001000,

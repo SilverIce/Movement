@@ -10,15 +10,6 @@
 
 namespace Movement
 {
-    // used with 0x00200000 flag (SPLINEFLAG_ANIMATION) in monster move packet
-    enum AnimType
-    {
-        UNK0 = 0, // 460 = ToGround, index of AnimationData.dbc
-        UNK1 = 1, // 461 = FlyToFly?
-        UNK2 = 2, // 458 = ToFly
-        UNK3 = 3, // 463 = FlyToGround
-    };
-
     enum MoveMode
     {
         MoveModeWalk,
