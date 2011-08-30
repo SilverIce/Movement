@@ -52,7 +52,7 @@ namespace Movement
             Waterwalking       = 0x10000000,               // Prevent Unit From Falling Through Water
             Can_Safe_Fall      = 0x20000000,               // Active Rogue Safe Fall Spell (Passive)
             Hover              = 0x40000000,
-            Flag_x80000000     = 0x80000000,
+            AllowSwimFlyTransition = 0x80000000,
 
             Unk1               = 0x000100000000L,
             Unk2               = 0x000200000000L,
@@ -87,7 +87,7 @@ namespace Movement
 
         // Constant interface
 
-        bool hasFlag(uint32 f) const { return (raw & f) != 0;}
+        bool hasFlag(uint64 f) const { return (raw & f) != 0;}
         bool hasDirection() const { return hasFlag(Mask_Directions);}
 
         uint64 operator & (uint64 f) const { return (raw & f);}

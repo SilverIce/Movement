@@ -21,7 +21,8 @@ namespace Movement
         MoveModeFly,
         MoveModeGravityDisabled,
         MoveModeCanFly,
-        MoveModeMaxCount
+        MoveModeCanSwimFlyTransition,
+        MoveMode_End
     };
 
     enum SpeedType

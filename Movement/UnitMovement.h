@@ -69,6 +69,7 @@ namespace Movement
         void ApplyCanFlyMode(bool apply);
         void ApplyHoverMode(bool apply);
         void DisableGravity(bool apply);
+        void ApplyCanSwimFlyTransitionMode(bool apply);
 
         void Teleport(const Location& loc);
 

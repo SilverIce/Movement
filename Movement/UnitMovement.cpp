@@ -217,6 +217,11 @@ namespace Movement
         m.ApplyMoveMode(MoveModeGravityDisabled, apply);
     }
 
+    void UnitMovement::ApplyCanSwimFlyTransitionMode(bool apply)
+    {
+        m.ApplyMoveMode(MoveModeCanSwimFlyTransition, apply);
+    }
+
     void UnitMovement::SetSpeed(SpeedType type, float speed)
     {
         m.SetSpeed(type, speed);

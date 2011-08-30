@@ -128,7 +128,7 @@ namespace Movement
         uint16 smsg_spline_apply[2];   // 0 is apply, 1 - unapply
     };
 
-    const ModeInfo modeInfo[MoveModeMaxCount]=
+    const ModeInfo modeInfo[MoveMode_End]=
     {
         {
             UnitMoveFlag::Walk_Mode, 0, 0, 0, 0, 0, 0,
@@ -177,6 +177,12 @@ namespace Movement
                 CMSG_MOVE_SET_CAN_FLY_ACK, CMSG_MOVE_SET_CAN_FLY_ACK,
                 MSG_MOVE_UPDATE_CAN_FLY, MSG_MOVE_UPDATE_CAN_FLY,
                 SMSG_SPLINE_MOVE_SET_FLYING, SMSG_SPLINE_MOVE_UNSET_FLYING
+        },
+        {
+            UnitMoveFlag::AllowSwimFlyTransition, SMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY, SMSG_MOVE_UNSET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY,
+                CMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY_ACK, CMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY_ACK,
+                MSG_MOVE_UPDATE_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY, MSG_MOVE_UPDATE_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY,
+                0, 0
         },
     };
 
@@ -236,7 +242,7 @@ namespace Movement
                 log_write("FloatValueChangeRequest::OnReply: wrong counter value: %u and should be: %u",client_req_id,m_reqId);
                 return false;
             }
-            if (modeInfo[m_mode].moveFlag != 0 && m_apply != (bool)(client_state.moveFlags & modeInfo[m_mode].moveFlag))
+            if (modeInfo[m_mode].moveFlag != 0 && m_apply != client_state.moveFlags.hasFlag(modeInfo[m_mode].moveFlag))
             {
                 log_write("ModeChangeRequest::OnReply: wrong client's flag");
                 return false;
@@ -262,9 +268,9 @@ namespace Movement
         ModeChangeRequest::Launch(this, mode, apply);
     }
 
-    bool UnitMovementImpl::HasMode(MoveMode m) const
+    bool UnitMovementImpl::HasMode(MoveMode mode) const
     {
-        return moveFlags & modeInfo[m].moveFlag;
+        return moveFlags.hasFlag(modeInfo[mode].moveFlag);
     }
 
     class TeleportRequest : public RespHandler
