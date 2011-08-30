@@ -62,13 +62,13 @@ namespace Movement
 
         // Constant interface
 
-        bool isSmooth() const { return raw & Mask_CatmullRom;}
+        bool isSmooth() const { return hasFlag(Mask_CatmullRom);}
         bool isLinear() const { return !isSmooth();}
-        bool isFacing() const { return raw & Mask_Final_Facing;}
+        bool isFacing() const { return hasFlag(Mask_Final_Facing);}
 
         uint8 getAnimationId() const { return animId;}
         bool hasAllFlags(uint32 f) const { return (raw & f) == f;}
-        bool hasFlag(uint32 f) const { return (raw & f);}
+        bool hasFlag(uint32 f) const { return (raw & f) != 0;}
         uint32 operator & (uint32 f) const { return (raw & f);}
         uint32 operator | (uint32 f) const { return (raw | f);}
         std::string ToString() const;

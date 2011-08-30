@@ -45,8 +45,11 @@ namespace Movement
         MovControlServer,
         MovControlCount,
     };
+    extern double gravity;
+    double computeFallTime(float path_length);
+    double computeFallElevation(float time_passed, float start_velocy);
+    double computeFallElevation(float time_passed);
 
-    float computeFallTime(float path_length, bool isSafeFall);
-    float computeFallElevation(float time_passed, bool isSafeFall, float start_velocy);
-    float computeFallElevation(float time_passed);
+    double computeSafeFallTime(float path_length);
+    double computeSafeFallElevation(float time, float start_velocity);
 }

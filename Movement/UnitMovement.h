@@ -57,8 +57,6 @@ namespace Movement
         void SetListener(class IListener * l);
 
     public:
-        /** Seems it should be removed(or used for monster movement only), since it hard or impossible to get movement mode from incoming movement packets*/
-        /// Move Modes
         bool HasMode(MoveMode m) const;
 
         /// Apply/remove modes

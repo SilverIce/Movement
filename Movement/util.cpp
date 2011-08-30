@@ -44,75 +44,89 @@ namespace Movement
         return result;
     }
 
-    const float terminal_length = (terminalVelocity * terminalVelocity) / (2.f * gravity);
-    const float terminal_savefall_length = (terminalSavefallVelocity * terminalSavefallVelocity) / (2.f * gravity);
+    double terminal_length = (terminalVelocity * terminalVelocity) / (2 * gravity);
+    double terminal_savefall_length = (terminalSavefallVelocity * terminalSavefallVelocity) / (2 * gravity);
 
-    const float terminalFallTime = terminalVelocity/gravity; // the time that needed to reach terminalVelocity
+    double terminalFallTime = terminalVelocity/gravity; // the time that needed to reach terminalVelocity
 
-    float computeFallTime(float path_length, bool isSafeFall)
+    double computeFallTime(float path_length)
     {
-        if (path_length < 0.f)
-            return 0.f;
+        if (path_length < 0)
+            return 0;
 
-        float time;
-        if ( isSafeFall )
-        {
-            if (path_length >= terminal_savefall_length)
-                time = (path_length - terminal_savefall_length)/terminalSavefallVelocity + terminalSavefallVelocity/gravity;
-            else
-                time = sqrtf(2.f * path_length/gravity);
-        }
+        double time;
+        if (path_length >= terminal_length)
+            time = (path_length - terminal_length)/terminalVelocity + terminalFallTime;
         else
-        {
-            if (path_length >= terminal_length)
-                time = (path_length - terminal_length)/terminalVelocity + terminalFallTime;
-            else
-                time = sqrtf(2.f * path_length/gravity);
-        }
-
+            time = sqrt(2 * path_length/gravity);
         return time;
     }
 
-    float computeFallElevation( float t_passed, bool isSafeFall, float start_velocity )
+    double computeSafeFallTime(float path_length)
     {
-        float termVel;
-        float result;
+        if (path_length < 0)
+            return 0;
 
-        if ( isSafeFall )
-            termVel = terminalSavefallVelocity;
+        double time;
+        if (path_length >= terminal_savefall_length)
+            time = (path_length - terminal_savefall_length)/terminalSavefallVelocity + terminalSavefallVelocity/gravity;
         else
-            termVel = terminalVelocity;
-
-        if ( start_velocity > termVel )
-            start_velocity = termVel;
-
-        float terminal_time = terminalFallTime - start_velocity / gravity; // the time that needed to reach terminalVelocity
-
-        if ( t_passed > terminal_time )
-        {
-            result = terminalVelocity*(t_passed - terminal_time) +
-                start_velocity*terminal_time + gravity*terminal_time*terminal_time*0.5f;
-        }
-        else
-            result = t_passed * (start_velocity + t_passed * gravity * 0.5f);
-
-        return result;
+            time = sqrt(2 * path_length/gravity);
+        return time;
     }
 
-    float computeFallElevation(float t_passed)
+    double computeFallElevation(float t_passed, float start_velocity)
     {
-        float result;
+        if (start_velocity > terminalVelocity)
+            start_velocity = terminalVelocity;
 
-        if (t_passed > terminalFallTime)
+        double terminal_time = terminalFallTime - start_velocity / gravity; // the time that needed to reach terminalVelocity
+        double elevation = 0;
+
+        if (t_passed > terminal_time)
+        {
+            elevation = terminalVelocity*(t_passed - terminal_time) +
+                start_velocity*terminal_time + gravity*terminal_time*terminal_time*0.5;
+        }
+        else
+            elevation = t_passed * (start_velocity + t_passed * gravity * 0.5);
+
+        return elevation;
+    }
+
+    double computeSafeFallElevation(float time, float start_velocity)
+    {
+        if (start_velocity > terminalSavefallVelocity)
+            start_velocity = terminalSavefallVelocity;
+
+        double terminal_time = terminalFallTime - start_velocity / gravity; // the time that needed to reach terminalVelocity
+        double elevation = 0;
+
+        if (time > terminal_time)
+        {
+            elevation = terminalVelocity*(time - terminal_time) +
+                start_velocity*terminal_time + gravity*terminal_time*terminal_time*0.5;
+        }
+        else
+            elevation = time * (start_velocity + time * gravity * 0.5);
+
+        return elevation;
+    }
+
+    double computeFallElevation(float time)
+    {
+        double elevation;
+
+        if (time > terminalFallTime)
         {
             //result = terminalVelocity * (t_passed - terminal_time) + gravity*terminal_time*terminal_time*0.5f;
             // simplified view:
-            result = terminalVelocity * (t_passed - terminalFallTime) + terminal_length;
+            elevation = terminalVelocity * (time - terminalFallTime) + terminal_length;
         }
         else
-            result = t_passed * t_passed * gravity * 0.5f;
+            elevation = time * time * gravity * 0.5;
 
-        return result;
+        return elevation;
     }
 
     #define STR(x) #x

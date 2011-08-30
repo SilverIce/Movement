@@ -81,7 +81,7 @@ struct FallInitializer
     float start_elevation;
     inline int32 operator()(Spline<int32>& s, int32 i)
     {
-        return Movement::computeFallTime(start_elevation - s.getPoint(i+1).z,false) * 1000.f;
+        return Movement::computeFallTime(start_elevation - s.getPoint(i+1).z) * 1000.f;
     }
 };
 

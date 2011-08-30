@@ -87,7 +87,8 @@ namespace Movement
 
         // Constant interface
 
-        bool hasDirection() const { return raw & Mask_Directions;}
+        bool hasFlag(uint32 f) const { return (raw & f) != 0;}
+        bool hasDirection() const { return hasFlag(Mask_Directions);}
 
         uint64 operator & (uint64 f) const { return (raw & f);}
         uint64 operator | (uint64 f) const { return (raw | f);}
