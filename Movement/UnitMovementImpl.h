@@ -190,7 +190,7 @@ namespace Movement
         friend class UnitMovement;
 
         UpdatableMovement updatable;
-        MoveSpline move_spline;
+        MoveSpline* move_spline;
         IListener* m_listener;
         ClientImpl* m_client;
         MSTime last_update_time;

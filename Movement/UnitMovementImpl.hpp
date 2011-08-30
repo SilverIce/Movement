@@ -72,6 +72,7 @@ namespace Movement
     UnitMovementImpl::UnitMovementImpl(WorldObjectType owner) :
         MovementBase(owner),
         m_listener(NULL),
+        move_spline(NULL),
         m_client(NULL)
     {
         updatable.SetUpdateStrategy(this);
@@ -96,6 +97,9 @@ namespace Movement
 
     UnitMovementImpl::~UnitMovementImpl()
     {
+        delete move_spline;
+        move_spline = NULL;
+
         mov_assert(m_targeter_references.empty());
         mov_assert(m_client == NULL);
     }
@@ -242,7 +246,7 @@ namespace Movement
         bool NeedSync;
 
         explicit MoveSplineUpdater(UnitMovementImpl& movement, int32 difftime) :
-            mov(movement), NeedSync(false), move_spline(mov.move_spline)
+            mov(movement), NeedSync(false), move_spline(*mov.move_spline)
         {
             move_spline.updateState(difftime, *this);
             mov.SetPosition(move_spline.ComputePosition(mov.GetPosition()));
@@ -284,7 +288,7 @@ namespace Movement
         if (SplineEnabled())
         {
             int32 difftime = (now - getLastUpdate()).time;
-            if (move_spline.timeElapsed() <= difftime || difftime >= MoveSpline_UpdateDelay)
+            if (move_spline->timeElapsed() <= difftime || difftime >= MoveSpline_UpdateDelay)
             {
                 MoveSplineUpdater(*this, std::min(difftime,(int32)Maximum_update_difftime));
                 setLastUpdate(now);
@@ -319,14 +323,11 @@ namespace Movement
         UnitMoveFlag moveFlag_new;
         PrepareMoveSplineArgs(args, moveFlag_new);
       
-        if (!args.Validate())
+        if (!MoveSpline::Initialize(move_spline, args))
         {
             log_console("UnitMovement::LaunchMoveSpline: can't lauch, invalid movespline args");
             return;
         }
-
-
-        move_spline.Initialize(args);
 
         SetMoveFlag(moveFlag_new | UnitMoveFlag::Spline_Enabled);
         //setLastUpdate(GetUpdater().TickTime());
@@ -360,14 +361,14 @@ namespace Movement
         if (m_client)
             st << m_client->ToString();
         if (SplineEnabled())
-            st << move_spline.ToString();
+            st << move_spline->ToString();
         return st.str();
     }
 
     uint32 UnitMovementImpl::MoveSplineId() const
     {
         if (SplineEnabled())
-            return move_spline.GetId();
+            return move_spline->GetId();
         else
             return 0;
     }
@@ -375,7 +376,7 @@ namespace Movement
     const Vector3& UnitMovementImpl::MoveSplineDest() const
     {
         if (SplineEnabled())
-            return move_spline.FinalDestination();
+            return move_spline->FinalDestination();
         else
             return GetPosition3();
     }
@@ -383,7 +384,7 @@ namespace Movement
     int32 UnitMovementImpl::MoveSplineTimeElapsed() const
     {
         if (SplineEnabled())
-            return move_spline.timeElapsed();
+            return move_spline->timeElapsed();
         else
             return 0;
     }

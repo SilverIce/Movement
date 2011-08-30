@@ -63,20 +63,27 @@ namespace Movement {
         UpdateResult _updateState(int32& ms_time_diff);
         int32 next_timestamp() const { return spline.length(point_Idx+1);}
         int32 segment_time_elapsed() const { return next_timestamp()-time_passed;}
+
+        explicit MoveSpline();
         void Finalize();
+        void Initialize(const MoveSplineInitArgs&);
 
         #pragma endregion
     public:
 
-        void Initialize(const MoveSplineInitArgs&);
-        bool Initialized() const { return !spline.empty();}
-
-        explicit MoveSpline();
+        static bool Initialize(MoveSpline *& obj, const MoveSplineInitArgs& args)
+        {
+            if (!args.Validate())
+                return false;
+            if (obj == NULL)
+                obj = new MoveSpline();
+            obj->Initialize(args);
+            return true;
+        }
 
         template<class UpdateHandler>
         void updateState(int32 difftime, UpdateHandler& handler)
         {
-            mov_assert(Initialized());
             do
                 handler(_updateState(difftime));
             while(difftime > 0);
@@ -84,7 +91,6 @@ namespace Movement {
 
         void updateState(int32 difftime)
         {
-            mov_assert(Initialized());
             do _updateState(difftime);
             while(difftime > 0);
         }

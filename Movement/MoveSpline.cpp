@@ -7,8 +7,6 @@ namespace Movement{
 
 Location MoveSpline::ComputePosition(const Location& loc) const
 {
-    mov_assert(Initialized());
-
     float u = 1.f;
     int32 seg_time = spline.length(point_Idx,point_Idx+1);
     if (seg_time > 0)
