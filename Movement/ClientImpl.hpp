@@ -125,7 +125,7 @@ namespace Movement
             new TimeSyncRequest(this);
         }
 
-        if (!m_resp_handlers.empty() && now > m_resp_handlers.front()->timeout)
+        if (!m_resp_handlers.empty() && now > m_resp_handlers.front()->Timeout)
         {
             // kick client here
             //Kick();
@@ -181,7 +181,7 @@ namespace Movement
     void ClientImpl::AddRespHandler(RespHandler* req)
     {
         req->m_reqId = request_counter.NewId();
-        req->timeout = ServerTime() + (MSTime)RespHandler::Timeout;
+        req->Timeout = ServerTime() + (MSTime)RespHandler::DefaultTimeout;
         m_resp_handlers.push_back(req);
     }
 

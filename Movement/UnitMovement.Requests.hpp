@@ -188,15 +188,10 @@ namespace Movement
         ModeChangeRequest(ClientImpl * client, MoveMode mode, bool apply) :
             RespHandler(modeInfo[mode].cmsg_ack[!apply],client), m_mode(mode), m_apply(apply)
         {
-            if (uint16 opcode = modeInfo[mode].smsg_apply[!apply])
-            {
-                MovementMessage msg(NULL, opcode, 16);
-                msg << client->controlled()->Owner.GetPackGUID();
-                msg << m_reqId;
-                client->SendMoveMessage(msg);
-            }
-            else
-                log_write("ModeChangeRequest: no opcode for mode %u", mode);
+            MovementMessage msg(NULL, modeInfo[mode].smsg_apply[!apply], 16);
+            msg << client->controlled()->Owner.GetPackGUID();
+            msg << m_reqId;
+            client->SendMoveMessage(msg);
         }
 
     public:
@@ -204,7 +199,12 @@ namespace Movement
         static void Launch(UnitMovementImpl * mov, MoveMode mode, bool apply)
         {
             if (mov->IsClientControlled())
-                new ModeChangeRequest(mov->client(), mode, apply);
+            {
+                if (modeInfo[mode].smsg_apply[!apply])
+                    new ModeChangeRequest(mov->client(), mode, apply);
+                else
+                    log_write("ModeChangeRequest: no opcode for mode %u", mode);
+            }
             else
             {
                 if (uint16 opcode = modeInfo[mode].smsg_spline_apply[!apply])

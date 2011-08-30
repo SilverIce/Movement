@@ -87,22 +87,22 @@ namespace Movement
     class RespHandler
     {
     protected:
-        uint32 opcode;
+        uint32 m_opcode;
     public:
         uint32 m_reqId;
-        MSTime timeout;
+        MSTime Timeout;
 
         enum{
             /* Default timeout value, milliseconds */
-            Timeout = 500,
+            DefaultTimeout = 500,
         };
 
-        explicit RespHandler(uint32 _opcode, ClientImpl * client) : opcode(_opcode)
+        explicit RespHandler(uint32 _opcode, ClientImpl * client) : m_opcode(_opcode)
         {
             client->AddRespHandler(this);
         }
 
-        bool CanHandle(uint32 _opcode) const { return opcode == _opcode;}
+        bool CanHandle(uint32 opcode) const { return m_opcode == opcode;}
         //virtual void OnTimeout() {}
         virtual bool OnReply(ClientImpl * client, WorldPacket& data) = 0;
     };
