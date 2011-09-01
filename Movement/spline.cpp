@@ -272,13 +272,6 @@ void SplineBase::InitBezier3(const Vector3* controls, index_type count, bool /*c
     //mov_assert(points.size() % 3 == 0);
 }
 
-void SplineBase::clear()
-{
-    index_lo = 0;
-    index_hi = 0;
-    points.clear();
-}
-
 std::string SplineBase::ToString() const
 {
     std::stringstream str;

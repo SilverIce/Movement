@@ -113,8 +113,6 @@ public:
         initializer(m_mode,cyclic,points,index_lo,index_hi);
     }
 
-    void clear();
-
     /** Calculates distance between [i; i+1] points, assumes that index i is in bounds. */
     float SegLength(index_type i) const { return (this->*seglengths[m_mode])(i);}
 
@@ -191,7 +189,6 @@ public:
     length_type length(index_type Idx) const { return lengths[Idx];}
 
     void set_length(index_type i, length_type length) { lengths[i] = length;}
-    void clear();
 };
 
 }

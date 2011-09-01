@@ -7,20 +7,23 @@ namespace Movement
     struct MSTime
     {
     private:
+        enum{
+            UInt32Max = uint32(0xFFFFFFFF),
+        };
         static uint32 decrease(const uint32& value, const uint32& decrement)
         {
             if (decrement > value)
-                return (0xFFFFFFFF - decrement) + value;
+                return (UInt32Max - decrement) + value;
             else
                 return value - decrement;
         }
 
         static uint32 increase(const uint32& value, const uint32& increment)
         {
-            if (value < (0xFFFFFFFF - increment))
+            if (value < (UInt32Max - increment))
                 return value + increment;
             else
-                return increment - (0xFFFFFFFF - value);
+                return increment - (UInt32Max - value);
         }
 
     public:
