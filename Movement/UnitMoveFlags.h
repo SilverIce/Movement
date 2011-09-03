@@ -136,7 +136,7 @@ namespace Movement
                 bool waterwalking        : 1;
                 bool can_safe_fall       : 1;
                 bool hover               : 1;
-                bool allowSwimFlyTransition : 1;
+                bool flag_0x80000000     : 1;
 
                 bool unk1                : 1;
                 bool unk2                : 1;
@@ -152,7 +152,7 @@ namespace Movement
                 bool interp_turning      : 1;
                 bool interp_pitching     : 1;
                 bool unk8                : 1;
-                bool unk9                : 1;
+                bool allowSwimFlyTransition : 1;
                 bool unk10               : 1;
                 uint16 unused            : 16;
             };
