@@ -201,7 +201,7 @@ bool MoveSplineInitArgs::_checkPathBounds() const
             offset = path[i] - middle;
             if (fabs(offset.x) >= MAX_OFFSET || fabs(offset.y) >= MAX_OFFSET || fabs(offset.z) >= MAX_OFFSET)
             {
-                log_console("MoveSplineInitArgs::_checkPathBounds check failed");
+                log_write("MoveSplineInitArgs::_checkPathBounds check failed");
                 return false;
             }
         }

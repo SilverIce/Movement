@@ -132,11 +132,11 @@ namespace Movement
     #define STR(x) #x
 
     template<class Flags, int N>
-    void print_flags(Flags t, const char * (&names)[N], std::string& str)
+    void print_flags(Flags flag, const char * (&names)[N], std::string& str)
     {
         for (int i = 0; i < N; ++i)
-        { 
-            if ((t & (Flags)(1 << i)) && names[i] != NULL)
+        {
+            if ((flag & (Flags(1) << i)) && names[i] != NULL)
                 str.append(" ").append(names[i]);
         }
     }
@@ -177,7 +177,7 @@ namespace Movement
             STR(Waterwalking       ),// 0x10000000,               // Prevent Unit From Falling Through Water
             STR(Safe_Fall          ),// 0x20000000,               // Active Rogue Safe Fall Spell (Passive)
             STR(Hover              ),// 0x40000000
-            STR(AllowSwimFlyTransition ),// 0x80000000
+            STR(Flag_0x80000000    ),// 0x80000000
             STR(Unk1              ),
             STR(Unk2              ),
             STR(Unk3              ),
@@ -192,7 +192,7 @@ namespace Movement
             STR(Interp_Turning    ),
             STR(Interp_Pitching   ),
             STR(Unk8              ),
-            STR(Unk9              ),
+            STR(AllowSwimFlyTransition ),
             STR(Unk10             ),
         };
 

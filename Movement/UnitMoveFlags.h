@@ -52,7 +52,7 @@ namespace Movement
             Waterwalking       = 0x10000000,               // Prevent Unit From Falling Through Water
             Can_Safe_Fall      = 0x20000000,               // Active Rogue Safe Fall Spell (Passive)
             Hover              = 0x40000000,
-            AllowSwimFlyTransition = 0x80000000,
+            Flag_0x80000000    = 0x80000000,
 
             Unk1               = 0x000100000000L,
             Unk2               = 0x000200000000L,
@@ -68,7 +68,7 @@ namespace Movement
             Interp_Turning     = 0x080000000000L,
             Interp_Pitching    = 0x100000000000L,
             Unk8               = 0x200000000000L,
-            Unk9               = 0x400000000000L,
+            AllowSwimFlyTransition = 0x400000000000L,
             Unk10              = 0x800000000000L,
 
             Mask_Speed      = Backward | Flying | Walk_Mode | Swimming,
@@ -136,7 +136,7 @@ namespace Movement
                 bool waterwalking        : 1;
                 bool can_safe_fall       : 1;
                 bool hover               : 1;
-                bool flag_x80000000      : 1;
+                bool allowSwimFlyTransition : 1;
 
                 bool unk1                : 1;
                 bool unk2                : 1;
@@ -154,7 +154,7 @@ namespace Movement
                 bool unk8                : 1;
                 bool unk9                : 1;
                 bool unk10               : 1;
-                uint16 unused;
+                uint16 unused            : 16;
             };
         };
     };

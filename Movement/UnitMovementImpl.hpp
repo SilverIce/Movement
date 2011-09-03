@@ -316,7 +316,7 @@ namespace Movement
     {
         if (!HasUpdater())
         {
-            log_console("UnitMovement::LaunchMoveSpline: attempt to lauch not initialized movement");
+            log_write("UnitMovement::LaunchMoveSpline: attempt to lauch not initialized movement");
             return;
         }
 
@@ -325,7 +325,7 @@ namespace Movement
       
         if (!MoveSpline::Initialize(move_spline, args))
         {
-            log_console("UnitMovement::LaunchMoveSpline: can't lauch, invalid movespline args");
+            log_write("UnitMovement::LaunchMoveSpline: can't launch, invalid movespline args");
             return;
         }
 
