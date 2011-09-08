@@ -1,5 +1,6 @@
 #include "MoveUpdater.h"
 #include "MovementBase.h"
+#include "MaNGOS_API.h"
 
 namespace Movement
 {
@@ -7,7 +8,7 @@ namespace Movement
 
     MoveUpdater::MoveUpdater()
     {
-        m_tick_time = getMSTime();
+        m_tick_time = MaNGOS_API::getMSTime();
         common_timer = 0;
         m_movers_count = 0;
     }
@@ -18,7 +19,7 @@ namespace Movement
             inline void operator ()(UpdatableMovement* mov) { mov->UpdateState();}
         };
 
-        m_tick_time = getMSTime();
+        m_tick_time = MaNGOS_API::getMSTime();
         m_movers.Iterate(common_updater());
     }
 

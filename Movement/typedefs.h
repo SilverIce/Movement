@@ -15,8 +15,6 @@ namespace G3D
     class Vector4;
 }
 
-extern unsigned int getMSTime();
-
 namespace Movement
 {
     using G3D::Vector2;
