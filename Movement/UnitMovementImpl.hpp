@@ -344,7 +344,7 @@ namespace Movement
         moveFlag_new = moveFlags & ~(UnitMoveFlag::Mask_Directions | UnitMoveFlag::Mask_Moving) | UnitMoveFlag::Spline_Enabled;
         moveFlag_new.backward = args.flags.backward;
         moveFlag_new.forward = !args.flags.backward && !args.flags.falling;
-        moveFlag_new.walk_mode = args.flags.walkmode;
+        moveFlag_new.walk_mode = !args.flags.runmode;
 
         // select velocity if was not set in SetVelocity
         if (args.velocity == 0.f)

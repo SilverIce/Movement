@@ -23,7 +23,7 @@ namespace Movement
                                                  // also causes unit to fall from transport
             No_Spline    = 0x00000400,
             Parabolic    = 0x00000800,           // Affects elevation computation, can't be combined with Falling flag
-            Walkmode     = 0x00001000,
+            Runmode      = 0x00001000,
             Flying       = 0x00002000,           // Smooth movement(Catmullrom interpolation mode), flying animation
             RotationFixed= 0x00004000,           // Prevent model's orientation from being oriented
             Final_Point  = 0x00008000,
@@ -98,7 +98,7 @@ namespace Movement
                 bool falling       : 1;
                 bool no_spline     : 1;
                 bool parabolic     : 1;
-                bool walkmode      : 1;
+                bool runmode       : 1;
                 bool flying        : 1;
                 bool rotation_fixed: 1;
                 bool final_point   : 1;

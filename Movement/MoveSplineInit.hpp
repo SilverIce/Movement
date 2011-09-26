@@ -22,7 +22,7 @@ namespace Movement
 
     void MoveSplineInit::SetWalk(bool enable)
     {
-        args.flags.walkmode = enable;
+        args.flags.runmode = !enable;
     }
 
     void MoveSplineInit::SetSmooth()
@@ -79,13 +79,13 @@ namespace Movement
 
     MoveSplineInit::MoveSplineInit(UnitMovement& m) : state(m.Impl())
     {
-        args.flags.walkmode = m.IsWalking();
+        args.flags.runmode = !m.IsWalking();
         args.flags.flying = m.IsFlying();
     }
 
     MoveSplineInit::MoveSplineInit(UnitMovementImpl& m) : state(m)
     {
-        args.flags.walkmode = m.IsWalking();
+        args.flags.runmode = !m.IsWalking();
         args.flags.flying = m.IsFlying();
     }
 
