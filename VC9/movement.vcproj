@@ -112,6 +112,75 @@
 				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="..\dep\g3dlite\include\;..\Movement\fake\;..\Movement\"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;USE_FAKE_CLASSES"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="0"
+				WarningLevel="2"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="ReleaseOpt|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="4"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="3"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
+				EnableFiberSafeOptimizations="false"
+				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="..\dep\g3dlite\include\;..\Movement\fake\;..\Movement\"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;USE_FAKE_CLASSES;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
@@ -154,6 +223,10 @@
 			Name="Impl"
 			>
 			<File
+				RelativePath="..\Movement\BasicTests.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\Movement\LinkedList.h"
 				>
 			</File>
@@ -183,6 +256,10 @@
 			</File>
 			<File
 				RelativePath="..\Movement\MSTime.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Movement\RdtscTimer.h"
 				>
 			</File>
 			<File
@@ -229,6 +306,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\Movement\UnitMovement.Tests.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\Movement\UnitMovementImpl.h"
 					>
 				</File>
@@ -268,10 +349,6 @@
 						>
 					</File>
 				</Filter>
-			</Filter>
-			<Filter
-				Name="scketches"
-				>
 			</Filter>
 			<Filter
 				Name="fake"
@@ -330,6 +407,58 @@
 				</File>
 				<File
 					RelativePath="..\Movement\spline.impl.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="scketches"
+				>
+				<File
+					RelativePath="..\Movement\TaskExecutorImpl_Deque.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\TaskExecutorImpl_EntirelyNew.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\TaskExecutorImpl_Vector1.00.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\TaskExecutorImpl_Vector1.05.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\TaskExecutorImpl_Vector1.1.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\TaskExecutorImpl_Vector1.11.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\TaskExecutorImpl_VectorHash1.00.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\TaskExecutorImpl_VectorHash1.01.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\TaskExecutorImpl_VectorHashPull1.02.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\TaskScheduler.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\TaskScheduler.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\TaskScheduler.Tests.hpp"
 					>
 				</File>
 			</Filter>
