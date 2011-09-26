@@ -61,7 +61,11 @@ namespace Movement
     if (!(expr)){\
         log_write("%s:%i Error: Assertion '%s' in %s failed", __FILE__, __LINE__, #expr, __FUNCTION__);\
         log_write_trace();\
-    }\
+    }
+
+#define log_function(msg, ...) \
+    {log_write(__FUNCTION__ ": " msg, __VA_ARGS__);\
+     log_write_trace();}
 
     template<class T, T limit>
     class counter

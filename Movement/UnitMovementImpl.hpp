@@ -164,7 +164,7 @@ namespace Movement
     {
         if (SplineEnabled())
         {
-            log_write("UnitMovement::ApplyState while in server control");
+            log_function("while in server control");
             return;
         }
 
@@ -222,7 +222,7 @@ namespace Movement
 
         if (&target == this)
         {
-            log_write("UnitMovement::BindOrientationTo: trying to target self, skipped");
+            log_function("trying to target self, skipped");
             return;
         }
 
@@ -316,7 +316,7 @@ namespace Movement
     {
         if (!HasUpdater())
         {
-            log_write("UnitMovement::LaunchMoveSpline: attempt to lauch not initialized movement");
+            log_function("attempt to lauch not initialized movement");
             return;
         }
 

@@ -81,7 +81,7 @@ namespace Movement
     {
         if (m != m_controlled || m_controlled->client() != this)
         {
-            log_write("wtf?");
+            log_function("wtf?");
             return;
         }
 

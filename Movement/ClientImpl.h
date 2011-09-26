@@ -88,6 +88,14 @@ namespace Movement
     {
     protected:
         uint32 m_opcode;
+
+        bool checkRequestId(uint32 requestId) const {
+            if (requestId != m_reqId) {
+                log_function("wrong request Id: %u expected Id: %u", requestId, m_reqId);
+                return false;
+            }
+            return true;
+        }
     public:
         uint32 m_reqId;
         MSTime Timeout;

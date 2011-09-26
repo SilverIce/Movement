@@ -84,14 +84,11 @@ namespace Movement
             data >> client_req_id;
             data >> client_state;
             data >> client_value;
-            if (client_req_id != m_reqId)
-            {
-                log_write("FloatValueChangeRequest::OnReply: wrong counter value: %u and should be: %u",client_req_id,m_reqId);
+            if (!checkRequestId(client_req_id))
                 return false;
-            }
             if (client_value != m_value)
             {
-                log_write("FloatValueChangeRequest::OnReply: wrong float value(type %u): %f and should be: %f",m_value_type,client_value,m_value);
+                log_function("wrong float value(type %u): %f and should be: %f",m_value_type,client_value,m_value);
                 return false;
             }
             client->QueueState(client_state);
@@ -209,7 +206,7 @@ namespace Movement
                 if (modeInfo[mode].smsg_apply[!apply])
                     new ModeChangeRequest(mov->client(), mode, apply);
                 else
-                    log_write("ModeChangeRequest: no opcode for mode %u", mode);
+                    log_function("no opcode for mode %u", mode);
             }
             else
             {
@@ -221,7 +218,7 @@ namespace Movement
                     MaNGOS_API::BroadcastMessage(&mov->Owner, data);
                 }
                 else
-                    log_write("ModeChangeRequest: no opcode for mode %u", mode);
+                    log_function("no opcode for mode %u", mode);
             }
         }
 
@@ -237,14 +234,11 @@ namespace Movement
             if (data.rpos() != data.size())
                 data >> Unused<float>();          // 0 or 1, unused
 
-            if (client_req_id != m_reqId)
-            {
-                log_write("FloatValueChangeRequest::OnReply: wrong counter value: %u and should be: %u",client_req_id,m_reqId);
+            if (!checkRequestId(client_req_id))
                 return false;
-            }
             if (modeInfo[m_mode].moveFlag != 0 && m_apply != client_state.moveFlags.hasFlag(modeInfo[m_mode].moveFlag))
             {
-                log_write("ModeChangeRequest::OnReply: wrong client's flag");
+                log_function("wrong client's flag");
                 return false;
             }
 
@@ -321,11 +315,8 @@ namespace Movement
             data >> client_req_id;
             data >> client_time;
 
-            if (client_req_id != m_reqId)
-            {
-                log_write("FloatValueChangeRequest::OnReply: wrong counter value: %u and should be: %u",client_req_id,m_reqId);
+            if (!checkRequestId(client_req_id))
                 return false;
-            }
 
             client->controlled()->SetPosition(m_location);
 
