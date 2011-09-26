@@ -18,10 +18,6 @@ namespace Movement
     {
     public:
 
-        enum{
-            Common_Update_Delay = 500
-        };
-
         explicit MoveUpdater();
         ~MoveUpdater() { CleanReferences();}
         void CleanReferences();
@@ -46,7 +42,7 @@ namespace Movement
 
         void Update();
 
-        uint32 TickTime() const { return m_tick_time;}
+        MSTime TickTime() const { return m_tick_time;}
         uint32 MoversCount() const { return m_movers_count;}
         uint32 NewMoveSplineId() { return movespline_counter.NewId();}
 
@@ -54,8 +50,7 @@ namespace Movement
 
         LinkedList<UpdatableMovement*> m_movers;
         UInt32Counter movespline_counter;
-        uint32 m_tick_time;
-        uint32 common_timer;
+        MSTime m_tick_time;
         uint32 m_movers_count;
     };
 

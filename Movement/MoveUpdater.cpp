@@ -9,7 +9,6 @@ namespace Movement
     MoveUpdater::MoveUpdater()
     {
         m_tick_time = MaNGOS_API::getMSTime();
-        common_timer = 0;
         m_movers_count = 0;
     }
 
