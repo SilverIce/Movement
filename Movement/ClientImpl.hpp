@@ -51,7 +51,6 @@ namespace Movement
     }
 
     /* For test. if set to true, enables old & wrong time correction */
-    static bool old_way = false;
     static bool send_self = false;
 
     static MSTime timestamp_incr = 5000;
@@ -62,11 +61,7 @@ namespace Movement
         if (msg.Source() == m_controlled && !send_self)
             return;
 
-        // convert original time(server time) to local per-client time
-        if (old_way == false)
-            msg.CorrectTimeStamp(ServerToClientTime(msg.OrigTime()) + timestamp_incr - timestamp_decr);
-        else
-            msg.CorrectTimeStamp(ServerTime());
+        msg.CorrectTimeStamp(msg.OrigTime() + timestamp_incr - timestamp_decr);
         SendPacket(msg.Packet());
     }
 
