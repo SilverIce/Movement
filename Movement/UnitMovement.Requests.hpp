@@ -136,7 +136,7 @@ namespace Movement
         },
         {
             UnitMoveFlag::Root, SMSG_FORCE_MOVE_ROOT, SMSG_FORCE_MOVE_UNROOT,
-                CMSG_FORCE_MOVE_ROOT_ACK, CMSG_FORCE_MOVE_ROOT_ACK,
+                CMSG_FORCE_MOVE_ROOT_ACK, CMSG_FORCE_MOVE_UNROOT_ACK,
                 MSG_MOVE_ROOT, MSG_MOVE_UNROOT,
                 SMSG_SPLINE_MOVE_ROOT, SMSG_SPLINE_MOVE_UNROOT
         },
