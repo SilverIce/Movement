@@ -86,7 +86,7 @@ namespace Tasks
     {
     private:
         friend class TaskExecutor;
-        template<class T> friend class TaskExecutor;// temp
+        template<class T> friend class taskExecutor;// temp
         friend class TaskExecutorImpl_Vector110;// temp
     public:
         ITaskExecutor * owner;

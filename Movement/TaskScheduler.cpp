@@ -35,7 +35,7 @@ namespace Tasks
         explicit CallBack(void* functor, ExecFunc execFunc) :
             m_func(execFunc),
             ref_count(0),
-            m_functor(args)
+            m_functor(functor)
         {}
 
         void execute(TaskExecutor_Args& args)
@@ -57,7 +57,7 @@ namespace Tasks
         NON_COPYABLE(CallBack);
         ~CallBack() {
             adr();
-            (*m_func)(0, m_functor);    // delete m_functor
+            (*m_func)(m_functor, 0);    // delete m_functor
             m_functor = 0;
             adr();
         }
