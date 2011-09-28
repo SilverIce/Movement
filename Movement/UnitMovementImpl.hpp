@@ -323,8 +323,6 @@ namespace Movement
                 ClientMoveState state;
                 while (m_moveEvents.Next(state, now))
                     ApplyState(state);
-
-                m_client->_OnUpdate();
             }
             setLastUpdate(now);
         }

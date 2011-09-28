@@ -1313,7 +1313,7 @@ namespace Movement {
          "UMSG_UNKNOWN_1306",
     };
 
-    const char* OpcodeName(uint16 id)
+    const char* LookupOpcodeName(uint16 id)
     {
         if (id >= NUM_MSG_TYPES)
             return "unknown opcode id, it's more than max!";

@@ -25,8 +25,8 @@ namespace Movement
     private:
         void * m_socket;
         UnitMovementImpl * m_controlled;
+        MoveUpdater * m_updater;
         MSTime m_time_diff;             // difference between client and server time: diff = client_ticks - server_ticks
-        MSTime m_next_sync_time;
         UInt32Counter request_counter;
         //int32 time_skipped;
         typedef std::list<RespHandler*> RespHdlContainer;
@@ -39,6 +39,9 @@ namespace Movement
 
     public:
 
+        TaskTarget commonTasks;
+
+        MoveUpdater& Updater() const { return *m_updater;}
         UnitMovementImpl* controlled() const { return m_controlled;}
         void SetClientTime(const MSTime& client_time) { m_time_diff = client_time - ServerTime();}
 
@@ -48,7 +51,8 @@ namespace Movement
             m_controlled->_QueueState(client_state);
         }
 
-        void AddRespHandler(RespHandler* req);
+        void RegisterRespHandler(RespHandler* handler);
+        void UnregisterRespHandler(RespHandler* handler);
         void Kick() {}  // not implemented
 
         inline void BroadcastMessage(MovementMessage& msg) const { MaNGOS_API::BroadcastMessage(&m_controlled->Owner, msg);}
@@ -57,17 +61,12 @@ namespace Movement
 
         void CleanReferences();
         void Dereference(const UnitMovementImpl * m);
-        void _OnUpdate();
         #pragma endregion
     public:
 
         /** Client's lifetime bounded to WorldSession lifetime */
         ClientImpl(HANDLE socket);
-
-        ~ClientImpl()
-        {
-            CleanReferences();
-        }
+        ~ClientImpl();
 
         std::string ToString() const;
 
@@ -86,8 +85,12 @@ namespace Movement
 
     class RespHandler
     {
-    protected:
+    private:
+        ClientImpl* m_client;
         uint32 m_opcode;
+        bool m_wasHandled;
+    protected:
+        virtual bool OnReply(ClientImpl * client, WorldPacket& data) = 0;
 
         bool checkRequestId(uint32 requestId) const {
             if (requestId != m_reqId) {
@@ -98,20 +101,36 @@ namespace Movement
         }
     public:
         uint32 m_reqId;
-        MSTime Timeout;
 
         enum{
             /* Default timeout value, milliseconds */
             DefaultTimeout = 500,
         };
 
-        explicit RespHandler(uint32 _opcode, ClientImpl * client) : m_opcode(_opcode)
+        explicit RespHandler(uint32 _opcode, ClientImpl * client) : m_opcode(_opcode), m_client(client), m_wasHandled(false)
         {
-            client->AddRespHandler(this);
+            client->RegisterRespHandler(this);
         }
 
-        bool CanHandle(uint32 opcode) const { return m_opcode == opcode;}
-        //virtual void OnTimeout() {}
-        virtual bool OnReply(ClientImpl * client, WorldPacket& data) = 0;
+        ~RespHandler() {
+            m_client->UnregisterRespHandler(this);
+        }
+
+        bool OnReply(WorldPacket& data)
+        {
+            if (m_opcode != data.GetOpcode()) {
+                log_function("expected reply was: %s, but received instead: %s", LookupOpcodeName(m_opcode), LookupOpcodeName(data.GetOpcode()));
+                return false;
+            }
+            m_wasHandled = OnReply(m_client, data);
+            return m_wasHandled;
+        }
+
+        STATIC_EXEC(RespHandler, TaskExecutor_Args& args){
+            if (!m_wasHandled) {
+                log_function("Kick client due to response(opcode: %s) timeout", LookupOpcodeName(m_opcode));
+                m_client->Kick();
+            }
+        }
     };
 }

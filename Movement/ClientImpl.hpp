@@ -2,34 +2,50 @@
 
 namespace Movement
 {
-    class TimeSyncRequest : public RespHandler
+    /** Sends to CMSG_TIME_SYNC_RESP each 10 seconds */
+    struct TimeSyncRequestScheduler
     {
-    public:
-        enum{
-            SyncTimePeriod = 10000, // 10 seconds
-        };
+        ClientImpl * m_client;
 
-        TimeSyncRequest(ClientImpl * client) : RespHandler(CMSG_TIME_SYNC_RESP, client)
-        {     
-            WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
-            data << m_reqId;
-            client->SendPacket(data);
+        TimeSyncRequestScheduler(ClientImpl * client) : m_client(client) {
+            client->Updater().AddTask(this, MSTime(0), client->commonTasks);
         }
 
-        virtual bool OnReply(ClientImpl * client, WorldPacket& data) override
+        STATIC_EXEC(TimeSyncRequestScheduler, TaskExecutor_Args& args){
+            new TimeSyncRequest(m_client);
+            args.executor.AddTask(args.callback, args.now + TimeSyncRequest::SyncTimePeriod, args.objectId);
+        }
+
+    private:
+        class TimeSyncRequest : public RespHandler
         {
-            uint32 client_req_id;
-            MSTime client_ticks;
-            data >> client_req_id;
-            data >> client_ticks;
-            if (client_req_id != m_reqId)
-            {
-                log_write("TimeSyncRequest::OnReply: wrong counter value: %u and should be: %u", client_req_id, m_reqId);
-                return false;
+            MSTime m_requestSendTime;
+        public:
+            enum{
+                SyncTimePeriod = 10000, // 10 seconds
+            };
+
+            TimeSyncRequest(ClientImpl * client) : RespHandler(CMSG_TIME_SYNC_RESP, client)
+            {     
+                WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
+                data << m_reqId;
+                client->SendPacket(data);
+                m_requestSendTime = MaNGOS_API::getMSTime();
             }
-            client->SetClientTime(client_ticks);
-            return true;
-        }
+
+            virtual bool OnReply(ClientImpl * client, WorldPacket& data) override
+            {
+                uint32 client_req_id;
+                MSTime client_ticks;
+                data >> client_req_id;
+                data >> client_ticks;
+                if (!checkRequestId(client_req_id))
+                    return false;
+                MSTime latency = (MaNGOS_API::getMSTime() - m_requestSendTime.time) / 2;
+                client->SetClientTime(client_ticks + latency);
+                return true;
+            }
+        };
     };
 
     void ClientImpl::HandleOutcomingMessage(WorldPacket& recv_data)
@@ -67,14 +83,18 @@ namespace Movement
 
     void ClientImpl::CleanReferences()
     {
-        while(!m_resp_handlers.empty())
-        {
-            delete m_resp_handlers.back();
-            m_resp_handlers.pop_back();
-        }
-
+        m_resp_handlers.clear();
         LostControl();
+        m_updater->RemoveObject(commonTasks);
+        m_updater = NULL;
         m_socket = NULL;
+    }
+
+    ClientImpl::~ClientImpl()
+    {
+        CleanReferences();
+
+        mov_assert(m_updater == NULL);
     }
 
     void ClientImpl::Dereference(const UnitMovementImpl * m)
@@ -90,11 +110,16 @@ namespace Movement
 
     void ClientImpl::SetControl(UnitMovementImpl * newly_controlled)
     {
+        if (!m_updater)
+        {
+            m_updater = &newly_controlled->Updater();
+            m_updater->RegisterObject(commonTasks);
+            new TimeSyncRequestScheduler(this);
+        }
+        
         LostControl();
         m_controlled = newly_controlled;
         m_controlled->client(this);
-
-        new TimeSyncRequest(this);
     }
 
     void ClientImpl::LostControl()
@@ -106,29 +131,18 @@ namespace Movement
 
     ClientImpl::ClientImpl(HANDLE socket) :
         m_socket(socket),
+        m_updater(NULL),
         m_controlled(NULL)
     {
     }
 
-    void ClientImpl::_OnUpdate()
-    {
-        MSTime now = ServerTime();
-
-        if (now > m_next_sync_time)
-        {
-            m_next_sync_time = now + (MSTime)TimeSyncRequest::SyncTimePeriod;
-            new TimeSyncRequest(this);
-        }
-
-        if (!m_resp_handlers.empty() && now > m_resp_handlers.front()->Timeout)
-        {
-            // kick client here
-            //Kick();
-        }
-    }
-
     void ClientImpl::HandleMoveTimeSkipped(WorldPacket & recv_data)
     {
+        if (!m_controlled){
+            log_function("no controlled object");
+            return;
+        }
+
         ObjectGuid guid;
         int32 time;
         recv_data >> guid.ReadAsPacked();
@@ -151,33 +165,30 @@ namespace Movement
 
     void ClientImpl::HandleResponse(WorldPacket& data)
     {
-        if (!m_controlled)
-            return;
+        mov_assert(m_controlled); // wrong state
 
-        struct _handler
+        if (m_resp_handlers.empty())
         {
-            ClientImpl * client;
-            WorldPacket& data;
+            log_function("no handlers for client's response (opcode %s)", LookupOpcodeName(data.GetOpcode()));
+            return;
+        }
 
-            _handler(ClientImpl * c, WorldPacket& _data) : client(c), data(_data) {}
-
-            inline bool operator()(RespHandler* hdl)
-            {
-                if (!hdl->CanHandle(data.GetOpcode()) || !hdl->OnReply(client, data))
-                    client->Kick();
-                delete hdl;
-                return true;
-            }
-        };
-
-        m_resp_handlers.erase(std::find_if(m_resp_handlers.begin(),m_resp_handlers.end(),_handler(this,data)));
+        if (m_resp_handlers.front()->OnReply(data))
+            m_resp_handlers.erase(m_resp_handlers.begin());
+        else
+            log_function("client's response (opcode %s) can not be handled", LookupOpcodeName(data.GetOpcode()));
     }
 
-    void ClientImpl::AddRespHandler(RespHandler* req)
+    void ClientImpl::RegisterRespHandler(RespHandler* handler)
     {
-        req->m_reqId = request_counter.NewId();
-        req->Timeout = ServerTime() + (MSTime)RespHandler::DefaultTimeout;
-        m_resp_handlers.push_back(req);
+        handler->m_reqId = request_counter.NewId();
+        m_resp_handlers.push_back(handler);
+        m_updater->AddTask(handler, ServerTime() + RespHandler::DefaultTimeout, commonTasks);
+    }
+
+    void ClientImpl::UnregisterRespHandler(RespHandler* handler)
+    {
+        m_resp_handlers.remove(handler);
     }
 
     void Client::LostControl()
