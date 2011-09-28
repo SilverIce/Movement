@@ -137,7 +137,6 @@ namespace Movement
         void setLastUpdate(MSTime time) { last_update_time = time;}
         MSTime getLastUpdate() const { return last_update_time;}
 
-        void ApplyState(const ClientMoveState& state);
     public:
         enum FloatParameter
         {
@@ -168,8 +167,8 @@ namespace Movement
 
         void SetMoveFlag(const UnitMoveFlag& newFlags);
 
-        void _QueueState(const ClientMoveState& state) { m_moveEvents.QueueState(state);}       // only for call from Client code
         ClientMoveState ClientState() const;
+        void ApplyState(const ClientMoveState& state);
 
         bool HasUpdater() const { return m_updater;}
         MoveUpdater& Updater() const { return *m_updater;}
@@ -194,7 +193,6 @@ namespace Movement
         IListener* m_listener;
         ClientImpl* m_client;
         MSTime last_update_time;
-        MoveStateSet m_moveEvents;
 
         UnitMoveFlag moveFlags;
         /** Data that cames from client. It affects nothing here but might be used in future. */

@@ -318,12 +318,6 @@ namespace Movement
             {
                 updateRotation();
             }
-            else
-            {
-                ClientMoveState state;
-                while (m_moveEvents.Next(state, now))
-                    ApplyState(state);
-            }
             setLastUpdate(now);
         }
     }
@@ -371,9 +365,6 @@ namespace Movement
     {
         std::stringstream st;
         st << ClientState().ToString();
-        if (m_moveEvents.Size() != 0)
-            st << "states count: " << m_moveEvents.Size() << std::endl;
-
         if (m_client)
             st << m_client->ToString();
         if (SplineEnabled())

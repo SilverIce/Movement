@@ -47,8 +47,20 @@ namespace Movement
 
         void QueueState(ClientMoveState& client_state)
         {
+            struct ApplyStateTask {
+                UnitMovementImpl * owner;
+                ClientMoveState state;
+
+                ApplyStateTask(UnitMovementImpl * own, const ClientMoveState& client_state)
+                    : state(client_state), owner(own) {}
+
+                STATIC_EXEC(ApplyStateTask, TaskExecutor_Args&){
+                    owner->ApplyState(state);
+                }
+            };
             client_state.ms_time = ClientToServerTime(client_state.ms_time);
-            m_controlled->_QueueState(client_state);
+            m_controlled->Updater().AddTask(new ApplyStateTask(client_state,m_controlled),
+                client_state.ms_time, m_controlled->commonTasks);
         }
 
         void RegisterRespHandler(RespHandler* handler);
