@@ -20,6 +20,7 @@ namespace Movement
 
         m_tick_time = MaNGOS_API::getMSTime();
         m_movers.Iterate(common_updater());
+        Tasks::TaskExecutor::Update(m_tick_time);
     }
 
     void MoveUpdater::CleanReferences()
@@ -31,5 +32,6 @@ namespace Movement
         };
         m_movers.Iterate(ref_cleaner(this));
         mov_assert(m_movers.empty());
+        Tasks::TaskExecutor::CancelAllTasks();
     }
 }

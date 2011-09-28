@@ -10,11 +10,16 @@
 
 #include "typedefs.h"
 #include "LinkedList.h"
+#include "TaskScheduler.h"
 
 namespace Movement
 {
+    using Tasks::TaskTarget;
+    using Tasks::TaskExecutor_Args;
+    using Tasks::CallBackPublic;
+
     class UpdatableMovement;
-    class MoveUpdater
+    class MoveUpdater : public Tasks::TaskExecutor
     {
     public:
 
