@@ -84,6 +84,8 @@ namespace Movement
         T NewId() { Increase(); return m_counter;}
         T getCurrent() const { return m_counter;}
 
+        static const T Limit = limit;
+
     private:
         void init() { m_counter = 0; }
         T m_counter;
