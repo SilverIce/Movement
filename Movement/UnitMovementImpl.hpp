@@ -73,10 +73,9 @@ namespace Movement
         MovementBase(owner),
         m_listener(NULL),
         move_spline(NULL),
+        m_updater(NULL),
         m_client(NULL)
     {
-        updatable.SetUpdateStrategy(this);
-
         const float BaseValues[Parameter_End] =
         {
             2.5f,                                                   // SpeedWalk
@@ -102,6 +101,7 @@ namespace Movement
 
         mov_assert(m_targeter_references.empty());
         mov_assert(m_client == NULL);
+        mov_assert(m_updater == NULL);
     }
 
     void UnitMovementImpl::CleanReferences()
@@ -119,7 +119,9 @@ namespace Movement
 
         UnbindOrientation();
         MovementBase::CleanReferences();
-        updatable.CleanReferences();
+
+        m_updater->RemoveObject(commonTasks);
+        m_updater = NULL;
     }
 
     Vector3 UnitMovementImpl::direction() const
@@ -155,9 +157,25 @@ namespace Movement
 
     void UnitMovementImpl::Initialize(const Location& pos, MoveUpdater& updater)
     {
+        if (!m_updater)
+        {
+            struct RegularUpdater 
+            {
+                UnitMovementImpl* owner;
+                STATIC_EXEC(RegularUpdater, TaskExecutor_Args& args)
+                {
+                    owner->UnitMovementImpl::UpdateState();
+                    args.executor.AddTask(args.callback, args.now + 200, args.objectId);
+                }
+            } regularUpdater = {this};
+
+            m_updater = &updater;
+            m_updater->RegisterObject(commonTasks);
+            m_updater->AddTask(new RegularUpdater(regularUpdater), 0, commonTasks);
+        }
+
         SetPosition(pos);
-        updatable.SetUpdater(updater);
-        setLastUpdate(GetUpdater().TickTime());
+        setLastUpdate(Updater().TickTime());
     }
 
     void UnitMovementImpl::ApplyState(const ClientMoveState& new_state)
@@ -283,7 +301,7 @@ namespace Movement
 
     void UnitMovementImpl::UpdateState()
     {
-        MSTime now = GetUpdater().TickTime();
+        MSTime now = Updater().TickTime();
 
         if (SplineEnabled())
         {
@@ -339,7 +357,7 @@ namespace Movement
     void UnitMovementImpl::PrepareMoveSplineArgs(MoveSplineInitArgs& args, UnitMoveFlag& moveFlag_new) const
     {
         args.path[0] = GetPosition3();    //correct first vertex
-        args.splineId = GetUpdater().NewMoveSplineId();
+        args.splineId = Updater().NewMoveSplineId();
 
         moveFlag_new = moveFlags & ~(UnitMoveFlag::Mask_Directions | UnitMoveFlag::Mask_Moving) | UnitMoveFlag::Spline_Enabled;
         moveFlag_new.backward = args.flags.backward;

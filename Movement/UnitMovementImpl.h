@@ -47,7 +47,7 @@ namespace Movement
     };
 
     // class for unit's movement
-    class UnitMovementImpl : public MovementBase, public IUpdatable
+    class UnitMovementImpl : public MovementBase
     {
     public:
 
@@ -55,7 +55,7 @@ namespace Movement
         virtual ~UnitMovementImpl();
 
         virtual void CleanReferences();
-        virtual void UpdateState();
+        void UpdateState();
 
         std::string ToString() const;
 
@@ -121,7 +121,6 @@ namespace Movement
         float GetSpeed(SpeedType type) const { return GetParameter((FloatParameter)(0 + type)); }
         float GetCurrentSpeed() const { return GetParameter(Parameter_SpeedCurrent); }
 
-        #pragma region Impl
     private:
         enum{
         /** Affects spline movement precision & performance,
@@ -172,8 +171,9 @@ namespace Movement
         void _QueueState(const ClientMoveState& state) { m_moveEvents.QueueState(state);}       // only for call from Client code
         ClientMoveState ClientState() const;
 
-        bool HasUpdater() const { return updatable.HasUpdater();}
-        MoveUpdater& GetUpdater() const { return updatable.GetUpdater();}
+        bool HasUpdater() const { return m_updater;}
+        MoveUpdater& Updater() const { return *m_updater;}
+        TaskTarget commonTasks;
 
         ClientImpl* client() const { return m_client;}
         void client(ClientImpl* c) { m_client = c;}
@@ -189,7 +189,7 @@ namespace Movement
         friend class PacketBuilder;
         friend class UnitMovement;
 
-        UpdatableMovement updatable;
+        MoveUpdater* m_updater;
         MoveSpline* move_spline;
         IListener* m_listener;
         ClientImpl* m_client;
@@ -203,6 +203,5 @@ namespace Movement
         float m_float_values[Parameter_End];
         LinkedListElement<TargetLink> m_target_link;
         LinkedList<TargetLink> m_targeter_references;
-        #pragma endregion
     };
 }
