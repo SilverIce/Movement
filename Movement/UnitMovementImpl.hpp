@@ -96,21 +96,25 @@ namespace Movement
 
     UnitMovementImpl::~UnitMovementImpl()
     {
-        delete move_spline;
-        move_spline = NULL;
-
         mov_assert(m_targeter_references.empty());
+        mov_assert(!m_target_link.linked());
         mov_assert(m_client == NULL);
+        mov_assert(!commonTasks.isRegistered());
         mov_assert(m_updater == NULL);
+        mov_assert(move_spline == NULL);
+        mov_assert(m_listener == NULL);
     }
 
     void UnitMovementImpl::CleanReferences()
     {
-        if (m_client)
-        {
+        if (m_client) {
             m_client->Dereference(this);
             m_client = NULL;
         }
+
+        DisableSpline();
+        delete move_spline;
+        move_spline = NULL;
 
         struct unbinder{
             inline void operator()(TargetLink& link) { link.targeter->UnbindOrientation();}
@@ -122,6 +126,8 @@ namespace Movement
 
         m_updater->RemoveObject(commonTasks);
         m_updater = NULL;
+
+        m_listener = NULL;
     }
 
     Vector3 UnitMovementImpl::direction() const

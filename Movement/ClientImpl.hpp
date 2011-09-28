@@ -98,6 +98,10 @@ namespace Movement
         CleanReferences();
 
         mov_assert(m_updater == NULL);
+        mov_assert(m_socket == NULL);
+        mov_assert(m_controlled == NULL);
+        mov_assert(!commonTasks.isRegistered());
+        mov_assert(m_resp_handlers.empty());
     }
 
     void ClientImpl::Dereference(const UnitMovementImpl * m)
