@@ -12,7 +12,7 @@ namespace Movement
 
     /* request-response-msg order*/
 #define VALUE_CHANGE(mode)   {SMSG_FORCE_##mode##_CHANGE, CMSG_FORCE_##mode##_CHANGE_ACK, MSG_MOVE_SET_##mode,SMSG_SPLINE_SET_##mode},
-    static const ReqRespMsg ValueChange2Opc_table[UnitMovementImpl::Parameter_End] =
+    static const ReqRespMsg ValueChange2Opc_table[Parameter_End] =
     {
         VALUE_CHANGE(WALK_SPEED)
         VALUE_CHANGE(RUN_SPEED)
@@ -30,10 +30,10 @@ namespace Movement
 
     class UnitMovementImpl::FloatValueChangeRequest : public RespHandler
     {
-        UnitMovementImpl::FloatParameter m_value_type;
+        FloatParameter m_value_type;
         float m_value;
 
-        FloatValueChangeRequest(ClientImpl * client, UnitMovementImpl::FloatParameter value_type, float value) :
+        FloatValueChangeRequest(ClientImpl * client, FloatParameter value_type, float value) :
             RespHandler(ValueChange2Opc_table[value_type].cmsg_response, client),
             m_value_type(value_type),
             m_value(value)
@@ -43,7 +43,7 @@ namespace Movement
                 WorldPacket data(opcode, 32);
                 data << client->controlled()->Owner.GetPackGUID();
                 data << m_reqId;
-                if (m_value_type == UnitMovementImpl::Parameter_SpeedRun)
+                if (m_value_type == Parameter_SpeedRun)
                     data << int8(0);                               // new 2.1.0
                 data << m_value;
                 client->SendPacket(data);
@@ -52,7 +52,7 @@ namespace Movement
 
     public:
 
-        static void Launch(UnitMovementImpl * mov, UnitMovementImpl::FloatParameter value_type, float value)
+        static void Launch(UnitMovementImpl * mov, FloatParameter value_type, float value)
         {
             if (mov->IsClientControlled())
             {
@@ -76,23 +76,21 @@ namespace Movement
 
         virtual bool OnReply(ClientImpl * client, WorldPacket& data) override
         {
-            ClientMoveState client_state;
+            ClientMoveStateChange client_state;
             ObjectGuid guid;
             uint32 client_req_id;
-            float client_value;
             data >> guid.ReadAsPacked();
             data >> client_req_id;
             data >> client_state;
-            data >> client_value;
+            data >> client_state.floatValue;
             if (!checkRequestId(client_req_id))
                 return false;
-            if (client_value != m_value)
+            if (client_state.floatValue != m_value)
             {
-                log_function("wrong float value(type %u): %f and should be: %f",m_value_type,client_value,m_value);
+                log_function("wrong float value(type %u): %f and should be: %f",m_value_type,client_state.floatValue,m_value);
                 return false;
             }
             client->QueueState(client_state);
-            client->controlled()->SetParameter(m_value_type, m_value);
             if (uint16 opcode = ValueChange2Opc_table[m_value_type].msg)
             {
                 MovementMessage msg(client->controlled(), opcode, 64);
@@ -224,19 +222,19 @@ namespace Movement
 
         virtual bool OnReply(ClientImpl * client, WorldPacket& data) override
         {
-            ClientMoveState client_state;
+            ClientMoveStateChange client_state;
             ObjectGuid guid;
             uint32 client_req_id;
 
             data >> guid.ReadAsPacked();
             data >> client_req_id;
-            data >> client_state;
+            data >> client_state.state;
             if (data.rpos() != data.size())
                 data >> Unused<float>();          // 0 or 1, unused
 
             if (!checkRequestId(client_req_id))
                 return false;
-            if (modeInfo[m_mode].moveFlag != 0 && m_apply != client_state.moveFlags.hasFlag(modeInfo[m_mode].moveFlag))
+            if (modeInfo[m_mode].moveFlag != 0 && m_apply != client_state.state.moveFlags.hasFlag(modeInfo[m_mode].moveFlag))
             {
                 log_function("wrong client's flag");
                 return false;
@@ -250,7 +248,7 @@ namespace Movement
             {
                 MovementMessage msg(client->controlled(), opcode, 64);
                 msg << guid.WriteAsPacked();
-                msg << client_state;
+                msg << client_state.state;
                 client->BroadcastMessage(msg);
             }
             return true;

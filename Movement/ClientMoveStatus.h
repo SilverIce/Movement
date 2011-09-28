@@ -2,6 +2,22 @@
 
 namespace Movement
 {
+    enum FloatParameter
+    {
+        Parameter_SpeedWalk,
+        Parameter_SpeedRun,
+        Parameter_SpeedSwimBack,
+        Parameter_SpeedSwim,
+        Parameter_SpeedRunBack,
+        Parameter_SpeedFlight,
+        Parameter_SpeedFlightBack,
+        Parameter_SpeedTurn,
+        Parameter_SpeedPitch,
+        Parameter_CollisionHeight,
+        Parameter_SpeedCurrent,
+        Parameter_End,
+    };
+
     /** Contains unused fields */
     struct _ClientMoveState
     {
@@ -37,6 +53,15 @@ namespace Movement
         MSTime ms_time;
 
         std::string ToString() const;
+    };
+
+    struct ClientMoveStateChange
+    {
+        ClientMoveStateChange() : floatValueType(Parameter_End), floatValue(0) {}
+
+        ClientMoveState state;
+        FloatParameter floatValueType;
+        float floatValue;
     };
 
     inline std::string ClientMoveState::ToString() const

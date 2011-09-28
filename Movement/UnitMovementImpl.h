@@ -138,21 +138,6 @@ namespace Movement
         MSTime getLastUpdate() const { return last_update_time;}
 
     public:
-        enum FloatParameter
-        {
-            Parameter_SpeedWalk,
-            Parameter_SpeedRun,
-            Parameter_SpeedSwimBack,
-            Parameter_SpeedSwim,
-            Parameter_SpeedRunBack,
-            Parameter_SpeedFlight,
-            Parameter_SpeedFlightBack,
-            Parameter_SpeedTurn,
-            Parameter_SpeedPitch,
-            Parameter_CollisionHeight,
-            Parameter_SpeedCurrent,
-            Parameter_End,
-        };
 
         void SetParameter(FloatParameter p, float value) { m_float_values[p] = value;}
         float GetParameter(FloatParameter p) const { return m_float_values[p];}

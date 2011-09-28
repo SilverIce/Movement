@@ -50,13 +50,16 @@ namespace Movement
 
     void ClientImpl::HandleOutcomingMessage(WorldPacket& recv_data)
     {
-        if (!m_controlled)
+        if (!m_controlled){
+            log_function("no controlled object");
             return;
+        }
+
         ObjectGuid guid;
-        ClientMoveState state;
+        ClientMoveStateChange state;
 
         recv_data >> guid.ReadAsPacked();
-        recv_data >> state;
+        recv_data >> state.state;
 
         QueueState(state);
 

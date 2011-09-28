@@ -82,17 +82,17 @@ namespace Movement
 
     float UnitMovement::GetCollisionHeight() const
     {
-        return m.GetParameter(UnitMovementImpl::Parameter_CollisionHeight);
+        return m.GetParameter(Parameter_CollisionHeight);
     }
 
     float UnitMovement::GetSpeed(SpeedType type) const
     {
-        return m.GetParameter((UnitMovementImpl::FloatParameter)(0 + type));
+        return m.GetParameter((FloatParameter)(0 + type));
     }
 
     float UnitMovement::GetCurrentSpeed() const
     {
-        return m.GetParameter(UnitMovementImpl::Parameter_SpeedCurrent);
+        return m.GetParameter(Parameter_SpeedCurrent);
     }
 
     void UnitMovement::UnboardAll()
