@@ -211,6 +211,12 @@ namespace Movement
             {
                 if (uint16 opcode = modeInfo[mode].smsg_spline_apply[!apply])
                 {
+                    /** By some unknown reason client force moves unit to end of the path when receives
+                        SMSG_SPLINE_MOVE_ROOT/SMSG_SPLINE_MOVE_UNROOT packet.
+                        Need override current spine movement to avoid this. blizzs doing same hack. */
+                    if (mode == MoveModeRoot && mov->SplineEnabled())
+                        MoveSplineInit(*mov).Launch();
+
                     mov->ApplyMoveFlag(modeInfo[mode].moveFlag, apply);
                     WorldPacket data(opcode, 12);
                     data << mov->Owner.GetPackGUID();
@@ -242,7 +248,7 @@ namespace Movement
             }
 
             // Should i queue state or apply it immediately?
-            // very often incoming client state is  from past time..
+            // very often incoming client state is from past time..
             client->QueueState(client_state);
 
             if (uint16 opcode = modeInfo[m_mode].msg_apply[!m_apply])

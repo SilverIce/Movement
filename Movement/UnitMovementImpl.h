@@ -85,7 +85,7 @@ namespace Movement
         uint32 MoveSplineId() const;
         const Vector3& MoveSplineDest() const;
         int32 MoveSplineTimeElapsed() const;
-        void DisableSpline() { SetMoveFlag(moveFlags & ~(UnitMoveFlag::Mask_Moving|UnitMoveFlag::Spline_Enabled));}
+        void DisableSpline() { ApplyMoveFlag(UnitMoveFlag::Mask_Moving|UnitMoveFlag::Spline_Enabled,false);}
 
         void SetListener(IListener * l) { m_listener = l;}
         void ResetLisener() { m_listener = NULL; }
@@ -95,15 +95,6 @@ namespace Movement
         /// Move Modes
         bool HasMode(MoveMode m) const;
         void ApplyMoveMode(MoveMode mode, bool apply);
-
-        /// Apply/remove modes
-        void ApplyRootMode(bool apply);
-        void ApplySwimMode(bool apply) { ApplyMoveMode(MoveModeSwim, apply); }
-        void ApplyWalkMode(bool apply) { ApplyMoveMode(MoveModeWalk, apply); }
-        void ApplyWaterWalkMode(bool apply) { ApplyMoveMode(MoveModeWaterwalk, apply); }
-        void ApplySlowFallMode(bool apply) { ApplyMoveMode(MoveModeSlowfall, apply); }
-        void ApplyFlyMode(bool apply) { ApplyMoveMode(MoveModeFly, apply); }
-        void ApplyHoverMode(bool apply) { ApplyMoveMode(MoveModeHover, apply); }
 
         void Teleport(const Location& loc);
 
