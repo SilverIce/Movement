@@ -7,8 +7,6 @@
 
 #pragma once
 
-#include "mov_constants.h"
-
 class ByteBuffer;
 class WorldPacket;
 

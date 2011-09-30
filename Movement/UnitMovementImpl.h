@@ -8,10 +8,6 @@
 
 #pragma once
 
-#include "MovementBase.h"
-#include "mov_constants.h"
-#include "ClientMoveStatus.h"
-#include "MoveSpline.h"
 #include <list>
 
 namespace Movement

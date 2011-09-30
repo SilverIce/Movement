@@ -1,13 +1,11 @@
 #pragma once
 
 #include "typedefs.h"
+#include "MSTime.h"
 
 namespace Tasks
 {
-    using Movement::uint32;
-    using Movement::uint64;
-    using Movement::int32;
-    using Movement::int8;
+    using namespace BasicTypes;
     using Movement::MSTime;
 
 #define NON_COPYABLE(Class) \

@@ -5,6 +5,18 @@
 
 namespace Movement{
 
+inline uint32 SecToMS(float sec) {
+    return static_cast<uint32>(sec * 1000.f);
+}
+
+inline float MSToSec(uint32 ms) {
+    return ms / 1000.f;
+}
+
+inline uint32 computeDuration(float length, float velocity) {
+    return SecToMS(length / velocity);
+}
+
 Location MoveSpline::ComputePosition(const Location& loc) const
 {
     float u = 1.f;
@@ -68,11 +80,6 @@ void MoveSpline::computeFallElevation(float& el) const
     }
     else
         el = z_now;
-}
-
-inline uint32 computeDuration(float length, float velocity)
-{
-    return SecToMS(length / velocity);
 }
 
 struct FallInitializer

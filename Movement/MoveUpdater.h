@@ -11,6 +11,7 @@
 #include "typedefs.h"
 #include "LinkedList.h"
 #include "TaskScheduler.h"
+#include "typedefs_p.h"
 
 namespace Movement
 {

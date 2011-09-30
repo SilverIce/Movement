@@ -8,7 +8,7 @@
 #pragma once
 
 #include "MoveSplineFlag.h"
-#include "G3D/Vector3.h"
+#include <G3D/Vector3.h>
 
 namespace Movement
 {

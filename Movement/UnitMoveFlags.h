@@ -7,9 +7,6 @@
 
 #pragma once
 
-#include "typedefs.h"
-#include <string>
-
 namespace Movement
 {
     class UnitMoveFlag

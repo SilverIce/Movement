@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "typedefs.h"
+#include "typedefs_p.h"
 #include <G3D/Vector3.h>
 
 namespace Movement {
@@ -16,7 +16,7 @@ namespace Movement {
 class SplineBase
 {
 public:
-    typedef int index_type;
+    typedef int32 index_type;
     typedef std::vector<Vector3> ControlArray;
 
     enum EvaluationMode

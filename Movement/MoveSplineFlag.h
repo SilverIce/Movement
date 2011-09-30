@@ -7,8 +7,7 @@
 */
 
 #pragma once
-#include "typedefs.h"
-#include <string>
+#include "typedefs_p.h"
 
 namespace Movement
 {

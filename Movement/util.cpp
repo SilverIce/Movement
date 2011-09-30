@@ -1,14 +1,14 @@
 #pragma once
 
-#include "UnitMoveFlags.h"
-#include "MoveSplineFlag.h"
-#include "mov_constants.h"
-
 #include <math.h>
 #include <string>
 #include <stdio.h>
 #include <stdarg.h>
 #include <time.h>
+
+#include "typedefs_p.h"
+#include "UnitMoveFlags.h"
+#include "MoveSplineFlag.h"
 
 namespace Movement
 {

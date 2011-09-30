@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include "typedefs.h"
-
 class ByteBuffer;
 class WorldPacket;
 

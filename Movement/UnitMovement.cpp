@@ -1,24 +1,27 @@
 
+#include "typedefs_p.h"
 #include <sstream>
 
 #include "UnitMovement.h"
 #include "Client.h"
+#include "MoveSplineInit.h"
 
-#include "MoveSpline.h"
-#include "WorldPacket.h"
-#include "MoveUpdater.h"
 #include "Object.h"
 #include "opcodes.h"
 #include "MaNGOS_API.h"
+#include "WorldPacket.h"
+#include "MoveSpline.h"
+#include "MoveUpdater.h"
 #include "MoveListener.h"
-#include "UnitMoveFlags.h"
+#include "MovementBase.h"
+#include "mov_constants.h"
 
+#include "UnitMoveFlags.h"
 #include "ClientMoveStatus.h"
 #include "packet_builder.h"
-#include "MoveSplineInit.h"
+#include "MovementMessage.h"
 #include "UnitMovementImpl.h"
 #include "ClientImpl.h"
-#include "MovementMessage.h"
 
 #include "MoveSplineInit.hpp"
 #include "packet_builder.hpp"

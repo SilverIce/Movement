@@ -1,3 +1,4 @@
+#include "typedefs_p.h"
 #include "TaskScheduler.h"
 
 namespace Tasks
