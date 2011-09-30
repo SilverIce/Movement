@@ -52,32 +52,32 @@ namespace Movement
 
     bool UnitMovement::IsWalking() const
     {
-        return m.moveFlags.walk_mode;
+        return m.IsWalking();
     }
 
     bool UnitMovement::IsMoving() const
     {
-        return m.moveFlags & UnitMoveFlag::Mask_Moving;
+        return m.IsMoving();
     }
 
     bool UnitMovement::IsTurning() const
     {
-        return m.moveFlags & (UnitMoveFlag::Turn_Left | UnitMoveFlag::Turn_Right);
+        return m.IsTurning();
     }
 
     bool UnitMovement::IsFlying() const
     {
-        return m.moveFlags & (UnitMoveFlag::Flying | UnitMoveFlag::GravityDisabled);
+        return m.IsFlying();
     }
 
     bool UnitMovement::IsFalling() const
     {
-        return m.moveFlags & (UnitMoveFlag::Falling);
+        return m.IsFalling();
     }
 
     bool UnitMovement::IsFallingFar() const
     {
-        return m.moveFlags & (UnitMoveFlag::Fallingfar);
+        return m.IsFallingFar();
     }
 
     float UnitMovement::GetCollisionHeight() const

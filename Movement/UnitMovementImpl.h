@@ -85,7 +85,7 @@ namespace Movement
         uint32 MoveSplineId() const;
         const Vector3& MoveSplineDest() const;
         int32 MoveSplineTimeElapsed() const;
-        void DisableSpline() { moveFlags &= ~(UnitMoveFlag::Mask_Moving | UnitMoveFlag::Spline_Enabled);}
+        void DisableSpline() { SetMoveFlag(moveFlags & ~(UnitMoveFlag::Mask_Moving|UnitMoveFlag::Spline_Enabled));}
 
         void SetListener(IListener * l) { m_listener = l;}
         void ResetLisener() { m_listener = NULL; }
@@ -108,12 +108,12 @@ namespace Movement
         void Teleport(const Location& loc);
 
         bool IsWalking() const { return moveFlags.walk_mode;}
-        bool IsFlying() const { return moveFlags & (UnitMoveFlag::Flying | UnitMoveFlag::GravityDisabled);}
-        bool IsMoving() const { return moveFlags & UnitMoveFlag::Mask_Moving;}
+        bool IsFlying() const { return moveFlags.hasFlag(UnitMoveFlag::Flying | UnitMoveFlag::GravityDisabled);}
+        bool IsMoving() const { return moveFlags.hasFlag(UnitMoveFlag::Mask_Moving);}
         bool SplineEnabled() const { return moveFlags.spline_enabled; }
-        bool IsTurning() const { return moveFlags & (UnitMoveFlag::Turn_Left | UnitMoveFlag::Turn_Right);}
-        bool IsFalling() const { return moveFlags & (UnitMoveFlag::Falling);}
-        bool IsFallingFar() const { return moveFlags & (UnitMoveFlag::Fallingfar);}
+        bool IsTurning() const { return moveFlags.hasFlag(UnitMoveFlag::Turn_Left | UnitMoveFlag::Turn_Right);}
+        bool IsFalling() const { return moveFlags.falling;}
+        bool IsFallingFar() const { return moveFlags.fallingfar;}
 
         void SetCollisionHeight(float value);
         float GetCollisionHeight() const { return GetParameter(Parameter_CollisionHeight);}
@@ -156,7 +156,7 @@ namespace Movement
         ClientMoveState ClientState() const;
         void ApplyState(const ClientMoveState& state);
 
-        bool HasUpdater() const { return m_updater;}
+        bool HasUpdater() const { return m_updater != NULL;}
         MoveUpdater& Updater() const { return *m_updater;}
         TaskTarget commonTasks;
 
@@ -180,7 +180,7 @@ namespace Movement
         ClientImpl* m_client;
         MSTime last_update_time;
 
-        UnitMoveFlag moveFlags;
+        UnitMoveFlag const moveFlags;
         /** Data that cames from client. It affects nothing here but might be used in future. */
         _ClientMoveState m_unused; 
 

@@ -409,7 +409,7 @@ namespace Movement
             SpeedType speed_type = UnitMovementImpl::SelectSpeedType(newFlags);
             m_float_values[Parameter_SpeedCurrent] = GetSpeed(speed_type);
         }
-        moveFlags = newFlags;
+        const_cast<UnitMoveFlag&>(moveFlags) = newFlags;
     }
 
     ClientMoveState UnitMovementImpl::ClientState() const

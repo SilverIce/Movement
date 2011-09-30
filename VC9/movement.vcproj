@@ -42,12 +42,12 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\dep\g3dlite\include\;..\Movement\fake\;..\Movement\"
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;USE_FAKE_CLASSES"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;USE_FAKE_CLASSES;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
-				WarningLevel="2"
+				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -111,12 +111,12 @@
 				EnableFiberSafeOptimizations="false"
 				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="..\dep\g3dlite\include\;..\Movement\fake\;..\Movement\"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;USE_FAKE_CLASSES"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;USE_FAKE_CLASSES;_CRT_SECURE_NO_WARNINGS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				WarningLevel="2"
+				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -180,11 +180,11 @@
 				EnableFiberSafeOptimizations="false"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\dep\g3dlite\include\;..\Movement\fake\;..\Movement\"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;USE_FAKE_CLASSES;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;USE_FAKE_CLASSES;_HAS_ITERATOR_DEBUGGING=0;TASKSCHEDULER_DEBUGGING=0;_SECURE_SCL=0;_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				WarningLevel="2"
+				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -411,7 +411,7 @@
 				</File>
 			</Filter>
 			<Filter
-				Name="scketches"
+				Name="TaskScheduler"
 				>
 				<File
 					RelativePath="..\Movement\TaskExecutorImpl_Deque.hpp"

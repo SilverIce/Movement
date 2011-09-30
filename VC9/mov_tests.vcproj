@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\Movement;..\dep\g3dlite\include\"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -122,11 +122,11 @@
 				EnableFiberSafeOptimizations="false"
 				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="..\Movement;..\dep\g3dlite\include\"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;USE_FAKE_CLASSES"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;USE_FAKE_CLASSES;_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				WarningLevel="2"
+				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -204,11 +204,11 @@
 				EnableFiberSafeOptimizations="false"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\Movement;..\dep\g3dlite\include\"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;USE_FAKE_CLASSES;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;USE_FAKE_CLASSES;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0;_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				WarningLevel="2"
+				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
 			<Tool
