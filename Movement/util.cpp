@@ -205,14 +205,14 @@ namespace Movement
     {
         const char * g_SplineFlag_names[32]=
         {
-            STR(Forward      ),// 0x00000001,
-            STR(Backward     ),// 0x00000002,
-            STR(Strafe_Left  ),// 0x00000004,
-            STR(Strafe_Right ),// 0x00000008,
-            STR(Left         ),// 0x00000010,
-            STR(Right        ),// 0x00000020,
-            STR(Pitch_Up     ),// 0x00000040,
-            STR(Pitch_Down   ),// 0x00000080,
+            STR(AnimBit1     ),// 0x00000001,
+            STR(AnimBit2     ),// 0x00000002,
+            STR(AnimBit3     ),// 0x00000004,
+            STR(AnimBit4     ),// 0x00000008,
+            STR(AnimBit5     ),// 0x00000010,
+            STR(AnimBit6     ),// 0x00000020,
+            STR(AnimBit7     ),// 0x00000040,
+            STR(AnimBit8     ),// 0x00000080,
             STR(Done         ),// 0x00000100,
             STR(Falling      ),// 0x00000200,           // Not Compartible With Trajectory Movement
             STR(No_Spline    ),// 0x00000400,

@@ -65,7 +65,7 @@ namespace Movement
 
         MovementMessage msg(m_controlled, recv_data.GetOpcode(), recv_data.size());
         msg << guid.WriteAsPacked();
-        msg << state;
+        msg << state.state;
         BroadcastMessage(msg);
     }
 

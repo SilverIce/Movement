@@ -21,6 +21,7 @@ namespace Movement
     struct MoveSplineInitArgs;
 
     // Manages by sequential set of client movement states
+    // unused currently 
     class MoveStateSet
     {
         // TODO: more memory efficient storage

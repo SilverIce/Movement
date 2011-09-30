@@ -81,7 +81,7 @@ namespace Movement
             uint32 client_req_id;
             data >> guid.ReadAsPacked();
             data >> client_req_id;
-            data >> client_state;
+            data >> client_state.state;
             data >> client_state.floatValue;
             if (!checkRequestId(client_req_id))
                 return false;
@@ -90,12 +90,13 @@ namespace Movement
                 log_function("wrong float value(type %u): %f and should be: %f",m_value_type,client_state.floatValue,m_value);
                 return false;
             }
+            client_state.floatValueType = m_value_type;
             client->QueueState(client_state);
             if (uint16 opcode = ValueChange2Opc_table[m_value_type].msg)
             {
                 MovementMessage msg(client->controlled(), opcode, 64);
                 msg << guid.WriteAsPacked();
-                msg << client_state;
+                msg << client_state.state;
                 msg << m_value;
                 client->BroadcastMessage(msg);
             }
