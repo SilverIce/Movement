@@ -29,6 +29,8 @@
 #include "UnitMovementImpl.hpp"
 #include "UnitMovement.Requests.hpp"
 
+#include "UnitMovement.Tests.hpp"
+
 namespace Movement
 {
     UnitMovement* UnitMovement::create(WorldObject& owner)
