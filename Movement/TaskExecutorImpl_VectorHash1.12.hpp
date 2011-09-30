@@ -1,6 +1,6 @@
 namespace Tasks
 {
-    class TaskExecutorImpl_VectorHash110
+    class TaskExecutorImpl_VectorHashPending112
     {
     public:
         struct TaskInternal 
@@ -21,6 +21,7 @@ namespace Tasks
 
         TaskArray copy_container;
         TaskArray tasks;
+        TaskArray m_insert_pending;
         OwnerSet m_owners;
         ObjectCounter m_counter;
 
@@ -31,7 +32,8 @@ namespace Tasks
             // 30, 20, 10, .. end
             // so, most active elements are in end of container - this leads erase and insert operations affect
             // container's end. In most cases it is efficient for std::vector
-            tasks.insert(std::lower_bound(tasks.begin(),tasks.end(), task, TimeComparator()), task);
+            //tasks.insert(std::lower_bound(tasks.begin(),tasks.end(), task, TimeComparator()), task);
+            m_insert_pending.push_back(task);
             obj->addref();
         }
 
@@ -54,7 +56,7 @@ namespace Tasks
                 it->second = true;
         }
 
-        ~TaskExecutorImpl_VectorHash110() { CancelAllTasks();}
+        ~TaskExecutorImpl_VectorHashPending112() { CancelAllTasks();}
 
         void CancelAllTasks()
         {
@@ -65,8 +67,33 @@ namespace Tasks
             tasks.clear();
         }
 
+        void insertPending()
+        {
+            if (!m_insert_pending.empty())
+            {
+                std::sort(m_insert_pending.begin(), m_insert_pending.end(), TimeComparator());
+                tasks.reserve(tasks.size() + m_insert_pending.size());
+
+                struct {
+                    TaskArray& tasks;
+                    size_t timesIt;
+                    void operator()(const TaskInternal& t)
+                    {
+                        TaskArray::iterator it(
+                            std::lower_bound(tasks.begin()+timesIt, tasks.end(), t, TimeComparator()));
+                        timesIt = it - tasks.begin();
+                        tasks.insert(it, t);
+                    }
+                } inserter = {tasks, 0};
+                std::for_each(m_insert_pending.begin(), m_insert_pending.end(), inserter);
+                m_insert_pending.clear();
+            }
+        }
+
         void Update(TaskExecutor_Args& args)
         {
+            insertPending();
+
             TaskInternal fake = {args.now.time, 0, NULL};
             TaskArray::iterator timesEnd(tasks.end());
             TaskArray::iterator it(
@@ -77,6 +104,7 @@ namespace Tasks
                 return;
 
             copy_container.assign(it, timesEnd);
+
             tasks.erase(it, timesEnd);
 
             // Need execute in proper(reverse) order. task_processor may lead to deep and unsafe calls

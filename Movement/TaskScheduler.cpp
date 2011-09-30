@@ -19,6 +19,8 @@ namespace Tasks
     public:
         myAdress() : adress(this), deleted("nope") {}
         ~myAdress() { (*this)(); deleted = myAdressDeleted;}
+        myAdress(const myAdress& adr) : adress(this), deleted("nope") {}
+        myAdress& operator = (const myAdress& adr) { adr(); return *this;}
         void operator()() const {
             if (this != adress || deleted == myAdressDeleted)
                 log_write("memory corruption detected");
@@ -95,23 +97,22 @@ namespace Tasks
 #include "TaskExecutorImpl_VectorHash1.10.hpp"
 
 /*
+#include "TaskScheduler.Tests.hpp"
+
 #include "TaskExecutorImpl_Deque.hpp"
 #include "TaskExecutorImpl_Vector1.00.hpp"
 #include "TaskExecutorImpl_Vector1.05.hpp"
 #include "TaskExecutorImpl_Vector1.11.hpp"
 #include "TaskExecutorImpl_VectorHash1.00.hpp"
 #include "TaskExecutorImpl_VectorHash1.01.hpp"
-#include "TaskExecutorImpl_VectorHash1.02.hpp"
-
-#include "TaskScheduler.Tests.hpp"*/
+#include "TaskExecutorImpl_VectorHash1.02.hpp"*/
+#include "TaskExecutorImpl_VectorHash1.12.hpp"
 
 namespace Tasks
 {
     class TaskExecutorImpl : public 
-        //TaskExecutorImpl_Deque
-        //TaskExecutorImpl_Vector100
-        //TaskExecutorImpl_Vector105
-        TaskExecutorImpl_Vector110
+        //TaskExecutorImpl_Vector110
+        TaskExecutorImpl_VectorHashPending112
     {
         friend class TaskExecutor;
     };
