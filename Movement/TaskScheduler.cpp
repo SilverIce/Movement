@@ -33,8 +33,9 @@ namespace Tasks
     };
 #endif
 
-    struct CallBack : public CallBackPublic
+    class CallBack
     {
+    public:
         explicit CallBack(void* functor, ExecFunc execFunc) :
             m_func(execFunc),
             ref_count(0),
@@ -72,19 +73,17 @@ namespace Tasks
         myAdress adr;
     };
 
+    CallBack* CallBackPublic(void* functor, ExecFunc execFunc)
+    {
+        return new CallBack(functor, execFunc);
+    }
+
     /*struct NullCallBack : public CallBack
     {
         explicit NullCallBack() : CallBack(0, &DoNothing) {}
     private:
         static void DoNothing(TaskExecutor_Args*, void*) {}
     };*/
-    
-    static CallBack* Impl(CallBackPublic * pub) { return (CallBack*)pub;}
-
-    CallBackPublic* CallBackPublic::create(void* functor, ExecFunc execFunc)
-    {
-        return new CallBack(functor, execFunc);
-    }
 }
 
 
@@ -121,9 +120,9 @@ namespace Tasks
     TaskExecutor::TaskExecutor() : impl(*new TaskExecutorImpl()), m_objectsRegistered(0) {}
     TaskExecutor::~TaskExecutor() { delete &impl;}
 
-    void TaskExecutor::AddTask(CallBackPublic * callback, MSTime exec_time, const TaskTarget& ownerId )
+    void TaskExecutor::AddTask(CallBack * callback, MSTime exec_time, const TaskTarget& ownerId )
     {
-        impl.AddTask(Impl(callback), exec_time, ownerId.objectId);
+        impl.AddTask(callback, exec_time, ownerId.objectId);
     }
 
     void TaskExecutor::CancelTasks(const TaskTarget& ownerId)

@@ -17,7 +17,7 @@ namespace Movement
 {
     using Tasks::TaskTarget;
     using Tasks::TaskExecutor_Args;
-    using Tasks::CallBackPublic;
+    using Tasks::CallBack;
 
     class UpdatableMovement;
     class MoveUpdater : public Tasks::TaskExecutor

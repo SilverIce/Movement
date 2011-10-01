@@ -18,15 +18,14 @@ namespace Tasks
 
     struct TaskExecutor_Args;
     class TaskExecutor;
-    class CallBackPublic;
+    class CallBack;
     class ITaskExecutor;
     class TaskTarget;
-    class CallBackPublic;
 
     class ITaskExecutor
     {
     public:
-        virtual void AddTask(CallBackPublic * callback, MSTime exec_time, const TaskTarget& ownerId) {}
+        virtual void AddTask(CallBack * callback, MSTime exec_time, const TaskTarget& ownerId) {}
         virtual void CancelTasks(const TaskTarget& ownerId) {}
         virtual void Update(MSTime time) {}
     protected:
@@ -46,7 +45,7 @@ namespace Tasks
 
         template<class T>
         void AddTask(T * functor, MSTime exec_time, const TaskTarget& ownerId);
-        void AddTask(CallBackPublic * callback, MSTime exec_time, const TaskTarget& ownerId) override;
+        void AddTask(CallBack * callback, MSTime exec_time, const TaskTarget& ownerId) override;
 
         void CancelTasks(const TaskTarget& ownerId) override;
         void CancelAllTasks();
@@ -61,22 +60,12 @@ namespace Tasks
 
     typedef void (*ExecFunc)(void*, TaskExecutor_Args*);
 
-    class CallBackPublic
-    {
-    private:
-        NON_COPYABLE(CallBackPublic);
-        static CallBackPublic* create(void* functor, ExecFunc execFunc);
-    protected:
-        CallBackPublic() {}
-        ~CallBackPublic() {}
-    public:
-        /** creates callback object. functor object should be allocated dynamically
-            since his lifetime binded to callback's lifetime */
-        template<class T>
-        static CallBackPublic* create(T* functor) {
-            return create(functor, &T::Static_Execute);
-        }
-    };
+    CallBack* CallBackPublic(void* functor, ExecFunc execFunc);
+
+    template<class T>
+    static CallBack* CallBackPublic(T* functor) {
+        return CallBackPublic(functor, &T::Static_Execute);
+    }
 
     typedef uint32 ObjectId;
 
@@ -111,7 +100,7 @@ namespace Tasks
     struct TaskExecutor_Args
     {
         ITaskExecutor& executor;
-        CallBackPublic* callback;
+        CallBack* callback;
         const MSTime now;
         TaskTarget objectId;
     };
@@ -119,6 +108,6 @@ namespace Tasks
     template<class T>
     inline void TaskExecutor::AddTask(T * functor, MSTime exec_time, const TaskTarget& ownerId)
     {
-        AddTask(CallBackPublic::create(functor), exec_time, ownerId);
+        AddTask(CallBackPublic(functor), exec_time, ownerId);
     }
 }
