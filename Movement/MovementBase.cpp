@@ -5,25 +5,6 @@
 
 namespace Movement{
 
-    void UpdatableMovement::ScheduleUpdate()
-    {
-        if (HasUpdater())
-        {
-            //delay = delay_;
-            m_updater->Register(updater_link);
-        }
-        else
-            log_write("UpdatableMovement::SheduleUpdate called, but updater is null");
-    }
-
-    void UpdatableMovement::UnScheduleUpdate()
-    {
-        if (HasUpdater())
-            m_updater->Unregister(updater_link);
-        else
-            log_write("UpdatableMovement::UnSheduleUpdate called, but updater is null");
-    }
-
     // for debugging:
     // there were problems with NaN coords in past
     inline bool _finiteV(const Vector3& v)
@@ -39,7 +20,6 @@ namespace Movement{
 
     MO_Transport::MO_Transport(WorldObjectType owner) : MovementBase(owner), m_transport(*this)
     {
-        updatable.SetUpdateStrategy(this);
     }
 
     MO_Transport::~MO_Transport()

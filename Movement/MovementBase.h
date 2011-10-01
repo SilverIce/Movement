@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "typedefs.h"
+#include "typedefs_p.h"
 #include "LinkedList.h"
 #include "Location.h"
 
@@ -18,50 +18,9 @@ namespace Movement
 {
     class MoveUpdater;
     class MovementBase;
-    class UpdatableMovement;
     class Transportable;
     class IListener;
     class UnitMovementImpl;
-
-    struct IUpdatable 
-    {
-        virtual void UpdateState() = 0;
-    protected:
-        ~IUpdatable(){}
-    };
-
-    class UpdatableMovement
-    {
-    private:
-        LinkedListElement<UpdatableMovement*> updater_link;
-        MoveUpdater * m_updater;
-        IUpdatable * m_strategy;
-    public:
-        explicit UpdatableMovement() : m_updater(NULL), m_strategy(NULL)
-        {
-            updater_link.Value = this;
-        }
-
-        ~UpdatableMovement() { mov_assert(!IsUpdateScheduled());}
-
-        void CleanReferences() { Dereference(m_updater);}
-
-        void Dereference(MoveUpdater * updater)
-        {
-            mov_assert(updater == m_updater);
-            UnScheduleUpdate();
-            m_updater = NULL;
-        }
-
-        void SetUpdateStrategy(IUpdatable * u) { m_strategy = u;}
-        void ScheduleUpdate();
-        void UnScheduleUpdate();
-        bool IsUpdateScheduled() const { return updater_link.linked();}
-        MoveUpdater& GetUpdater() const { mov_assert(m_updater);return *m_updater;}
-        bool HasUpdater() const { return m_updater != NULL;}
-        void SetUpdater(MoveUpdater& upd) { mov_assert(m_updater == NULL);m_updater = &upd;}
-        void UpdateState() { m_strategy->UpdateState();}
-    };
 
     /** Makes local transport position <--> global world position conversions */
     struct CoordTranslator
@@ -250,7 +209,7 @@ namespace Movement
         LinkedList<TransportLink> m_passenger_references;
     };
 
-    class MO_Transport : public MovementBase, public IUpdatable
+    class MO_Transport : public MovementBase
     {
     public:
 
@@ -261,23 +220,15 @@ namespace Movement
         {
             m_transport.CleanReferences();
             MovementBase::CleanReferences();
-            updatable.CleanReferences();
         }
 
-        virtual void UpdateState();   // does nothing.. yet
+        void UpdateState();   // does nothing.. yet
 
         void Board(Transportable& t, const Location& local_position) { t.BoardOn(m_transport, local_position, -1);}
         void UnBoardAll() { m_transport.UnBoardAll();}
 
-        void ScheduleUpdate() { updatable.ScheduleUpdate();}
-        void UnScheduleUpdate() { updatable.UnScheduleUpdate();}
-        bool HasUpdater() const { return updatable.HasUpdater();}
-        void SetUpdater(MoveUpdater& upd) { updatable.SetUpdater(upd);}
-
     private:
-
         Transport m_transport;
-        UpdatableMovement updatable;
     };
 
 }
