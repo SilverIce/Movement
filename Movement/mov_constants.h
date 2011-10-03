@@ -40,12 +40,6 @@ namespace Movement
         SpeedMaxCount       = 9,
     };
 
-    enum MovControlType
-    {
-        MovControlClient,
-        MovControlServer,
-        MovControlCount,
-    };
     extern double gravity;
     double computeFallTime(float path_length);
     double computeFallElevation(float time_passed, float start_velocy);

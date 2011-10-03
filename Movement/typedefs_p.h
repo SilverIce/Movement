@@ -8,11 +8,7 @@ namespace Movement
     extern void log_console(const char* str, ...);
     extern void log_write_trace();
 
-    template<typename T, size_t N>
-    inline size_t CountOf(const T (&t)[N])
-    {
-        return N;
-    }
+#define CountOf(array) (sizeof(array)/sizeof(array[0]))
 
 #ifndef static_assert
     #define CONCAT(x, y) CONCAT1 (x, y)

@@ -5,7 +5,8 @@
 
 namespace Tasks
 {
-    using namespace BasicTypes;
+    using Movement::int32;
+    using Movement::uint32;
     using Movement::MSTime;
 
 #define NON_COPYABLE(Class) \
@@ -74,7 +75,6 @@ namespace Tasks
     private:
         friend class TaskExecutor;
         template<class T> friend class taskExecutor;// temp
-        friend class TaskExecutorImpl_Vector110;// temp
     public:
         ITaskExecutor * owner;
         ObjectId objectId;

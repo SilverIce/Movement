@@ -9,14 +9,12 @@ namespace Tasks
     using Movement::log_write_trace;
     using Movement::log_console;
 
-#define TASKSCHEDULER_DEBUGGING 0
-
-#if (TASKSCHEDULER_DEBUGGING)
+#ifdef TASKSCHEDULER_DEBUGGING
     const char* myAdressDeleted = "yep!";
     class myAdress 
     {
         void * const adress;
-        const char* deleted;
+        const char * deleted;
     public:
         myAdress() : adress(this), deleted("nope") {}
         ~myAdress() { (*this)(); deleted = myAdressDeleted;}

@@ -2,33 +2,6 @@
 
 namespace Movement
 {
-    struct MsgBroadcast : public MsgDeliverer
-    {
-        explicit MsgBroadcast(WorldObjectType owner) : m_owner(owner) {}
-        explicit MsgBroadcast(MovementBase* m) : m_owner(m->Owner) {}
-        explicit MsgBroadcast(MovementBase& m) : m_owner(m.Owner) {}
-        virtual void operator()(WorldPacket& data) { MaNGOS_API::BroadcastMessage(&m_owner, data);}
-        WorldObjectType m_owner;
-    };
-
-    struct UniqueStateFilter
-    {
-        static bool Do (const ClientMoveState& prev, const ClientMoveState& next)
-        {
-            return true;
-        }
-    };
-
-    bool MoveStateSet::Next(ClientMoveState& state, MSTime time_now)
-    {
-        if (m_state_queue.empty() || CurrentState().ms_time > time_now)
-            return false;
-
-        state = CurrentState();
-        m_state_queue.pop_back();
-        return true;
-    }
-
     SpeedType UnitMovementImpl::SelectSpeedType(UnitMoveFlag moveFlags)
     {
         // g_moveFlags_mask - some global client's moveflag mask

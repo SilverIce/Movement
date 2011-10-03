@@ -23,21 +23,13 @@ namespace Movement
     using Tasks::StaticExecutor;
     using Tasks::Executor;
 
-    // Manages by sequential set of client movement states
-    // unused currently 
-    class MoveStateSet
+    struct MsgBroadcast : public MsgDeliverer
     {
-        // TODO: more memory efficient storage
-        std::list<ClientMoveState> m_state_queue;
-        const ClientMoveState& LastQueuedState() const { return m_state_queue.front();}     // may crash in case no states queued
-        const ClientMoveState& CurrentState() const { return m_state_queue.back();}     // may crash in case no states queued
-    public:
-        explicit MoveStateSet() {}
-
-        void QueueState(const ClientMoveState& state) { m_state_queue.push_front(state);}
-        bool Next(ClientMoveState& state, MSTime time_now);
-        void Clear() { m_state_queue.clear();}
-        size_t Size() const { return m_state_queue.size();}
+        explicit MsgBroadcast(WorldObjectType owner) : m_owner(owner) {}
+        explicit MsgBroadcast(MovementBase* m) : m_owner(m->Owner) {}
+        explicit MsgBroadcast(MovementBase& m) : m_owner(m.Owner) {}
+        virtual void operator()(WorldPacket& data) { MaNGOS_API::BroadcastMessage(&m_owner, data);}
+        WorldObjectType m_owner;
     };
 
     struct TargetLink
