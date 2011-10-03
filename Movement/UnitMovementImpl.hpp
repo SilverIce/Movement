@@ -165,19 +165,16 @@ namespace Movement
     {
         if (!m_updater)
         {
-            struct RegularUpdater 
-            {
-                UnitMovementImpl* owner;
-                STATIC_EXEC(RegularUpdater, TaskExecutor_Args& args)
-                {
-                    owner->UnitMovementImpl::UpdateState();
-                    args.executor.AddTask(args.callback, args.now + 200, args.objectId);
+            struct RegularUpdater : StaticExecutor<UnitMovementImpl,RegularUpdater,false> {
+                static void Execute(UnitMovementImpl& me, TaskExecutor_Args& args) {
+                    me.UpdateState(args.now);
+                    readd(args, 200);
                 }
-            } regularUpdater = {this};
+            };
 
             m_updater = &updater;
             m_updater->RegisterObject(commonTasks);
-            m_updater->AddTask(new RegularUpdater(regularUpdater), 0, commonTasks);
+            m_updater->AddTask(CallBackPublic(this,&RegularUpdater::Static_Execute), 0, commonTasks);
         }
 
         SetPosition(pos);
@@ -305,17 +302,15 @@ namespace Movement
         }
     };
 
-    void UnitMovementImpl::UpdateState()
+    void UnitMovementImpl::UpdateState(MSTime timeNow)
     {
-        MSTime now = Updater().TickTime();
-
         if (SplineEnabled())
         {
-            int32 difftime = (now - getLastUpdate()).time;
+            int32 difftime = (timeNow - getLastUpdate()).time;
             if (move_spline->timeElapsed() <= difftime || difftime >= MoveSpline_UpdateDelay)
             {
                 MoveSplineUpdater(*this, std::min(difftime,(int32)Maximum_update_difftime));
-                setLastUpdate(now);
+                setLastUpdate(timeNow);
             }
         }
         else
@@ -324,7 +319,7 @@ namespace Movement
             {
                 updateRotation();
             }
-            setLastUpdate(now);
+            setLastUpdate(timeNow);
         }
     }
 

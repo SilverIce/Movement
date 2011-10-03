@@ -41,14 +41,17 @@ namespace Movement
         MoveSpline * mov = NULL;
         MoveSplineInitArgs ar;
         ar.path.assign(path, path + CountOf(path));
-        ar.path.push_back(Vector3(10,10,0));
         ar.velocity = 10.f;
         check(ar.Validate());
 
         check(MoveSpline::Initialize(mov,ar));
         check(mov->Duration() > 0);
-        check(mov->FinalDestination().fuzzyEq(path[1]));
-        check( mov->ComputePosition(Location()).fuzzyEq(path[0]) );
+
+        Location pos = mov->FinalDestination();
+        check(pos.fuzzyEq(path[1]));
+
+        pos = mov->ComputePosition(Location());
+        check( pos.fuzzyEq(path[0]) );
 
         mov->updateState(mov->Duration());
         check(mov->Finalized());

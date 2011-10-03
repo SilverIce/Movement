@@ -16,6 +16,13 @@ namespace Movement
     class ClientImpl;
     struct MoveSplineInitArgs;
 
+    using Tasks::TaskTarget;
+    using Tasks::TaskExecutor_Args;
+    using Tasks::CallBack;
+    using Tasks::CallBackPublic;
+    using Tasks::StaticExecutor;
+    using Tasks::Executor;
+
     // Manages by sequential set of client movement states
     // unused currently 
     class MoveStateSet
@@ -52,7 +59,7 @@ namespace Movement
         virtual ~UnitMovementImpl();
 
         virtual void CleanReferences();
-        void UpdateState();
+        void UpdateState(MSTime timeNow);
 
         std::string ToString() const;
 

@@ -45,14 +45,14 @@ namespace Movement
 
         void QueueState(ClientMoveStateChange& client_state)
         {
-            struct ApplyStateTask {
+            struct ApplyStateTask : Executor<ApplyStateTask,true>{
                 UnitMovementImpl * owner;
                 ClientMoveStateChange state;
 
                 ApplyStateTask(UnitMovementImpl * own, const ClientMoveStateChange& client_state)
                     : state(client_state), owner(own) {}
 
-                STATIC_EXEC(ApplyStateTask, TaskExecutor_Args&){
+                void Execute(TaskExecutor_Args&){
                     owner->ApplyState(state.state);
                     if (state.floatValueType != Parameter_End)
                         owner->SetParameter(state.floatValueType, state.floatValue);

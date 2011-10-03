@@ -63,7 +63,7 @@ namespace Tasks
     CallBack* CallBackPublic(void* functor, ExecFunc execFunc);
 
     template<class T>
-    static CallBack* CallBackPublic(T* functor) {
+    inline CallBack* CallBackPublic(T* functor) {
         return CallBackPublic(functor, &T::Static_Execute);
     }
 
@@ -87,6 +87,17 @@ namespace Tasks
         explicit TaskTarget() : owner(0), objectId(0) {}
     };
 
+    struct TaskExecutor_Args
+    {
+        ITaskExecutor& executor;
+        CallBack* callback;
+        const MSTime now;
+        TaskTarget objectId;
+    };
+
+    /** Tools:
+    */
+
 #define STATIC_EXEC(Class, Args) \
     static void Static_Execute(void* _me, TaskExecutor_Args* _args){ \
         if (_args) \
@@ -97,12 +108,31 @@ namespace Tasks
     private: \
     inline void Member_Execute(Args)
 
-    struct TaskExecutor_Args
-    {
-        ITaskExecutor& executor;
-        CallBack* callback;
-        const MSTime now;
-        TaskTarget objectId;
+    /** Set belongs = true if you wanna automatically free resources at task cancelling */
+    template<class T, class Der, bool belongs>
+    struct StaticExecutor {
+        static void Static_Execute(void* _me, TaskExecutor_Args* _args) {
+            if (_args)
+                Der::Execute( *(T*)_me, *_args );
+            else if (belongs)
+                delete ((T*)_me);
+        }
+        static void readd(TaskExecutor_Args& args, MSTime time) {
+            args.executor.AddTask(args.callback,args.now+time,args.objectId);
+        }
+    };
+
+    template<class T, bool belongs>
+    struct Executor {
+        static void Static_Execute(void* _me, TaskExecutor_Args* _args){
+            if (_args)
+                ((T*)_me)->Execute(*_args);
+            else if (belongs)
+                delete ((T*)_me);
+        }
+        static void readd(TaskExecutor_Args& args, MSTime time) {
+            args.executor.AddTask(args.callback,args.now+time,args.objectId);
+        }
     };
 
     template<class T>
