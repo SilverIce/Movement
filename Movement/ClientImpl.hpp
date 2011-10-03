@@ -3,7 +3,7 @@
 namespace Movement
 {
     /** Sends to CMSG_TIME_SYNC_RESP each 10 seconds */
-    struct TimeSyncRequestScheduler
+    struct TimeSyncRequestScheduler : Executor<TimeSyncRequestScheduler,true>
     {
         ClientImpl * m_client;
 
@@ -11,7 +11,7 @@ namespace Movement
             client->Updater().AddTask(this, MSTime(0), client->commonTasks);
         }
 
-        STATIC_EXEC(TimeSyncRequestScheduler, TaskExecutor_Args& args){
+        void Execute(TaskExecutor_Args& args){
             new TimeSyncRequest(m_client);
             args.executor.AddTask(args.callback, args.now + TimeSyncRequest::SyncTimePeriod, args.objectId);
         }

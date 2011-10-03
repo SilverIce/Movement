@@ -95,7 +95,7 @@ namespace Movement
         void HandleMoveTimeSkipped(WorldPacket & recv_data);
     };
 
-    class RespHandler
+    class RespHandler : public Executor<RespHandler,true>
     {
     private:
         ClientImpl* m_client;
@@ -138,7 +138,7 @@ namespace Movement
             return m_wasHandled;
         }
 
-        STATIC_EXEC(RespHandler, TaskExecutor_Args& args){
+        void Execute(TaskExecutor_Args& args){
             if (!m_wasHandled) {
                 log_function("Kick client due to response(opcode: %s) timeout", LookupOpcodeName(m_opcode));
                 m_client->Kick();
