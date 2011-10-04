@@ -142,6 +142,9 @@ namespace Tasks
 
     void TaskExecutor::RemoveObject(TaskTarget& obj)
     {
+        if (!obj.isRegistered())
+            return;
+        
         if (!obj.isRegisteredIn(this)) {
             log_function("object wasn't registered or doesn't belongs to current task executor");
             return;
