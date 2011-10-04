@@ -44,8 +44,11 @@
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="G3D/g3d_pch.h"
 				WarningLevel="3"
 				DebugInformationFormat="4"
+				ForcedIncludeFiles="G3D/g3d_pch.h"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -105,8 +108,11 @@
 				AdditionalIncludeDirectories="..\..\..\..\dep\g3dlite\include\;..\..\..\..\dep\zlib\include\"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="G3D/g3d_pch.h"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				ForcedIncludeFiles="G3D/g3d_pch.h"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -168,8 +174,11 @@
 				AdditionalIncludeDirectories="..\..\..\..\dep\g3dlite\include\;..\..\..\..\dep\zlib\include\"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="G3D/g3d_pch.h"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				ForcedIncludeFiles="G3D/g3d_pch.h"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -1028,6 +1037,45 @@
 			</File>
 			<File
 				RelativePath="..\..\include\G3D\WrapMode.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="PCH"
+			>
+			<File
+				RelativePath="..\..\source\g3d_pch.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+						ForcedIncludeFiles="G3D/g3d_pch.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+						ForcedIncludeFiles="G3D/g3d_pch.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseOpt|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+						ForcedIncludeFiles="G3D/g3d_pch.h"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\include\G3D\g3d_pch.h"
 				>
 			</File>
 		</Filter>
