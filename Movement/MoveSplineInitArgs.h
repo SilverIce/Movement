@@ -29,8 +29,8 @@ namespace Movement
 
     struct MoveSplineInitArgs
     {
-        MoveSplineInitArgs(size_t path_capacity = 16) : path_Idx_offset(0),
-            velocity(0.f), parabolic_amplitude(0.f), time_perc(0.f), splineId(0)
+        explicit MoveSplineInitArgs(size_t path_capacity = 16) : path_Idx_offset(0),
+            velocity(0.f), parabolic_amplitude(0.f), time_perc(0.f), initialOrientation(0.f), splineId(0)
         {
             path.reserve(path_capacity);
         }
@@ -42,6 +42,7 @@ namespace Movement
         float velocity;
         float parabolic_amplitude;
         float time_perc;
+        float initialOrientation;
         uint32 splineId;
 
         /**	Returns true to show that the arguments were configured correctly and MoveSpline initialization will succeed. */

@@ -17,13 +17,14 @@ inline uint32 computeDuration(float length, float velocity) {
     return SecToMS(length / velocity);
 }
 
-Location MoveSpline::ComputePosition(const Location& loc) const
+Location MoveSpline::ComputePosition() const
 {
     float u = 1.f;
     int32 seg_time = spline.length(point_Idx,point_Idx+1);
     if (seg_time > 0)
         u = (time_passed - spline.length(point_Idx)) / (float)seg_time;
-    Location c(loc);
+    Location c;
+    c.orientation = initialOrientation;
     spline.evaluate_percent(point_Idx, u, c);
 
     if (splineflags.animation)
@@ -148,6 +149,7 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
     facing = args.facing;
     m_Id = args.splineId;
     point_Idx_offset = args.path_Idx_offset;
+    initialOrientation = args.initialOrientation;
 
     time_passed = 0;
     vertical_acceleration = 0.f;
@@ -169,7 +171,7 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
 }
 
 MoveSpline::MoveSpline() : m_Id(0), time_passed(0),
-    vertical_acceleration(0.f), effect_start_time(0), point_Idx(0), point_Idx_offset(0)
+    vertical_acceleration(0.f), effect_start_time(0), point_Idx(0), point_Idx_offset(0), initialOrientation(0.f)
 {
 }
 

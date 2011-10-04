@@ -45,9 +45,7 @@ namespace Movement {
         MoveSplineFlag  splineflags;
 
         int32           time_passed;
-        // currently duration mods are unused, but its _currently_
-        //float           duration_mod;
-        //float           duration_mod_next;
+        float           initialOrientation;
         float           vertical_acceleration;
         int32           effect_start_time;
         int32           point_Idx;
@@ -95,7 +93,7 @@ namespace Movement {
             while(difftime > 0);
         }
 
-        Location ComputePosition(const Location& loc) const;
+        Location ComputePosition() const;
 
         uint32 GetId() const { return m_Id;}
         bool Finalized() const { return splineflags.done; }

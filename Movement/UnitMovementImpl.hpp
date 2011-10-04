@@ -243,7 +243,7 @@ namespace Movement
             mov(movement), NeedSync(false), move_spline(*mov.move_spline)
         {
             move_spline.updateState(difftime, *this);
-            mov.SetPosition(move_spline.ComputePosition(mov.GetPosition()));
+            mov.SetPosition(move_spline.ComputePosition());
 
             if (NeedSync)
                 PacketBuilder::SplineSyncSend(mov, MsgBroadcast(mov));
@@ -324,6 +324,7 @@ namespace Movement
     {
         args.path[0] = GetPosition3();    //correct first vertex
         args.splineId = Updater().NewMoveSplineId();
+        args.initialOrientation = GetPosition().orientation;
 
         moveFlag_new = moveFlags & ~(UnitMoveFlag::Mask_Directions | UnitMoveFlag::Mask_Moving) | UnitMoveFlag::Spline_Enabled;
         moveFlag_new.backward = args.flags.backward;

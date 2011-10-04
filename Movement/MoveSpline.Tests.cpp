@@ -50,12 +50,12 @@ namespace Movement
         Location pos = mov->FinalDestination();
         check(pos.fuzzyEq(path[1]));
 
-        pos = mov->ComputePosition(Location());
+        pos = mov->ComputePosition();
         check( pos.fuzzyEq(path[0]) );
 
         mov->updateState(mov->Duration());
         check(mov->Finalized());
-        check( mov->ComputePosition(Location()).fuzzyEq(path[1]) );
+        check( mov->ComputePosition().fuzzyEq(path[1]) );
         delete mov;
     }
 
