@@ -176,7 +176,6 @@ MoveSpline::MoveSpline() : m_Id(0), time_passed(0),
 }
 
 /// ============================================================================================
-extern float terminalVelocity;
 
 bool MoveSplineInitArgs::Validate() const
 {
@@ -187,7 +186,7 @@ bool MoveSplineInitArgs::Validate() const
         return false;\
     }
     CHECK(path.size() > 1);
-    CHECK(velocity > 0.f && velocity <= terminalVelocity);
+    CHECK(velocity > 0.f && velocity <= 200.f);
     CHECK(time_perc >= 0.f && time_perc <= 1.f);
     CHECK(_checkPathBounds());
     return true;

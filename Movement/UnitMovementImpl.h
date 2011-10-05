@@ -119,7 +119,6 @@ namespace Movement
         };
 
         struct MoveSplineUpdater;
-        class FloatValueChangeRequest;
 
         void setLastUpdate(MSTime time) { last_update_time = time;}
         MSTime getLastUpdate() const { return last_update_time;}
@@ -158,7 +157,6 @@ namespace Movement
 
     private:
         friend class PacketBuilder;
-        friend class UnitMovement;
 
         MoveUpdater* m_updater;
         MoveSpline* move_spline;

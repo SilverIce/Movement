@@ -28,7 +28,7 @@ namespace Movement
     };
 #undef VALUE_CHANGE
 
-    class UnitMovementImpl::FloatValueChangeRequest : public RespHandler
+    class FloatValueChangeRequest : public RespHandler
     {
         FloatParameter m_value_type;
         float m_value;

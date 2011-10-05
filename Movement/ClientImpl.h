@@ -114,10 +114,8 @@ namespace Movement
     public:
         uint32 m_reqId;
 
-        enum{
-            /* Default timeout value, milliseconds */
-            DefaultTimeout = 500,
-        };
+        /* Default timeout value is 500 milliseconds */
+        static uint32 DefaultTimeout;
 
         explicit RespHandler(uint32 _opcode, ClientImpl * client) : m_opcode(_opcode), m_client(client), m_wasHandled(false)
         {
@@ -145,4 +143,6 @@ namespace Movement
             }
         }
     };
+
+    uint32 RespHandler::DefaultTimeout = 1000;
 }
