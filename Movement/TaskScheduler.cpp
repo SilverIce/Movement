@@ -166,7 +166,30 @@ namespace Tasks
         impl.CancelAllTasks();
     }
 
+    //////////////////////////////////////////////////////////////////////////
+
     TaskTarget::~TaskTarget() {
         mov_assert(!isRegistered());
+    }
+
+    void TaskTarget_DEV::SetExecutor(ITaskExecutor& executor)
+    {
+        mov_assert(!m_executor && !isRegistered());
+        m_executor = &executor;
+    }
+
+    void TaskTarget_DEV::Unregister()
+    {
+        mov_assert(m_executor);
+        m_executor->RemoveObject(m_objectId);
+        m_executor = NULL;
+    }
+
+    void TaskTarget_DEV::AddTask(CallBack * callback, MSTime exec_time)
+    {
+        mov_assert(m_executor);
+        if (!isRegistered())
+            m_executor->RegisterObject(m_objectId);
+        m_executor->AddTask(callback, exec_time, m_objectId);
     }
 }

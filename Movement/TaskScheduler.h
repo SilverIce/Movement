@@ -26,9 +26,11 @@ namespace Tasks
     class ITaskExecutor
     {
     public:
-        virtual void AddTask(CallBack * callback, MSTime exec_time, const TaskTarget& ownerId) {}
-        virtual void CancelTasks(const TaskTarget& ownerId) {}
-        virtual void Update(MSTime time) {}
+        virtual void AddTask(CallBack * callback, MSTime exec_time, const TaskTarget& ownerId) = 0;
+        virtual void CancelTasks(const TaskTarget& ownerId) = 0;
+        virtual void Update(MSTime time) = 0;
+        virtual void RegisterObject(TaskTarget& obj) = 0;
+        virtual void RemoveObject(TaskTarget& obj) = 0;
     protected:
         ~ITaskExecutor() {}
     };
@@ -51,8 +53,8 @@ namespace Tasks
         void CancelTasks(const TaskTarget& ownerId) override;
         void CancelAllTasks();
 
-        void RegisterObject(TaskTarget& obj);
-        void RemoveObject(TaskTarget& obj);
+        void RegisterObject(TaskTarget& obj) override;
+        void RemoveObject(TaskTarget& obj) override;
 
         void Update(MSTime time) override;
 
@@ -92,6 +94,29 @@ namespace Tasks
         CallBack* callback;
         const MSTime now;
         TaskTarget objectId;
+    };
+
+    class TaskTarget_DEV
+    {
+    private:
+        ITaskExecutor * m_executor;
+        TaskTarget m_objectId;
+    private:
+        NON_COPYABLE(TaskTarget_DEV);
+        bool isRegisteredIn(const ITaskExecutor * _owner) const { return isRegistered() && _owner == m_executor;}
+    public:
+        bool isRegistered() const { return m_objectId.isRegistered();}
+        bool hasExecutor() const { return m_executor;}
+        explicit TaskTarget_DEV() : m_executor(0) {}
+
+        void SetExecutor(ITaskExecutor& executor);
+        void Unregister();
+
+        template<class T>
+        void AddTask(T * functor, MSTime exec_time) {
+            AddTask(CallBackPublic(functor), exec_time);
+        }
+        void AddTask(CallBack * callback, MSTime exec_time);
     };
 
     /** Tools:
