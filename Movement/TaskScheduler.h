@@ -70,21 +70,20 @@ namespace Tasks
 
     typedef uint32 ObjectId;
 
-    class TaskTarget 
+    class TaskTarget
     {
     private:
         friend class TaskExecutor;
         template<class T> friend class taskExecutor;// temp
-    public:
-        ITaskExecutor * owner;
+    public:     // temp
         ObjectId objectId;
     private:
         //NON_COPYABLE(TaskTarget);
-        explicit TaskTarget(ITaskExecutor * own, ObjectId Id) : owner(own), objectId(Id) {}
+        explicit TaskTarget(ObjectId Id) : objectId(Id) {}
     public:
-        bool isRegisteredIn(const ITaskExecutor * _owner) const { return _owner == owner;}
-        bool isRegistered() const { return owner != 0;}
-        explicit TaskTarget() : owner(0), objectId(0) {}
+        bool isRegistered() const { return objectId != 0;}
+        explicit TaskTarget() : objectId(0) {}
+        ~TaskTarget();
     };
 
     struct TaskExecutor_Args

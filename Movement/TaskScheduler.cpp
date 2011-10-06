@@ -118,7 +118,7 @@ namespace Tasks
     TaskExecutor::TaskExecutor() : impl(*new TaskExecutorImpl()), m_objectsRegistered(0) {}
     TaskExecutor::~TaskExecutor() { delete &impl;}
 
-    void TaskExecutor::AddTask(CallBack * callback, MSTime exec_time, const TaskTarget& ownerId )
+    void TaskExecutor::AddTask(CallBack * callback, MSTime exec_time, const TaskTarget& ownerId)
     {
         impl.AddTask(callback, exec_time, ownerId.objectId);
     }
@@ -136,7 +136,6 @@ namespace Tasks
         }
 
         ++m_objectsRegistered;
-        obj.owner = this;
         impl.RegisterObject(obj.objectId);
     }
 
@@ -145,20 +144,16 @@ namespace Tasks
         if (!obj.isRegistered())
             return;
         
-        if (!obj.isRegisteredIn(this)) {
-            log_function("object wasn't registered or doesn't belongs to current task executor");
-            return;
-        }
-
         --m_objectsRegistered;
-        obj.owner = NULL;
         impl.RemoveObject(obj.objectId);
+        obj.objectId = 0;
     }
 
     void TaskExecutor::Update(MSTime time)
     {
-        TaskExecutor_Args tt = {*this, NULL, time, TaskTarget(this,0)};
+        TaskExecutor_Args tt = {*this, NULL, time, TaskTarget()};
         impl.Update(tt);
+        tt.objectId = TaskTarget(); // overwrite it to not fail assertion in TaskTarget destructor
     }
 
     bool TaskExecutor::HasCallBacks() const
@@ -169,5 +164,9 @@ namespace Tasks
     void TaskExecutor::CancelAllTasks()
     {
         impl.CancelAllTasks();
+    }
+
+    TaskTarget::~TaskTarget() {
+        mov_assert(!isRegistered());
     }
 }

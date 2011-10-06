@@ -119,7 +119,7 @@ namespace Tasks
                     task.callback->execute(_args);  // this might be unsafe & deep call
                     task.callback->release();
                 }
-                TaskExecutor_Args _args;
+                TaskExecutor_Args& _args;
                 OwnerSet& owners;
             } task_processor = {args, m_owners};
             std::for_each(copy_container.rbegin(), copy_container.rend(), task_processor);    
