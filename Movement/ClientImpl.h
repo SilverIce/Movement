@@ -23,7 +23,6 @@ namespace Movement
     private:
         void * m_socket;
         UnitMovementImpl * m_controlled;
-        MoveUpdater * m_updater;
         MSTime m_time_diff;             // difference between client and server time: diff = client_ticks - server_ticks
         UInt32Counter request_counter;
         //int32 time_skipped;
@@ -37,9 +36,8 @@ namespace Movement
 
     public:
 
-        TaskTarget commonTasks;
+        TaskTarget_DEV commonTasks;
 
-        MoveUpdater& Updater() const { return *m_updater;}
         UnitMovementImpl* controlled() const { return m_controlled;}
         void SetClientTime(const MSTime& client_time) { m_time_diff = client_time - ServerTime();}
 
@@ -59,8 +57,7 @@ namespace Movement
                 }
             };
             client_state.state.ms_time = ClientToServerTime(client_state.state.ms_time);
-            m_controlled->Updater().AddTask(new ApplyStateTask(m_controlled,client_state),
-                client_state.state.ms_time, m_controlled->commonTasks);
+            m_controlled->commonTasks.AddTask(new ApplyStateTask(m_controlled,client_state), client_state.state.ms_time);
         }
 
         void RegisterRespHandler(RespHandler* handler);

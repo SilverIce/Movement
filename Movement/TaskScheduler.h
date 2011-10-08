@@ -106,7 +106,7 @@ namespace Tasks
         bool isRegisteredIn(const ITaskExecutor * _owner) const { return isRegistered() && _owner == m_executor;}
     public:
         bool isRegistered() const { return m_objectId.isRegistered();}
-        bool hasExecutor() const { return m_executor;}
+        bool hasExecutor() const { return m_executor != 0;}
         explicit TaskTarget_DEV() : m_executor(0) {}
 
         void SetExecutor(ITaskExecutor& executor);

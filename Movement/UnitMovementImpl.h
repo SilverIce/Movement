@@ -22,6 +22,7 @@ namespace Movement
     using Tasks::CallBackPublic;
     using Tasks::StaticExecutor;
     using Tasks::Executor;
+    using Tasks::TaskTarget_DEV;
 
     struct MsgBroadcast : public MsgDeliverer
     {
@@ -143,7 +144,7 @@ namespace Movement
 
         bool HasUpdater() const { return m_updater != NULL;}
         MoveUpdater& Updater() const { return *m_updater;}
-        TaskTarget commonTasks;
+        TaskTarget_DEV commonTasks;
 
         ClientImpl* client() const { return m_client;}
         void client(ClientImpl* c) { m_client = c;}

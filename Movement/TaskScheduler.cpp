@@ -180,8 +180,10 @@ namespace Tasks
 
     void TaskTarget_DEV::Unregister()
     {
-        mov_assert(m_executor);
-        m_executor->RemoveObject(m_objectId);
+        if (isRegistered()) {
+            mov_assert(m_executor);
+            m_executor->RemoveObject(m_objectId);
+        }
         m_executor = NULL;
     }
 

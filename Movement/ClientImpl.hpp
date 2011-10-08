@@ -8,7 +8,7 @@ namespace Movement
         ClientImpl * m_client;
 
         TimeSyncRequestScheduler(ClientImpl * client) : m_client(client) {
-            client->Updater().AddTask(this, MSTime(0), client->commonTasks);
+            client->commonTasks.AddTask(this, MSTime(0));
         }
 
         void Execute(TaskExecutor_Args& args){
@@ -88,8 +88,7 @@ namespace Movement
     {
         m_resp_handlers.clear();
         LostControl();
-        m_updater->RemoveObject(commonTasks);
-        m_updater = NULL;
+        commonTasks.Unregister();
         m_socket = NULL;
     }
 
@@ -97,10 +96,8 @@ namespace Movement
     {
         CleanReferences();
 
-        mov_assert(m_updater == NULL);
         mov_assert(m_socket == NULL);
         mov_assert(m_controlled == NULL);
-        mov_assert(!commonTasks.isRegistered());
         mov_assert(m_resp_handlers.empty());
     }
 
@@ -117,10 +114,9 @@ namespace Movement
 
     void ClientImpl::SetControl(UnitMovementImpl * newly_controlled)
     {
-        if (!m_updater)
+        if (!commonTasks.hasExecutor())
         {
-            m_updater = &newly_controlled->Updater();
-            m_updater->RegisterObject(commonTasks);
+            commonTasks.SetExecutor(newly_controlled->Updater());
             new TimeSyncRequestScheduler(this);
         }
         
@@ -138,7 +134,6 @@ namespace Movement
 
     ClientImpl::ClientImpl(HANDLE socket) :
         m_socket(socket),
-        m_updater(NULL),
         m_controlled(NULL)
     {
     }
@@ -190,7 +185,7 @@ namespace Movement
     {
         handler->m_reqId = request_counter.NewId();
         m_resp_handlers.push_back(handler);
-        m_updater->AddTask(handler, ServerTime() + RespHandler::DefaultTimeout, commonTasks);
+        commonTasks.AddTask(handler, ServerTime() + RespHandler::DefaultTimeout);
     }
 
     void ClientImpl::UnregisterRespHandler(RespHandler* handler)

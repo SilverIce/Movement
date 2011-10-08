@@ -72,7 +72,6 @@ namespace Movement
         mov_assert(m_targeter_references.empty());
         mov_assert(!m_target_link.linked());
         mov_assert(m_client == NULL);
-        mov_assert(!commonTasks.isRegistered());
         mov_assert(m_updater == NULL);
         mov_assert(move_spline == NULL);
         mov_assert(m_listener == NULL);
@@ -97,7 +96,7 @@ namespace Movement
         UnbindOrientation();
         MovementBase::CleanReferences();
 
-        m_updater->RemoveObject(commonTasks);
+        commonTasks.Unregister();
         m_updater = NULL;
 
         m_listener = NULL;
@@ -138,16 +137,15 @@ namespace Movement
     {
         if (!m_updater)
         {
+            m_updater = &updater;
+            commonTasks.SetExecutor(updater);
             struct RegularUpdater : StaticExecutor<UnitMovementImpl,RegularUpdater,false> {
                 static void Execute(UnitMovementImpl& me, TaskExecutor_Args& args) {
                     me.UpdateState(args.now);
                     readd(args, 200);
                 }
             };
-
-            m_updater = &updater;
-            m_updater->RegisterObject(commonTasks);
-            m_updater->AddTask(CallBackPublic(this,&RegularUpdater::Static_Execute), 0, commonTasks);
+            commonTasks.AddTask(CallBackPublic(this,&RegularUpdater::Static_Execute),0);
         }
 
         SetPosition(pos);
