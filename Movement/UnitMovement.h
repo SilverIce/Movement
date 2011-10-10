@@ -81,7 +81,7 @@ namespace Movement
         void SetCollisionHeight(float value);
         float GetCollisionHeight() const;
 
-        void SetSpeed(SpeedType type, float s);
+        void SetSpeed(SpeedType type, float value);
         float GetSpeed(SpeedType type) const;
         float GetCurrentSpeed() const;
 

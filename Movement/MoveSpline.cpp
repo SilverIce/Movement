@@ -116,7 +116,7 @@ void MoveSpline::init_spline(const MoveSplineInitArgs& args)
     {
         uint32 cyclic_point = 0;
         // MoveSplineFlag::Enter_Cycle support dropped
-        //if (splineflags & SPLINEFLAG_ENTER_CYCLE)
+        //if (splineflags & MoveSplineFlag::Enter_Cycle)
         //cyclic_point = 1;   // shouldn't be modified, came from client
         spline.init_cyclic_spline(&args.path[0], args.path.size(), modes[args.flags.isSmooth()], cyclic_point);
     }
@@ -208,10 +208,7 @@ bool MoveSplineInitArgs::_checkPathBounds() const
         {
             offset = path[i] - middle;
             if (fabs(offset.x) >= MAX_OFFSET || fabs(offset.y) >= MAX_OFFSET || fabs(offset.z) >= MAX_OFFSET)
-            {
-                log_write("MoveSplineInitArgs::_checkPathBounds check failed");
                 return false;
-            }
         }
     }
     return true;

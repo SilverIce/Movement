@@ -149,11 +149,12 @@ namespace Movement
 
     void PacketBuilder::FullUpdate(const UnitMovementImpl& mov, ByteBuffer& data)
     {
-        WriteClientStatus(mov.ClientState(),data);
+        ClientMoveState state(mov.ClientState());
+        WriteClientStatus(state,data);
 
         data.append<float>(&mov.m_float_values[SpeedWalk], SpeedMaxCount);
 
-        if (mov.SplineEnabled())
+        if (state.moveFlags.spline_enabled)
         {
             const MoveSpline& move_spline = *mov.move_spline;
             MoveSplineFlag splineFlags = move_spline.splineflags;

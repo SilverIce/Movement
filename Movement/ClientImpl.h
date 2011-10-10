@@ -7,6 +7,7 @@
 */
 
 #pragma once
+#include <list>
 
 class ByteBuffer;
 class WorldPacket;

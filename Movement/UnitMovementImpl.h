@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <list>
-
 namespace Movement
 {
     class MoveSpline;
@@ -87,8 +85,6 @@ namespace Movement
         void ResetLisener() { m_listener = NULL; }
 
     public:
-        /** Seems it should be removed(or used for monster movement only), since it hard or impossible to get movement mode from incoming movement packets*/
-        /// Move Modes
         bool HasMode(MoveMode m) const;
         void ApplyMoveMode(MoveMode mode, bool apply);
 
