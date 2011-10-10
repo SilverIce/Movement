@@ -20,7 +20,6 @@ namespace Tasks
         TaskContainer tasks;
         TaskContainer copy_container;
         //std::vector<ObjectId> objects;
-        ObjectCounter m_counter;
 
 
         void AddTask(CallBack* obj, MSTime exec_time, ObjectId objectId)
@@ -37,7 +36,6 @@ namespace Tasks
 
         void RegisterObject(ObjectId& obj)
         {
-            obj = m_counter.NewId();
         }
 
         void CancelTasks(ObjectId objectId)

@@ -113,6 +113,8 @@ namespace Tasks
         TaskExecutorImpl_VectorHashPending112
     {
         friend class TaskExecutor;
+    public:
+        ObjectCounter counter;
     };
 
     TaskExecutor::TaskExecutor() : impl(*new TaskExecutorImpl()), m_objectsRegistered(0) {}
@@ -136,6 +138,7 @@ namespace Tasks
         }
 
         ++m_objectsRegistered;
+        obj.objectId = impl.counter.NewId();
         impl.RegisterObject(obj.objectId);
     }
 

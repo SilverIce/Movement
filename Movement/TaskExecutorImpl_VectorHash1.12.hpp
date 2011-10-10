@@ -23,7 +23,6 @@ namespace Tasks
         TaskArray tasks;
         TaskArray m_insert_pending;
         OwnerSet m_owners;
-        ObjectCounter m_counter;
 
         void AddTask(CallBack* obj, MSTime exec_time, ObjectId objectId)
         {
@@ -39,7 +38,6 @@ namespace Tasks
 
         void RegisterObject(ObjectId& obj)
         {
-            obj = m_counter.NewId();
             m_owners.insert(OwnerSet::value_type(obj, false));
         }
 
