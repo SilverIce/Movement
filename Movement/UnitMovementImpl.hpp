@@ -130,6 +130,7 @@ namespace Movement
         {
             m_updater = &updater;
             commonTasks.SetExecutor(updater);
+            m_updateRotationTask.SetExecutor(updater);
             struct RegularUpdater : StaticExecutor<UnitMovementImpl,RegularUpdater,false> {
                 static void Execute(UnitMovementImpl& me, TaskExecutor_Args& args) {
                     me.UpdateState(args.now);
@@ -176,40 +177,34 @@ namespace Movement
         m_unused = new_state;
     }
 
-    void UnitMovementImpl::updateRotation()
-    {
-        if (!IsOrientationBinded())
-            return;
-
-        const Vector3& t_pos = GetTarget()->GetGlobalPosition();
-        Location my_pos = GetPosition();
-        my_pos.orientation = atan2(t_pos.y - my_pos.y, t_pos.x - my_pos.x);
-        SetPosition(my_pos);
-        // code below calculates facing angle base on turn speed, but seems this not needed:
-        // server-side conrolled unit has instant rotation speed, i.e. unit are everytime face to the target
-        /*float limit_angle = G3D::wrap(atan2(t_pos.y - position.y, t_pos.x - position.x), 0.f, (float)G3D::twoPi());
-        float total_angle_diff = fabs(position.w - limit_angle);
-        if (total_angle_diff > 10.f/180.f * G3D::pi())
-        {
-            float passed_angle_diff = ms_time_diff / 1000.f * speed_obj.turn;
-            passed_angle_diff = std::min(passed_angle_diff, total_angle_diff);
-            position.w += passed_angle_diff;
-            if (position.w > G3D::twoPi())
-                position.w -= G3D::twoPi();
-        }*/
-    }
-
     void UnitMovementImpl::BindOrientationTo(UnitMovementImpl& target)
     {
-        UnbindOrientation();
-
         if (&target == this)
         {
             log_function("trying to target self, skipped");
             return;
         }
 
-        // can i target self?
+        struct OrientationUpdater : StaticExecutor<UnitMovementImpl,OrientationUpdater,false>
+        {
+            enum{
+                RotationUpdateDelay = 250,
+            };
+            static void Execute(UnitMovementImpl& me, TaskExecutor_Args& args) {
+                mov_assert(me.IsOrientationBinded());
+                args.executor.AddTask(args.callback,args.now + RotationUpdateDelay,args.objectId);
+                if (me.IsMoving() || me.IsClientControlled())
+                    return;
+
+                const Vector3& targetPos = me.GetTarget()->GetGlobalPosition();
+                Location myPos = me.GetPosition();
+                myPos.orientation = atan2(targetPos.y - myPos.y, targetPos.x - myPos.x);
+                me.SetPosition(myPos);
+            }
+        };
+
+        m_updateRotationTask.AddTask(CallBackPublic(this,&OrientationUpdater::Static_Execute), 0);
+        m_target_link.delink();
         m_target_link.Value = TargetLink(&target, this);
         target.m_targeter_references.link(m_target_link);
         Owner.SetGuidValue(UNIT_FIELD_TARGET, target.Owner.GetObjectGuid());
@@ -217,6 +212,7 @@ namespace Movement
 
     void UnitMovementImpl::UnbindOrientation()
     {
+        m_updateRotationTask.Unregister();
         m_target_link.delink();
         m_target_link.Value = TargetLink();
         Owner.SetGuidValue(UNIT_FIELD_TARGET, ObjectGuid());
@@ -224,17 +220,6 @@ namespace Movement
 
     void UnitMovementImpl::UpdateState(MSTime timeNow)
     {
-        if (SplineEnabled())
-        {
-        }
-        else
-        {
-            if (!m_client)
-            {
-                updateRotation();
-            }
-            setLastUpdate(timeNow);
-        }
     }
 
     std::string UnitMovementImpl::ToString() const
