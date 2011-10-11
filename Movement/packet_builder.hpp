@@ -29,7 +29,7 @@ namespace Movement
             data << mov.Owner.GetPackGUID();
         }
 
-        data << uint8(0);
+        data << uint8(0);       // boolean variable. toggles UnitMoveFlag::Unk4 flag
         data << mov.GetPosition3();
         data << move_spline.GetId();
 

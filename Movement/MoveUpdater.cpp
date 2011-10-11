@@ -7,13 +7,12 @@ namespace Movement
 
     MoveUpdater::MoveUpdater()
     {
-        m_tick_time = MaNGOS_API::getMSTime();
     }
 
     void MoveUpdater::Update()
     {
-        m_tick_time = MaNGOS_API::getMSTime();
-        Tasks::TaskExecutor::Update(m_tick_time);
+        m_lastUpdate = MaNGOS_API::getMSTime();
+        Tasks::TaskExecutor::Update(m_lastUpdate);
     }
 
     MoveUpdater::~MoveUpdater()

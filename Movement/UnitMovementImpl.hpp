@@ -141,7 +141,7 @@ namespace Movement
         }
 
         SetPosition(pos);
-        setLastUpdate(Updater().TickTime());
+        setLastUpdate(Updater().lastUpdate());
     }
 
     void UnitMovementImpl::ApplyState(const ClientMoveState& new_state)

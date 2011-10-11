@@ -22,13 +22,13 @@ namespace Movement
 
         void Update();
 
-        MSTime TickTime() const { return m_tick_time;}
         uint32 NewMoveSplineId() { return movespline_counter.NewId();}
+        MSTime lastUpdate() const { return m_lastUpdate;}
 
     private:
 
         UInt32Counter movespline_counter;
-        MSTime m_tick_time;
+        MSTime m_lastUpdate;
     };
 
     extern MoveUpdater sMoveUpdater;
