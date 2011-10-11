@@ -20,6 +20,7 @@
 #include "ClientMoveStatus.h"
 #include "packet_builder.h"
 #include "MovementMessage.h"
+#include "UpdatableSpline.h"
 #include "UnitMovementImpl.h"
 #include "ClientImpl.h"
 
@@ -28,6 +29,7 @@
 #include "ClientImpl.hpp"
 #include "UnitMovementImpl.hpp"
 #include "UnitMovement.Requests.hpp"
+#include "UpdatableSpline.hpp"
 
 #include "UnitMovement.Tests.hpp"
 
@@ -134,17 +136,17 @@ namespace Movement
 
     uint32 UnitMovement::MoveSplineId() const
     {
-        return m.MoveSplineId();
+        return m.move_spline->getId();
     }
 
     const Vector3& UnitMovement::MoveSplineDest() const
     {
-        return m.MoveSplineDest();
+        return m.move_spline->destination();
     }
 
     int32 UnitMovement::MoveSplineTimeElapsed() const
     {
-        return m.MoveSplineTimeElapsed();
+        return m.move_spline->timeElapsed();
     }
 
     bool UnitMovement::HasMode(MoveMode mode) const
@@ -212,9 +214,9 @@ namespace Movement
         PacketBuilder::FullUpdate(Impl(), buf);
     }
 
-    void UnitMovement::SetListener(class IListener * l)
+    void UnitMovement::SetListener(class IListener * listener)
     {
-        m.SetListener(l);
+        m.move_spline->SetListener(listener);
     }
 
     void UnitMovement::DisableGravity(bool apply)

@@ -44,8 +44,7 @@ namespace Movement
 
     UnitMovementImpl::UnitMovementImpl(WorldObjectType owner) :
         MovementBase(owner),
-        m_listener(NULL),
-        move_spline(NULL),
+        move_spline(*this),
         m_updater(NULL),
         m_client(NULL)
     {
@@ -73,8 +72,6 @@ namespace Movement
         mov_assert(!m_target_link.linked());
         mov_assert(m_client == NULL);
         mov_assert(m_updater == NULL);
-        mov_assert(move_spline == NULL);
-        mov_assert(m_listener == NULL);
     }
 
     void UnitMovementImpl::CleanReferences()
@@ -83,10 +80,6 @@ namespace Movement
             m_client->Dereference(this);
             m_client = NULL;
         }
-
-        DisableSpline();
-        delete move_spline;
-        move_spline = NULL;
 
         struct unbinder{
             inline void operator()(TargetLink& link) { link.targeter->UnbindOrientation();}
@@ -98,8 +91,6 @@ namespace Movement
 
         commonTasks.Unregister();
         m_updater = NULL;
-
-        m_listener = NULL;
     }
 
     Vector3 UnitMovementImpl::direction() const
@@ -231,58 +222,10 @@ namespace Movement
         Owner.SetGuidValue(UNIT_FIELD_TARGET, ObjectGuid());
     }
 
-    struct UnitMovementImpl::MoveSplineUpdater
-    {
-        UnitMovementImpl& mov;
-        MoveSpline& move_spline;
-        bool NeedSync;
-
-        explicit MoveSplineUpdater(UnitMovementImpl& movement, int32 difftime) :
-            mov(movement), NeedSync(false), move_spline(*mov.move_spline)
-        {
-            move_spline.updateState(difftime, *this);
-            mov.SetPosition(move_spline.ComputePosition());
-
-            if (NeedSync)
-                PacketBuilder::SplineSyncSend(mov, MsgBroadcast(mov));
-        }
-
-        inline void operator()(MoveSpline::UpdateResult result)
-        {
-            switch (result)
-            {
-            case MoveSpline::Result_NextSegment:
-                //log_console("UpdateState: segment %d is on hold, position: %s", move_spline.currentSplineSegment(),GetPosition3().toString().c_str());
-                if (mov.m_listener)
-                    mov.m_listener->OnEvent( OnEventArgs::OnPoint(move_spline.GetId(),move_spline.currentPathIdx()) );
-                break;
-            case MoveSpline::Result_Arrived:
-                //log_console("UpdateState: spline done, position: %s", GetPosition3().toString().c_str());
-                mov.DisableSpline();
-                if (mov.m_listener)
-                {
-                    // it's never possible to have 'current point == last point', need send point+1 here
-                    mov.m_listener->OnEvent( OnEventArgs::OnPoint(move_spline.GetId(),move_spline.currentPathIdx()+1) );
-                    mov.m_listener->OnEvent( OnEventArgs::OnArrived(move_spline.GetId()) );
-                }
-                break;
-            case MoveSpline::Result_NextCycle:
-                NeedSync = true;
-                break;
-            }
-        }
-    };
-
     void UnitMovementImpl::UpdateState(MSTime timeNow)
     {
         if (SplineEnabled())
         {
-            int32 difftime = (timeNow - getLastUpdate()).time;
-            if (move_spline->timeElapsed() <= difftime || difftime >= MoveSpline_UpdateDelay)
-            {
-                MoveSplineUpdater(*this, std::min(difftime,(int32)Maximum_update_difftime));
-                setLastUpdate(timeNow);
-            }
         }
         else
         {
@@ -292,46 +235,6 @@ namespace Movement
             }
             setLastUpdate(timeNow);
         }
-    }
-
-    void UnitMovementImpl::LaunchMoveSpline(MoveSplineInitArgs& args)
-    {
-        if (!HasUpdater())
-        {
-            log_function("attempt to lauch not initialized movement");
-            return;
-        }
-
-        UnitMoveFlag moveFlag_new;
-        PrepareMoveSplineArgs(args, moveFlag_new);
-      
-        if (!MoveSpline::Initialize(move_spline, args))
-        {
-            log_write("UnitMovement::LaunchMoveSpline: can't launch, invalid movespline args");
-            return;
-        }
-
-        SetMoveFlag(moveFlag_new | UnitMoveFlag::Spline_Enabled);
-        //setLastUpdate(GetUpdater().TickTime());
-        //updatable.ScheduleUpdate();
-
-        PacketBuilder::SplinePathSend(*this, MsgBroadcast(this));
-    }
-
-    void UnitMovementImpl::PrepareMoveSplineArgs(MoveSplineInitArgs& args, UnitMoveFlag& moveFlag_new) const
-    {
-        args.path[0] = GetPosition3();    //correct first vertex
-        args.splineId = Updater().NewMoveSplineId();
-        args.initialOrientation = GetPosition().orientation;
-
-        moveFlag_new = moveFlags & ~(UnitMoveFlag::Mask_Directions | UnitMoveFlag::Mask_Moving) | UnitMoveFlag::Spline_Enabled;
-        moveFlag_new.backward = args.flags.backward;
-        moveFlag_new.forward = !args.flags.backward && !args.flags.falling;
-        moveFlag_new.walk_mode = !args.flags.runmode;
-
-        // select velocity if was not set in SetVelocity
-        if (args.velocity == 0.f)
-            args.velocity = GetSpeed(UnitMovementImpl::SelectSpeedType(moveFlag_new));
     }
 
     std::string UnitMovementImpl::ToString() const
@@ -345,28 +248,8 @@ namespace Movement
         return st.str();
     }
 
-    uint32 UnitMovementImpl::MoveSplineId() const
-    {
-        if (SplineEnabled())
-            return move_spline->GetId();
-        else
-            return 0;
-    }
-
-    const Vector3& UnitMovementImpl::MoveSplineDest() const
-    {
-        if (SplineEnabled())
-            return move_spline->FinalDestination();
-        else
-            return GetPosition3();
-    }
-
-    int32 UnitMovementImpl::MoveSplineTimeElapsed() const
-    {
-        if (SplineEnabled())
-            return move_spline->timeElapsed();
-        else
-            return 0;
+    bool UnitMovementImpl::SplineEnabled() const {
+        return move_spline->isEnabled();
     }
 
     void UnitMovementImpl::SetMoveFlag(const UnitMoveFlag& newFlags)

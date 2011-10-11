@@ -53,7 +53,7 @@ namespace Movement
             MoveTo(state.GetPosition3());
         }
 
-        state.LaunchMoveSpline(args);
+        state.move_spline->Launch(args);
     }
 
     void MoveSplineInit::SetParabolic(float amplitude, float time_shift)

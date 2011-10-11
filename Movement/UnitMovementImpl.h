@@ -11,16 +11,9 @@
 namespace Movement
 {
     class MoveSpline;
+    class MoveSplineUpdatable;
     class ClientImpl;
     struct MoveSplineInitArgs;
-
-    using Tasks::TaskTarget;
-    using Tasks::TaskExecutor_Args;
-    using Tasks::CallBack;
-    using Tasks::CallBackPublic;
-    using Tasks::StaticExecutor;
-    using Tasks::Executor;
-    using Tasks::TaskTarget_DEV;
 
     struct MsgBroadcast : public MsgDeliverer
     {
@@ -75,14 +68,9 @@ namespace Movement
 
     public:
         // Used by server side controlled movement
-        void LaunchMoveSpline(MoveSplineInitArgs& args);
-        uint32 MoveSplineId() const;
-        const Vector3& MoveSplineDest() const;
-        int32 MoveSplineTimeElapsed() const;
-        void DisableSpline() { ApplyMoveFlag(UnitMoveFlag::Mask_Moving|UnitMoveFlag::Spline_Enabled,false);}
+        friend class MoveSplineUpdatable;
 
-        void SetListener(IListener * l) { m_listener = l;}
-        void ResetLisener() { m_listener = NULL; }
+        MoveSplineUpdatablePtr move_spline;
 
     public:
         bool HasMode(MoveMode m) const;
@@ -93,10 +81,10 @@ namespace Movement
         bool IsWalking() const { return moveFlags.walk_mode;}
         bool IsFlying() const { return moveFlags.hasFlag(UnitMoveFlag::Flying | UnitMoveFlag::GravityDisabled);}
         bool IsMoving() const { return moveFlags.hasFlag(UnitMoveFlag::Mask_Moving);}
-        bool SplineEnabled() const { return moveFlags.spline_enabled; }
         bool IsTurning() const { return moveFlags.hasFlag(UnitMoveFlag::Turn_Left | UnitMoveFlag::Turn_Right);}
         bool IsFalling() const { return moveFlags.falling;}
         bool IsFallingFar() const { return moveFlags.fallingfar;}
+        bool SplineEnabled() const;
 
         void SetCollisionHeight(float value);
         float GetCollisionHeight() const { return GetParameter(Parameter_CollisionHeight);}
@@ -106,16 +94,6 @@ namespace Movement
         float GetCurrentSpeed() const { return GetParameter(Parameter_SpeedCurrent); }
 
     private:
-        enum{
-        /** Affects spline movement precision & performance,
-            makes spline movement to be updated once per N milliseconds. */
-            MoveSpline_UpdateDelay = 200,
-
-        /** Upper limit for diff time values, milliseconds. Useful when movement wasn't get updated for a long time. */
-            Maximum_update_difftime = 10000,
-        };
-
-        struct MoveSplineUpdater;
 
         void setLastUpdate(MSTime time) { last_update_time = time;}
         MSTime getLastUpdate() const { return last_update_time;}
@@ -134,6 +112,7 @@ namespace Movement
         }
 
         void SetMoveFlag(const UnitMoveFlag& newFlags);
+        static SpeedType SelectSpeedType(UnitMoveFlag moveFlags);
 
         ClientMoveState ClientState() const;
         void ApplyState(const ClientMoveState& state);
@@ -147,17 +126,13 @@ namespace Movement
         bool IsClientControlled() const { return m_client && !SplineEnabled();}
         bool IsServerControlled() const { return !m_client;}
     private:
-        static SpeedType SelectSpeedType(UnitMoveFlag moveFlags);
 
-        void PrepareMoveSplineArgs(MoveSplineInitArgs&, UnitMoveFlag&) const;
         void updateRotation();
 
     private:
         friend class PacketBuilder;
 
         MoveUpdater* m_updater;
-        MoveSpline* move_spline;
-        IListener* m_listener;
         ClientImpl* m_client;
         MSTime last_update_time;
 

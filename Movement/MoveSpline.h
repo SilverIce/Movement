@@ -59,15 +59,15 @@ namespace Movement {
         void computeFallElevation(float& el) const;
 
         UpdateResult _updateState(int32& ms_time_diff);
-        int32 next_timestamp() const { return spline.length(point_Idx+1);}
         int32 segment_time_elapsed() const { return next_timestamp()-time_passed;}
 
-        explicit MoveSpline();
         void Finalize();
-        void Initialize(const MoveSplineInitArgs&);
 
         #pragma endregion
     public:
+
+        explicit MoveSpline();
+        void Initialize(const MoveSplineInitArgs&);
 
         static bool Initialize(MoveSpline *& obj, const MoveSplineInitArgs& args)
         {
@@ -101,6 +101,7 @@ namespace Movement {
         int32 Duration() const { return spline.length();}
         int32 timeElapsed() const { return Duration() - time_passed;}
         int32 timePassed() const { return time_passed;}
+        int32 next_timestamp() const { return spline.length(point_Idx+1);}
         const Vector3& FinalDestination() const { return spline.getPoint(spline.last());}
         const Vector3& CurrentDestination() const { return spline.getPoint(point_Idx+1);}
         int32 currentPathIdx() const;
