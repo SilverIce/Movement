@@ -90,6 +90,7 @@ namespace Tasks
 #include <algorithm>
 #include <hash_map>
 #include <hash_set>
+#include "POD_Arrays.h"
 
 #include "TaskExecutorImpl_Vector1.10.hpp"
 #include "TaskExecutorImpl_VectorHash1.10.hpp"
@@ -109,8 +110,8 @@ namespace Tasks
 namespace Tasks
 {
     class TaskExecutorImpl : public 
-        //TaskExecutorImpl_Vector110
-        TaskExecutorImpl_VectorHashPending112
+        TaskExecutorImpl_VectorPOD110
+        //TaskExecutorImpl_VectorHashPending112  -- that one doesn't destructs the task at task cancelling
     {
         friend class TaskExecutor;
     public:

@@ -1,6 +1,6 @@
 namespace Tasks
 {
-    class TaskExecutorImpl_VectorHash110
+    class TaskExecutorImpl_VectorHashPOD110
     {
     public:
         struct TaskInternal 
@@ -16,7 +16,7 @@ namespace Tasks
             }
         };
 
-        typedef std::vector<TaskInternal> TaskArray;
+        typedef POD_Array<TaskInternal> TaskArray;
         typedef stdext::hash_map<ObjectId, bool /*canceled*/> OwnerSet;
 
         TaskArray copy_container;
@@ -52,7 +52,7 @@ namespace Tasks
                 it->second = true;
         }
 
-        ~TaskExecutorImpl_VectorHash110() { CancelAllTasks();}
+        ~TaskExecutorImpl_VectorHashPOD110() { CancelAllTasks();}
 
         void CancelAllTasks()
         {

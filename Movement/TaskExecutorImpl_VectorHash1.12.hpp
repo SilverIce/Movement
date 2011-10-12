@@ -1,6 +1,6 @@
 namespace Tasks
 {
-    class TaskExecutorImpl_VectorHashPending112
+    class TaskExecutorImpl_VectorHashPendingPOD112
     {
     public:
         struct TaskInternal 
@@ -16,7 +16,7 @@ namespace Tasks
             }
         };
 
-        typedef std::vector<TaskInternal> TaskArray;
+        typedef POD_Array<TaskInternal> TaskArray;
         typedef stdext::hash_map<ObjectId, bool /*canceled*/> OwnerSet;
 
         TaskArray copy_container;
@@ -54,7 +54,7 @@ namespace Tasks
                 it->second = true;
         }
 
-        ~TaskExecutorImpl_VectorHashPending112() { CancelAllTasks();}
+        ~TaskExecutorImpl_VectorHashPendingPOD112() { CancelAllTasks();}
 
         void CancelAllTasks()
         {
@@ -110,11 +110,11 @@ namespace Tasks
                 inline void operator()(TaskInternal& task)
                 {
                     OwnerSet::const_iterator it = owners.find(task.objectId);
-                    if (it == owners.end() || it->second)
-                        return;
-                    _args.objectId.objectId = task.objectId;
-                    _args.callback = task.callback;
-                    task.callback->execute(_args);  // this might be unsafe & deep call
+                    if (it != owners.end() && !it->second) {
+                        _args.objectId.objectId = task.objectId;
+                        _args.callback = task.callback;
+                        task.callback->execute(_args);  // this might be unsafe & deep call
+                    }
                     task.callback->release();
                 }
                 TaskExecutor_Args& _args;

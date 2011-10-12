@@ -1,6 +1,6 @@
 namespace Tasks
 {
-    class TaskExecutorImpl_Vector110
+    class TaskExecutorImpl_VectorPOD110
     {
     public:
         struct TaskInternal 
@@ -16,7 +16,7 @@ namespace Tasks
             }
         };
 
-        typedef std::vector<TaskInternal> TaskContainer;
+        typedef POD_Array<TaskInternal> TaskContainer;
         TaskContainer tasks;
         TaskContainer copy_container;
         //std::vector<ObjectId> objects;
@@ -53,7 +53,7 @@ namespace Tasks
             tasks.erase(std::remove_if(tasks.begin(),tasks.end(),task_remover), tasks.end());
         }
 
-        ~TaskExecutorImpl_Vector110() { CancelAllTasks();}
+        ~TaskExecutorImpl_VectorPOD110() { CancelAllTasks();}
 
         void CancelAllTasks()
         {
@@ -61,9 +61,8 @@ namespace Tasks
                 inline void operator()(TaskInternal& t) { t.task->release();}
             };
 
-            TaskContainer copy;
-            copy.swap(tasks);
-            std::for_each(copy.begin(), copy.end(), task_remover());    
+            std::for_each(tasks.begin(), tasks.end(), task_remover());
+            tasks.clear();
         }
 
         void RemoveObject(ObjectId& obj)
@@ -83,7 +82,7 @@ namespace Tasks
                 return;
 
             copy_container.assign(it, tasksEnd);
-            tasks.erase(it, tasksEnd);
+            tasks.resize(tasks.size() - (tasksEnd-it));
 
             // Need execute in proper(reverse) order. task_processor may lead to deep and unsafe calls
             struct {
