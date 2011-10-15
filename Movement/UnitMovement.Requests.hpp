@@ -81,13 +81,13 @@ namespace Movement
             uint32 client_req_id;
             data >> guid.ReadAsPacked();
             data >> client_req_id;
-            data >> client_state.state;
+            data >> client_state;
             data >> client_state.floatValue;
             if (!checkRequestId(client_req_id))
                 return false;
             if (client_state.floatValue != m_value)
             {
-                log_function("wrong float value(type %u): %f and should be: %f",m_value_type,client_state.floatValue,m_value);
+                log_fatal("wrong float value(type %u): %f and should be: %f",m_value_type,client_state.floatValue,m_value);
                 return false;
             }
             client_state.floatValueType = m_value_type;
@@ -96,7 +96,7 @@ namespace Movement
             {
                 MovementMessage msg(client->controlled(), opcode, 64);
                 msg << guid.WriteAsPacked();
-                msg << client_state.state;
+                msg << client_state;
                 msg << m_value;
                 client->BroadcastMessage(msg);
             }
@@ -235,15 +235,15 @@ namespace Movement
 
             data >> guid.ReadAsPacked();
             data >> client_req_id;
-            data >> client_state.state;
+            data >> client_state;
             if (data.rpos() != data.size())
                 data >> Unused<float>();          // 0 or 1, unused
 
             if (!checkRequestId(client_req_id))
                 return false;
-            if (modeInfo[m_mode].moveFlag != 0 && m_apply != client_state.state.moveFlags.hasFlag(modeInfo[m_mode].moveFlag))
+            if (modeInfo[m_mode].moveFlag != 0 && m_apply != client_state.moveFlags.hasFlag(modeInfo[m_mode].moveFlag))
             {
-                log_function("wrong client's flag");
+                log_fatal("wrong client's flag");
                 return false;
             }
 
@@ -255,7 +255,7 @@ namespace Movement
             {
                 MovementMessage msg(client->controlled(), opcode, 64);
                 msg << guid.WriteAsPacked();
-                msg << client_state.state;
+                msg << client_state;
                 client->BroadcastMessage(msg);
             }
             return true;

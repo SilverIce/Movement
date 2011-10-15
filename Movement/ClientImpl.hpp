@@ -59,13 +59,13 @@ namespace Movement
         ClientMoveStateChange state;
 
         recv_data >> guid.ReadAsPacked();
-        recv_data >> state.state;
+        recv_data >> state;
 
         QueueState(state);
 
         MovementMessage msg(m_controlled, recv_data.GetOpcode(), recv_data.size());
         msg << guid.WriteAsPacked();
-        msg << state.state;
+        msg << state;
         BroadcastMessage(msg);
     }
 

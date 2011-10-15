@@ -52,13 +52,13 @@ namespace Movement
                     : state(client_state), owner(own) {}
 
                 void Execute(TaskExecutor_Args&){
-                    owner->ApplyState(state.state);
+                    owner->ApplyState(state);
                     if (state.floatValueType != Parameter_End)
                         owner->SetParameter(state.floatValueType, state.floatValue);
                 }
             };
-            client_state.state.ms_time = ClientToServerTime(client_state.state.ms_time);
-            m_controlled->commonTasks.AddTask(new ApplyStateTask(m_controlled,client_state), client_state.state.ms_time);
+            client_state.ms_time = ClientToServerTime(client_state.ms_time);
+            m_controlled->commonTasks.AddTask(new ApplyStateTask(m_controlled,client_state), client_state.ms_time);
         }
 
         void RegisterRespHandler(RespHandler* handler);

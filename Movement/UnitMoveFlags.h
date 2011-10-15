@@ -59,7 +59,7 @@ namespace Movement
             Allow_Pitching     = 0x002000000000L,
             Unk4               = 0x004000000000L,
             Unk5               = 0x008000000000L,
-            Unk6               = 0x010000000000L,
+            Unk6               = 0x010000000000L,           // enabled with animation flag in CMovement::OnMonsterMoveFlag_0x200000
             Unk7               = 0x020000000000L,
             Interp_Move        = 0x040000000000L,
             Interp_Turning     = 0x080000000000L,

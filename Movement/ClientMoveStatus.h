@@ -41,11 +41,10 @@ namespace Movement
 
     struct ClientMoveState : public _ClientMoveState
     {
-        ClientMoveState() : /*mover(0),*/ t_guid(0)
+        ClientMoveState() : t_guid(0)
         {
         }
 
-        //uint64 mover;
         Location world_position;
         Location transport_position;
         uint64 t_guid;
@@ -55,11 +54,10 @@ namespace Movement
         std::string ToString() const;
     };
 
-    struct ClientMoveStateChange
+    struct ClientMoveStateChange : public ClientMoveState
     {
         ClientMoveStateChange() : floatValueType(Parameter_End), floatValue(0) {}
 
-        ClientMoveState state;
         FloatParameter floatValueType;
         float floatValue;
     };

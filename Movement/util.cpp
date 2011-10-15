@@ -232,7 +232,7 @@ namespace Movement
             STR(Unknown6     ),// 0x01000000,
             STR(Unknown7     ),// 0x02000000,
             STR(Unknown8     ),// 0x04000000,
-            STR(Backward     ),// 0x08000000,           // Appears With Runmode Flag, Nodes ),// 1, Handles Orientation
+            STR(OrientationInversed ),// 0x08000000,           // Appears With Runmode Flag, Nodes ),// 1, Handles Orientation
             STR(Unknown10    ),// 0x10000000,
             STR(Unknown11    ),// 0x20000000,
             STR(Unknown12    ),// 0x40000000,
