@@ -35,6 +35,11 @@ namespace Movement
         MSTime ClientTime() const {return ServerToClientTime(ServerTime());}
         MSTime ClientToServerTime(const MSTime& client_time) const { return client_time - m_time_diff;}
 
+        void assertInWorld() const{ assert_state(m_socket);}
+        void assertControlled() const {
+            assert_state(m_controlled && m_controlled->client() == this);
+        }
+
     public:
 
         TaskTarget_DEV commonTasks;
@@ -44,6 +49,8 @@ namespace Movement
 
         void QueueState(ClientMoveStateChange& client_state)
         {
+            assertInWorld();
+            assertControlled();
             struct ApplyStateTask : Executor<ApplyStateTask,true>{
                 UnitMovementImpl * owner;
                 ClientMoveStateChange state;
@@ -117,15 +124,19 @@ namespace Movement
 
         explicit RespHandler(uint32 _opcode, ClientImpl * client) : m_opcode(_opcode), m_client(client), m_wasHandled(false)
         {
+            assert_state(m_client);
             client->RegisterRespHandler(this);
         }
 
         ~RespHandler() {
+            assert_state(m_client);
             m_client->UnregisterRespHandler(this);
         }
 
         bool OnReply(WorldPacket& data)
         {
+            assert_state(!m_wasHandled);
+            assert_state(m_client);
             if (m_opcode != data.GetOpcode()) {
                 log_function("expected reply was: %s, but received instead: %s", LookupOpcodeName(m_opcode), LookupOpcodeName(data.GetOpcode()));
                 return false;
@@ -135,10 +146,8 @@ namespace Movement
         }
 
         void Execute(TaskExecutor_Args& args){
-            if (!m_wasHandled) {
-                log_function("Kick client due to response(opcode: %s) timeout", LookupOpcodeName(m_opcode));
-                m_client->Kick();
-            }
+            if (!m_wasHandled)
+                log_function("response timeout (opcode: %s)", LookupOpcodeName(m_opcode));
         }
     };
 

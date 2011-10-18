@@ -1,6 +1,7 @@
 #pragma once
 
 #include "typedefs.h"
+#include <intrin.h>
 
 namespace Movement
 {
@@ -18,16 +19,25 @@ namespace Movement
 
 #define mov_assert(expr) \
     if (!(expr)){ \
-        log_write("%s:%i Error: Assertion '%s' in %s failed", __FILE__, __LINE__, #expr, __FUNCTION__);\
-        log_write_trace(); \
+        log_write("In "__FUNCTION__":%i assertion '"#expr"' failed", __LINE__); \
+        __debugbreak(); \
     }
 
-#define log_function(msg, ...) { \
+/** Use it to validate object state */
+#define assert_state(expr) mov_assert(expr)
+
+#define log_function(msg, ...)  log_write(__FUNCTION__ ": " msg, __VA_ARGS__) \
+
+#define log_fatal(msg, ...) { \
         log_write(__FUNCTION__ ": " msg, __VA_ARGS__); \
-        log_write_trace(); \
+        __debugbreak(); \
     }
 
-#define check(expr) if (bool(expr) == false) log_write("In "__FUNCTION__":%i check '"#expr"' failed", __LINE__);
+#define check(expr) \
+    if (bool(expr) == false) { \
+        log_write("In "__FUNCTION__":%i check '"#expr"' failed", __LINE__); \
+        __debugbreak(); \
+    }
 
     template<class T, T limit>
     class counter

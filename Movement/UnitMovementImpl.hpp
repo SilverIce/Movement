@@ -148,7 +148,7 @@ namespace Movement
     {
         if (SplineEnabled())
         {
-            log_function("while in server control");
+            log_fatal("while in server control");
             return;
         }
 

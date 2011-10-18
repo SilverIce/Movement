@@ -134,7 +134,7 @@ namespace Tasks
     void TaskExecutor::RegisterObject(TaskTarget& obj)
     {
         if (obj.isRegistered()){
-            log_function("object is already registered somewhere");
+            log_fatal("object is already registered somewhere");
             return;
         }
 

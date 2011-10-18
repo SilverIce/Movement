@@ -103,12 +103,7 @@ namespace Movement
 
     void ClientImpl::Dereference(const UnitMovementImpl * m)
     {
-        if (m != m_controlled || m_controlled->client() != this)
-        {
-            log_function("wtf?");
-            return;
-        }
-
+        assert_state(m == m_controlled && m_controlled->client() == this)
         LostControl();
     }
 
@@ -127,7 +122,8 @@ namespace Movement
 
     void ClientImpl::LostControl()
     {
-        if (m_controlled && m_controlled->client() == this)
+        assert_state(!m_controlled || (m_controlled->client() == this));
+        if (m_controlled)
             m_controlled->client(NULL);
         m_controlled = NULL;
     }
@@ -167,7 +163,7 @@ namespace Movement
 
     void ClientImpl::HandleResponse(WorldPacket& data)
     {
-        mov_assert(m_controlled); // wrong state
+        assert_state(m_controlled); // wrong state
 
         if (m_resp_handlers.empty())
         {
