@@ -130,7 +130,6 @@ namespace Movement
         {
             m_updater = &updater;
             commonTasks.SetExecutor(updater);
-            m_updateRotationTask.SetExecutor(updater);
             struct RegularUpdater : StaticExecutor<UnitMovementImpl,RegularUpdater,false> {
                 static void Execute(UnitMovementImpl& me, TaskExecutor_Args& args) {
                     me.UpdateState(args.now);
@@ -203,7 +202,13 @@ namespace Movement
             }
         };
 
-        m_updateRotationTask.AddTask(CallBackPublic(this,&OrientationUpdater::Static_Execute), 0);
+        // TODO: this place is big field for improvements. List of units that are subscibed to receive
+        // orientation updates might be moved to new class. This class can be automatically deleted when none targets unit
+
+        // create OrientationUpdater task only in case there is no more such tasks
+        if (!m_updateRotationTask.isRegistered())
+            m_updater->AddTask(CallBackPublic(this,&OrientationUpdater::Static_Execute),0,m_updateRotationTask);
+
         m_target_link.delink();
         m_target_link.Value = TargetLink(&target, this);
         target.m_targeter_references.link(m_target_link);
@@ -212,7 +217,7 @@ namespace Movement
 
     void UnitMovementImpl::UnbindOrientation()
     {
-        m_updateRotationTask.Unregister();
+        m_updater->Unregister(m_updateRotationTask);
         m_target_link.delink();
         m_target_link.Value = TargetLink();
         Owner.SetGuidValue(UNIT_FIELD_TARGET, ObjectGuid());

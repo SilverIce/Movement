@@ -140,7 +140,7 @@ namespace Movement
         _ClientMoveState m_unused; 
 
         float m_float_values[Parameter_End];
-        TaskTarget_DEV m_updateRotationTask;
+        TaskTarget m_updateRotationTask;
         LinkedListElement<TargetLink> m_target_link;
         LinkedList<TargetLink> m_targeter_references;
     };

@@ -121,8 +121,10 @@ namespace Tasks
     TaskExecutor::TaskExecutor() : impl(*new TaskExecutorImpl()), m_objectsRegistered(0) {}
     TaskExecutor::~TaskExecutor() { delete &impl;}
 
-    void TaskExecutor::AddTask(CallBack * callback, MSTime exec_time, const TaskTarget& ownerId)
+    void TaskExecutor::AddTask(CallBack * callback, MSTime exec_time, TaskTarget& ownerId)
     {
+        if (!ownerId.isRegistered())
+            Register(ownerId);
         impl.AddTask(callback, exec_time, ownerId.objectId);
     }
 
@@ -131,7 +133,7 @@ namespace Tasks
         impl.CancelTasks(ownerId.objectId);
     }
 
-    void TaskExecutor::RegisterObject(TaskTarget& obj)
+    void TaskExecutor::Register(TaskTarget& obj)
     {
         if (obj.isRegistered()){
             log_fatal("object is already registered somewhere");
@@ -143,7 +145,7 @@ namespace Tasks
         impl.RegisterObject(obj.objectId);
     }
 
-    void TaskExecutor::RemoveObject(TaskTarget& obj)
+    void TaskExecutor::Unregister(TaskTarget& obj)
     {
         if (!obj.isRegistered())
             return;
@@ -186,7 +188,7 @@ namespace Tasks
     {
         if (isRegistered()) {
             mov_assert(m_executor);
-            m_executor->RemoveObject(m_objectId);
+            m_executor->Unregister(m_objectId);
         }
         m_executor = NULL;
     }
@@ -194,8 +196,6 @@ namespace Tasks
     void TaskTarget_DEV::AddTask(CallBack * callback, MSTime exec_time)
     {
         mov_assert(m_executor);
-        if (!isRegistered())
-            m_executor->RegisterObject(m_objectId);
         m_executor->AddTask(callback, exec_time, m_objectId);
     }
 }

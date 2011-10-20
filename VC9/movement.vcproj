@@ -251,15 +251,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\MoveUpdater.h"
-				>
-			</File>
-			<File
 				RelativePath="..\Movement\MSTime.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\RdtscTimer.h"
+				RelativePath="..\Movement\typedefs_p.h"
 				>
 			</File>
 			<File
@@ -315,6 +311,14 @@
 				</File>
 				<File
 					RelativePath="..\Movement\UnitMovementImpl.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\UpdatableSpline.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\UpdatableSpline.hpp"
 					>
 				</File>
 				<Filter
@@ -418,6 +422,10 @@
 				Name="TaskScheduler"
 				>
 				<File
+					RelativePath="..\Movement\POD_Arrays.h"
+					>
+				</File>
+				<File
 					RelativePath="..\Movement\TaskExecutorImpl_Deque.hpp"
 					>
 				</File>
@@ -434,7 +442,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\Movement\TaskExecutorImpl_Vector1.1.hpp"
+					RelativePath="..\Movement\TaskExecutorImpl_Vector1.10.hpp"
 					>
 				</File>
 				<File
@@ -481,6 +489,10 @@
 		</File>
 		<File
 			RelativePath="..\Movement\MoveSplineInit.h"
+			>
+		</File>
+		<File
+			RelativePath="..\Movement\MoveUpdater.h"
 			>
 		</File>
 		<File

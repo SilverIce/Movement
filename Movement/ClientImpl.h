@@ -130,6 +130,8 @@ namespace Movement
         HandlerMap handlers;
 
         void assignHandler(Handler hdl, uint16 opcode) {
+            if (opcode == MSG_NULL_ACTION)
+                return;
             HandlerMap::const_iterator it = handlers.find(opcode);
             assert_state(it == handlers.end());
             handlers.insert(HandlerMap::value_type(opcode,hdl));

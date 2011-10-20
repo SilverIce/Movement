@@ -26,11 +26,11 @@ namespace Tasks
     class ITaskExecutor
     {
     public:
-        virtual void AddTask(CallBack * callback, MSTime exec_time, const TaskTarget& ownerId) = 0;
+        virtual void AddTask(CallBack * callback, MSTime exec_time, TaskTarget& ownerId) = 0;
         virtual void CancelTasks(const TaskTarget& ownerId) = 0;
         virtual void Update(MSTime time) = 0;
-        virtual void RegisterObject(TaskTarget& obj) = 0;
-        virtual void RemoveObject(TaskTarget& obj) = 0;
+        virtual void Register(TaskTarget& obj) = 0;
+        virtual void Unregister(TaskTarget& obj) = 0;
     protected:
         ~ITaskExecutor() {}
     };
@@ -47,14 +47,14 @@ namespace Tasks
         ~TaskExecutor();
 
         template<class T>
-        void AddTask(T * functor, MSTime exec_time, const TaskTarget& ownerId);
-        void AddTask(CallBack * callback, MSTime exec_time, const TaskTarget& ownerId) override;
+        void AddTask(T * functor, MSTime exec_time, TaskTarget& ownerId);
+        void AddTask(CallBack * callback, MSTime exec_time, TaskTarget& ownerId) override;
 
         void CancelTasks(const TaskTarget& ownerId) override;
         void CancelAllTasks();
 
-        void RegisterObject(TaskTarget& obj) override;
-        void RemoveObject(TaskTarget& obj) override;
+        void Register(TaskTarget& obj) override;
+        void Unregister(TaskTarget& obj) override;
 
         void Update(MSTime time) override;
 
@@ -160,7 +160,7 @@ namespace Tasks
     };
 
     template<class T>
-    inline void TaskExecutor::AddTask(T * functor, MSTime exec_time, const TaskTarget& ownerId)
+    inline void TaskExecutor::AddTask(T * functor, MSTime exec_time, TaskTarget& ownerId)
     {
         AddTask(CallBackPublic(functor), exec_time, ownerId);
     }
