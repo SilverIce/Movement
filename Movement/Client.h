@@ -7,6 +7,7 @@
 */
 
 #pragma once
+#include <vector>
 
 class WorldPacket;
 
@@ -24,22 +25,17 @@ namespace Movement
         Client& operator = (const Client&);
     public:
 
-        /** Client's lifetime bounded to WorldSession lifetime */
         static Client* create(void * socket);
         ~Client();
-
-        ClientImpl& Impl() { return m;}
 
         void LostControl();
         void SetControl(UnitMovement * mov);
 
-        void HandleResponse(WorldPacket& data);
+        /** Receives movemet messages from all visible clients */
+        void SendMoveMessage(MovementMessage& message) const;
+        /** Handles messages from this client */
+        void OnMovementMessage(WorldPacket& message);
 
-        /** Handles messages from another clients */
-        void SendMoveMessage(MovementMessage& msg) const;
-        /** Handles messages from that client */
-        void HandleOutcomingMessage(WorldPacket& recv_data);
-
-        void HandleMoveTimeSkipped(WorldPacket & recv_data);
+        static void FillSubscribeList(std::vector<uint16>& opcodes);
     };
 }

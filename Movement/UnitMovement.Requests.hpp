@@ -337,4 +337,62 @@ namespace Movement
     {
         TeleportRequest::Launch(this, loc);
     }
+
+    //////////////////////////////////////////////////////////////////////////
+
+    MoveHandlersBinder::MoveHandlersBinder()
+    {
+
+#define ASSIGN_HANDLER(MessageHanger, ... ) { \
+    uint16 opcodes[] = {__VA_ARGS__}; \
+    assignHandler(MessageHanger, opcodes, CountOf(opcodes)); \
+    }
+        assignHandler(&ClientImpl::OnMoveTimeSkipped, CMSG_MOVE_TIME_SKIPPED);
+
+        for (uint32 i = 0; i < CountOf(ValueChange2Opc_table); ++i)
+            assignHandler(&ClientImpl::OnResponse, ValueChange2Opc_table[i].cmsg_response);
+
+        for (uint32 i = 0; i < CountOf(modeInfo); ++i)
+            assignHandler(&ClientImpl::OnResponse, modeInfo[i].cmsg_ack);
+
+        ASSIGN_HANDLER(&ClientImpl::OnResponse,
+            CMSG_TIME_SYNC_RESP,
+            MSG_MOVE_TELEPORT_ACK);
+
+        ASSIGN_HANDLER(&ClientImpl::OnCommonMoveMessage,
+            MSG_MOVE_START_FORWARD,
+            MSG_MOVE_START_BACKWARD,
+            MSG_MOVE_STOP,
+            MSG_MOVE_START_STRAFE_LEFT,
+            MSG_MOVE_START_STRAFE_RIGHT,
+            MSG_MOVE_STOP_STRAFE,
+            MSG_MOVE_JUMP,
+            MSG_MOVE_START_TURN_LEFT,
+            MSG_MOVE_START_TURN_RIGHT,
+            MSG_MOVE_STOP_TURN,
+            MSG_MOVE_START_PITCH_UP,
+            MSG_MOVE_START_PITCH_DOWN,
+            MSG_MOVE_STOP_PITCH,
+            MSG_MOVE_SET_RUN_MODE,
+            MSG_MOVE_SET_WALK_MODE,
+            MSG_MOVE_FALL_LAND,
+            MSG_MOVE_START_SWIM,
+            MSG_MOVE_STOP_SWIM,
+            MSG_MOVE_SET_FACING,
+            MSG_MOVE_SET_PITCH,
+            MSG_MOVE_HEARTBEAT,
+            CMSG_MOVE_FALL_RESET,
+            CMSG_MOVE_SET_FLY,
+            MSG_MOVE_START_ASCEND,
+            MSG_MOVE_STOP_ASCEND,
+            CMSG_MOVE_CHNG_TRANSPORT,
+            MSG_MOVE_START_DESCEND);
+
+        // TODO:
+        //assignHandler(&ClientImpl::OnNotImplementedMessage, CMSG_MOVE_SPLINE_DONE);
+        //assignHandler(&ClientImpl::OnNotImplementedMessage, CMSG_MOVE_KNOCK_BACK_ACK);
+        //ASSIGN_HANDLER(&ClientImpl::OnNotImplementedMessage, CMSG_MOVE_NOT_ACTIVE_MOVER, CMSG_SET_ACTIVE_MOVER);
+
+#undef ASSIGN_HANDLER
+    }
 }

@@ -48,7 +48,7 @@ namespace Movement
         };
     };
 
-    void ClientImpl::HandleOutcomingMessage(WorldPacket& recv_data)
+    void ClientImpl::OnCommonMoveMessage(WorldPacket& recv_data)
     {
         if (!m_controlled){
             log_function("no controlled object");
@@ -134,7 +134,7 @@ namespace Movement
     {
     }
 
-    void ClientImpl::HandleMoveTimeSkipped(WorldPacket & recv_data)
+    void ClientImpl::OnMoveTimeSkipped(WorldPacket & recv_data)
     {
         if (!m_controlled){
             log_function("no controlled object");
@@ -161,7 +161,7 @@ namespace Movement
         return str.str();
     }
 
-    void ClientImpl::HandleResponse(WorldPacket& data)
+    void ClientImpl::OnResponse(WorldPacket& data)
     {
         assert_state(m_controlled); // wrong state
 
@@ -189,6 +189,13 @@ namespace Movement
         m_resp_handlers.remove(handler);
     }
 
+    void ClientImpl::OnNotImplementedMessage( WorldPacket& data )
+    {
+        log_function("Unimplemented message handler called: %s", LookupOpcodeName(data.GetOpcode()));
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    
     void Client::LostControl()
     {
         m.LostControl();
@@ -199,24 +206,14 @@ namespace Movement
         m.SetControl(&mov->Impl());
     }
 
-    void Client::HandleResponse( WorldPacket& data )
-    {
-        m.HandleResponse(data);
-    }
-
     void Client::SendMoveMessage( MovementMessage& msg ) const
     {
         m.SendMoveMessage(msg);
     }
 
-    void Client::HandleOutcomingMessage(WorldPacket& recv_data)
+    void Client::OnMovementMessage(WorldPacket& message)
     {
-        m.HandleOutcomingMessage(recv_data);
-    }
-
-    void Client::HandleMoveTimeSkipped(WorldPacket & recv_data)
-    {
-        m.HandleMoveTimeSkipped(recv_data);
+        MoveHandlersBinder::InvokeHander(&m, message);
     }
 
     Client* Client::create(void * socket)
@@ -230,5 +227,10 @@ namespace Movement
     Client::~Client()
     {
         m.~ClientImpl();
+    }
+
+    void Client::FillSubscribeList(std::vector<uint16>& opcodes)
+    {
+        MoveHandlersBinder::FillSubscribeList(opcodes);
     }
 }

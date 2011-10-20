@@ -43,6 +43,10 @@ namespace Movement
             PacketBuilder::WriteClientStatus(state, m_packet);
         }
 
+        void operator << (const ClientMoveStateChange& state) {
+            *this << static_cast<const ClientMoveState&>(state);
+        }
+
         /* Message's source. It might be deleted: unsafe to call his functions, access to his fields */
         MessageSource Source() const { return m_source;}
         const WorldPacket& Packet() const { return m_packet;}

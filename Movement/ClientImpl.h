@@ -7,7 +7,6 @@
 */
 
 #pragma once
-#include <list>
 
 class ByteBuffer;
 class WorldPacket;
@@ -90,14 +89,56 @@ namespace Movement
         void LostControl();
         void SetControl(UnitMovementImpl * mov);
 
-        void HandleResponse(WorldPacket& data);
-
-        /** Handles messages from another clients */
         void SendMoveMessage(MovementMessage& msg) const;
-        /** Handles messages from that client */
-        void HandleOutcomingMessage(WorldPacket& recv_data);
 
-        void HandleMoveTimeSkipped(WorldPacket & recv_data);
+    public:
+
+        void OnCommonMoveMessage(WorldPacket& recv_data);
+        void OnResponse(WorldPacket& data);
+        void OnMoveTimeSkipped(WorldPacket & recv_data);
+        void OnNotImplementedMessage(WorldPacket& data);
+    };
+
+    class MoveHandlersBinder
+    {
+    public:
+        typedef void (ClientImpl::*Handler)(WorldPacket& msg);
+        typedef stdext::hash_map<uint16/*Opcode*/, Handler> HandlerMap;
+
+        static void InvokeHander(ClientImpl * client, WorldPacket& msg)
+        {
+            HandlerMap::const_iterator it = instance().handlers.find(msg.GetOpcode());
+            assert_state_msg(it != instance().handlers.end(), "no handlers for %s", LookupOpcodeName(msg.GetOpcode()));
+            (client->*(it->second)) (msg);
+        }
+
+        static void FillSubscribeList(std::vector<uint16>& opcodes)
+        {
+            for (HandlerMap::const_iterator it = instance().handlers.begin(); it != instance().handlers.end(); ++it)
+                opcodes.push_back(it->first);
+        }
+
+    private:
+
+        explicit MoveHandlersBinder();
+
+        static MoveHandlersBinder& instance() {
+            static MoveHandlersBinder _instance;
+            return _instance;
+        }
+
+        HandlerMap handlers;
+
+        void assignHandler(Handler hdl, uint16 opcode) {
+            HandlerMap::const_iterator it = handlers.find(opcode);
+            assert_state(it == handlers.end());
+            handlers.insert(HandlerMap::value_type(opcode,hdl));
+        }
+
+        void assignHandler(Handler hdl, const uint16 * opcodes, uint32 count) {
+            for (uint32 i = 0; i < count; ++i)
+                assignHandler(hdl, opcodes[i]);
+        }
     };
 
     class RespHandler : public Executor<RespHandler,true>

@@ -1,10 +1,12 @@
 
-#include "typedefs_p.h"
-#include <sstream>
-
 #include "UnitMovement.h"
 #include "Client.h"
 #include "MoveSplineInit.h"
+
+#include <sstream>
+#include <list>
+#include <hash_map>
+#include "typedefs_p.h"
 
 #include "Object.h"
 #include "opcodes.h"
