@@ -7,7 +7,7 @@ namespace Movement
         MoveSplineFlag::eFlags Flag = MoveSplineFlag::Done;
         MoveSplineFlag f(Flag);
         check( f.hasFlag(Flag) );
-        check( f & Flag );
+        check( (f & Flag) != 0 );
         check( f.raw == Flag );
         check( f.done );
         check( f.ToString().find("Done") != std::string::npos );

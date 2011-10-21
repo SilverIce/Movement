@@ -103,11 +103,12 @@ namespace Movement
     {
     public:
         typedef void (ClientImpl::*Handler)(WorldPacket& msg);
-        typedef stdext::hash_map<uint16/*Opcode*/, Handler> HandlerMap;
+        typedef stdext::hash_map<ClientOpcode, Handler> HandlerMap;
 
         static void InvokeHander(ClientImpl * client, WorldPacket& msg)
         {
-            HandlerMap::const_iterator it = instance().handlers.find(msg.GetOpcode());
+            ClientOpcode opcode = (ClientOpcode)msg.GetOpcode();
+            HandlerMap::const_iterator it = instance().handlers.find(opcode);
             assert_state_msg(it != instance().handlers.end(), "no handlers for %s", LookupOpcodeName(msg.GetOpcode()));
             (client->*(it->second)) (msg);
         }
@@ -129,15 +130,16 @@ namespace Movement
 
         HandlerMap handlers;
 
-        void assignHandler(Handler hdl, uint16 opcode) {
+        void assignHandler(Handler hdl, ClientOpcode opcode) {
             if (opcode == MSG_NULL_ACTION)
                 return;
             HandlerMap::const_iterator it = handlers.find(opcode);
-            assert_state(it == handlers.end());
+            // two normal cases here: handler wasn't assigned yet or same handler for same opcode
+            assert_state(it == handlers.end() || it->second == hdl);
             handlers.insert(HandlerMap::value_type(opcode,hdl));
         }
 
-        void assignHandler(Handler hdl, const uint16 * opcodes, uint32 count) {
+        void assignHandler(Handler hdl, const ClientOpcode * opcodes, uint32 count) {
             for (uint32 i = 0; i < count; ++i)
                 assignHandler(hdl, opcodes[i]);
         }
@@ -147,7 +149,7 @@ namespace Movement
     {
     private:
         ClientImpl* m_client;
-        uint32 m_opcode;
+        ClientOpcode m_opcode;
         bool m_wasHandled;
     protected:
         virtual bool OnReply(ClientImpl * client, WorldPacket& data) = 0;
@@ -165,7 +167,7 @@ namespace Movement
         /* Default timeout value is 500 milliseconds */
         static uint32 DefaultTimeout;
 
-        explicit RespHandler(uint32 _opcode, ClientImpl * client) : m_opcode(_opcode), m_client(client), m_wasHandled(false)
+        explicit RespHandler(ClientOpcode _opcode, ClientImpl * client) : m_opcode(_opcode), m_client(client), m_wasHandled(false)
         {
             assert_state(m_client);
             client->RegisterRespHandler(this);

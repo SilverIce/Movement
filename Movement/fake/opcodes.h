@@ -4,7 +4,7 @@
 
 namespace Movement
 {
-    enum ClientOpcodes
+    enum ClientOpcode
     {
         MSG_NULL_ACTION                                 = 0x000,
         CMSG_BOOTME                                     = 0x001,

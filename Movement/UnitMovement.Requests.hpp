@@ -4,10 +4,10 @@ namespace Movement
 {
     struct ReqRespMsg
     {
-        uint16 smsg_request;
-        uint16 cmsg_response;
-        uint16 msg;
-        uint16 smsg_spline;
+        ClientOpcode smsg_request;
+        ClientOpcode cmsg_response;
+        ClientOpcode msg;
+        ClientOpcode smsg_spline;
     };
 
     /* request-response-msg order*/
@@ -23,8 +23,8 @@ namespace Movement
         VALUE_CHANGE(FLIGHT_BACK_SPEED)
         VALUE_CHANGE(TURN_RATE)
         VALUE_CHANGE(PITCH_RATE)
-        {SMSG_MOVE_SET_COLLISION_HGT,CMSG_MOVE_SET_COLLISION_HGT_ACK,MSG_MOVE_SET_COLLISION_HGT,0},
-        {0,0,0,0},
+        {SMSG_MOVE_SET_COLLISION_HGT,CMSG_MOVE_SET_COLLISION_HGT_ACK,MSG_MOVE_SET_COLLISION_HGT,MSG_NULL_ACTION},
+        {MSG_NULL_ACTION,MSG_NULL_ACTION,MSG_NULL_ACTION,MSG_NULL_ACTION},
     };
 #undef VALUE_CHANGE
 
@@ -38,7 +38,7 @@ namespace Movement
             m_value_type(value_type),
             m_value(value)
         { 
-            if (uint16 opcode = ValueChange2Opc_table[value_type].smsg_request)
+            if (ClientOpcode opcode = ValueChange2Opc_table[value_type].smsg_request)
             {
                 WorldPacket data(opcode, 32);
                 data << client->controlled()->Owner.GetPackGUID();
@@ -61,7 +61,7 @@ namespace Movement
             else
             {
                 mov->SetParameter(value_type, value);
-                if (uint16 opcode = ValueChange2Opc_table[value_type].smsg_spline)
+                if (ClientOpcode opcode = ValueChange2Opc_table[value_type].smsg_spline)
                 {
                     WorldPacket data(opcode, 16);
                     data << mov->Owner.GetPackGUID();
@@ -92,7 +92,7 @@ namespace Movement
             }
             client_state.floatValueType = m_value_type;
             client->QueueState(client_state);
-            if (uint16 opcode = ValueChange2Opc_table[m_value_type].msg)
+            if (ClientOpcode opcode = ValueChange2Opc_table[m_value_type].msg)
             {
                 MovementMessage msg(client->controlled(), opcode, 64);
                 msg << guid.WriteAsPacked();
@@ -118,16 +118,18 @@ namespace Movement
     struct ModeInfo
     {
         UnitMoveFlag::eUnitMoveFlags moveFlag;
-        uint16 smsg_apply[2];   // 0 is apply, 1 - unapply
-        uint16 cmsg_ack[2];
-        uint16 msg_apply[2];   // 0 is apply, 1 - unapply
-        uint16 smsg_spline_apply[2];   // 0 is apply, 1 - unapply
+        ClientOpcode smsg_apply[2];   // 0 is apply, 1 - unapply
+        ClientOpcode cmsg_ack[2];
+        ClientOpcode msg_apply[2];   // 0 is apply, 1 - unapply
+        ClientOpcode smsg_spline_apply[2];   // 0 is apply, 1 - unapply
     };
 
     const ModeInfo modeInfo[MoveMode_End]=
     {
         {
-            UnitMoveFlag::Walk_Mode, 0, 0, 0, 0, 0, 0,
+            UnitMoveFlag::Walk_Mode, MSG_NULL_ACTION, MSG_NULL_ACTION,
+                MSG_NULL_ACTION, MSG_NULL_ACTION,
+                MSG_NULL_ACTION, MSG_NULL_ACTION,
                 SMSG_SPLINE_MOVE_SET_WALK_MODE, SMSG_SPLINE_MOVE_SET_RUN_MODE
         },
         {
@@ -137,7 +139,9 @@ namespace Movement
                 SMSG_SPLINE_MOVE_ROOT, SMSG_SPLINE_MOVE_UNROOT
         },
         {
-            UnitMoveFlag::Swimming, 0, 0, 0, 0, 0, 0,
+            UnitMoveFlag::Swimming, MSG_NULL_ACTION, MSG_NULL_ACTION,
+                MSG_NULL_ACTION, MSG_NULL_ACTION,
+                MSG_NULL_ACTION, MSG_NULL_ACTION,
                 SMSG_SPLINE_MOVE_START_SWIM, SMSG_SPLINE_MOVE_STOP_SWIM
         },
         {
@@ -159,7 +163,9 @@ namespace Movement
                 SMSG_SPLINE_MOVE_SET_HOVER, SMSG_SPLINE_MOVE_UNSET_HOVER
         },
         {
-            UnitMoveFlag::Flying, 0, 0, 0, 0, 0,
+            UnitMoveFlag::Flying, MSG_NULL_ACTION, MSG_NULL_ACTION,
+                MSG_NULL_ACTION, MSG_NULL_ACTION,
+                MSG_NULL_ACTION, MSG_NULL_ACTION,
                 SMSG_SPLINE_MOVE_SET_FLYING, SMSG_SPLINE_MOVE_UNSET_FLYING
         },
         {
@@ -178,7 +184,7 @@ namespace Movement
             UnitMoveFlag::AllowSwimFlyTransition, SMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY, SMSG_MOVE_UNSET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY,
                 CMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY_ACK, CMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY_ACK,
                 MSG_MOVE_UPDATE_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY, MSG_MOVE_UPDATE_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY,
-                0, 0
+                MSG_NULL_ACTION, MSG_NULL_ACTION
         },
     };
 
@@ -209,7 +215,7 @@ namespace Movement
             }
             else
             {
-                if (uint16 opcode = modeInfo[mode].smsg_spline_apply[!apply])
+                if (ClientOpcode opcode = modeInfo[mode].smsg_spline_apply[!apply])
                 {
                     /** By some unknown reason client force moves unit to end of the path when receives
                         SMSG_SPLINE_MOVE_ROOT/SMSG_SPLINE_MOVE_UNROOT packet.
@@ -251,7 +257,7 @@ namespace Movement
             // very often incoming client state is from past time..
             client->QueueState(client_state);
 
-            if (uint16 opcode = modeInfo[m_mode].msg_apply[!m_apply])
+            if (ClientOpcode opcode = modeInfo[m_mode].msg_apply[!m_apply])
             {
                 MovementMessage msg(client->controlled(), opcode, 64);
                 msg << guid.WriteAsPacked();
@@ -344,7 +350,7 @@ namespace Movement
     {
 
 #define ASSIGN_HANDLER(MessageHanger, ... ) { \
-    uint16 opcodes[] = {__VA_ARGS__}; \
+    ClientOpcode opcodes[] = {__VA_ARGS__}; \
     assignHandler(MessageHanger, opcodes, CountOf(opcodes)); \
     }
         assignHandler(&ClientImpl::OnMoveTimeSkipped, CMSG_MOVE_TIME_SKIPPED);
@@ -352,8 +358,10 @@ namespace Movement
         for (uint32 i = 0; i < CountOf(ValueChange2Opc_table); ++i)
             assignHandler(&ClientImpl::OnResponse, ValueChange2Opc_table[i].cmsg_response);
 
-        for (uint32 i = 0; i < CountOf(modeInfo); ++i)
-            assignHandler(&ClientImpl::OnResponse, modeInfo[i].cmsg_ack);
+        for (uint32 i = 0; i < CountOf(modeInfo); ++i) {
+            assignHandler(&ClientImpl::OnResponse, modeInfo[i].cmsg_ack[0]);
+            assignHandler(&ClientImpl::OnResponse, modeInfo[i].cmsg_ack[1]);
+        }
 
         ASSIGN_HANDLER(&ClientImpl::OnResponse,
             CMSG_TIME_SYNC_RESP,
