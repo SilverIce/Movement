@@ -130,7 +130,7 @@ protected:
 
     LengthArray lengths;
 
-    index_type computeIndexInBounds(length_type length) const;
+    index_type computeIndexFromLength(length_type length) const;
     #pragma endregion
 public:
 

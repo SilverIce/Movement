@@ -27,10 +27,12 @@ namespace Movement
     }
 
     extern void UnitMovementTests();
+    extern void SplineTests();
 
     void RunTests()
     {
         testMSTime();
+        SplineTests();
 
         UnitMovementTests();
     }

@@ -20,30 +20,12 @@ template<typename length_type> void Spline<length_type>::evaluate_derivative(flo
     evaluate_derivative(Index, u, hermite);
 }
 
-template<typename length_type> SplineBase::index_type Spline<length_type>::computeIndexInBounds(length_type length_) const
+template<typename length_type> SplineBase::index_type Spline<length_type>::computeIndexFromLength(length_type length_) const
 {
-// Temporary disabled: causes infinite loop with t = 1.f
-/*
-    index_type hi = index_hi;
-    index_type lo = index_lo;
-
-    index_type i = lo + (float)(hi - lo) * t;
-
-    while ((lengths[i] > length) || (lengths[i + 1] <= length))
-    {
-        if (lengths[i] > length)
-            hi = i - 1; // too big
-        else if (lengths[i + 1] <= length)
-            lo = i + 1; // too small
-
-        i = (hi + lo) / 2;
-    }*/
-
     index_type i = index_lo;
     index_type N = index_hi;
     while (i+1 < N && lengths[i+1] < length_)
         ++i;
-
     return i;
 }
 
@@ -51,7 +33,7 @@ template<typename length_type> void Spline<length_type>::computeIndex(float t, i
 {
     mov_assert(t >= 0.f && t <= 1.f);
     length_type length_ = t * length();
-    index = computeIndexInBounds(length_);
+    index = computeIndexFromLength(length_);
     mov_assert(index < index_hi);
     u = (length_ - length(index)) / (float)length(index, index+1);
 }
@@ -59,7 +41,7 @@ template<typename length_type> void Spline<length_type>::computeIndex(float t, i
 template<typename length_type> SplineBase::index_type Spline<length_type>::computeIndexInBounds( float t ) const
 {
     mov_assert(t >= 0.f && t <= 1.f);
-    return computeIndexInBounds(t * length());
+    return computeIndexFromLength(t * length());
 }
 
 template<typename length_type> void Spline<length_type>::initLengths()

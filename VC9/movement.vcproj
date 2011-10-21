@@ -398,14 +398,6 @@
 				Name="Spline"
 				>
 				<File
-					RelativePath="..\Movement\g3d_based.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\Movement\g3d_based.h"
-					>
-				</File>
-				<File
 					RelativePath="..\Movement\spline.cpp"
 					>
 				</File>
@@ -415,6 +407,10 @@
 				</File>
 				<File
 					RelativePath="..\Movement\spline.impl.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Movement\spline_tests.cpp"
 					>
 				</File>
 			</Filter>
