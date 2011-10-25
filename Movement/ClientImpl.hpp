@@ -177,6 +177,46 @@ namespace Movement
             log_function("client's response (opcode %s) can not be handled", LookupOpcodeName(data.GetOpcode()));
     }
 
+    class ApplyStateTask : public Executor<ApplyStateTask,true>
+    {
+        UnitMovementImpl * owner;
+        ClientMoveStateChange state;
+
+        /** Only server should have permission enable or disable such flags */
+        static const UnitMoveFlag::eUnitMoveFlags ImportantFlags =
+            UnitMoveFlag::AllowSwimFlyTransition | UnitMoveFlag::Can_Fly | UnitMoveFlag::Hover |
+            UnitMoveFlag::Waterwalking | UnitMoveFlag::GravityDisabled | UnitMoveFlag::Can_Safe_Fall | UnitMoveFlag::Root;
+
+    public:
+
+        ApplyStateTask(UnitMovementImpl * own, const ClientMoveStateChange& client_state)
+            : state(client_state), owner(own) {}
+
+        void Execute(TaskExecutor_Args&)
+        {
+            UnitMoveFlag bitChanged((owner->moveFlags.raw ^ state.moveFlags.raw) & ImportantFlags);
+            if ( bitChanged.raw == state.allowFlagChange.raw ||
+               ( bitChanged.raw == 0 && state.allowFlagApply == state.moveFlags.hasFlag(state.allowFlagChange.raw)) )
+            {
+                owner->ApplyState(state);
+                if (state.floatValueType != Parameter_End)
+                    owner->SetParameter(state.floatValueType, state.floatValue);
+            }
+            else
+                log_function("movement flag desync. flag difference '%s', flag change allowed '%s'",
+                    bitChanged.ToString().c_str(), state.allowFlagChange.ToString().c_str());
+        }
+    };
+
+    void ClientImpl::QueueState(ClientMoveStateChange& client_state)
+    {
+        assertInWorld();
+        assertControlled();
+        MSTime applyTime = ClientToServerTime(client_state.ms_time);
+        client_state.state.ms_time = applyTime;
+        m_controlled->commonTasks.AddTask(new ApplyStateTask(m_controlled,client_state), applyTime);
+    }
+
     void ClientImpl::RegisterRespHandler(RespHandler* handler)
     {
         handler->m_reqId = request_counter.NewId();

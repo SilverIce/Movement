@@ -56,10 +56,12 @@ namespace Movement
 
     struct ClientMoveStateChange : public ClientMoveState
     {
-        ClientMoveStateChange() : floatValueType(Parameter_End), floatValue(0) {}
+        ClientMoveStateChange() : floatValueType(Parameter_End), floatValue(0), allowFlagApply(false) {}
 
         FloatParameter floatValueType;
         float floatValue;
+        UnitMoveFlag allowFlagChange;
+        bool allowFlagApply;
     };
 
     inline std::string ClientMoveState::ToString() const

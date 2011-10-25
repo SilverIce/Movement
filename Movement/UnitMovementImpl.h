@@ -134,8 +134,9 @@ namespace Movement
         MoveUpdater* m_updater;
         ClientImpl* m_client;
         MSTime last_update_time;
-
+    public:
         UnitMoveFlag const moveFlags;
+    private:
         /** Data that cames from client. It affects nothing here but might be used in future. */
         _ClientMoveState m_unused; 
 

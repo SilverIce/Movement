@@ -46,26 +46,8 @@ namespace Movement
         UnitMovementImpl* controlled() const { return m_controlled;}
         void SetClientTime(const MSTime& client_time) { m_time_diff = client_time - ServerTime();}
 
-        void QueueState(ClientMoveStateChange& client_state)
-        {
-            assertInWorld();
-            assertControlled();
-            struct ApplyStateTask : Executor<ApplyStateTask,true>{
-                UnitMovementImpl * owner;
-                ClientMoveStateChange state;
-
-                ApplyStateTask(UnitMovementImpl * own, const ClientMoveStateChange& client_state)
-                    : state(client_state), owner(own) {}
-
-                void Execute(TaskExecutor_Args&){
-                    owner->ApplyState(state);
-                    if (state.floatValueType != Parameter_End)
-                        owner->SetParameter(state.floatValueType, state.floatValue);
-                }
-            };
-            client_state.ms_time = ClientToServerTime(client_state.ms_time);
-            m_controlled->commonTasks.AddTask(new ApplyStateTask(m_controlled,client_state), client_state.ms_time);
-        }
+        /** The main 'gate' for movement states that incomes from client. */
+        void QueueState(ClientMoveStateChange& client_state);
 
         void RegisterRespHandler(RespHandler* handler);
         void UnregisterRespHandler(RespHandler* handler);

@@ -255,6 +255,8 @@ namespace Movement
 
             // Should i queue state or apply it immediately?
             // very often incoming client state is from past time..
+            client_state.allowFlagChange = modeInfo[m_mode].moveFlag;
+            client_state.allowFlagApply = m_apply;
             client->QueueState(client_state);
 
             if (ClientOpcode opcode = modeInfo[m_mode].msg_apply[!m_apply])
