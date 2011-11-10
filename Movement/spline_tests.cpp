@@ -1,4 +1,5 @@
 #include "spline.h"
+#include "gtest\gtest.h"
 
 namespace Movement
 {
@@ -8,15 +9,16 @@ namespace Movement
         {
             Vector3 point;
             spline.evaluate_percent(t, point);
-            check( point.isFinite() );
+            EXPECT_TRUE( point.isFinite() );
 
             Vector3 direction;
             spline.evaluate_derivative(t, direction);
-            check( direction.isFinite() );
+            EXPECT_TRUE( direction.isFinite() );
         }
     }
 
-    void SplineBasicTest()
+
+    TEST(SplineTest, BasicTest)
     {
         Vector3 nodes[] = {
             Vector3(-4000.046f, 985.8019f, 61.02531f),
@@ -29,20 +31,37 @@ namespace Movement
             Vector3(-3982.866f, 950.2649f, 58.96975f),
         };
 
-        Spline<float> spline[4];
-        spline[0].init_spline(nodes, CountOf(nodes), SplineBase::ModeLinear);
-        spline[1].init_cyclic_spline(nodes, CountOf(nodes), SplineBase::ModeLinear, 0);
-        spline[2].init_spline(nodes, CountOf(nodes), SplineBase::ModeCatmullrom);
-        spline[3].init_cyclic_spline(nodes, CountOf(nodes), SplineBase::ModeCatmullrom, 0);
-        for (int i = 0; i < CountOf(spline); ++i)
-            spline[i].initLengths();
+        Spline<float> splines[4];
+        splines[0].init_spline(nodes, CountOf(nodes), SplineBase::ModeLinear);
+        splines[1].init_cyclic_spline(nodes, CountOf(nodes), SplineBase::ModeLinear, 0);
+        splines[2].init_spline(nodes, CountOf(nodes), SplineBase::ModeCatmullrom);
+        splines[3].init_cyclic_spline(nodes, CountOf(nodes), SplineBase::ModeCatmullrom, 0);
 
-        for (int i = 0; i < CountOf(spline); ++i)
-            testforNaN(spline[i]);
-    }
+        float properLengths[] = {
+            253.202179f,
+            292.727539f,
+            256.882568f,
+            298.148926f,
+        };
 
-    void SplineTests()
-    {
-        SplineBasicTest();
+        for (int i = 0; i < CountOf(splines); ++i)
+        {
+            splines[i].initLengths();
+            EXPECT_TRUE( G3D::fuzzyEq(splines[i].length(),properLengths[i]) );
+        }
+
+        for (int i = 0; i < CountOf(splines); ++i)
+            testforNaN(splines[i]);
+
+        for (int splineIdx = 0; splineIdx < CountOf(splines); ++splineIdx) {
+            for (int i = 0; i < CountOf(nodes); ++i) {
+                Spline<float>& spline = splines[splineIdx];
+                if ((spline.first() + i) < spline.last()) {
+                    Vector3 calculated;
+                    spline.evaluate_percent(spline.first() + i, 0.f, calculated);
+                    EXPECT_TRUE( calculated.fuzzyEq(nodes[i]) );
+                }
+            }
+        }
     }
 }

@@ -333,10 +333,6 @@
 						>
 					</File>
 					<File
-						RelativePath="..\Movement\MoveSpline.Tests.cpp"
-						>
-					</File>
-					<File
 						RelativePath="..\Movement\MoveSplineFlag.h"
 						>
 					</File>
