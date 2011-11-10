@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef USE_FAKE_CLASSES
-
 #include "typedefs.h"
 #include "ByteBuffer.h"
 #include "UpdateFields.h"
@@ -44,10 +42,3 @@ public:
 
     const char* GetName() const { return "<fake WorldObject>";}
 };
-
-#endif
-
-
-
-
-

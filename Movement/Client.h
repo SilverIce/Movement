@@ -8,6 +8,7 @@
 
 #pragma once
 #include <vector>
+#include "typedefs.h"
 
 class WorldPacket;
 

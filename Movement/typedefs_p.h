@@ -19,7 +19,7 @@ namespace Movement
 
 #define mov_assert(expr) \
     if (!(expr)){ \
-        log_write("In "__FUNCTION__":%i assertion '"#expr"' failed", __LINE__); \
+        log_write("In "__FUNCTION__": assertion '"#expr"' failed"); \
         __debugbreak(); \
     }
 
@@ -29,7 +29,7 @@ namespace Movement
 /** Use it to validate object state */
 #define assert_state_msg(expr, msg, ...) \
     if (bool(expr) == false) { \
-        log_write("In "__FUNCTION__":%i assertion '"#expr"' failed:", __LINE__); \
+        log_write("In "__FUNCTION__" assertion '"#expr"' failed:"); \
         log_write("    " msg, __VA_ARGS__); \
         __debugbreak(); \
     }
@@ -43,7 +43,7 @@ namespace Movement
 
 #define check(expr) \
     if (bool(expr) == false) { \
-        log_write("In "__FUNCTION__":%i check '"#expr"' failed", __LINE__); \
+        log_write("In "__FUNCTION__": check '"#expr"' failed"); \
         __debugbreak(); \
     }
 

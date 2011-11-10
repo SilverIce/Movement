@@ -8,17 +8,22 @@ namespace Tasks
     using Movement::log_write;
     using Movement::log_write_trace;
     using Movement::log_console;
+    using Movement::uint64;
 
 #ifdef TASKSCHEDULER_DEBUGGING
     const char* myAdressDeleted = "yep!";
-    class myAdress 
+    class myAdress
     {
-        void * const adress;
+        void * adress;
         const char * deleted;
+        void init() {
+            adress = this;
+            deleted = "nope";
+        }
     public:
-        myAdress() : adress(this), deleted("nope") {}
+        myAdress() { init();}
         ~myAdress() { (*this)(); deleted = myAdressDeleted;}
-        myAdress(const myAdress& adr) : adress(this), deleted("nope") {}
+        myAdress(const myAdress& adr) { init();}
         myAdress& operator = (const myAdress& adr) { adr(); return *this;}
         void operator()() const {
             if (this != adress || deleted == myAdressDeleted)
@@ -149,7 +154,7 @@ namespace Tasks
     {
         if (!obj.isRegistered())
             return;
-        
+
         --m_objectsRegistered;
         impl.RemoveObject(obj.objectId);
         obj.objectId = 0;

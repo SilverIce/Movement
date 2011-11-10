@@ -203,7 +203,7 @@ namespace Movement
                     owner->SetParameter(state.floatValueType, state.floatValue);
             }
             else
-                log_function("movement flag desync. flag difference '%s', flag change allowed '%s'",
+                log_function("movement flag desync. flag difference '%s', flag difference allowed '%s'",
                     bitChanged.ToString().c_str(), state.allowFlagChange.ToString().c_str());
         }
     };

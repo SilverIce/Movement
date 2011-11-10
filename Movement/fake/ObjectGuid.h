@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef USE_FAKE_CLASSES
-
 class ObjectGuid
 {
 public:
@@ -15,7 +13,3 @@ struct PackedGuid
     PackedGuid(){}
     PackedGuid(int){}
 };
-
-
-#endif
-

@@ -2,8 +2,6 @@
 
 #include "ByteBuffer.h"
 
-#ifdef USE_FAKE_CLASSES
-
 class WorldPacket : public ByteBuffer
 {
 public:
@@ -14,10 +12,3 @@ public:
     void SetOpcode(uint16){}
     uint16 GetOpcode() const { return 0;}
 };
-#endif
-
-
-
-
-
-

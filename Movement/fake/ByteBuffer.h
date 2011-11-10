@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef USE_FAKE_CLASSES
-
 #include "typedefs.h"
 
 using Movement::int8;
@@ -93,5 +91,3 @@ public:
     size_t w_pos;
     size_t r_pos;
 };
-
-#endif
