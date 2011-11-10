@@ -20,6 +20,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "G3D.lib", "..\dep\g3dlite\w
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib.lib", "..\dep\zlib\win\VC9\zlib.lib.vcproj", "{1B66DDFF-4739-4911-B44D-D63E8B696075}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gtest", "..\gtest\gtest.vcproj", "{688A630C-A0EB-4C3C-8ACF-125CFF744AE0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
