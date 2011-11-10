@@ -209,16 +209,18 @@ namespace Movement
         if (!m_updateRotationTask.isRegistered())
             m_updater->AddTask(CallBackPublic(this,&OrientationUpdater::Static_Execute),0,m_updateRotationTask);
 
-        m_target_link.delink();
+        if (m_target_link.linked())
+            m_target_link.List().delink(m_target_link);
         m_target_link.Value = TargetLink(&target, this);
-        target.m_targeter_references.link(m_target_link);
+        target.m_targeter_references.link_first(m_target_link);
         Owner.SetGuidValue(UNIT_FIELD_TARGET, target.Owner.GetObjectGuid());
     }
 
     void UnitMovementImpl::UnbindOrientation()
     {
         m_updater->Unregister(m_updateRotationTask);
-        m_target_link.delink();
+        if (m_target_link.linked())
+            m_target_link.List().delink(m_target_link);
         m_target_link.Value = TargetLink();
         Owner.SetGuidValue(UNIT_FIELD_TARGET, ObjectGuid());
     }

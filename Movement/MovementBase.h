@@ -203,7 +203,7 @@ namespace Movement
         MovementBase& Owner;
         const Location& GetGlobalPosition() const { return Owner.GetGlobalPosition();}
 
-        void _link_transportable(LinkedListElement<TransportLink>& t) { m_passenger_references.link(t);}
+        void _link_transportable(LinkedListElement<TransportLink>& t) { m_passenger_references.link_first(t);}
 
     private:
         LinkedList<TransportLink> m_passenger_references;

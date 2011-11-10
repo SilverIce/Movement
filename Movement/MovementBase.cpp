@@ -39,7 +39,7 @@ namespace Movement{
         // should i unboard first?
         //_unboard();
         if (IsBoarded())
-            m_transport_link.delink();
+            m_transport_link.List().delink(m_transport_link);
 
         m_transport_link.Value = TransportLink(&transport.Owner, this);
         transport._link_transportable(m_transport_link);
@@ -51,7 +51,7 @@ namespace Movement{
     {
         if (IsBoarded())
         {
-            m_transport_link.delink();
+            m_transport_link.List().delink(m_transport_link);
             m_transport_link.Value = TransportLink();
 
             m_local_position = Location();
