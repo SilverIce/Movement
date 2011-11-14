@@ -466,6 +466,14 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="gtest"
+				>
+				<File
+					RelativePath="..\Movement\gtest_main.cc"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath="..\Movement\Client.h"

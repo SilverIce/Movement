@@ -7,12 +7,12 @@ namespace Movement
     {
         UnitMoveFlag::eUnitMoveFlags Flag = UnitMoveFlag::AllowSwimFlyTransition;
         UnitMoveFlag f(Flag);
-        check( f.hasFlag(Flag) );
-        check( (f & Flag) != 0 );
-        check( f.raw == Flag );
-        check( f.allowSwimFlyTransition );
-        check( f.ToString().find("AllowSwimFlyTransition") != std::string::npos );
-        check( sizeof(f.raw) == sizeof(UnitMoveFlag) );
+        EXPECT_TRUE( f.hasFlag(Flag) );
+        EXPECT_TRUE( (f & Flag) != 0 );
+        EXPECT_TRUE( f.raw == Flag );
+        EXPECT_TRUE( f.allowSwimFlyTransition );
+        EXPECT_TRUE( f.ToString().find("AllowSwimFlyTransition") != std::string::npos );
+        EXPECT_TRUE( sizeof(f.raw) == sizeof(UnitMoveFlag) );
     }
 
     TEST(MoveSpline, MoveSplineFlag)
@@ -30,7 +30,7 @@ namespace Movement
     TEST(MoveSpline, MoveSplineInitArgs)
     {
         MoveSplineInitArgs ar;
-        check(!ar.Validate());
+        EXPECT_TRUE(!ar.Validate());
 
         ar.path.resize(2);
         ar.velocity = 10.f;
@@ -91,11 +91,11 @@ namespace Movement
         arg.velocity = 14.f;
         arg.flags.cyclic = true;
         arg.flags.catmullrom = true;
-        check( arg.Validate() );
+        EXPECT_TRUE( arg.Validate() );
 
         mov.Initialize(arg);
-        check(mov.isCyclic());
-        check(mov.Duration() > 0);
+        EXPECT_TRUE(mov.isCyclic());
+        EXPECT_TRUE(mov.Duration() > 0);
     }
 
     TEST(MoveSpline, basic2)

@@ -41,12 +41,6 @@ namespace Movement
         __debugbreak(); \
     }
 
-#define check(expr) \
-    if (bool(expr) == false) { \
-        log_write("In "__FUNCTION__": check '"#expr"' failed"); \
-        __debugbreak(); \
-    }
-
     template<class T, T limit>
     class counter
     {

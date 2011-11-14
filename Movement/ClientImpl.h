@@ -62,7 +62,6 @@ namespace Movement
         #pragma endregion
     public:
 
-        /** Client's lifetime bounded to WorldSession lifetime */
         ClientImpl(HANDLE socket);
         ~ClientImpl();
 
