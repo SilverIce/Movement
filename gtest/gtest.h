@@ -15,6 +15,8 @@ namespace testing
     ::testing::TestRegistrable TestRegistrable_##name##_##name2(&TESTCASE_NAME(name,name2), #name, #name2); \
     void TESTCASE_NAME(name,name2)(void) // function body
 
+#define TEST_DISABLED(name, name2) TEST(name, DISABLED_##name2)
+
 #define TESTCASE_NAME(name, name2) testFunction_##name##_##name2
 
 #define EXPECT_TRUE(a) ::testing::_check(a, #a, __FUNCTION__);

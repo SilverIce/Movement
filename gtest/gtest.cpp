@@ -36,11 +36,11 @@ namespace testing
         static void InvokeTest(TestInfo* test)
         {
             if (!TestInfo::Disabled(test)) {
-                printf("%s::%s has been invoked\n\n", test->Name, test->Name2);
+                printf("\n    %s::%s has been invoked\n", test->Name, test->Name2);
                 test->testFn();
             }
             else
-                printf("%s::%s is disabled\n\n", test->Name, test->Name2);
+                printf("\n    %s::%s is disabled\n", test->Name, test->Name2);
         }
     };
 
@@ -122,6 +122,7 @@ namespace testing
         }
 
         void OnTestsComplete() {
+            printf("\n");
             printf("%u tests failed\n", statistics.countTestsFailed());
             printf("%u tests disabled\n", statistics.countDisabledTests);
             printf("%u tests total amount\n", TestRegistry::instance().totalAmount());

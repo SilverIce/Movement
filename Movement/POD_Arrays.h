@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <algorithm>
+#include <vector>
 
 namespace Tasks
 {
@@ -11,193 +12,311 @@ namespace Tasks
 #       define pod_assert(expr)
 #   endif
 
+    struct MemBlock 
+    {
+        char * _data;
+        size_t _size;
+        size_t _capacity;
+
+        MemBlock() {
+            _data = NULL;
+            _size = 0;
+            _capacity = 0;
+        }
+
+        ~MemBlock() {
+            delete _data;
+            _data = NULL;
+            _size = 0;
+            _capacity = 0;
+        }
+
+        void resize(size_t size) {
+            reserve(size);
+            _size = size;
+        }
+
+        void clear() {
+            _size = 0;
+        }
+
+        void reserve(size_t capacity) {
+            if (capacity > _capacity) {
+                char * mem = (char*)operator new(capacity);
+                memcpy(mem, _data, _size);
+                setElements(mem, capacity);
+            }
+        }
+
+        void push(const char * lowBound, size_t size) {
+            push(lowBound - _data, size);
+        }
+
+        void push(size_t lowBound, size_t size) {
+            _assertInRange(lowBound);
+            if ((_size + size) > _capacity)
+            {
+                size_t newCapacity = std::max<size_t>((_size + size) * 3 / 2, 1);
+                char * mem = (char*)operator new(newCapacity);
+
+                memcpy(mem, _data, lowBound);       // copy left part
+                memcpy(mem + lowBound + size, _data + lowBound, _size - lowBound);
+
+                setElements(mem, newCapacity);
+            }
+            else {
+                memmove(_data + lowBound + size, _data + lowBound, _size - lowBound);
+            }
+
+            _size += size;
+        }
+
+        /*static void memmove(void * dst, const void * src, size_t _Size)
+        {
+            if (dst > src)
+            {
+                size_t wnd = dst - src;
+                dst = dst + _Size;
+                src = src + _Size;
+
+                do {
+                    dst -= wnd;
+                    scr -= wnd;
+                    memcpy(dst, src, wnd);
+                } while()
+            }
+            
+
+        }*/
+
+        void insert(const char * lowBound, const char* data, size_t dataSize) {
+            _assertNotInRange(_data);
+            insert(lowBound - _data, data, dataSize);
+        }
+
+        void insert(size_t lowBound, const char* data, size_t dataSize) {
+            push(lowBound, dataSize);
+            memcpy(_data + lowBound, data, dataSize);
+        }
+
+        void erase(size_t lowBound, size_t count) {
+            size_t hiBound = lowBound + count;
+            if (hiBound < _size)
+                memmove(_data + lowBound, _data + hiBound, _size - hiBound);
+            _size -= count;
+        }
+
+        void setElements(char * elems, size_t capacity) {
+            delete _data;
+            _data = elems;
+            _capacity = capacity;
+        }
+
+        void swap(MemBlock& other) {
+            std::swap(_data, other._data);
+            std::swap(_size, other._size);
+            std::swap(_capacity, other._capacity);
+        }
+
+        inline void _assertInRange(const char *  at) const {
+            pod_assert(at >= _data && at <= (_data + _size));
+        }
+
+        inline void _assertNotInRange(const char *  at) const {
+            pod_assert(at < _data || at > (_data + _size));
+        }
+
+        inline void _assertInRange(size_t at) const {
+            pod_assert(at <= _size);
+        }
+    };
+    
+
     /** Efficient container desinged specially for POD types.
         It never deallocates memory when clear, erase methods called*/
     template<class T>
     struct POD_Array
     {
     private:
-        T * _elements;
-        size_t _count;
-        size_t _capacity;
+        MemBlock block;
 
     public:
 
         typedef T* iterator;
-        typedef T const* const_iterator;
+        typedef const T* const_iterator;
         typedef T& reference;
         typedef const T& const_reference;
 
-        struct reverse_iterator
+        template<class Iterator>
+        struct ReverseIterator 
         {
-            T * ptr;
+            Iterator ptr;
 
-            explicit reverse_iterator(iterator it) : ptr(it) {}
+            explicit ReverseIterator(Iterator it) : ptr(it) {}
 
             void operator ++() { --ptr;}
             void operator --() { ++ptr;}
 
             reference operator *() { return *ptr;}
+            const_reference operator *() const { return *ptr;}
 
-            bool operator == (const reverse_iterator& it) const {
+            bool operator == (const ReverseIterator& it) const {
                 return ptr == it.ptr;
             }
 
-            bool operator != (const reverse_iterator& it) const {
+            bool operator != (const ReverseIterator& it) const {
                 return ptr != it.ptr;
             }
 
-            reverse_iterator operator + (size_t difference) const {
-                reverse_iterator it(ptr - difference);
+            ReverseIterator operator + (size_t difference) const {
+                ReverseIterator it(ptr - difference);
                 return it;
             }
-            reverse_iterator operator - (size_t difference) const {
-                reverse_iterator it(ptr + difference);
+            ReverseIterator operator - (size_t difference) const {
+                ReverseIterator it(ptr + difference);
                 return it;
             }
         };
+        typedef ReverseIterator<iterator> reverse_iterator;
+        typedef ReverseIterator<const_iterator> const_reverse_iterator;
 
         enum{
             elSize = sizeof(T),
         };
 
-        POD_Array(size_t capacity = 0) {
-            _elements = NULL;
-            _count = 0;
-            _capacity = 0;
-            reserve(std::max<size_t>(3,capacity));
+        explicit POD_Array(size_t size = 0) {
+            resize(size);
         }
+
+        POD_Array(const POD_Array& other) {
+            assign(other.begin(), other.end());
+        }
+
+        explicit POD_Array(iterator beg, iterator end) {
+            assign(beg, end);
+        }
+
+        explicit POD_Array(size_t count, const_reference value) {
+            block.resize(count * elSize);
+            //std::fill_n(begin(), count, value);
+        }
+
+        /*template<class Itr> explicit POD_Array(Itr beg, Itr end) {
+            resize(end - beg);
+            std::copy(beg, end, begin());
+        }*/
 
         ~POD_Array() {
-            delete _elements;
-            _elements = NULL;
-            _count = 0;
-            _capacity = 0;
         }
 
-        bool empty() const { return _count == 0;}
-        size_t size() const { return _count;}
-        size_t capacity() const { return _capacity;}
-        iterator begin() { return _elements;}
-        iterator end() { return _elements+_count;}
-        const_iterator begin() const { return _elements;}
-        const_iterator end() const { return _elements+_count;}
+        bool empty() const { return block._size == 0;}
+        size_t size() const { return block._size / elSize;}
+        size_t capacity() const { return block._capacity / elSize;}
+        iterator begin() { return (iterator)block._data;}
+        iterator end() { return begin() + size();}
+        const_iterator begin() const { return (const_iterator)block._data;}
+        const_iterator end() const { return begin() + size();}
         reverse_iterator rbegin() { return reverse_iterator(end()-1);}
         reverse_iterator rend() { return reverse_iterator(begin()-1);}
+        const_reverse_iterator rbegin() const { return const_reverse_iterator(end()-1);}
+        const_reverse_iterator rend() const { return const_reverse_iterator(begin()-1);}
 
         reference front() { return *begin();}
         reference back() { return *(end()-1);}
+        reference at(size_t pos) { return *(begin()+pos);}
+        const_reference at(size_t pos) const { return *(begin()+pos);}
         const_reference front() const { return *begin();}
         const_reference back() const { return *(end()-1);}
 
         reference operator[] (size_t i) { return *(begin()+i);}
         const_reference operator[] (size_t i) const { return *(begin()+i);}
 
-        void clear() { resize(0); }
+        void clear() { block.clear();}
 
         void push_back(const T& value) {
             insert(end(), value);
         }
 
-        void insert(const_iterator at, const T& value)
+        iterator insert(const_iterator at, const T& value)
         {
             _assertInRange(at);
-            if (_capacity > _count) {
-                if (at != end())
-                    memmove((iterator)(at + 1), at, (end() - at) * elSize);  // move right block -->
-                memcpy((iterator)at, &value, elSize);
-                ++_count;
-            }
-            else {
-                size_t newCapacity = _capacity * 3 / 2;
-                T * mem = allocate(newCapacity);
-                if (at != begin())
-                    memcpy(mem, begin(), (at - begin()) * elSize);       // copy left part
-                memcpy(mem + (at - begin()), &value, elSize);
-                if (at != end())
-                    memcpy(mem + (at - begin())+1, at, (end() - at) * elSize); // copy right part
-
-                setElements(mem, newCapacity);
-                ++_count;
-            }
+            size_t insertPos = at - begin();
+            block.insert(insertPos * elSize, (const char*)&value, elSize);
+            return begin() + insertPos;
         }
+
+     /*   void insert(const_iterator at, size_t n, const T& value) {
+            reserve(size() + n);
+            //std::fill_n();
+        }*/
+
+#pragma warning (disable:4996)
+        template<class Itr>
+        void insert(const_iterator at, Itr beg, Itr end) {
+            block.push((at - begin())*elSize, (end-beg)*elSize);
+            std::copy(beg, end, begin());
+        }
+#pragma warning (default:4996)
 
         void assign(const_iterator beg, const_iterator end) {
             _assertNotInRange(beg);
             _assertNotInRange(end);
             pod_assert(beg <= end);
-            size_t copySize = end - beg;
-            if (copySize > _capacity) {
-                T * mem = allocate(copySize);
-                setElements(mem, copySize);
-            }
-            _count = copySize;
-            memcpy(_elements, beg, copySize * elSize);
+
+            block.clear();
+            block.insert((size_t)0, (const char *)beg, (end - beg) * elSize);
         }
 
         void reserve(size_t newCapacity) {
-            if (newCapacity > _capacity) {
-                T * mem = allocate(newCapacity);
-                memcpy(mem, begin(), size() * elSize);       // copy left part
-                setElements(mem, newCapacity);
-            }
+            block.reserve(newCapacity * elSize);
         }
 
         void resize(size_t newSize) {
-            if (newSize > _capacity)
-                reserve(newSize);
-            _count = newSize;
+            block.resize(newSize * elSize);
         }
 
         void pop_back() {
             erase(end());
         }
 
-        void erase(const_iterator at) {
+        iterator erase(const_iterator at) {
             pod_assert(!empty());
             _assertInRange(at);
-            if (at != end())
-                memmove((iterator)at, at + 1, (end() - at) * elSize);
-            --_count;
+            block.erase((at - begin())*elSize, elSize);
+            return (iterator)at;
         }
 
         void erase(const_iterator first, const_iterator last) {
-            pod_assert(!empty());
             _assertInRange(first);
             _assertInRange(last);
             pod_assert(first <= last);
-            if (last != end())
-                memmove((iterator)first, last, (end() - last) * elSize);
-            _count -= (last - first);
+            block.erase((first - begin())*elSize, (last - first) * elSize);
         }
 
         void swap(POD_Array& other) {
-            std::swap(_elements, other._elements);
-            std::swap(_count, other._count);
-            std::swap(_capacity, other._capacity);
+            block.swap(other.block);
+        }
+
+        void operator = (const POD_Array& other) {
+            assign(other.begin(), other.end());
         }
 
     private:
-        POD_Array(const POD_Array&);
-        POD_Array& operator = (const POD_Array&);
-
-        static T* allocate(size_t elementCount) {
-            return (T*)operator new((elementCount+1) * elSize);
-        }
-
-        void setElements(T * elems, size_t elementCount) {
-            delete _elements;
-            _elements = elems;
-            _capacity = elementCount;
-        }
 
         inline void _assertInRange(const_iterator at) const {
             pod_assert(at >= begin() && at <= end());
         }
 
         inline void _assertNotInRange(const_iterator at) const {
-            pod_assert(at < begin() || at > end());
+            pod_assert(at < begin() || at > end() || at == 0);
         }
     };
 
+
+    template<class T>
+    struct POD_Deque
+    {
+
+
+    };
 }

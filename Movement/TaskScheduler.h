@@ -57,8 +57,6 @@ namespace Tasks
         void Unregister(TaskTarget& obj) override;
 
         void Update(MSTime time) override;
-
-        bool HasCallBacks() const;
     };
 
     typedef void (*ExecFunc)(void*, TaskExecutor_Args*);

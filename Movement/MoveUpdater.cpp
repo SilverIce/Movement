@@ -17,6 +17,5 @@ namespace Movement
 
     MoveUpdater::~MoveUpdater()
     {
-        mov_assert(!Tasks::TaskExecutor::HasCallBacks());
     }
 }

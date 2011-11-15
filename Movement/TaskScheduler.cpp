@@ -53,75 +53,97 @@ namespace Tasks
         }
 
         void addref() { adr(); ++ref_count;}
+
+        /** Decreases references count by 1. If there are no one who references this callback it sends 'delete' signal
+            to functor and deallocates self. */
         void release() {
             adr();
             if ((--ref_count) <= 0)
                 delete this;
         }
 
-    private:
+    protected:
 
         NON_COPYABLE(CallBack);
         ~CallBack() {
+            cleanup();
+        }
+
+        void cleanup() {
             adr();
-            (*m_func)(m_functor, 0);    // delete m_functor
-            m_functor = 0;
+            if (!isCancelled()) {
+                (*m_func)(m_functor, 0);    // delete m_functor
+                m_functor = 0;
+                m_func = &DoNothing;
+            }
             adr();
         }
 
         void * m_functor;
         ExecFunc m_func;
         int32 ref_count;
-    public:
         myAdress adr;
+
+        static void DoNothing(void*, TaskExecutor_Args*) {}
+
+    public:
+
+        /**  */
+        bool isCancelled() const {
+            return m_func == &DoNothing;
+        }
+
+        /** Decreases references count by 1. If there are no one who references this callback it sends 'delete' signal
+            to functor, but do not deallocates self. 'isCancelled' returns true for now */
+        void releaseSoft() {
+            if ((--ref_count) <= 0)
+                cleanup();
+        }
     };
 
-    CallBack* CallBackPublic(void* functor, ExecFunc execFunc)
-    {
-        return new CallBack(functor, execFunc);
-    }
-
-    /*struct NullCallBack : public CallBack
+    struct NullCallBack : public CallBack
     {
         explicit NullCallBack() : CallBack(0, &DoNothing) {}
-    private:
-        static void DoNothing(TaskExecutor_Args*, void*) {}
-    };*/
+    };
 }
 
+#define ForEach(element, _array, action) { \
+        size_t CONCAT(ForEach_iter, __LINE__) = 0; \
+        size_t CONCAT(ForEach_end, __LINE__) = (_array).size(); \
+        while (CONCAT(ForEach_iter, __LINE__) < CONCAT(ForEach_end, __LINE__)) { \
+            element = (_array)[CONCAT(ForEach_iter, __LINE__)]; \
+            ++CONCAT(ForEach_iter, __LINE__); \
+            action; \
+        } \
+    }
 
 #include <vector>
-#include <deque>
 #include <algorithm>
 #include <hash_map>
 #include <hash_set>
 #include "POD_Arrays.h"
+#include "LinkedList.h"
 
 #include "TaskExecutorImpl_Vector1.10.hpp"
-#include "TaskExecutorImpl_VectorHash1.10.hpp"
+#include "TaskExecutorImpl_LinkedList1.10.hpp"
 
-/*
 #include "TaskScheduler.Tests.hpp"
-
-#include "TaskExecutorImpl_Deque.hpp"
-#include "TaskExecutorImpl_Vector1.00.hpp"
-#include "TaskExecutorImpl_Vector1.05.hpp"
-#include "TaskExecutorImpl_Vector1.11.hpp"
-#include "TaskExecutorImpl_VectorHash1.00.hpp"
-#include "TaskExecutorImpl_VectorHash1.01.hpp"
-#include "TaskExecutorImpl_VectorHash1.02.hpp"*/
-#include "TaskExecutorImpl_VectorHash1.12.hpp"
 
 namespace Tasks
 {
-    class TaskExecutorImpl : public 
-        TaskExecutorImpl_VectorPOD110
+    class TaskExecutorImpl : public
+        //TaskExecutorImpl_VectorPOD110
+        TaskExecutorImpl_LinkedList110
         //TaskExecutorImpl_VectorHashPending112  -- that one doesn't destructs the task at task cancelling
     {
         friend class TaskExecutor;
     public:
         ObjectCounter counter;
     };
+
+    CallBack* CallBackPublic(void* functor, ExecFunc execFunc) {
+        return new CallBack(functor, execFunc);
+    }
 
     TaskExecutor::TaskExecutor() : impl(*new TaskExecutorImpl()), m_objectsRegistered(0) {}
     TaskExecutor::~TaskExecutor() { delete &impl;}
@@ -140,11 +162,7 @@ namespace Tasks
 
     void TaskExecutor::Register(TaskTarget& obj)
     {
-        if (obj.isRegistered()){
-            log_fatal("object is already registered somewhere");
-            return;
-        }
-
+        assert_state_msg(!obj.isRegistered(), "object is already registered somewhere");
         ++m_objectsRegistered;
         obj.objectId = impl.counter.NewId();
         impl.RegisterObject(obj.objectId);
@@ -155,6 +173,7 @@ namespace Tasks
         if (!obj.isRegistered())
             return;
 
+        assert_state(m_objectsRegistered > 0);
         --m_objectsRegistered;
         impl.RemoveObject(obj.objectId);
         obj.objectId = 0;
@@ -165,11 +184,6 @@ namespace Tasks
         TaskExecutor_Args tt = {*this, NULL, time, TaskTarget()};
         impl.Update(tt);
         tt.objectId = TaskTarget(); // overwrite it to not fail assertion in TaskTarget destructor
-    }
-
-    bool TaskExecutor::HasCallBacks() const
-    {
-        return !impl.tasks.empty();
     }
 
     void TaskExecutor::CancelAllTasks()
