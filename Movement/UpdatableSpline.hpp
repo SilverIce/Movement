@@ -94,8 +94,13 @@ namespace Movement
         PacketBuilder::SplinePathSend(m_owner, MsgBroadcast(m_owner));
     }
 
-    void MoveSplineUpdatable::PrepareMoveSplineArgs(MoveSplineInitArgs& args, UnitMoveFlag& moveFlag_new) const
+    void MoveSplineUpdatable::PrepareMoveSplineArgs(MoveSplineInitArgs& args, UnitMoveFlag& moveFlag_new)
     {
+        // There is a big chance that current position is outdated in case movement was already launched.
+        // So, to lauch new movement from current _real_ position we have to update old state
+        if (isEnabled())
+            recache(1);
+
         mov_assert(!args.path.empty());
         args.path[0] = m_owner.GetPosition3();    //correct first vertex
         args.splineId = m_owner.Updater().NewMoveSplineId();

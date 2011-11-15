@@ -35,7 +35,7 @@ namespace Movement
 
         void recache(int32 recacheDelay = 100);
 
-        void PrepareMoveSplineArgs(MoveSplineInitArgs& args, UnitMoveFlag& moveFlag_new) const;
+        void PrepareMoveSplineArgs(MoveSplineInitArgs& args, UnitMoveFlag& moveFlag_new);
     public:
         void Execute(TaskExecutor_Args& args);
     private:
