@@ -17,141 +17,10 @@
 	</ToolFiles>
 	<Configurations>
 		<Configuration
-			Name="Debug|Win32"
+			Name="ReleaseOptTests|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="4"
-			CharacterSet="1"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="0"
-				AdditionalIncludeDirectories="..\dep\g3dlite\include\;..\Movement\fake\;..\Movement\"
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;USE_FAKE_CLASSES;_CRT_SECURE_NO_WARNINGS;TASKSCHEDULER_DEBUGGING"
-				MinimalRebuild="true"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
-				UsePrecompiledHeader="0"
-				WarningLevel="3"
-				DebugInformationFormat="3"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLibrarianTool"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="4"
-			CharacterSet="1"
-			WholeProgramOptimization="1"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="0"
-				InlineFunctionExpansion="0"
-				EnableIntrinsicFunctions="false"
-				FavorSizeOrSpeed="0"
-				OmitFramePointers="false"
-				EnableFiberSafeOptimizations="false"
-				WholeProgramOptimization="false"
-				AdditionalIncludeDirectories="..\dep\g3dlite\include\;..\Movement\fake\;..\Movement\"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;USE_FAKE_CLASSES;_CRT_SECURE_NO_WARNINGS;TASKSCHEDULER_DEBUGGING"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="0"
-				WarningLevel="3"
-				DebugInformationFormat="3"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLibrarianTool"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="ReleaseOpt|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="4"
+			ConfigurationType="1"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -179,13 +48,15 @@
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="false"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\dep\g3dlite\include\;..\Movement\fake\;..\Movement\"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;USE_FAKE_CLASSES;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0;_CRT_SECURE_NO_WARNINGS"
+				AdditionalIncludeDirectories="..\dep\g3dlite\include\;..\Movement\fake\;..\Movement\;..\"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0;_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="0"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="pch.h"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				ForcedIncludeFiles="pch.h"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -197,10 +68,15 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
+				Name="VCLinkerTool"
+				GenerateDebugInformation="true"
+				Profile="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -210,6 +86,88 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="ReleaseTests|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="1"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				InlineFunctionExpansion="0"
+				EnableIntrinsicFunctions="false"
+				FavorSizeOrSpeed="0"
+				OmitFramePointers="false"
+				EnableFiberSafeOptimizations="false"
+				WholeProgramOptimization="false"
+				AdditionalIncludeDirectories="..\dep\g3dlite\include\;..\Movement\fake\;..\Movement\;..\"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;TASKSCHEDULER_DEBUGGING"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="pch.h"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+				ForcedIncludeFiles="pch.h"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				GenerateDebugInformation="true"
+				Profile="true"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -414,11 +372,15 @@
 				Name="TaskScheduler"
 				>
 				<File
+					RelativePath="..\Movement\POD_Array.Tests.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\Movement\POD_Arrays.h"
 					>
 				</File>
 				<File
-					RelativePath="..\Movement\TaskExecutorImpl_Deque.hpp"
+					RelativePath="..\Movement\RdtscTimer.h"
 					>
 				</File>
 				<File
@@ -426,31 +388,15 @@
 					>
 				</File>
 				<File
-					RelativePath="..\Movement\TaskExecutorImpl_Vector1.00.hpp"
+					RelativePath="..\Movement\TaskExecutorImpl_LinkedList1.10.hpp"
 					>
 				</File>
 				<File
-					RelativePath="..\Movement\TaskExecutorImpl_Vector1.05.hpp"
+					RelativePath="..\Movement\TaskExecutorImpl_LinkedList1.11.hpp"
 					>
 				</File>
 				<File
 					RelativePath="..\Movement\TaskExecutorImpl_Vector1.10.hpp"
-					>
-				</File>
-				<File
-					RelativePath="..\Movement\TaskExecutorImpl_Vector1.11.hpp"
-					>
-				</File>
-				<File
-					RelativePath="..\Movement\TaskExecutorImpl_VectorHash1.00.hpp"
-					>
-				</File>
-				<File
-					RelativePath="..\Movement\TaskExecutorImpl_VectorHash1.01.hpp"
-					>
-				</File>
-				<File
-					RelativePath="..\Movement\TaskExecutorImpl_VectorHashPull1.02.hpp"
 					>
 				</File>
 				<File
@@ -471,6 +417,34 @@
 				>
 				<File
 					RelativePath="..\Movement\gtest_main.cc"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="pch"
+				>
+				<File
+					RelativePath="..\Movement\pch.cpp"
+					>
+					<FileConfiguration
+						Name="ReleaseOptTests|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="ReleaseTests|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="1"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\Movement\pch.h"
 					>
 				</File>
 			</Filter>

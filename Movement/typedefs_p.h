@@ -1,7 +1,6 @@
 #pragma once
 
 #include "typedefs.h"
-#include <intrin.h>
 
 namespace Movement
 {
