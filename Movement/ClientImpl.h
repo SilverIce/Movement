@@ -74,24 +74,24 @@ namespace Movement
 
     public:
 
-        void OnCommonMoveMessage(WorldPacket& recv_data);
-        void OnResponse(WorldPacket& data);
-        void OnMoveTimeSkipped(WorldPacket & recv_data);
-        void OnNotImplementedMessage(WorldPacket& data);
+        static void OnCommonMoveMessage(ClientImpl& client, WorldPacket& recv_data);
+        static void OnResponse(ClientImpl& client, WorldPacket& data);
+        static void OnMoveTimeSkipped(ClientImpl& client, WorldPacket & recv_data);
+        static void OnNotImplementedMessage(ClientImpl& client, WorldPacket& data);
     };
 
     class MoveHandlersBinder
     {
     public:
-        typedef void (ClientImpl::*Handler)(WorldPacket& msg);
+        typedef void (*Handler)(ClientImpl&, WorldPacket& msg);
         typedef stdext::hash_map<ClientOpcode, Handler> HandlerMap;
 
-        static void InvokeHander(ClientImpl * client, WorldPacket& msg)
+        static void InvokeHander(ClientImpl& client, WorldPacket& msg)
         {
             ClientOpcode opcode = (ClientOpcode)msg.GetOpcode();
             HandlerMap::const_iterator it = instance().handlers.find(opcode);
             assert_state_msg(it != instance().handlers.end(), "no handlers for %s", LookupOpcodeName(msg.GetOpcode()));
-            (client->*(it->second)) (msg);
+            (it->second) (client, msg);
         }
 
         static void FillSubscribeList(std::vector<uint16>& opcodes)

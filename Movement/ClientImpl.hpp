@@ -48,12 +48,9 @@ namespace Movement
         };
     };
 
-    void ClientImpl::OnCommonMoveMessage(WorldPacket& recv_data)
+    void ClientImpl::OnCommonMoveMessage(ClientImpl& client, WorldPacket& recv_data)
     {
-        if (!m_controlled){
-            log_function("no controlled object");
-            return;
-        }
+        client.assertControlled();
 
         ObjectGuid guid;
         ClientMoveStateChange state;
@@ -61,12 +58,12 @@ namespace Movement
         recv_data >> guid.ReadAsPacked();
         recv_data >> state;
 
-        QueueState(state);
+        client.QueueState(state);
 
-        MovementMessage msg(m_controlled, recv_data.GetOpcode(), recv_data.size());
+        MovementMessage msg(client.controlled(), recv_data.GetOpcode(), recv_data.size());
         msg << guid.WriteAsPacked();
         msg << state;
-        BroadcastMessage(msg);
+        client.BroadcastMessage(msg);
     }
 
     /* For test. if set to true, enables old & wrong time correction */
@@ -134,12 +131,9 @@ namespace Movement
     {
     }
 
-    void ClientImpl::OnMoveTimeSkipped(WorldPacket & recv_data)
+    void ClientImpl::OnMoveTimeSkipped(ClientImpl& client, WorldPacket & recv_data)
     {
-        if (!m_controlled){
-            log_function("no controlled object");
-            return;
-        }
+        client.assertControlled();
 
         ObjectGuid guid;
         int32 time;
@@ -147,10 +141,10 @@ namespace Movement
         recv_data >> time;
         //time_skipped = time;
 
-        MovementMessage data(m_controlled, MSG_MOVE_TIME_SKIPPED, 16);
+        /*MovementMessage data(m_controlled, MSG_MOVE_TIME_SKIPPED, 16);
         data << guid.WriteAsPacked();
         data << time;
-        BroadcastMessage(data);
+        BroadcastMessage(data);*/
     }
 
     std::string ClientImpl::ToString() const
@@ -161,18 +155,19 @@ namespace Movement
         return str.str();
     }
 
-    void ClientImpl::OnResponse(WorldPacket& data)
+    void ClientImpl::OnResponse(ClientImpl& client, WorldPacket& data)
     {
-        assert_state(m_controlled); // wrong state
+        client.assertControlled();
 
-        if (m_resp_handlers.empty())
+        RespHdlContainer& resp_handlers = client.m_resp_handlers;
+        if (resp_handlers.empty())
         {
             log_function("no handlers for client's response (opcode %s)", LookupOpcodeName(data.GetOpcode()));
             return;
         }
 
-        if (m_resp_handlers.front()->OnReply(data))
-            m_resp_handlers.erase(m_resp_handlers.begin());
+        if (resp_handlers.front()->OnReply(data))
+            resp_handlers.erase(resp_handlers.begin());
         else
             log_function("client's response (opcode %s) can not be handled", LookupOpcodeName(data.GetOpcode()));
     }
@@ -187,6 +182,22 @@ namespace Movement
             UnitMoveFlag::AllowSwimFlyTransition | UnitMoveFlag::Can_Fly | UnitMoveFlag::Hover |
             UnitMoveFlag::Waterwalking | UnitMoveFlag::GravityDisabled | UnitMoveFlag::Can_Safe_Fall | UnitMoveFlag::Root;
 
+        /** It tries detect unallowed state change by comparing current and new movement flags */
+        bool ValidateStateChange() const
+        {
+            UnitMoveFlag bitChanged((owner->moveFlags.raw ^ state.moveFlags.raw) & ImportantFlags);
+            if ( bitChanged.raw == state.allowFlagChange.raw ||
+                ( bitChanged.raw == 0 && state.allowFlagApply == state.moveFlags.hasFlag(state.allowFlagChange.raw)) )
+            {
+                return true;
+            }
+            else {
+                log_function("movement flag desync. flag difference '%s', flag difference allowed '%s'",
+                    bitChanged.ToString().c_str(), state.allowFlagChange.ToString().c_str());
+                return false;
+            }
+        }
+
     public:
 
         ApplyStateTask(UnitMovementImpl * own, const ClientMoveStateChange& client_state)
@@ -194,17 +205,12 @@ namespace Movement
 
         void Execute(TaskExecutor_Args&)
         {
-            UnitMoveFlag bitChanged((owner->moveFlags.raw ^ state.moveFlags.raw) & ImportantFlags);
-            if ( bitChanged.raw == state.allowFlagChange.raw ||
-               ( bitChanged.raw == 0 && state.allowFlagApply == state.moveFlags.hasFlag(state.allowFlagChange.raw)) )
-            {
-                owner->ApplyState(state);
-                if (state.floatValueType != Parameter_End)
-                    owner->SetParameter(state.floatValueType, state.floatValue);
-            }
-            else
-                log_function("movement flag desync. flag difference '%s', flag difference allowed '%s'",
-                    bitChanged.ToString().c_str(), state.allowFlagChange.ToString().c_str());
+            if (!ValidateStateChange())
+                return;
+
+            owner->ApplyState(state);
+            if (state.floatValueType != Parameter_End)
+                owner->SetParameter(state.floatValueType, state.floatValue);
         }
     };
 
@@ -229,7 +235,7 @@ namespace Movement
         m_resp_handlers.remove(handler);
     }
 
-    void ClientImpl::OnNotImplementedMessage( WorldPacket& data )
+    void ClientImpl::OnNotImplementedMessage(ClientImpl&, WorldPacket& data)
     {
         log_function("Unimplemented message handler called: %s", LookupOpcodeName(data.GetOpcode()));
     }
@@ -253,7 +259,7 @@ namespace Movement
 
     void Client::OnMovementMessage(WorldPacket& message)
     {
-        MoveHandlersBinder::InvokeHander(&m, message);
+        MoveHandlersBinder::InvokeHander(m, message);
     }
 
     Client* Client::create(void * socket)
