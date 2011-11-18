@@ -91,10 +91,9 @@ namespace Movement
 
         void SetSpeed(SpeedType type, float s);
         float GetSpeed(SpeedType type) const { return GetParameter((FloatParameter)(0 + type)); }
-        float GetCurrentSpeed() const { return GetParameter(Parameter_SpeedCurrent); }
+        float GetCurrentSpeed() const { return GetParameter(SelectSpeedType(moveFlags));}
 
     private:
-
         void setLastUpdate(MSTime time) { last_update_time = time;}
         MSTime getLastUpdate() const { return last_update_time;}
 
@@ -112,7 +111,7 @@ namespace Movement
         }
 
         void SetMoveFlag(const UnitMoveFlag& newFlags);
-        static SpeedType SelectSpeedType(UnitMoveFlag moveFlags);
+        static FloatParameter SelectSpeedType(UnitMoveFlag moveFlags);
 
         ClientMoveState ClientState() const;
         void ApplyState(const ClientMoveState& state);

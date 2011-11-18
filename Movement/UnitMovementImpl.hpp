@@ -2,43 +2,39 @@
 
 namespace Movement
 {
-    SpeedType UnitMovementImpl::SelectSpeedType(UnitMoveFlag moveFlags)
+    FloatParameter UnitMovementImpl::SelectSpeedType(UnitMoveFlag moveFlags)
     {
-        // g_moveFlags_mask - some global client's moveflag mask
-        // TODO: get real value
-        static uint32 g_moveFlags_mask = 0;
+        if (moveFlags.spline_enabled)
+            return Parameter_SpeedCurrent;
+
         bool use_walk_forced = false;
-
-        //if ( !(g_moveFlags_mask & moveFlags) )
-            //return 0.0f;
-
         if ( moveFlags.flying )
         {
             if ( moveFlags.backward /*&& speed_obj.flight >= speed_obj.flight_back*/ )
-                return SpeedFlightBack;
+                return Parameter_SpeedFlightBack;
             else
-                return SpeedFlight;
+                return Parameter_SpeedFlight;
         }
         else if ( moveFlags.swimming )
         {
             if ( moveFlags.backward /*&& speed_obj.swim >= speed_obj.swim_back*/ )
-                return SpeedSwimBack;
+                return Parameter_SpeedSwimBack;
             else
-                return SpeedSwim;
+                return Parameter_SpeedSwim;
         }
         else
         {
             if ( moveFlags.walk_mode || use_walk_forced )
             {
                 //if ( speed_obj.run > speed_obj.walk )
-                    return SpeedWalk;
+                    return Parameter_SpeedWalk;
             }
             else
             {
                 if ( moveFlags.backward /*&& speed_obj.run >= speed_obj.run_back*/ )
-                    return SpeedRunBack;
+                    return Parameter_SpeedRunBack;
             }
-            return SpeedRun;
+            return Parameter_SpeedRun;
         }
     }
 
@@ -202,7 +198,7 @@ namespace Movement
             }
         };
 
-        // TODO: this place is big field for improvements. List of units that are subscibed to receive
+        // TODO: this place is big field for improvements. List of units that are subscribed to receive
         // orientation updates might be moved to new class. This class can be automatically deleted when none targets unit
 
         // create OrientationUpdater task only in case there is no more such tasks
@@ -246,11 +242,11 @@ namespace Movement
 
     void UnitMovementImpl::SetMoveFlag(const UnitMoveFlag& newFlags)
     {
-        if ((moveFlags & UnitMoveFlag::Mask_Speed) != (newFlags & UnitMoveFlag::Mask_Speed))
+        /*if ((moveFlags & UnitMoveFlag::Mask_Speed) != (newFlags & UnitMoveFlag::Mask_Speed))
         {
-            SpeedType speed_type = UnitMovementImpl::SelectSpeedType(newFlags);
-            m_float_values[Parameter_SpeedCurrent] = GetSpeed(speed_type);
-        }
+            m_currentSpeed = UnitMovementImpl::SelectSpeedType(newFlags);
+        }*/
+
         const_cast<UnitMoveFlag&>(moveFlags) = newFlags;
     }
 

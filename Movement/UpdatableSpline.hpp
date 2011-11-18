@@ -91,6 +91,8 @@ namespace Movement
         m_task.AddTask(this, NextSegmentTime());
 
         m_owner.SetMoveFlag(moveFlag_new);
+        m_owner.SetParameter(Parameter_SpeedCurrent, args.velocity);
+
         PacketBuilder::SplinePathSend(m_owner, MsgBroadcast(m_owner));
     }
 
@@ -124,6 +126,6 @@ namespace Movement
 
         // select velocity if was not selected
         if (args.velocity == 0.f)
-            args.velocity = m_owner.GetSpeed(UnitMovementImpl::SelectSpeedType(moveFlag_new));
+            args.velocity = m_owner.GetParameter(UnitMovementImpl::SelectSpeedType(moveFlag_new & ~UnitMoveFlag::Spline_Enabled));
     }
 }
