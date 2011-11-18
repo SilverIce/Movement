@@ -43,7 +43,6 @@ namespace Movement
         virtual ~UnitMovementImpl();
 
         virtual void CleanReferences();
-        void UpdateState(MSTime timeNow);
 
         std::string ToString() const;
 

@@ -126,13 +126,13 @@ namespace Movement
         {
             m_updater = &updater;
             commonTasks.SetExecutor(updater);
-            struct RegularUpdater : StaticExecutor<UnitMovementImpl,RegularUpdater,false> {
+            /*struct RegularUpdater : StaticExecutor<UnitMovementImpl,RegularUpdater,false> {
                 static void Execute(UnitMovementImpl& me, TaskExecutor_Args& args) {
-                    me.UpdateState(args.now);
-                    readd(args, 200);
+                    MaNGOS_API::UpdateMapPosition(&me.Owner,me.GetPosition());
+                    readd(args, 2000);
                 }
             };
-            commonTasks.AddTask(CallBackPublic(this,&RegularUpdater::Static_Execute),0);
+            commonTasks.AddTask(CallBackPublic(this,&RegularUpdater::Static_Execute),0);*/
         }
 
         SetPosition(pos);
@@ -161,7 +161,7 @@ namespace Movement
             {
                 // TODO: find transport by guid, board
                 // BoardOn(transport, state.transport_position, state.transport_seat);
-            } 
+            }
             else
             {
                 // Unboard();
@@ -169,6 +169,7 @@ namespace Movement
         }
 
         SetMoveFlag(new_flags);
+        setLastUpdate(new_state.ms_time);
         m_unused = new_state;
     }
 
@@ -221,10 +222,6 @@ namespace Movement
         Owner.SetGuidValue(UNIT_FIELD_TARGET, ObjectGuid());
     }
 
-    void UnitMovementImpl::UpdateState(MSTime timeNow)
-    {
-    }
-
     std::string UnitMovementImpl::ToString() const
     {
         std::stringstream st;
@@ -253,7 +250,7 @@ namespace Movement
     ClientMoveState UnitMovementImpl::ClientState() const
     {
         ClientMoveState state;
-        static_cast<_ClientMoveState>(state) = m_unused;
+        static_cast<_ClientMoveState&>(state) = m_unused;
         state.ms_time = getLastUpdate();
         state.world_position = GetGlobalPosition();
         state.moveFlags = moveFlags;

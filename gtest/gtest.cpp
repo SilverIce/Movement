@@ -109,7 +109,8 @@ namespace testing
         void RunAllTests()
         {
             std::vector<TestInfo*>& tests = TestRegistry::instance().tests;
-            std::sort(tests.begin(),tests.end(),TestInfo::Compare);
+            // No need sort tests: their natural order is important. Tests from the same compile unit will be grouped together
+            //std::sort(tests.begin(),tests.end(),TestInfo::Compare);
             statistics.countDisabledTests = std::count_if(tests.begin(),tests.end(),TestInfo::Disabled);
 
             for(std::vector<TestInfo*>::iterator it = tests.begin(); it!=tests.end(); ++it) {

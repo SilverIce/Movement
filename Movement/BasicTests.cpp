@@ -71,8 +71,4 @@ namespace Movement
             }
         }
     }
-
-    void RunTests()
-    {
-    }
 }
