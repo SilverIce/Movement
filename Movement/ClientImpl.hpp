@@ -186,8 +186,8 @@ namespace Movement
         bool ValidateStateChange() const
         {
             UnitMoveFlag bitChanged((owner->moveFlags.raw ^ state.moveFlags.raw) & ImportantFlags);
-            if ( bitChanged.raw == state.allowFlagChange.raw ||
-                ( bitChanged.raw == 0 && state.allowFlagApply == state.moveFlags.hasFlag(state.allowFlagChange.raw)) )
+            if ( state.allowFlagApply == state.moveFlags.hasFlag(state.allowFlagChange) &&
+                (bitChanged == state.allowFlagChange || bitChanged.raw == 0) )
             {
                 return true;
             }
@@ -233,6 +233,23 @@ namespace Movement
     void ClientImpl::UnregisterRespHandler(RespHandler* handler)
     {
         m_resp_handlers.remove(handler);
+    }
+
+    void ClientImpl::OnSplineDone(ClientImpl& client, WorldPacket& data)
+    {
+        client.assertControlled();
+        ObjectGuid guid;
+        ClientMoveStateChange state;
+        uint32 splineId;
+
+        data >> guid.ReadAsPacked();
+        data >> state;
+        data >> splineId;
+
+        client.QueueState(state);
+
+        if (splineId != client.controlled()->move_spline->getId())
+            log_function("incorrect splineId: %u, expected %u", splineId, client.controlled()->move_spline->getId());
     }
 
     void ClientImpl::OnNotImplementedMessage(ClientImpl&, WorldPacket& data)

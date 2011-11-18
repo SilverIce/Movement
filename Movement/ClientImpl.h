@@ -78,6 +78,7 @@ namespace Movement
         static void OnResponse(ClientImpl& client, WorldPacket& data);
         static void OnMoveTimeSkipped(ClientImpl& client, WorldPacket & recv_data);
         static void OnNotImplementedMessage(ClientImpl& client, WorldPacket& data);
+        static void OnSplineDone(ClientImpl& client, WorldPacket& data);
     };
 
     class MoveHandlersBinder

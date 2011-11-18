@@ -85,11 +85,15 @@ namespace Movement
         // Constant interface
 
         bool hasFlag(uint64 f) const { return (raw & f) != 0;}
+        bool hasFlag(const UnitMoveFlag& flag) const { return (raw & flag.raw) != 0;}
         bool hasDirection() const { return hasFlag(Mask_Directions);}
 
         uint64 operator & (uint64 f) const { return (raw & f);}
         uint64 operator | (uint64 f) const { return (raw | f);}
         std::string ToString() const;
+
+        bool operator == (const UnitMoveFlag& flag) const { return raw == flag.raw;}
+        bool operator != (const UnitMoveFlag& flag) const { return raw != flag.raw;}
 
         // Not constant interface
 

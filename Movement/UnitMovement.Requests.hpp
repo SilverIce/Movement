@@ -37,7 +37,7 @@ namespace Movement
             RespHandler(ValueChange2Opc_table[value_type].cmsg_response, client),
             m_value_type(value_type),
             m_value(value)
-        { 
+        {
             if (ClientOpcode opcode = ValueChange2Opc_table[value_type].smsg_request)
             {
                 WorldPacket data(opcode, 32);
@@ -399,7 +399,7 @@ namespace Movement
             MSG_MOVE_START_DESCEND);
 
         // TODO:
-        //assignHandler(&ClientImpl::OnNotImplementedMessage, CMSG_MOVE_SPLINE_DONE);
+        assignHandler(&ClientImpl::OnSplineDone, CMSG_MOVE_SPLINE_DONE);
         //assignHandler(&ClientImpl::OnNotImplementedMessage, CMSG_MOVE_KNOCK_BACK_ACK);
         //ASSIGN_HANDLER(&ClientImpl::OnNotImplementedMessage, CMSG_MOVE_NOT_ACTIVE_MOVER, CMSG_SET_ACTIVE_MOVER);
 
