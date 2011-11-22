@@ -11,14 +11,6 @@ namespace Movement
         m_owner.ApplyMoveFlag(UnitMoveFlag::Spline_Enabled|UnitMoveFlag::Mask_Directions|UnitMoveFlag::Mask_Moving, false);
     }
 
-    const Vector3& MoveSplineUpdatable::destination() const
-    {
-        if (isEnabled())
-            return m_base.FinalDestination();
-        else
-            return m_owner.GetPosition3();
-    }
-
     void MoveSplineUpdatable::recache(int32 recacheDelay)
     {
         MSTime timeNow = MaNGOS_API::getMSTime();
@@ -43,7 +35,7 @@ namespace Movement
                     break;
                 case MoveSpline::Result_Arrived:
                     m_owner.Disable();
-                    events.push_back( OnEventArgs::OnPoint(moveSpline.GetId(),moveSpline.currentPathIdx()+1) );
+                    events.push_back( OnEventArgs::OnPoint(moveSpline.GetId(),moveSpline.currentPathIdx()) );
                     events.push_back( OnEventArgs::OnArrived(moveSpline.GetId()) );
                     break;
                 case MoveSpline::Result_NextCycle:

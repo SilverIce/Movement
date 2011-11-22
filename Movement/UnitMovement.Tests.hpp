@@ -1,4 +1,3 @@
-#include "MoveSpline.h"
 #include "gtest/gtest.h"
 
 namespace Movement
@@ -69,79 +68,107 @@ namespace Movement
 
         mov->updateState(mov->Duration());
         EXPECT_TRUE(mov->Finalized());
+        EXPECT_TRUE(mov->Duration() == mov->timePassed());
         EXPECT_TRUE( mov->ComputePosition().fuzzyEq(path[1]) );
         delete mov;
     }
 
-    void initCyclicMoveSpline(MoveSpline& mov, MoveSplineInitArgs& arg)
+    struct MoveSplineInitArgs_Default : public MoveSplineInitArgs
     {
-        Vector3 nodes[] = {
-            Vector3(-4000.046f,    985.8019f,    61.02531f),
-            Vector3(-3981.982f,    1017.846f,    58.96975f),
-            Vector3(-3949.962f,    1033.053f,    56.85864f),
-            Vector3(-3918.825f,    1014.746f,    58.33086f),
-            Vector3(-3900.323f,    984.7424f,    60.60864f),
-            Vector3(-3918.999f,    953.8466f,    58.96975f),
-            Vector3(-3950.793f,    934.2088f,    58.96975f),
-            Vector3(-3982.866f,    950.2649f,    58.96975f),
-        };
+        explicit MoveSplineInitArgs_Default()
+        {
+            Vector3 nodes[] = {
+                Vector3(-4000.046f,    985.8019f,    61.02531f),
+                Vector3(-3981.982f,    1017.846f,    58.96975f),
+                Vector3(-3949.962f,    1033.053f,    56.85864f),
+                Vector3(-3918.825f,    1014.746f,    58.33086f),
+                Vector3(-3900.323f,    984.7424f,    60.60864f),
+                Vector3(-3918.999f,    953.8466f,    58.96975f),
+                Vector3(-3950.793f,    934.2088f,    58.96975f),
+                Vector3(-3982.866f,    950.2649f,    58.96975f),
+            };
 
-        arg = MoveSplineInitArgs();
-        arg.path.assign(nodes, nodes + CountOf(nodes));
-        arg.velocity = 14.f;
-        arg.flags.cyclic = true;
-        arg.flags.catmullrom = true;
-        EXPECT_TRUE( arg.Validate() );
+            path.assign(nodes, nodes + CountOf(nodes));
+            velocity = 14.f;
+            EXPECT_TRUE( Validate() );
+        }
+    };
 
-        mov.Initialize(arg);
-        EXPECT_TRUE(mov.isCyclic());
-        EXPECT_TRUE(mov.Duration() > 0);
-    }
+    struct MoveSplineInitArgs_Cyclic : public MoveSplineInitArgs_Default
+    {
+        explicit MoveSplineInitArgs_Cyclic()
+        {
+            flags.cyclic = true;
+            flags.catmullrom = true;
+            EXPECT_TRUE( Validate() );
+        }
+    };
 
     TEST(MoveSpline, basic2)
     {
         MoveSpline mov;
-        MoveSplineInitArgs arg;
-        initCyclicMoveSpline(mov, arg);
+        MoveSplineInitArgs_Default arg;
+        mov.Initialize(arg);
 
-        int32 testTime = mov.Duration() * 2;
-        while(testTime > 0)
+        struct UpdateResultHandler
         {
-            int32 next = mov.next_timestamp() - mov.timePassed();
-            EXPECT_TRUE( next >= 0);
-            testTime -= next;
+            explicit UpdateResultHandler(MoveSpline& spl) : spline(spl) {
+                point = spline.currentPathIdx();
+                prevResult = MoveSpline::Result_None;
+                receiveCounter = 0;
+            }
 
-            struct UpdateResultHandler {
-                std::vector<MoveSpline::UpdateResult> results;
-                void operator()(MoveSpline::UpdateResult res) {
-                    results.push_back(res);
+            MoveSpline& spline;
+            int32 point;
+            MoveSpline::UpdateResult prevResult;
+            int32 receiveCounter;
+
+            void operator()(MoveSpline::UpdateResult res)
+            {
+                if (res == MoveSpline::Result_None)
+                    return;
+
+                int32 currPoint = spline.currentPathIdx();
+                int32 difference = currPoint - point;
+                EXPECT_TRUE( difference == 1 );
+                EXPECT_TRUE( currPoint == (++receiveCounter) );
+                point = currPoint;
+
+                if (res == MoveSpline::Result_Arrived)
+                {
+                    EXPECT_TRUE( prevResult != MoveSpline::Result_Arrived); // receive Result_Arrived only once
+                    EXPECT_TRUE( spline.Finalized() );
+                    EXPECT_TRUE( spline.Duration() == spline.timePassed() );
                 }
-            };
 
-            UpdateResultHandler hdl;
-            mov.updateState(next, hdl);
+                prevResult = res;
+            }
+        };
 
-            EXPECT_TRUE( hdl.results.size() == 1);
-            EXPECT_TRUE( hdl.results.back() != MoveSpline::Result_Arrived); // never possible since it's infinite, cyclic spline
+        UpdateResultHandler hdl(mov);
+
+        while (!mov.Finalized())
+        {
+            int32 diffTime = mov.next_timestamp() - mov.timePassed();
+            EXPECT_TRUE( diffTime >= 0);
+
+            mov.updateState(diffTime, hdl);
+
             Location loc = mov.ComputePosition();
             EXPECT_TRUE( loc.isFinite() );
             EXPECT_TRUE( arg.path[mov.currentPathIdx()].fuzzyEq( loc ) );
         }
+    }
 
-        testTime = mov.Duration() * 2;
-        while(testTime > 0)
-        {
-            int32 next = 100;
-            testTime -= next;
-            mov.updateState(next);
-            Location loc = mov.ComputePosition();
-            EXPECT_TRUE( loc.isFinite() );
-            int32 pathIdx = mov.currentPathIdx();
-            EXPECT_TRUE( pathIdx < (int32)arg.path.size() );
-            EXPECT_TRUE( pathIdx >= 0 );
+    TEST(MovementMessage, basic)
+    {
+        MovementMessage msg(NULL);
+        EXPECT_TRUE( msg.OrigTime() == 0 );
+        EXPECT_TRUE( msg.Source() == NULL );
 
-            Vector3 vertex = arg.path[mov.currentPathIdx()];
-            EXPECT_TRUE( vertex.isFinite() );
-        }
+        ClientMoveState state;
+        state.ms_time = 1989;
+        msg << state;
+        EXPECT_TRUE( msg.OrigTime() == state.ms_time );
     }
 }

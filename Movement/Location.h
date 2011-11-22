@@ -12,6 +12,11 @@ namespace Movement
         Location(const Vector3& v) : Vector3(v), orientation(0) {}
         Location(const Vector3& v, float o) : Vector3(v), orientation(o) {}
 
+        bool isFinite() const
+        {
+            return Vector3::isFinite() && G3D::isFinite(orientation);
+        }
+
         float orientation;
     };
 }

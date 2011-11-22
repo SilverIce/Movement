@@ -141,16 +141,6 @@ namespace Movement
         return m.move_spline->getId();
     }
 
-    const Vector3& UnitMovement::MoveSplineDest() const
-    {
-        return m.move_spline->destination();
-    }
-
-    int32 UnitMovement::MoveSplineTimeElapsed() const
-    {
-        return m.move_spline->timeElapsed();
-    }
-
     bool UnitMovement::HasMode(MoveMode mode) const
     {
         return m.HasMode(mode);

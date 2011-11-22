@@ -23,7 +23,7 @@ namespace Movement
             UpdateDelay = 400,
         };
 
-        inline MSTime NextSegmentTime() const {
+        inline MSTime NextUpdateTime() const {
             return m_lastQuery + std::min(m_base.next_timestamp() - m_base.timePassed(), (int32)UpdateDelay);
         }
 
@@ -52,8 +52,6 @@ namespace Movement
         }
 
         const MoveSpline& moveSpline() const { return m_base;}
-
-        const Vector3& destination() const;
 
         uint32 getId() const
         {

@@ -50,8 +50,6 @@ namespace Movement
     public:
         // Used by server side controlled movement
         uint32 MoveSplineId() const;
-        const Vector3& MoveSplineDest() const;
-        int32 MoveSplineTimeElapsed() const;
         void SetListener(class IListener * l);
 
     public:

@@ -101,13 +101,6 @@ namespace Movement
 
         PointsArray& Path() { return args.path; }
 
-        template<typename InitStrategy>
-        inline MoveSplineInit& operator << (InitStrategy init)
-        {
-            init(args);
-            return *this;
-        }
-
     private:
 
         MoveSplineInitArgs args;

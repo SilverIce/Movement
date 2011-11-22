@@ -35,6 +35,8 @@ namespace Tasks
         void operator()() const {}
     };
 #endif
+
+    typedef ICallBack CallBack;
 }
 
 #define ForEach(element, _array, action) { \
