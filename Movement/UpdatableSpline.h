@@ -1,16 +1,10 @@
 namespace Movement
 {
-    using Tasks::TaskTarget;
-    using Tasks::TaskExecutor_Args;
-    using Tasks::CallBack;
-    using Tasks::CallBackPublic;
-    using Tasks::StaticExecutor;
-    using Tasks::Executor;
-    using Tasks::TaskTarget_DEV;
+    using namespace Tasks;
 
     class UnitMovementImpl;
 
-    class MoveSplineUpdatable : public Executor<MoveSplineUpdatable,false>
+    class MoveSplineUpdatable
     {
     private:
         MSTime m_lastQuery;
@@ -36,9 +30,8 @@ namespace Movement
         void recache(int32 recacheDelay = 100);
 
         void PrepareMoveSplineArgs(MoveSplineInitArgs& args, UnitMoveFlag& moveFlag_new);
-    public:
+
         void Execute(TaskExecutor_Args& args);
-    private:
 
         void Disable();
 

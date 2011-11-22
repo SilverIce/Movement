@@ -183,12 +183,16 @@ namespace Movement
             return;
         }
 
-        struct OrientationUpdater : StaticExecutor<UnitMovementImpl,OrientationUpdater,false>
+        struct OrientationUpdater : public ICallBack
         {
+            UnitMovementImpl& me;
             enum{
                 RotationUpdateDelay = 250,
             };
-            static void Execute(UnitMovementImpl& me, TaskExecutor_Args& args) {
+
+            explicit OrientationUpdater(UnitMovementImpl* _me) : me(*_me) {}
+
+            void Execute(TaskExecutor_Args& args) override {
                 mov_assert(me.IsOrientationBinded());
                 args.executor.AddTask(args.callback,args.now + RotationUpdateDelay,args.objectId);
                 if (me.IsMoving() || me.IsClientControlled())
@@ -206,7 +210,7 @@ namespace Movement
 
         // create OrientationUpdater task only in case there is no more such tasks
         if (!m_updateRotationTask.isRegistered())
-            m_updater->AddTask(CallBackPublic(this,&OrientationUpdater::Static_Execute),0,m_updateRotationTask);
+            m_updater->AddTask(new OrientationUpdater(this),0,m_updateRotationTask);
 
         if (m_target_link.linked())
             m_target_link.List().delink(m_target_link);

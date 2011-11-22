@@ -3,15 +3,15 @@
 namespace Movement
 {
     /** Sends to CMSG_TIME_SYNC_RESP each 10 seconds */
-    struct TimeSyncRequestScheduler : Executor<TimeSyncRequestScheduler,true>
+    struct TimeSyncRequestScheduler : public ICallBack
     {
         ClientImpl * m_client;
 
-        TimeSyncRequestScheduler(ClientImpl * client) : m_client(client) {
+        explicit TimeSyncRequestScheduler(ClientImpl * client) : m_client(client) {
             client->commonTasks.AddTask(this, MSTime(0));
         }
 
-        void Execute(TaskExecutor_Args& args){
+        void Execute(TaskExecutor_Args& args) override {
             new TimeSyncRequest(m_client);
             args.executor.AddTask(args.callback, args.now + TimeSyncRequest::SyncTimePeriod, args.objectId);
         }
@@ -25,7 +25,7 @@ namespace Movement
                 SyncTimePeriod = 10000, // 10 seconds
             };
 
-            TimeSyncRequest(ClientImpl * client) : RespHandler(CMSG_TIME_SYNC_RESP, client)
+            explicit TimeSyncRequest(ClientImpl * client) : RespHandler(CMSG_TIME_SYNC_RESP, client)
             {
                 WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
                 data << m_requestId;
@@ -172,7 +172,7 @@ namespace Movement
             log_function("client's response (opcode %s) can not be handled", LookupOpcodeName(data.GetOpcode()));
     }
 
-    class ApplyStateTask : public Executor<ApplyStateTask,true>
+    class ApplyStateTask : public ICallBack
     {
         UnitMovementImpl * owner;
         ClientMoveStateChange state;
@@ -204,7 +204,7 @@ namespace Movement
         ApplyStateTask(UnitMovementImpl * own, const ClientMoveStateChange& client_state)
             : state(client_state), owner(own) {}
 
-        void Execute(TaskExecutor_Args&)
+        void Execute(TaskExecutor_Args&) override
         {
             if (!ValidateStateChange())
                 return;

@@ -127,12 +127,19 @@ namespace Movement
         }
     };
 
-    class RespHandler : public Executor<RespHandler,true>
+    class RespHandler : public ICallBack
     {
     private:
         ClientImpl* m_client;
         ClientOpcode m_opcode;
         bool m_wasHandled;
+
+    private:
+        void Execute(TaskExecutor_Args& args) override {
+            if (!m_wasHandled)
+                log_function("response timeout (opcode: %s)", LookupOpcodeName(m_opcode));
+        }
+
     protected:
         virtual bool OnReply(ClientImpl * client, WorldPacket& data) = 0;
 
@@ -170,11 +177,6 @@ namespace Movement
             }
             m_wasHandled = OnReply(m_client, data);
             return m_wasHandled;
-        }
-
-        void Execute(TaskExecutor_Args& args){
-            if (!m_wasHandled)
-                log_function("response timeout (opcode: %s)", LookupOpcodeName(m_opcode));
         }
     };
 

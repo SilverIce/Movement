@@ -19,20 +19,37 @@ namespace Tasks
 
     struct TaskExecutor_Args;
     class TaskExecutor;
-    class CallBack;
     class ITaskExecutor;
     class TaskTarget;
+    class ICallBack;
 
     class ITaskExecutor
     {
     public:
-        virtual void AddTask(CallBack * callback, MSTime exec_time, TaskTarget& ownerId) = 0;
+        virtual void AddTask(ICallBack * task, MSTime exec_time, TaskTarget& ownerId) = 0;
         virtual void CancelTasks(const TaskTarget& ownerId) = 0;
         virtual void Update(MSTime time) = 0;
         virtual void Register(TaskTarget& obj) = 0;
         virtual void Unregister(TaskTarget& obj) = 0;
     protected:
         ~ITaskExecutor() {}
+    };
+
+    class ICallBack
+    {
+    public:
+        explicit ICallBack() : refCount(0) {}
+        virtual ~ICallBack() {}
+
+        virtual void Execute(TaskExecutor_Args& args) = 0;
+
+        void addref() { ++refCount;}
+        void release() {
+            if ((--refCount) <= 0)
+                delete this;
+        }
+    private:
+        int32 refCount;
     };
 
     class TaskExecutor : public ITaskExecutor
@@ -43,13 +60,10 @@ namespace Tasks
         NON_COPYABLE(TaskExecutor);
     public:
 
-        TaskExecutor();
+        explicit TaskExecutor();
         ~TaskExecutor();
 
-        template<class T>
-        void AddTask(T * functor, MSTime exec_time, TaskTarget& ownerId);
-        void AddTask(CallBack * callback, MSTime exec_time, TaskTarget& ownerId) override;
-
+        void AddTask(ICallBack * task, MSTime exec_time, TaskTarget& ownerId) override;
         void CancelTasks(const TaskTarget& ownerId) override;
         void CancelAllTasks();
 
@@ -58,15 +72,6 @@ namespace Tasks
 
         void Update(MSTime time) override;
     };
-
-    typedef void (*ExecFunc)(void*, TaskExecutor_Args*);
-
-    CallBack* CallBackPublic(void* functor, ExecFunc execFunc);
-
-    template<class T>
-    inline CallBack* CallBackPublic(T* functor) {
-        return CallBackPublic(functor, &T::Static_Execute);
-    }
 
     typedef uint32 ObjectId;
 
@@ -89,7 +94,7 @@ namespace Tasks
     struct TaskExecutor_Args
     {
         ITaskExecutor& executor;
-        CallBack* callback;
+        ICallBack* callback;
         const MSTime now;
         TaskTarget objectId;
     };
@@ -109,57 +114,22 @@ namespace Tasks
 
         void SetExecutor(ITaskExecutor& executor);
         void Unregister();
-
-        template<class T>
-        void AddTask(T * functor, MSTime exec_time) {
-            AddTask(CallBackPublic(functor), exec_time);
-        }
-        void AddTask(CallBack * callback, MSTime exec_time);
+        void CancelTasks();
+        void AddTask(ICallBack * callback, MSTime exec_time);
     };
 
     /** Tools:
     */
 
-#define STATIC_EXEC(Class, Args) \
-    static void Static_Execute(void* _me, TaskExecutor_Args* _args){ \
-        if (_args) \
-            ((Class*)_me)->Class::Member_Execute(*_args); \
-        else \
-            delete ((Class*)_me); \
-    } \
-    private: \
-    inline void Member_Execute(Args)
-
-    /** Set belongs = true if you wanna automatically free resources at task cancelling */
-    template<class T, class Der, bool belongs>
-    struct StaticExecutor {
-        static void Static_Execute(void* _me, TaskExecutor_Args* _args) {
-            if (_args)
-                Der::Execute( *(T*)_me, *_args );
-            else if (belongs)
-                delete ((T*)_me);
-        }
-        static void readd(TaskExecutor_Args& args, MSTime time) {
-            args.executor.AddTask(args.callback,args.now+time,args.objectId);
-        }
-    };
-
-    template<class T, bool belongs>
-    struct Executor {
-        static void Static_Execute(void* _me, TaskExecutor_Args* _args){
-            if (_args)
-                ((T*)_me)->Execute(*_args);
-            else if (belongs)
-                delete ((T*)_me);
-        }
-        static void readd(TaskExecutor_Args& args, MSTime time) {
-            args.executor.AddTask(args.callback,args.now+time,args.objectId);
-        }
-    };
-
-    template<class T>
-    inline void TaskExecutor::AddTask(T * functor, MSTime exec_time, TaskTarget& ownerId)
+    template<class Class>
+    class ITaskP0 : public ICallBack
     {
-        AddTask(CallBackPublic(functor), exec_time, ownerId);
-    }
+    public:
+        typedef void (Class::*Method)(TaskExecutor_Args&);
+        explicit ITaskP0(Class* _class_instance, Method _method) : _obj(_class_instance), _func(_method) {}
+        void Execute(TaskExecutor_Args& args) override { (_obj->*_func)(args);}
+    private:
+        Class*  _obj;
+        Method  _func;
+    };
 }

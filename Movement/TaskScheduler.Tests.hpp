@@ -33,14 +33,6 @@ namespace Tasks
         virtual uint64 summaryTicks() const = 0;
         virtual void reportTest() = 0;
 
-        template<class T>
-        inline void AddTask(T * functor, MSTime exec_time, TaskTarget& ownerId)
-        {
-            AddTask(CallBackPublic(functor), exec_time, ownerId);
-        }
-
-        void AddTask(CallBack * functor, MSTime exec_time, TaskTarget& ownerId) override = 0;
-
         const char* name;
     };
 
@@ -68,7 +60,7 @@ namespace Tasks
             delete &impl;
         }
 
-        void AddTask(CallBack * callback, MSTime exec_time, TaskTarget& ownerId) override
+        void AddTask(ICallBack * task, MSTime exec_time, TaskTarget& ownerId) override
         {
             if (!ownerId.isRegistered())
                 Register(ownerId);
@@ -76,11 +68,11 @@ namespace Tasks
             if (timerUpdate.InProgress()) {
                 RdtscInterrupt in(timerUpdate);
                 RdtscCall c(timerAddTask);
-                impl.AddTask(callback, exec_time, ownerId.objectId) ;
+                impl.AddTask(task, exec_time, ownerId.objectId) ;
             }
             else {
                 RdtscCall c(timerAddTask);
-                impl.AddTask(callback, exec_time, ownerId.objectId) ;
+                impl.AddTask(task, exec_time, ownerId.objectId) ;
             }
         }
 
@@ -163,7 +155,7 @@ namespace Tasks
 
     #pragma region details
 
-    struct DoNothingTask : Executor<DoNothingTask,true> {
+    struct DoNothingTask : public ICallBack {
         uint32 period;
         myAdress adr;
         char data[60];
@@ -172,13 +164,13 @@ namespace Tasks
             period = exec_delay_min + rand() % (exec_delay_max - exec_delay_min);
         }
 
-        void Execute(TaskExecutor_Args& a) {
+        void Execute(TaskExecutor_Args& a) override {
             adr();
             a.executor.AddTask(a.callback, a.now + period, a.objectId);
         }
     };
 
-    struct TT : Executor<TT,true>
+    struct TT : public ICallBack
     {
         uint32 m_ticksCount;
         MSTime lastUpdate;
@@ -227,7 +219,7 @@ namespace Tasks
                 while(taskCount-- > 0) {
                     DoNothingTask t;
                     ForEach(ITaskExecutor2 * ex, executors, {
-                        ex->AddTask( CallBackPublic(new DoNothingTask(t)), lastUpdate + t.period, *target );
+                        ex->AddTask(new DoNothingTask(t), lastUpdate + t.period, *target );
                     });
                 }
             }
@@ -249,7 +241,7 @@ namespace Tasks
             }
         }
 
-        void Execute(TaskExecutor_Args& args)
+        void Execute(TaskExecutor_Args& args) override
         {
             lastUpdate = args.now;
             ForEach(ITaskExecutor2 * ex, executors, {
@@ -278,9 +270,9 @@ namespace Tasks
     void testExecutors(void (*testExecutorFn)(ITaskExecutor2&))
     {
         ITaskExecutor2* exec[] = {
-            new taskExecutor<TaskExecutorImpl_VectorPOD110>,
+            //new taskExecutor<TaskExecutorImpl_VectorPOD110>,
             new taskExecutor<TaskExecutorImpl_LinkedList110>,
-            //new taskExecutor<TaskExecutorImpl_LinkedList111>,
+            new taskExecutor<TaskExecutorImpl_LinkedList111>,
             //new taskExecutor<TaskExecutorImpl_VectorPendingPODWrong111>,
             //new taskExecutor<TaskExecutorImpl_LinkedList112>,
         };
@@ -299,80 +291,17 @@ namespace Tasks
         testExecutors(&printExecutorName);
     }
 
-    TEST(CallbackTest, basic)
-    {
-        struct Fake : Executor<Fake,false> {
-            bool executed;
-            bool deleteCalled;
-            int callsCount;
-            Fake() :
-                executed(false),
-                deleteCalled(false),
-                callsCount(0)
-            {}
-
-            void Delete() {
-                deleteCalled = true;
-                ++callsCount;
-            }
-
-            static void Static_Execute(void* _me, TaskExecutor_Args* args){
-                if (args)
-                    ((Fake*)_me)->Execute();
-                else
-                    ((Fake*)_me)->Delete();
-            }
-
-            void Execute() {
-                executed = true;
-                ++callsCount;
-            }
-        };
-
-        {
-            Fake fake;
-            CallBack& callback = *CallBackPublic(&fake, &Fake::Static_Execute);
-            EXPECT_TRUE( !callback.isCancelled() );
-
-            callback.addref();
-            callback.execute(*(TaskExecutor_Args*)0x4);
-            EXPECT_TRUE( fake.executed && fake.callsCount == 1);
-
-            callback.releaseSoft();
-            EXPECT_TRUE( fake.deleteCalled && fake.callsCount == 2);
-
-            callback.release();
-            EXPECT_TRUE( fake.callsCount == 2);
-        }
-        {
-            Fake fake;
-            CallBack& callback = *CallBackPublic(&fake, &Fake::Static_Execute);
-            EXPECT_TRUE( !callback.isCancelled() );
-
-            callback.addref();
-            callback.execute(*(TaskExecutor_Args*)0x4);
-            EXPECT_TRUE( fake.executed && fake.callsCount == 1);
-
-            callback.release();
-            EXPECT_TRUE( fake.deleteCalled && fake.callsCount == 2);
-        }
-    }
-
     void TaskExecutorTest_basicTest(ITaskExecutor2& executor)
     {
         TaskTarget target;
         EXPECT_TRUE( !target.isRegistered() );
-        EXPECT_TRUE( !executor.HasCallBacks() );
 
         executor.Register(target);
         EXPECT_TRUE( target.isRegistered() );
-        EXPECT_TRUE( !executor.HasCallBacks() );
 
         executor.AddTask(new DoNothingTask, 0, target);
-        EXPECT_TRUE( executor.HasCallBacks() );
 
         executor.CancelTasks(target);
-        EXPECT_TRUE( !executor.HasCallBacks() );
 
         executor.Unregister(target);
         EXPECT_TRUE( !target.isRegistered() );
@@ -399,11 +328,9 @@ namespace Tasks
         EXPECT_TRUE( target.isRegistered() );
 
         executor.AddTask(new DoNothingTask, 0, target);
-        EXPECT_TRUE( executor.HasCallBacks() );
 
         executor.Unregister(target);
         EXPECT_TRUE( !target.isRegistered() );
-        EXPECT_TRUE( !executor.HasCallBacks() );
     }
 
     TEST(TaskExecutorTest, basicTest2)
@@ -413,63 +340,64 @@ namespace Tasks
 
     void TaskExecutorTest_basicTest4(ITaskExecutor2& executor)
     {
-        struct Fake {
+        struct CallsInfo
+        {
+            CallsInfo(){
+                executed = false;
+                deleteCalled = false;
+                callsCount = 0;
+            }
             bool executed;
             bool deleteCalled;
             int callsCount;
-            Fake() :
-            executed(false),
-                deleteCalled(false),
-                callsCount(0)
-            {}
+        };
 
-            void Delete() {
-                deleteCalled = true;
-                ++callsCount;
+        struct Fake : public ICallBack {
+            CallsInfo& inf;
+
+            Fake(CallsInfo& info) : inf(info) {}
+
+            ~Fake() {
+                inf.deleteCalled = true;
+                ++inf.callsCount;
             }
 
-            static void Static_Execute(void* _me, TaskExecutor_Args* _args){
-                if (_args)
-                    ((Fake*)_me)->Execute();
-                else
-                    ((Fake*)_me)->Delete();
-            }
-
-            void Execute() {
-                EXPECT_TRUE( !deleteCalled );
-                executed = true;
-                ++callsCount;
+            void Execute(TaskExecutor_Args& args){
+                EXPECT_TRUE( !inf.deleteCalled );
+                inf.executed = true;
+                ++inf.callsCount;
             }
         };
 
-        TaskTarget target;
         {
-            Fake task;
-            executor.AddTask(&task, 10, target);
-            EXPECT_TRUE( executor.HasCallBacks() );
+            CallsInfo info;
+            Fake * task = new Fake(info);
+            TaskTarget target;
+            executor.AddTask(task, 10, target);
 
             executor.Update(9);
-            EXPECT_TRUE( !task.executed && task.callsCount == 0 );
+            EXPECT_TRUE( !info.executed && info.callsCount == 0 );
 
             executor.Update(10);
-            EXPECT_TRUE( task.executed );
-            EXPECT_TRUE( task.callsCount == 2 );
-            EXPECT_TRUE( task.deleteCalled );
+            EXPECT_TRUE( info.executed );
+            EXPECT_TRUE( info.callsCount == 2 );
+            EXPECT_TRUE( info.deleteCalled );
             executor.Unregister(target);
         }
 
         {
-            Fake task;
-            executor.AddTask(&task, 10, target);
-            EXPECT_TRUE( executor.HasCallBacks() );
+            CallsInfo info;
+            Fake * task = new Fake(info);
+            TaskTarget target;
+            executor.AddTask(task, 10, target);
 
             executor.CancelTasks(target);
-            EXPECT_TRUE( !task.executed && task.callsCount == 1 && task.deleteCalled );
+            EXPECT_TRUE( !info.executed && info.callsCount == 1 && info.deleteCalled );
 
             executor.Update(10);
-            EXPECT_TRUE( !task.executed && task.callsCount == 1 && task.deleteCalled );
+            EXPECT_TRUE( !info.executed && info.callsCount == 1 && info.deleteCalled );
             executor.Unregister(target);
-            EXPECT_TRUE( !task.executed && task.callsCount == 1 && task.deleteCalled );
+            EXPECT_TRUE( !info.executed && info.callsCount == 1 && info.deleteCalled );
         }
     }
 
@@ -482,34 +410,33 @@ namespace Tasks
     {
         enum {
             MarkTaskPeriod = 900,
+            MarksAmount = 6,
         };
-        struct Fake {
-            bool deleteCalled;
+
+        struct Fake : public ICallBack {
             MSTime lastUpdate;
-            Fake() : deleteCalled(false) {}
+            bool& allowDeleteCall;
 
-            void Delete() {
-                deleteCalled = true;
+            Fake(bool& allowTaskDelete) : allowDeleteCall(allowTaskDelete) {}
+
+            ~Fake() {
+                EXPECT_TRUE( allowDeleteCall == true );
             }
 
-            static void Static_Execute(void* _me, TaskExecutor_Args* _args){
-                if (_args)
-                    ((Fake*)_me)->Execute(*_args);
-                else
-                    ((Fake*)_me)->Delete();
-            }
-
-            void Execute(TaskExecutor_Args& args) {
+            void Execute(TaskExecutor_Args& args) override {
                 lastUpdate = args.now;
                 args.executor.AddTask(args.callback, args.now + MarkTaskPeriod, args.objectId);
             }
         };
 
         TaskTarget target;
-        Fake marks[6];
+        Fake* marks[MarksAmount];
+        bool allowTaskDelete = false;
 
-        for (int i = 0; i < CountOf(marks); ++i)
-            executor.AddTask(&marks[i], 0, target);
+        for (int i = 0; i < CountOf(marks); ++i) {
+            marks[i] = new Fake(allowTaskDelete);
+            executor.AddTask(marks[i], 0, target);
+        }
 
         int callbacksToSpawn = 1000;
         while (callbacksToSpawn-- > 0) {
@@ -525,12 +452,12 @@ namespace Tasks
             executor.Update(time);
             for (int i = 0; i < CountOf(marks); ++i)
             {
-                Fake& mark = marks[i];
-                EXPECT_TRUE( !mark.deleteCalled );      // ensures that task-mark wasn't cancelled
+                Fake& mark = *marks[i];
                 EXPECT_TRUE( mark.lastUpdate <= time );
                 EXPECT_TRUE( (time - mark.lastUpdate) <= MarkTaskPeriod );      // ensures that task-mark updates regularly
             }
         }
+        allowTaskDelete = true;
         executor.Unregister(target);
     }
 
@@ -541,7 +468,7 @@ namespace Tasks
 
     void TaskExecutorTest_sequenceTest(ITaskExecutor2& executor)
     {
-        struct Fake {
+        struct Fake : public ICallBack {
             int taskId;
             int * nextTaskId;
 
@@ -549,11 +476,6 @@ namespace Tasks
                 taskId = NextTaskId;
                 ++NextTaskId;
                 nextTaskId = &NextTaskId;
-            }
-
-            static void Static_Execute(void* _me, TaskExecutor_Args* _args){
-                if (_args)
-                    ((Fake*)_me)->Execute(*_args);
             }
 
             void Execute(TaskExecutor_Args& args) {
@@ -565,9 +487,11 @@ namespace Tasks
         int taskId = 0;
         TaskTarget target;
         Fake marks[20];
-        for (int i = 0; i < CountOf(marks); ++i) {
-            marks[i].Setup(taskId);
-            executor.AddTask(&marks[i], 14000, target);
+
+        for (int i = 0; i < 20; ++i) {
+            Fake * mark = new Fake();
+            mark->Setup(taskId);
+            executor.AddTask(mark, 14000, target);
         }
 
         taskId = 0;
@@ -585,7 +509,7 @@ namespace Tasks
         taskExecutor<TaskExecutorImpl_VectorPOD110> executor;
         TaskTarget target;
         executor.Register(target);
-        executor.AddTask(CallBackPublic(new TT), 0, target);
+        executor.AddTask(new TT, 0, target);
 
         MSTime time_;
         while(executor.HasCallBacks()) {

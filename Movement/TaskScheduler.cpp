@@ -35,76 +35,6 @@ namespace Tasks
         void operator()() const {}
     };
 #endif
-
-    class CallBack
-    {
-    public:
-        explicit CallBack(void* functor, ExecFunc execFunc) :
-            m_func(execFunc),
-            ref_count(0),
-            m_functor(functor)
-        {}
-
-        void execute(TaskExecutor_Args& args)
-        {
-            adr();
-            (*m_func)( m_functor, &args );
-            adr();
-        }
-
-        void addref() { adr(); ++ref_count;}
-
-        /** Decreases references count by 1. If there are no one who references this callback it sends 'delete' signal
-            to functor and deallocates self. */
-        void release() {
-            adr();
-            if ((--ref_count) <= 0)
-                delete this;
-        }
-
-    protected:
-
-        NON_COPYABLE(CallBack);
-        ~CallBack() {
-            cleanup();
-        }
-
-        void cleanup() {
-            adr();
-            if (!isCancelled()) {
-                (*m_func)(m_functor, 0);    // delete m_functor
-                m_functor = 0;
-                m_func = &DoNothing;
-            }
-            adr();
-        }
-
-        void * m_functor;
-        ExecFunc m_func;
-        int32 ref_count;
-        myAdress adr;
-
-        static void DoNothing(void*, TaskExecutor_Args*) {}
-
-    public:
-
-        /**  */
-        bool isCancelled() const {
-            return m_func == &DoNothing;
-        }
-
-        /** Decreases references count by 1. If there are no one who references this callback it sends 'delete' signal
-            to functor, but do not deallocates self. 'isCancelled' returns true for now */
-        void releaseSoft() {
-            if ((--ref_count) <= 0)
-                cleanup();
-        }
-    };
-
-    struct NullCallBack : public CallBack
-    {
-        explicit NullCallBack() : CallBack(0, &DoNothing) {}
-    };
 }
 
 #define ForEach(element, _array, action) { \
@@ -141,18 +71,15 @@ namespace Tasks
         ObjectCounter counter;
     };
 
-    CallBack* CallBackPublic(void* functor, ExecFunc execFunc) {
-        return new CallBack(functor, execFunc);
-    }
-
     TaskExecutor::TaskExecutor() : impl(*new TaskExecutorImpl()), m_objectsRegistered(0) {}
     TaskExecutor::~TaskExecutor() { delete &impl;}
 
-    void TaskExecutor::AddTask(CallBack * callback, MSTime exec_time, TaskTarget& ownerId)
+    void TaskExecutor::AddTask(ICallBack * task, MSTime exec_time, TaskTarget& ownerId)
     {
+        assert_state(task);
         if (!ownerId.isRegistered())
             Register(ownerId);
-        impl.AddTask(callback, exec_time, ownerId.objectId);
+        impl.AddTask(task, exec_time, ownerId.objectId);
     }
 
     void TaskExecutor::CancelTasks(const TaskTarget& ownerId)
@@ -212,9 +139,17 @@ namespace Tasks
         m_executor = NULL;
     }
 
-    void TaskTarget_DEV::AddTask(CallBack * callback, MSTime exec_time)
+    void TaskTarget_DEV::CancelTasks()
+    {
+        if (isRegistered()) {
+            mov_assert(m_executor);
+            m_executor->CancelTasks(m_objectId);
+        }
+    }
+
+    void TaskTarget_DEV::AddTask(ICallBack * task, MSTime exec_time)
     {
         mov_assert(m_executor);
-        m_executor->AddTask(callback, exec_time, m_objectId);
+        m_executor->AddTask(task, exec_time, m_objectId);
     }
 }

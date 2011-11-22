@@ -65,7 +65,7 @@ namespace Movement
         if (isEnabled()) {
             recache(1);
             if (isEnabled())    // migh became disabled during recache
-                args.executor.AddTask(args.callback, NextSegmentTime(), args.objectId);
+                args.executor.AddTask(args.callback, NextUpdateTime(), args.objectId);
         }
         if (uint32 size = events.size()) {
             uint32 itr = 0;
@@ -88,7 +88,8 @@ namespace Movement
 
         if (!m_task.hasExecutor())
             m_task.SetExecutor(m_owner.Updater());
-        m_task.AddTask(this, NextSegmentTime());
+        m_task.CancelTasks();
+        m_task.AddTask(new ITaskP0<MoveSplineUpdatable>(this,&MoveSplineUpdatable::Execute), NextUpdateTime());
 
         m_owner.SetMoveFlag(moveFlag_new);
         m_owner.SetParameter(Parameter_SpeedMoveSpline, args.velocity);

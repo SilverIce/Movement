@@ -465,7 +465,7 @@ namespace Tasks
                 unusedNodes.push(firstNode);
 
                 if (callback) {
-                    callback->execute(args);
+                    callback->Execute(args);
                     callback->release();
                 }
             }
