@@ -101,7 +101,7 @@ namespace Movement
 
     float UnitMovement::GetCurrentSpeed() const
     {
-        return m.GetParameter(Parameter_SpeedCurrent);
+        return m.GetParameter(Parameter_SpeedMoveSpline);
     }
 
     void UnitMovement::UnboardAll()

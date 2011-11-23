@@ -42,7 +42,7 @@ namespace Movement
             {
                 WorldPacket data(opcode, 32);
                 data << client->controlled()->Owner.GetPackGUID();
-                data << m_reqId;
+                data << m_requestId;
                 if (m_value_type == Parameter_SpeedRun)
                     data << int8(0);                               // new 2.1.0
                 data << m_value;
@@ -198,7 +198,7 @@ namespace Movement
         {
             MovementMessage msg(NULL, modeInfo[mode].smsg_apply[!apply], 16);
             msg << client->controlled()->Owner.GetPackGUID();
-            msg << m_reqId;
+            msg << m_requestId;
             client->SendMoveMessage(msg);
         }
 
@@ -296,7 +296,7 @@ namespace Movement
 
             MovementMessage msg(NULL, MSG_MOVE_TELEPORT_ACK, 64);   // message source is null - client shouldn't skip that message
             msg << client->controlled()->Owner.GetPackGUID();
-            msg << m_reqId;
+            msg << m_requestId;
             msg << state;
             client->SendMoveMessage(msg);
         }

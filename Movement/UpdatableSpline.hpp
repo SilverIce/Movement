@@ -91,7 +91,7 @@ namespace Movement
         m_task.AddTask(this, NextSegmentTime());
 
         m_owner.SetMoveFlag(moveFlag_new);
-        m_owner.SetParameter(Parameter_SpeedCurrent, args.velocity);
+        m_owner.SetParameter(Parameter_SpeedMoveSpline, args.velocity);
 
         PacketBuilder::SplinePathSend(m_owner, MsgBroadcast(m_owner));
     }
@@ -99,7 +99,7 @@ namespace Movement
     void MoveSplineUpdatable::PrepareMoveSplineArgs(MoveSplineInitArgs& args, UnitMoveFlag& moveFlag_new)
     {
         // There is a big chance that current position is outdated in case movement was already launched.
-        // So, to lauch new movement from current _real_ position we have to update old state
+        // So, to lauch new movement from current _real_ position need update old state
         if (isEnabled())
             recache(1);
 

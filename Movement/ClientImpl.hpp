@@ -26,9 +26,9 @@ namespace Movement
             };
 
             TimeSyncRequest(ClientImpl * client) : RespHandler(CMSG_TIME_SYNC_RESP, client)
-            {     
+            {
                 WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
-                data << m_reqId;
+                data << m_requestId;
                 client->SendPacket(data);
                 m_requestSendTime = MaNGOS_API::getMSTime();
             }
@@ -225,7 +225,7 @@ namespace Movement
 
     void ClientImpl::RegisterRespHandler(RespHandler* handler)
     {
-        handler->m_reqId = request_counter.NewId();
+        handler->m_requestId = request_counter.NewId();
         m_resp_handlers.push_back(handler);
         commonTasks.AddTask(handler, ServerTime() + RespHandler::DefaultTimeout);
     }

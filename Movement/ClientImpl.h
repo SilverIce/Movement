@@ -137,14 +137,14 @@ namespace Movement
         virtual bool OnReply(ClientImpl * client, WorldPacket& data) = 0;
 
         bool checkRequestId(uint32 requestId) const {
-            if (requestId != m_reqId) {
-                log_function("wrong request Id: %u expected Id: %u", requestId, m_reqId);
+            if (m_requestId != requestId) {
+                log_function("wrong request Id: %u expected Id: %u", requestId, m_requestId);
                 return false;
             }
             return true;
         }
     public:
-        uint32 m_reqId;
+        uint32 m_requestId;
 
         /* Default timeout value is 500 milliseconds */
         static uint32 DefaultTimeout;
