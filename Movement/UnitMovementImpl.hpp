@@ -143,7 +143,9 @@ namespace Movement
     {
         if (SplineEnabled())
         {
-            log_fatal("while in server control");
+            // This is not fatal error and even not error at all:
+            // it' just a bit outdated state that should not to be applied
+            //log_fatal("while in server control");
             return;
         }
 

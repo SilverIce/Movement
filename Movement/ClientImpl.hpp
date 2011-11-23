@@ -180,7 +180,8 @@ namespace Movement
         /** Only server should have permission enable or disable such flags */
         static const UnitMoveFlag::eUnitMoveFlags ImportantFlags =
             UnitMoveFlag::AllowSwimFlyTransition | UnitMoveFlag::Can_Fly | UnitMoveFlag::Hover |
-            UnitMoveFlag::Waterwalking | UnitMoveFlag::GravityDisabled | UnitMoveFlag::Can_Safe_Fall | UnitMoveFlag::Root;
+            UnitMoveFlag::Waterwalking | UnitMoveFlag::GravityDisabled | UnitMoveFlag::Can_Safe_Fall | UnitMoveFlag::Root |
+            UnitMoveFlag::Spline_Enabled;
 
         /** It tries detect unallowed state change by comparing current and new movement flags */
         bool ValidateStateChange() const
