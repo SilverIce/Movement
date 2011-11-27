@@ -3,8 +3,6 @@
 
 namespace Movement
 {
-    MoveUpdater sMoveUpdater;
-
     MoveUpdater::MoveUpdater()
     {
     }

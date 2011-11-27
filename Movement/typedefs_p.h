@@ -26,10 +26,10 @@ namespace Movement
 #define assert_state(expr) mov_assert(expr)
 
 /** Use it to validate object state */
-#define assert_state_msg(expr, msg, ...) \
+#define assert_state_msg(expr, error_msg, ...) \
     if (bool(expr) == false) { \
         log_write("In "__FUNCTION__" assertion '"#expr"' failed:"); \
-        log_write("    " msg, __VA_ARGS__); \
+        log_write("   " error_msg, __VA_ARGS__); \
         __debugbreak(); \
     }
 

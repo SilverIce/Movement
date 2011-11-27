@@ -19,7 +19,6 @@ namespace Movement
 
     class ClientImpl
     {
-        #pragma region Impl
     private:
         void * m_socket;
         UnitMovementImpl * m_controlled;
@@ -34,9 +33,13 @@ namespace Movement
         MSTime ClientTime() const {return ServerToClientTime(ServerTime());}
         MSTime ClientToServerTime(const MSTime& client_time) const { return client_time - m_time_diff;}
 
-        void assertInWorld() const{ assert_state(m_socket);}
         void assertControlled() const {
+            assertInitialized();
             assert_state(m_controlled && m_controlled->client() == this);
+        }
+        void assertInitialized() const {
+            assert_state(m_socket);
+            assert_state(commonTasks.hasExecutor());
         }
 
     public:
@@ -59,10 +62,9 @@ namespace Movement
 
         void CleanReferences();
         void Dereference(const UnitMovementImpl * m);
-        #pragma endregion
     public:
 
-        ClientImpl(HANDLE socket);
+        explicit ClientImpl(HANDLE socket);
         ~ClientImpl();
 
         std::string ToString() const;
@@ -91,7 +93,7 @@ namespace Movement
         {
             ClientOpcode opcode = (ClientOpcode)msg.GetOpcode();
             HandlerMap::const_iterator it = instance().handlers.find(opcode);
-            assert_state_msg(it != instance().handlers.end(), "no handlers for %s", LookupOpcodeName(msg.GetOpcode()));
+            assert_state_msg(it != instance().handlers.end(), "no handlers for %s", LookupOpcodeName(opcode));
             (it->second) (client, msg);
         }
 
@@ -165,6 +167,7 @@ namespace Movement
         ~RespHandler() {
             assert_state(m_client);
             m_client->UnregisterRespHandler(this);
+            m_client = NULL;
         }
 
         bool OnReply(WorldPacket& data)
@@ -172,7 +175,7 @@ namespace Movement
             assert_state(!m_wasHandled);
             assert_state(m_client);
             if (m_opcode != data.GetOpcode()) {
-                log_function("expected reply was: %s, but received instead: %s", LookupOpcodeName(m_opcode), LookupOpcodeName(data.GetOpcode()));
+                log_function("expected reply was: %s, but received instead: %s", LookupOpcodeName(m_opcode), LookupOpcodeName((ClientOpcode)data.GetOpcode()));
                 return false;
             }
             m_wasHandled = OnReply(m_client, data);

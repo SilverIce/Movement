@@ -68,6 +68,7 @@ namespace Movement
         mov_assert(!m_target_link.linked());
         mov_assert(m_client == NULL);
         mov_assert(m_updater == NULL);
+        mov_assert(!commonTasks.hasExecutor());
     }
 
     void UnitMovementImpl::CleanReferences()
@@ -136,7 +137,6 @@ namespace Movement
         }
 
         SetPosition(pos);
-        setLastUpdate(Updater().lastUpdate());
     }
 
     void UnitMovementImpl::ApplyState(const ClientMoveState& new_state)
@@ -171,7 +171,7 @@ namespace Movement
         }
 
         SetMoveFlag(new_flags);
-        setLastUpdate(new_state.ms_time);
+        lastMoveEvent = new_state.ms_time;
         m_unused = new_state;
     }
 
@@ -257,7 +257,7 @@ namespace Movement
     {
         ClientMoveState state;
         static_cast<_ClientMoveState&>(state) = m_unused;
-        state.ms_time = getLastUpdate();
+        state.ms_time = lastMoveEvent;
         state.world_position = GetGlobalPosition();
         state.moveFlags = moveFlags;
 

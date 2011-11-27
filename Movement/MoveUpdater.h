@@ -30,6 +30,4 @@ namespace Movement
         UInt32Counter movespline_counter;
         MSTime m_lastUpdate;
     };
-
-    extern MoveUpdater sMoveUpdater;
 }

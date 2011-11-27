@@ -66,7 +66,6 @@ namespace Movement
         MovementBase* GetTransport() const { mov_assert(false); return NULL; }
 
     public:
-        // Used by server side controlled movement
         friend class MoveSplineUpdatable;
 
         MoveSplineUpdatablePtr move_spline;
@@ -91,10 +90,6 @@ namespace Movement
         void SetSpeed(SpeedType type, float s);
         float GetSpeed(SpeedType type) const { return GetParameter((FloatParameter)(0 + type)); }
         float GetCurrentSpeed() const { return GetParameter(SelectSpeedType(moveFlags));}
-
-    private:
-        void setLastUpdate(MSTime time) { last_update_time = time;}
-        MSTime getLastUpdate() const { return last_update_time;}
 
     public:
 
@@ -123,15 +118,13 @@ namespace Movement
         void client(ClientImpl* c) { m_client = c;}
         bool IsClientControlled() const { return m_client && !SplineEnabled();}
         bool IsServerControlled() const { return !m_client;}
-    private:
-
 
     private:
         friend class PacketBuilder;
 
         MoveUpdater* m_updater;
         ClientImpl* m_client;
-        MSTime last_update_time;
+        MSTime lastMoveEvent;
     public:
         UnitMoveFlag const moveFlags;
     private:

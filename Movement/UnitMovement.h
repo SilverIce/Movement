@@ -41,11 +41,6 @@ namespace Movement
         const Vector3& GetPosition3() const { return GetPosition();}
         Vector3 direction() const;
 
-    public:
-        void Unboard();
-        void Board(UnitMovement& ps, const Location& local_pos, int8 seat);
-        void UnboardAll();
-        bool IsBoarded() const;
 
     public:
         // Used by server side controlled movement

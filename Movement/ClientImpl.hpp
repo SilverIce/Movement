@@ -162,14 +162,14 @@ namespace Movement
         RespHdlContainer& resp_handlers = client.m_resp_handlers;
         if (resp_handlers.empty())
         {
-            log_function("no handlers for client's response (opcode %s)", LookupOpcodeName(data.GetOpcode()));
+            log_function("no handlers for client's response (opcode %s)", LookupOpcodeName((ClientOpcode)data.GetOpcode()));
             return;
         }
 
         if (resp_handlers.front()->OnReply(data))
             resp_handlers.erase(resp_handlers.begin());
         else
-            log_function("client's response (opcode %s) can not be handled", LookupOpcodeName(data.GetOpcode()));
+            log_function("client's response (opcode %s) can not be handled", LookupOpcodeName((ClientOpcode)data.GetOpcode()));
     }
 
     class ApplyStateTask : public ICallBack
@@ -217,7 +217,6 @@ namespace Movement
 
     void ClientImpl::QueueState(ClientMoveStateChange& client_state)
     {
-        assertInWorld();
         assertControlled();
         MSTime applyTime = ClientToServerTime(client_state.ms_time);
         client_state.state.ms_time = applyTime;
@@ -255,7 +254,7 @@ namespace Movement
 
     void ClientImpl::OnNotImplementedMessage(ClientImpl&, WorldPacket& data)
     {
-        log_function("Unimplemented message handler called: %s", LookupOpcodeName(data.GetOpcode()));
+        log_function("Unimplemented message handler called: %s", LookupOpcodeName((ClientOpcode)data.GetOpcode()));
     }
 
     //////////////////////////////////////////////////////////////////////////

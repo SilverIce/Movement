@@ -104,10 +104,6 @@ namespace Movement
         return m.GetParameter(Parameter_SpeedMoveSpline);
     }
 
-    void UnitMovement::UnboardAll()
-    {
-    }
-
     std::string UnitMovement::ToString() const
     {
         return m.ToString();
@@ -126,14 +122,6 @@ namespace Movement
     Vector3 UnitMovement::direction() const
     {
         return m.direction();
-    }
-
-    void UnitMovement::Unboard()
-    {
-    }
-
-    void UnitMovement::Board(UnitMovement& ps, const Location& local_pos, int8 seat)
-    {
     }
 
     uint32 UnitMovement::MoveSplineId() const
@@ -194,11 +182,6 @@ namespace Movement
     void UnitMovement::ApplyCanFlyMode( bool apply )
     {
         m.ApplyMoveMode(MoveModeCanFly, apply);
-    }
-
-    bool UnitMovement::IsBoarded() const
-    {
-        return m.IsBoarded();
     }
 
     void UnitMovement::WriteCreate(ByteBuffer& buf) const

@@ -213,7 +213,7 @@ namespace Movement
     {
     public:
 
-        explicit MO_Transport(WorldObject& owner);
+        explicit MO_Transport(WorldObjectType owner);
         virtual ~MO_Transport();
 
         virtual void CleanReferences()

@@ -1320,5 +1320,5 @@ namespace Movement
         NUM_MSG_TYPES                                   = 0x51F
     };
 
-    const char* LookupOpcodeName(uint16 id);
+    const char* LookupOpcodeName(ClientOpcode id);
 }
