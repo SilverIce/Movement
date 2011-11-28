@@ -1,6 +1,4 @@
 #include "MovementBase.h"
-#include "MoveUpdater.h"
-#include <float.h>
 #include "MaNGOS_API.h"
 
 namespace Movement{
@@ -14,6 +12,7 @@ namespace Movement{
 
     void MovementBase::SetGlobalPosition(const Location& loc)
     {
+        assert_state(loc.isFinite());
         world_position = loc;
         MaNGOS_API::UpdateMapPosition(&Owner, loc);
     }

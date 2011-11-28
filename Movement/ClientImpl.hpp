@@ -201,7 +201,7 @@ namespace Movement
 
     public:
 
-        ApplyStateTask(UnitMovementImpl * own, const ClientMoveStateChange& client_state)
+        explicit ApplyStateTask(UnitMovementImpl * own, const ClientMoveStateChange& client_state)
             : state(client_state), owner(own) {}
 
         void Execute(TaskExecutor_Args&) override
@@ -219,7 +219,7 @@ namespace Movement
     {
         assertControlled();
         MSTime applyTime = ClientToServerTime(client_state.ms_time);
-        client_state.state.ms_time = applyTime;
+        client_state.ms_time = applyTime;
         m_controlled->commonTasks.AddTask(new ApplyStateTask(m_controlled,client_state), applyTime);
     }
 

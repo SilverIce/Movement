@@ -16,7 +16,6 @@
 #include "MoveUpdater.h"
 #include "MoveListener.h"
 #include "MovementBase.h"
-#include "mov_constants.h"
 
 #include "UnitMoveFlags.h"
 #include "ClientMoveStatus.h"
@@ -144,45 +143,11 @@ namespace Movement
         m.SetCollisionHeight(value);
     }
 
-    void UnitMovement::ApplySwimMode(bool apply)
+    void UnitMovement::ApplyMoveMode(MoveMode mode, bool apply)
     {
-        m.ApplyMoveMode(MoveModeSwim, apply);
+        m.ApplyMoveMode(mode, apply);
     }
 
-    void UnitMovement::ApplyWalkMode(bool apply)
-    {
-        m.ApplyMoveMode(MoveModeWalk, apply);
-    }
-
-    void UnitMovement::ApplyWaterWalkMode(bool apply)
-    {
-        m.ApplyMoveMode(MoveModeWaterwalk, apply);
-    }
-
-    void UnitMovement::ApplySlowFallMode(bool apply)
-    {
-        m.ApplyMoveMode(MoveModeSlowfall, apply);
-    }
-
-    void UnitMovement::ApplyFlyMode(bool apply)
-    {
-        m.ApplyMoveMode(MoveModeFly, apply);
-    }
-
-    void UnitMovement::ApplyHoverMode(bool apply)
-    {
-        m.ApplyMoveMode(MoveModeHover, apply);
-    }
-
-    void UnitMovement::ApplyRootMode(bool apply)
-    {
-        m.ApplyMoveMode(MoveModeRoot, apply);
-    }
-
-    void UnitMovement::ApplyCanFlyMode( bool apply )
-    {
-        m.ApplyMoveMode(MoveModeCanFly, apply);
-    }
 
     void UnitMovement::WriteCreate(ByteBuffer& buf) const
     {
@@ -192,16 +157,6 @@ namespace Movement
     void UnitMovement::SetListener(class IListener * listener)
     {
         m.move_spline->SetListener(listener);
-    }
-
-    void UnitMovement::DisableGravity(bool apply)
-    {
-        m.ApplyMoveMode(MoveModeGravityDisabled, apply);
-    }
-
-    void UnitMovement::ApplyCanSwimFlyTransitionMode(bool apply)
-    {
-        m.ApplyMoveMode(MoveModeCanSwimFlyTransition, apply);
     }
 
     void UnitMovement::SetSpeed(SpeedType type, float speed)

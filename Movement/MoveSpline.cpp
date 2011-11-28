@@ -1,6 +1,5 @@
 
 #include "MoveSpline.h"
-#include "mov_constants.h"
 #include <sstream>
 
 namespace Movement{
@@ -69,6 +68,9 @@ void MoveSpline::computeParabolicElevation(float& el) const
         el += (t_durationf - t_passedf) * 0.5f * vertical_acceleration * t_passedf;
     }
 }
+
+extern double computeFallElevation(float time);
+extern double computeFallTime(float elevation);
 
 void MoveSpline::computeFallElevation(float& el) const
 {

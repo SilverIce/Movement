@@ -1,7 +1,6 @@
 #pragma once
 
 #include "typedefs.h"
-#include "mov_constants.h"
 #include "Location.h"
 #include "MoveSplineInit.h"
 
@@ -10,6 +9,39 @@ class ByteBuffer;
 
 namespace Movement
 {
+    enum MoveMode
+    {
+        MoveModeWalk,
+        MoveModeRoot,
+        MoveModeSwim,
+        MoveModeWaterwalk,
+        MoveModeAllowSlowfall,
+        MoveModeHover,
+        MoveModeFly,
+        MoveModeGravityDisabled,
+        MoveModeAllowFly,
+        MoveModeAllowSwimFlyTransition,
+        MoveMode_End
+    };
+
+    enum SpeedType
+    {
+        SpeedWalk           = 0,
+        SpeedRun            = 1,
+        SpeedSwimBack       = 2,
+        SpeedSwim           = 3,
+        SpeedRunBack        = 4,
+        SpeedFlight         = 5,
+        SpeedFlightBack     = 6,
+        SpeedTurn           = 7,
+        SpeedPitch          = 8,
+        Speed_End           = 9,
+    };
+
+    double computeFallTime(float path_length);
+    double computeFallElevation2(float time_passed, float start_velocy);
+    double computeFallElevation(float time_passed);
+
     class MoveUpdater;
     class UnitMovementImpl;
 
@@ -49,18 +81,7 @@ namespace Movement
 
     public:
         bool HasMode(MoveMode m) const;
-
-        /// Apply/remove modes
-        void ApplyRootMode(bool apply);
-        void ApplySwimMode(bool apply);
-        void ApplyWalkMode(bool apply);
-        void ApplyWaterWalkMode(bool apply);
-        void ApplySlowFallMode(bool apply);
-        void ApplyFlyMode(bool apply);
-        void ApplyCanFlyMode(bool apply);
-        void ApplyHoverMode(bool apply);
-        void DisableGravity(bool apply);
-        void ApplyCanSwimFlyTransitionMode(bool apply);
+        void ApplyMoveMode(MoveMode mode, bool apply);
 
         void Teleport(const Location& loc);
 

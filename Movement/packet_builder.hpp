@@ -152,7 +152,7 @@ namespace Movement
         ClientMoveState state(mov.ClientState());
         WriteClientStatus(state,data);
 
-        data.append<float>(&mov.m_float_values[SpeedWalk], SpeedMaxCount);
+        data.append<float>(&mov.m_float_values[SpeedWalk], Speed_End);
 
         if (state.moveFlags.spline_enabled)
         {
