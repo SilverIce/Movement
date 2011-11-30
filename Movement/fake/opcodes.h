@@ -844,6 +844,10 @@ namespace Movement
         SMSG_MOVE_SET_CAN_FLY                           = 0x343,
         SMSG_MOVE_UNSET_CAN_FLY                         = 0x344,
         CMSG_MOVE_SET_CAN_FLY_ACK                       = 0x345,
+        /* The only way to change UnitMoveFlag::Flying(0x02000000) flag for client
+           Sends the opcode to land down or lift off
+           Currently handled as common movement packet to save simplicity of the code
+        */
         CMSG_MOVE_SET_FLY                               = 0x346,
         CMSG_SOCKET_GEMS                                = 0x347,
         CMSG_ARENA_TEAM_CREATE                          = 0x348,
