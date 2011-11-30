@@ -185,11 +185,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\LinkedList.h"
+				RelativePath="..\Movement\Imports.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\MaNGOS_API.h"
+				RelativePath="..\Movement\LinkedList.h"
 				>
 			</File>
 			<File
@@ -320,7 +320,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\Movement\fake\MaNGOS_API.cpp"
+					RelativePath="..\Movement\fake\Imports.cpp"
 					>
 				</File>
 				<File

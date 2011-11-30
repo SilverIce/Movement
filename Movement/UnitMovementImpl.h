@@ -15,15 +15,6 @@ namespace Movement
     class ClientImpl;
     struct MoveSplineInitArgs;
 
-    struct MsgBroadcast : public MsgDeliverer
-    {
-        explicit MsgBroadcast(WorldObjectType owner) : m_owner(owner) {}
-        explicit MsgBroadcast(MovementBase* m) : m_owner(m->Owner) {}
-        explicit MsgBroadcast(MovementBase& m) : m_owner(m.Owner) {}
-        virtual void operator()(WorldPacket& data) { MaNGOS_API::BroadcastMessage(&m_owner, data);}
-        WorldObjectType m_owner;
-    };
-
     struct TargetLink
     {
         TargetLink() : target(0), targeter(0) {}

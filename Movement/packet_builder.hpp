@@ -124,7 +124,7 @@ namespace Movement
         data.append<Vector3>(&spline.getPoint(1), count);
     }
 
-    void PacketBuilder::SplinePathSend(const UnitMovementImpl& mov, MsgDeliverer& broadcast)
+    void PacketBuilder::SplinePathSend(const UnitMovementImpl& mov)
     {
         mov_assert(mov.SplineEnabled());
 
@@ -140,11 +140,11 @@ namespace Movement
                 WriteCatmullRomCyclicPath(spline, data);
             else
                 WriteCatmullRomPath(spline, data);
-        } 
+        }
         else
             WriteLinearPath(spline, data);
 
-        broadcast(data);
+        Imports::BroadcastMessage(&mov.Owner, data);
     }
 
     void PacketBuilder::FullUpdate(const UnitMovementImpl& mov, ByteBuffer& data)
@@ -268,7 +268,7 @@ namespace Movement
         }
     }
 
-    void PacketBuilder::SplineSyncSend(const UnitMovementImpl& mov, MsgDeliverer& broadcast)
+    void PacketBuilder::SplineSyncSend(const UnitMovementImpl& mov)
     {
         mov_assert(mov.SplineEnabled());
         const MoveSpline& move_spline = mov.move_spline->moveSpline();
@@ -276,14 +276,14 @@ namespace Movement
         WorldPacket data(SMSG_FLIGHT_SPLINE_SYNC, 13);
         data << (float)(move_spline.timePassed() / (float)move_spline.Duration());
         data << mov.Owner.GetPackGUID();
-        broadcast(data);
+        Imports::BroadcastMessage(&mov.Owner, data);
     }
 
-    void PacketBuilder::Send_HeartBeat(const UnitMovementImpl& mov, MsgDeliverer& broadcast)
+    void PacketBuilder::Send_HeartBeat(const UnitMovementImpl& mov)
     {
         WorldPacket data(MSG_MOVE_HEARTBEAT, 64);
         data << mov.Owner.GetPackGUID();
         WriteClientStatus(mov.ClientState(), data);
-        broadcast(data);
+        Imports::BroadcastMessage(&mov.Owner, data);
     }
 }

@@ -66,7 +66,7 @@ namespace Movement
                     WorldPacket data(opcode, 16);
                     data << mov->Owner.GetPackGUID();
                     data << value;
-                    MaNGOS_API::BroadcastMessage(&mov->Owner, data);
+                    Imports::BroadcastMessage(&mov->Owner, data);
                 }
 
                 // FIXME: currently there is no way to change speed of already moving server-side controlled unit (spline movement)
@@ -226,7 +226,7 @@ namespace Movement
                     mov->ApplyMoveFlag(modeInfo[mode].moveFlag, apply);
                     WorldPacket data(opcode, 12);
                     data << mov->Owner.GetPackGUID();
-                    MaNGOS_API::BroadcastMessage(&mov->Owner, data);
+                    Imports::BroadcastMessage(&mov->Owner, data);
                 }
                 else
                     log_function("no opcode for mode %u", mode);

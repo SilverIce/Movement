@@ -12,11 +12,6 @@ class WorldPacket;
 
 namespace Movement
 {
-    struct MsgDeliverer
-    {
-        virtual void operator()(WorldPacket&) = 0;
-    };
-
     class UnitMovementImpl;
     struct ClientMoveState;
     template<class T> class Spline;
@@ -30,12 +25,12 @@ namespace Movement
 
     public:
 
-        static void SplinePathSend(const UnitMovementImpl& mov, MsgDeliverer&);
-        static void SplineSyncSend(const UnitMovementImpl& mov, MsgDeliverer&);
+        static void SplinePathSend(const UnitMovementImpl& mov);
+        static void SplineSyncSend(const UnitMovementImpl& mov);
         static void FullUpdate(const UnitMovementImpl& mov, ByteBuffer& );
 
         static void WriteClientStatus(const ClientMoveState& mov, ByteBuffer& data);
         static void ReadClientStatus(ClientMoveState& state, ByteBuffer& data);
-        static void Send_HeartBeat(const UnitMovementImpl& mov, MsgDeliverer&);     // actually i shouldn't use it: only client is author of such packets
+        static void Send_HeartBeat(const UnitMovementImpl& mov);     // actually i shouldn't use it: only client is author of such packets
     };
 }

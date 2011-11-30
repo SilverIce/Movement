@@ -10,8 +10,8 @@
 
 #include "Object.h"
 #include "opcodes.h"
-#include "MaNGOS_API.h"
 #include "WorldPacket.h"
+#include "Imports.h"
 #include "MoveSpline.h"
 #include "MoveUpdater.h"
 #include "MoveListener.h"

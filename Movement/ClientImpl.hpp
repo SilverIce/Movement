@@ -30,7 +30,7 @@ namespace Movement
                 WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
                 data << m_requestId;
                 client->SendPacket(data);
-                m_requestSendTime = MaNGOS_API::getMSTime();
+                m_requestSendTime = Imports::getMSTime();
             }
 
             virtual bool OnReply(ClientImpl * client, WorldPacket& data) override
@@ -41,7 +41,7 @@ namespace Movement
                 data >> client_ticks;
                 if (!checkRequestId(client_req_id))
                     return false;
-                MSTime latency = (MaNGOS_API::getMSTime() - m_requestSendTime.time) / 2;
+                MSTime latency = (Imports::getMSTime() - m_requestSendTime.time) / 2;
                 client->SetClientTime(client_ticks + latency);
                 return true;
             }

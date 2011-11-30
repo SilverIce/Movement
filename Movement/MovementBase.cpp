@@ -1,5 +1,5 @@
 #include "MovementBase.h"
-#include "MaNGOS_API.h"
+#include "Imports.h"
 
 namespace Movement{
 
@@ -14,7 +14,7 @@ namespace Movement{
     {
         assert_state(loc.isFinite());
         world_position = loc;
-        MaNGOS_API::UpdateMapPosition(&Owner, loc);
+        Imports::UpdateMapPosition(&Owner, loc);
     }
 
     MO_Transport::MO_Transport(WorldObjectType owner) : MovementBase(owner), m_transport(*this)

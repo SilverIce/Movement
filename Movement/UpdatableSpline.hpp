@@ -13,7 +13,7 @@ namespace Movement
 
     void MoveSplineUpdatable::recache(int32 recacheDelay)
     {
-        MSTime timeNow = MaNGOS_API::getMSTime();
+        MSTime timeNow = Imports::getMSTime();
         int32 difftime = (timeNow - m_lastQuery).time;
         if (difftime < recacheDelay || !isEnabled())
             return;
@@ -49,7 +49,7 @@ namespace Movement
         m_owner.SetPosition(m_base.ComputePosition());
 
         if (hdl.needSync)
-            PacketBuilder::SplineSyncSend(m_owner,MsgBroadcast(m_owner));
+            PacketBuilder::SplineSyncSend(m_owner);
     }
 
     void MoveSplineUpdatable::Execute(TaskExecutor_Args& args)
@@ -75,7 +75,7 @@ namespace Movement
             return;
 
         m_base.Initialize(args);
-        m_lastQuery = MaNGOS_API::getMSTime();
+        m_lastQuery = Imports::getMSTime();
         m_moving = true;
 
         if (!m_task.hasExecutor())
@@ -86,7 +86,7 @@ namespace Movement
         m_owner.SetMoveFlag(moveFlag_new);
         m_owner.SetParameter(Parameter_SpeedMoveSpline, args.velocity);
 
-        PacketBuilder::SplinePathSend(m_owner, MsgBroadcast(m_owner));
+        PacketBuilder::SplinePathSend(m_owner);
     }
 
     void MoveSplineUpdatable::PrepareMoveSplineArgs(MoveSplineInitArgs& args, UnitMoveFlag& moveFlag_new)

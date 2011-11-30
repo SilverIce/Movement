@@ -1,5 +1,5 @@
 #include "MoveUpdater.h"
-#include "MaNGOS_API.h"
+#include "Imports.h"
 
 namespace Movement
 {
@@ -9,7 +9,7 @@ namespace Movement
 
     void MoveUpdater::Update()
     {
-        m_lastUpdate = MaNGOS_API::getMSTime();
+        m_lastUpdate = Imports::getMSTime();
         Tasks::TaskExecutor::Update(m_lastUpdate);
     }
 
