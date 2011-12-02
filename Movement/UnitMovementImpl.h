@@ -106,7 +106,10 @@ namespace Movement
         TaskTarget_DEV commonTasks;
 
         ClientImpl* client() const { return m_client;}
-        void client(ClientImpl* c) { m_client = c;}
+        void client(ClientImpl* c) {
+            assert_state(!m_client || (m_client && !c));
+            m_client = c;
+        }
         bool IsClientControlled() const { return m_client && !SplineEnabled();}
         bool IsServerControlled() const { return !m_client;}
 

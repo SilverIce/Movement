@@ -113,15 +113,20 @@ namespace Movement
         }
         
         LostControl();
+
+        if (ClientImpl * client = newly_controlled->client())
+            client->LostControl();
+
         m_controlled = newly_controlled;
         m_controlled->client(this);
     }
 
     void ClientImpl::LostControl()
     {
-        assert_state(!m_controlled || (m_controlled->client() == this));
-        if (m_controlled)
+        if (m_controlled) {
+            assert_state(m_controlled->client() == this);
             m_controlled->client(NULL);
+        }
         m_controlled = NULL;
     }
 
@@ -248,8 +253,9 @@ namespace Movement
 
         client.QueueState(state);
 
-        if (splineId != client.controlled()->move_spline->getId())
-            log_function("incorrect splineId: %u, expected %u", splineId, client.controlled()->move_spline->getId());
+        MoveSplineUpdatable * move_spline = client.controlled()->move_spline.operator->();
+        if (splineId != move_spline->getLastMoveId())
+            log_function("incorrect splineId: %u, expected %u", splineId, move_spline->getLastMoveId());
     }
 
     void ClientImpl::OnNotImplementedMessage(ClientImpl&, WorldPacket& data)

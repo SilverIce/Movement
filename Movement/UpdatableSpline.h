@@ -53,7 +53,7 @@ namespace Movement
 
         const MoveSpline& moveSpline() const { return m_base;}
 
-        uint32 getId() const
+        uint32 getCurrentMoveId() const
         {
             if (isEnabled())
                 return m_base.GetId();
@@ -61,18 +61,12 @@ namespace Movement
                 return 0;
         }
 
-        int32 timeElapsed() const
-        {
-            if (isEnabled())
-                return m_base.timeElapsed();
-            return 0;
+        uint32 getLastMoveId() const {
+            return m_base.GetId();
         }
 
-        int32 timePassed() const
-        {
-            if (isEnabled())
-                return m_base.timePassed();
-            return 0;
+        MSTime ArriveTime() const {
+            return m_lastQuery + m_base.timeElapsed();
         }
     };
 

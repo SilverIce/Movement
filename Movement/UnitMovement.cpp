@@ -125,7 +125,7 @@ namespace Movement
 
     uint32 UnitMovement::MoveSplineId() const
     {
-        return m.move_spline->getId();
+        return m.move_spline->getCurrentMoveId();
     }
 
     bool UnitMovement::HasMode(MoveMode mode) const
