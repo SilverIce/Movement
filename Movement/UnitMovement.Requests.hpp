@@ -41,7 +41,7 @@ namespace Movement
             if (ClientOpcode opcode = ValueChange2Opc_table[value_type].smsg_request)
             {
                 WorldPacket data(opcode, 32);
-                data << client->controlled()->Owner.GetPackGUID();
+                data << client->controlled()->Guid.WriteAsPacked();
                 data << m_requestId;
                 if (m_value_type == Parameter_SpeedRun)
                     data << int8(0);                               // new 2.1.0
@@ -64,7 +64,7 @@ namespace Movement
                 if (ClientOpcode opcode = ValueChange2Opc_table[value_type].smsg_spline)
                 {
                     WorldPacket data(opcode, 16);
-                    data << mov->Owner.GetPackGUID();
+                    data << mov->Guid.WriteAsPacked();
                     data << value;
                     Imports::BroadcastMessage(&mov->Owner, data);
                 }
@@ -197,7 +197,7 @@ namespace Movement
             RespHandler(modeInfo[mode].cmsg_ack[!apply],client), m_mode(mode), m_apply(apply)
         {
             MovementMessage msg(NULL, modeInfo[mode].smsg_apply[!apply], 16);
-            msg << client->controlled()->Owner.GetPackGUID();
+            msg << client->controlled()->Guid.WriteAsPacked();
             msg << m_requestId;
             client->SendMoveMessage(msg);
         }
@@ -225,7 +225,7 @@ namespace Movement
 
                     mov->ApplyMoveFlag(modeInfo[mode].moveFlag, apply);
                     WorldPacket data(opcode, 12);
-                    data << mov->Owner.GetPackGUID();
+                    data << mov->Guid.WriteAsPacked();
                     Imports::BroadcastMessage(&mov->Owner, data);
                 }
                 else
@@ -295,7 +295,7 @@ namespace Movement
                 state.world_position = m_location;
 
             MovementMessage msg(NULL, MSG_MOVE_TELEPORT_ACK, 64);   // message source is null - client shouldn't skip that message
-            msg << client->controlled()->Owner.GetPackGUID();
+            msg << client->controlled()->Guid.WriteAsPacked();
             msg << m_requestId;
             msg << state;
             client->SendMoveMessage(msg);

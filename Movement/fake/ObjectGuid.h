@@ -3,12 +3,13 @@
 class ObjectGuid
 {
 public:
-	ObjectGuid& ReadAsPacked() { return *this;}
-	ObjectGuid& WriteAsPacked() { return *this;}
-    uint64 GetRawValue() const { return 0;}
+    const ObjectGuid& ReadAsPacked() const { return *this;}
+    const ObjectGuid& WriteAsPacked() const { return *this;}
+    int GetRawValue() const { return 0;}
+    void Set(int rawValue) {}
 };
 
-struct PackedGuid 
+struct PackedGuid
 {
     PackedGuid(){}
     PackedGuid(int){}

@@ -30,14 +30,12 @@ namespace Movement
     {
     public:
 
-        explicit UnitMovementImpl(WorldObjectType owner);
+        explicit UnitMovementImpl(WorldObjectType owner, uint64 ownerGuid, MoveUpdater& updater);
         virtual ~UnitMovementImpl();
 
         virtual void CleanReferences();
 
         std::string ToString() const;
-
-        void Initialize(const Location& position, MoveUpdater& updater);
 
         /* Needed for monster movement only*/
         void BindOrientationTo(UnitMovementImpl& target);

@@ -53,7 +53,7 @@ namespace Movement
         UnitMovement& operator = (const UnitMovement&);
     public:
 
-        static UnitMovement* create(WorldObject& owner);
+        static UnitMovement* create(WorldObject& owner, uint64 ownerGuid, MoveUpdater& updater);
         ~UnitMovement();
 
         inline UnitMovementImpl& Impl() { return m;}
@@ -63,12 +63,14 @@ namespace Movement
 
         std::string ToString() const;
 
-        void Initialize(const Location& position, MoveUpdater& updater);
 
         /* Needed for monster movement only*/
         void BindOrientationTo(UnitMovement& target);
         void UnbindOrientation();
 
+        /** It changes raw position only and doesn't synchronizes it with clients.
+            It has been added as additional initialization step */
+        void SetPosition(const Location& position);
         const Location& GetPosition() const;
         const Vector3& GetPosition3() const { return GetPosition();}
         Vector3 direction() const;

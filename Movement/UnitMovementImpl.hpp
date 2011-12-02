@@ -38,12 +38,15 @@ namespace Movement
         }
     }
 
-    UnitMovementImpl::UnitMovementImpl(WorldObjectType owner) :
+    UnitMovementImpl::UnitMovementImpl(WorldObjectType owner, uint64 ownerGuid, MoveUpdater& updater) :
         MovementBase(owner),
         move_spline(*this),
-        m_updater(NULL),
+        m_updater(&updater),
         m_client(NULL)
     {
+        MovementBase::Guid.Set(ownerGuid);
+        commonTasks.SetExecutor(updater);
+
         const float BaseValues[Parameter_End] =
         {
             2.5f,                                                   // SpeedWalk
@@ -119,24 +122,6 @@ namespace Movement
             dest_angle += G3D::halfPi();
 
         return Vector3(cos(dest_angle), sin(dest_angle), 0);
-    }
-
-    void UnitMovementImpl::Initialize(const Location& pos, MoveUpdater& updater)
-    {
-        if (!m_updater)
-        {
-            m_updater = &updater;
-            commonTasks.SetExecutor(updater);
-            /*struct RegularUpdater : StaticExecutor<UnitMovementImpl,RegularUpdater,false> {
-                static void Execute(UnitMovementImpl& me, TaskExecutor_Args& args) {
-                    MaNGOS_API::UpdateMapPosition(&me.Owner,me.GetPosition());
-                    readd(args, 2000);
-                }
-            };
-            commonTasks.AddTask(CallBackPublic(this,&RegularUpdater::Static_Execute),0);*/
-        }
-
-        SetPosition(pos);
     }
 
     void UnitMovementImpl::ApplyState(const ClientMoveState& new_state)

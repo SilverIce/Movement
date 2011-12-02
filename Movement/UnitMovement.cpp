@@ -53,6 +53,11 @@ namespace Movement
         m.CleanReferences();
     }
 
+    void UnitMovement::SetPosition(const Location& position)
+    {
+        m.SetPosition(position);
+    }
+
     const Location& UnitMovement::GetPosition() const
     {
         return m.GetPosition();

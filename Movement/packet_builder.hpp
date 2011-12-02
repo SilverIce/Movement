@@ -19,14 +19,14 @@ namespace Movement
         if (mov.IsBoarded())
         {
             data.SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
-            data << mov.Owner.GetPackGUID();
-            data << mov.GetTransport()->Owner.GetPackGUID();
+            data << mov.Guid.WriteAsPacked();
+            data << mov.GetTransport()->Guid.WriteAsPacked();
             data << int8(mov.m_unused.transport_seat);
         }
         else
         {
             data.SetOpcode(SMSG_MONSTER_MOVE);
-            data << mov.Owner.GetPackGUID();
+            data << mov.Guid.WriteAsPacked();
         }
 
         data << uint8(0);       // boolean variable. toggles UnitMoveFlag::Unk4 flag
@@ -275,14 +275,14 @@ namespace Movement
 
         WorldPacket data(SMSG_FLIGHT_SPLINE_SYNC, 13);
         data << (float)(move_spline.timePassed() / (float)move_spline.Duration());
-        data << mov.Owner.GetPackGUID();
+        data << mov.Guid.WriteAsPacked();
         Imports::BroadcastMessage(&mov.Owner, data);
     }
 
     void PacketBuilder::Send_HeartBeat(const UnitMovementImpl& mov)
     {
         WorldPacket data(MSG_MOVE_HEARTBEAT, 64);
-        data << mov.Owner.GetPackGUID();
+        data << mov.Guid.WriteAsPacked();
         WriteClientStatus(mov.ClientState(), data);
         Imports::BroadcastMessage(&mov.Owner, data);
     }

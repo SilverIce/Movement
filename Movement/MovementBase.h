@@ -11,6 +11,7 @@
 #include "typedefs_p.h"
 #include "LinkedList.h"
 #include "Location.h"
+#include "ObjectGuid.h"
 
 class WorldObject;
 
@@ -100,6 +101,7 @@ namespace Movement
         void SetGlobalPosition(const Location& loc);
 
         WorldObjectType Owner;
+        ObjectGuid Guid;
 
     protected:
 
