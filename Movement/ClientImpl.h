@@ -64,7 +64,7 @@ namespace Movement
         void Dereference(const UnitMovementImpl * m);
     public:
 
-        explicit ClientImpl(HANDLE socket);
+        explicit ClientImpl(void * socket);
         ~ClientImpl();
 
         std::string ToString() const;

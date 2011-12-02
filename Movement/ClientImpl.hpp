@@ -125,7 +125,7 @@ namespace Movement
         m_controlled = NULL;
     }
 
-    ClientImpl::ClientImpl(HANDLE socket) :
+    ClientImpl::ClientImpl(void * socket) :
         m_socket(socket),
         m_controlled(NULL)
     {

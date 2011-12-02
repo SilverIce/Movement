@@ -211,17 +211,17 @@ namespace Movement
 
         if (mov.moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying | UnitMoveFlag::Allow_Pitching))
         {
-            data >> mov.pitch;
+            data >> mov.pitchAngle;
         }
 
         data >> mov.fallTime;
 
         if (mov.moveFlags.falling)
         {
-            data >> mov.jump_velocity;
-            data >> mov.jump_cosAngle;
-            data >> mov.jump_sinAngle;
-            data >> mov.jump_fall_velocity;
+            data >> mov.jump_verticalVelocity;
+            data >> mov.jump_directionX;
+            data >> mov.jump_directionY;
+            data >> mov.jump_horizontalVelocity;
         }
 
         if (mov.moveFlags.spline_elevation)
@@ -249,17 +249,17 @@ namespace Movement
 
         if (mov.moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying | UnitMoveFlag::Allow_Pitching))
         {
-            data << mov.pitch;
+            data << mov.pitchAngle;
         }
 
         data << mov.fallTime;
 
         if (mov.moveFlags.falling)
         {
-            data << mov.jump_velocity;
-            data << mov.jump_cosAngle;
-            data << mov.jump_sinAngle;
-            data << mov.jump_fall_velocity;
+            data << mov.jump_verticalVelocity;
+            data << mov.jump_directionX;
+            data << mov.jump_directionY;
+            data << mov.jump_horizontalVelocity;
         }
 
         if (mov.moveFlags.spline_elevation)

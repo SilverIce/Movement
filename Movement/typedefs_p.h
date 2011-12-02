@@ -36,7 +36,7 @@ namespace Movement
 #define log_function(msg, ...)  log_write(__FUNCTION__ ": " msg, __VA_ARGS__) \
 
 #define log_fatal(msg, ...) { \
-        log_write(__FUNCTION__ ": " msg, __VA_ARGS__); \
+        log_function(msg, __VA_ARGS__); \
         __debugbreak(); \
     }
 
