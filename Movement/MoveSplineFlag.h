@@ -48,7 +48,7 @@ namespace Movement
             // animation ids stored here, see AnimType enum, used with Animation flag
             Mask_Animations = 0xFF,
             // flags that shouldn't be appended into SMSG_MONSTER_MOVE\SMSG_MONSTER_MOVE_TRANSPORT packet, should be more probably
-            Mask_No_Monster_Move = Mask_Final_Facing | Mask_Animations | Done,
+            Mask_No_Monster_Move = Mask_Final_Facing | Mask_Animations,
             // CatmullRom interpolation mode used
             Mask_CatmullRom = Flying | Catmullrom,
             // Unused, not supported flags

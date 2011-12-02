@@ -91,6 +91,9 @@ namespace Movement
         /* Prevents unit model from being oriented. Disabled by default
          */
         void SetOrientationFixed(bool enable);
+        /* Instantly moves unit to end of the path. Disabled by default
+         */
+        void SetInstant();
 
         /* Sets the velocity (in case you want to have custom movement velocity)
          * if no set, speed will be selected based on unit's speeds and current movement mode

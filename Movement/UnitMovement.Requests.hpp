@@ -311,11 +311,10 @@ namespace Movement
             }
             else
             {
-                mov->SetPosition(loc);
-                MovementMessage msg(mov, MSG_MOVE_TELEPORT, 64);
-                msg << mov->Owner.GetPackGUID();
-                msg << mov->ClientState();
-                MaNGOS_API::BroadcastMessage(&mov->Owner, msg);
+                MoveSplineInit init(*mov);
+                init.MoveTo(loc);
+                init.SetInstant();
+                init.Launch();
             }
         }
 

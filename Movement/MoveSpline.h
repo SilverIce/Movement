@@ -96,7 +96,7 @@ namespace Movement {
         Location ComputePosition() const;
 
         uint32 GetId() const { return m_Id;}
-        bool Finalized() const { return splineflags.done; }
+        bool Arrived() const { return Duration() == timePassed(); }
         bool isCyclic() const { return splineflags.cyclic;}
         int32 Duration() const { return spline.length();}
         int32 timeElapsed() const { return Duration() - time_passed;}

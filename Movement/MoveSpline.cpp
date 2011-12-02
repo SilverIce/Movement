@@ -40,7 +40,7 @@ Location MoveSpline::ComputePosition() const
         else if (splineflags.final_point)
             c.orientation = atan2(facing.y-c.y, facing.x-c.x);
         //nothing to do for MoveSplineFlag::Final_Target flag
-    } 
+    }
     else
     {
         if (!splineflags.hasFlag(MoveSplineFlag::RotationFixed|MoveSplineFlag::Falling))
@@ -128,10 +128,21 @@ void MoveSpline::init_spline(const MoveSplineInitArgs& args)
     }
 
     // init spline timestamps
-    if (splineflags.falling)
-        spline.initLengths( FallInitializer(spline.getPoint(spline.first()).z) );
+    if (args.flags.done)
+    {
+        struct InstantInitializer {
+            int32 operator()(Spline<int32>& s, int32 i) { return minimal_duration;}
+        };
+        // total movement duration is 1 millisecond for now
+        spline.initLengths(InstantInitializer());
+    }
     else
-        spline.initLengths(CommonInitializer(args.velocity));
+    {
+        if (splineflags.falling)
+            spline.initLengths( FallInitializer(spline.getPoint(spline.first()).z) );
+        else
+            spline.initLengths(CommonInitializer(args.velocity));
+    }
 
     // TODO: what to do in such cases? problem is in input data (all points are at same coords)
     // critical only for cyclic movement
@@ -220,7 +231,7 @@ bool MoveSplineInitArgs::_checkPathBounds() const
 
 MoveSpline::UpdateResult MoveSpline::_updateState(int32& ms_time_diff)
 {
-    if (Finalized())
+    if (Arrived())
     {
         ms_time_diff = 0;
         return Result_Arrived;
@@ -290,7 +301,7 @@ void MoveSpline::Finalize()
 
 int32 MoveSpline::currentPathIdx() const
 {
-    int32 point = point_Idx_offset + point_Idx - spline.first() + (int32)Finalized();
+    int32 point = point_Idx_offset + point_Idx - spline.first() + (int32)Arrived();
     if (isCyclic())
         point = point % (spline.last()-spline.first());
     return point;

@@ -104,4 +104,9 @@ namespace Movement
     {
         args.flags.rotation_fixed = enable;
     }
+
+    void MoveSplineInit::SetInstant()
+    {
+        args.flags.done = true;
+    }
 }

@@ -60,14 +60,14 @@ namespace Movement
         EXPECT_TRUE(mov->Duration() > 0);
         EXPECT_TRUE(mov->timePassed() == 0);
 
-        Location pos = mov->FinalDestination();
+        Vector3 pos = mov->FinalDestination();
         EXPECT_TRUE(pos.fuzzyEq(path[1]));
 
         pos = mov->ComputePosition();
         EXPECT_TRUE( pos.fuzzyEq(path[0]) );
 
         mov->updateState(mov->Duration());
-        EXPECT_TRUE(mov->Finalized());
+        EXPECT_TRUE(mov->Arrived());
         EXPECT_TRUE(mov->Duration() == mov->timePassed());
         EXPECT_TRUE( mov->ComputePosition().fuzzyEq(path[1]) );
         delete mov;
@@ -137,7 +137,7 @@ namespace Movement
                 if (res == MoveSpline::Result_Arrived)
                 {
                     EXPECT_TRUE( prevResult != MoveSpline::Result_Arrived); // receive Result_Arrived only once
-                    EXPECT_TRUE( spline.Finalized() );
+                    EXPECT_TRUE( spline.Arrived() );
                     EXPECT_TRUE( spline.Duration() == spline.timePassed() );
                 }
 
@@ -147,7 +147,7 @@ namespace Movement
 
         UpdateResultHandler hdl(mov);
 
-        while (!mov.Finalized())
+        while (!mov.Arrived())
         {
             int32 diffTime = mov.next_timestamp() - mov.timePassed();
             EXPECT_TRUE( diffTime >= 0);
