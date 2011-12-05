@@ -293,9 +293,10 @@ namespace Movement
         return client;
     }
 
-    Client::~Client()
+    void Client::dealloc()
     {
         m.~ClientImpl();
+        delete this;
     }
 
     void Client::FillSubscribeList(std::vector<uint16>& opcodes)

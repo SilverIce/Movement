@@ -36,16 +36,17 @@
 
 namespace Movement
 {
-    UnitMovement* UnitMovement::create(WorldObject& owner)
+    UnitMovement* UnitMovement::create(WorldObjectType owner, uint64 ownerGuid, MoveUpdater& updater)
     {
         char * data = (char*)operator new(sizeof(UnitMovement) + sizeof(UnitMovementImpl));
-        UnitMovementImpl* impl = new(data + sizeof(UnitMovement))UnitMovementImpl(owner);
+        UnitMovementImpl* impl = new(data + sizeof(UnitMovement))UnitMovementImpl(owner, ownerGuid, updater);
         return new(data)UnitMovement(*impl);
     }
 
-    UnitMovement::~UnitMovement()
+    void UnitMovement::dealloc()
     {
         m.~UnitMovementImpl();
+        delete this;
     }
 
     void UnitMovement::CleanReferences()

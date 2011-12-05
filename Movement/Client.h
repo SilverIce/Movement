@@ -24,10 +24,11 @@ namespace Movement
         Client(ClientImpl& client) : m(client) {}
         Client(const Client&);
         Client& operator = (const Client&);
+        ~Client() {}
     public:
 
         static Client* create(void * socket);
-        ~Client();
+        void dealloc();
 
         void LostControl();
         void SetControl(UnitMovement * mov);

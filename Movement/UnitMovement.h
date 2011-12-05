@@ -51,10 +51,11 @@ namespace Movement
         UnitMovement(UnitMovementImpl& impl) : m(impl), dbg_flags(0) {}
         UnitMovement(const UnitMovement&);
         UnitMovement& operator = (const UnitMovement&);
+        ~UnitMovement() {}
     public:
 
         static UnitMovement* create(WorldObject& owner, uint64 ownerGuid, MoveUpdater& updater);
-        ~UnitMovement();
+        void dealloc();
 
         inline UnitMovementImpl& Impl() { return m;}
         inline const UnitMovementImpl& Impl() const { return m;}

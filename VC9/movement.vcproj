@@ -236,10 +236,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\Movement\mov_constants.h"
-					>
-				</File>
-				<File
 					RelativePath="..\Movement\MovementMessage.h"
 					>
 				</File>

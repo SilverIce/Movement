@@ -56,9 +56,9 @@ namespace Movement
         void UnregisterRespHandler(RespHandler* handler);
         void Kick() {}  // not implemented
 
-        inline void BroadcastMessage(MovementMessage& msg) const { MaNGOS_API::BroadcastMessage(&m_controlled->Owner, msg);}
-        inline void BroadcastMessage(WorldPacket& data) const { MaNGOS_API::BroadcastMessage(&m_controlled->Owner, data);}
-        inline void SendPacket(const WorldPacket& data) const { MaNGOS_API::SendPacket(m_socket, data);}
+        inline void BroadcastMessage(MovementMessage& msg) const { Imports::BroadcastMoveMessage(&m_controlled->Owner, msg);}
+        inline void BroadcastMessage(WorldPacket& data) const { Imports::BroadcastMessage(&m_controlled->Owner, data);}
+        inline void SendPacket(const WorldPacket& data) const { Imports::SendPacket(m_socket, data);}
 
         void CleanReferences();
         void Dereference(const UnitMovementImpl * m);
