@@ -28,12 +28,12 @@ namespace Movement
     };
 #undef VALUE_CHANGE
 
-    class FloatValueChangeRequest : public RespHandler
+    class FloatValueChangeEffect : private RespHandler
     {
         FloatParameter m_value_type;
         float m_value;
 
-        FloatValueChangeRequest(ClientImpl * client, FloatParameter value_type, float value) :
+        FloatValueChangeEffect(ClientImpl * client, FloatParameter value_type, float value) :
             RespHandler(ValueChange2Opc_table[value_type].cmsg_response, client),
             m_value_type(value_type),
             m_value(value)
@@ -56,7 +56,7 @@ namespace Movement
         {
             if (mov->IsClientControlled())
             {
-                new FloatValueChangeRequest(mov->client(), value_type, value);
+                new FloatValueChangeEffect(mov->client(), value_type, value);
             }
             else
             {
@@ -74,6 +74,7 @@ namespace Movement
             }
         }
 
+    private:
         virtual bool OnReply(ClientImpl * client, WorldPacket& data) override
         {
             ClientMoveStateChange client_state;
@@ -103,17 +104,6 @@ namespace Movement
             return true;
         }
     };
-
-    void UnitMovementImpl::SetCollisionHeight(float value)
-    {
-        FloatValueChangeRequest::Launch(this, Parameter_CollisionHeight, value);
-    }
-
-    void UnitMovementImpl::SetSpeed(SpeedType type, float value)
-    {
-        if (GetSpeed(type) != value)
-            FloatValueChangeRequest::Launch(this, (FloatParameter)type, value);
-    }
 
     struct ModeInfo
     {
@@ -170,9 +160,9 @@ namespace Movement
         },
         {
             UnitMoveFlag::GravityDisabled, SMSG_MOVE_GRAVITY_DISABLE, SMSG_MOVE_GRAVITY_ENABLE,
-            CMSG_MOVE_GRAVITY_DISABLE_ACK, CMSG_MOVE_GRAVITY_ENABLE_ACK,
-            MSG_MOVE_GRAVITY_CHNG, MSG_MOVE_GRAVITY_CHNG,
-            SMSG_SPLINE_MOVE_GRAVITY_DISABLE, SMSG_SPLINE_MOVE_GRAVITY_ENABLE
+                CMSG_MOVE_GRAVITY_DISABLE_ACK, CMSG_MOVE_GRAVITY_ENABLE_ACK,
+                MSG_MOVE_GRAVITY_CHNG, MSG_MOVE_GRAVITY_CHNG,
+                SMSG_SPLINE_MOVE_GRAVITY_DISABLE, SMSG_SPLINE_MOVE_GRAVITY_ENABLE
         },
         {
             UnitMoveFlag::Can_Fly, SMSG_MOVE_SET_CAN_FLY, SMSG_MOVE_UNSET_CAN_FLY,
@@ -188,12 +178,12 @@ namespace Movement
         },
     };
 
-    class ModeChangeRequest : public RespHandler
+    class ModeChangeEffect : private RespHandler
     {
         MoveMode m_mode;
         bool m_apply;
 
-        ModeChangeRequest(ClientImpl * client, MoveMode mode, bool apply) :
+        ModeChangeEffect(ClientImpl * client, MoveMode mode, bool apply) :
             RespHandler(modeInfo[mode].cmsg_ack[!apply],client), m_mode(mode), m_apply(apply)
         {
             MovementMessage msg(NULL, modeInfo[mode].smsg_apply[!apply], 16);
@@ -209,7 +199,7 @@ namespace Movement
             if (mov->IsClientControlled())
             {
                 if (modeInfo[mode].smsg_apply[!apply])
-                    new ModeChangeRequest(mov->client(), mode, apply);
+                    new ModeChangeEffect(mov->client(), mode, apply);
                 else
                     log_function("no opcode for mode %u", mode);
             }
@@ -233,6 +223,7 @@ namespace Movement
             }
         }
 
+    private:
         virtual bool OnReply(ClientImpl * client, WorldPacket& data) override
         {
             ClientMoveStateChange client_state;
@@ -270,21 +261,16 @@ namespace Movement
         }
     };
 
-    void UnitMovementImpl::ApplyMoveMode(MoveMode mode, bool apply)
-    {
-        ModeChangeRequest::Launch(this, mode, apply);
-    }
-
     bool UnitMovementImpl::HasMode(MoveMode mode) const
     {
         return moveFlags.hasFlag(modeInfo[mode].moveFlag);
     }
 
-    class TeleportRequest : public RespHandler
+    class TeleportEffect : private RespHandler
     {
         Location m_location;
 
-        TeleportRequest(ClientImpl * client, const Location& loc) :
+        TeleportEffect(ClientImpl * client, const Location& loc) :
             RespHandler(MSG_MOVE_TELEPORT_ACK, client), m_location(loc)
         {
             ClientMoveState state(client->controlled()->ClientState());
@@ -307,7 +293,7 @@ namespace Movement
         {
             if (mov->client())
             {
-                new TeleportRequest(mov->client(), loc);
+                new TeleportEffect(mov->client(), loc);
             }
             else
             {
@@ -319,6 +305,7 @@ namespace Movement
             }
         }
 
+    private:
         virtual bool OnReply(ClientImpl * client, WorldPacket& data) override
         {
             ObjectGuid guid;
@@ -340,11 +327,6 @@ namespace Movement
             return true;
         }
     };
-
-    void UnitMovementImpl::Teleport(const Location& loc)
-    {
-        TeleportRequest::Launch(this, loc);
-    }
 
     //////////////////////////////////////////////////////////////////////////
 

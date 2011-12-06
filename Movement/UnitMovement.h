@@ -62,7 +62,7 @@ namespace Movement
 
         void CleanReferences();
 
-        std::string ToString() const;
+        std::string ToString();
 
 
         /* Needed for monster movement only*/
@@ -72,39 +72,38 @@ namespace Movement
         /** It changes raw position only and doesn't synchronizes it with clients.
             It has been added as additional initialization step */
         void SetPosition(const Location& position);
-        const Location& GetPosition() const;
-        const Vector3& GetPosition3() const { return GetPosition();}
-        Vector3 direction() const;
-
+        const Location& GetPosition();
+        const Vector3& GetPosition3();
+        Vector3 direction();
 
     public:
         // Used by server side controlled movement
-        uint32 MoveSplineId() const;
+        uint32 MoveSplineId();
         void SetListener(class IListener * l);
 
     public:
-        bool HasMode(MoveMode m) const;
+        bool HasMode(MoveMode mode);
         void ApplyMoveMode(MoveMode mode, bool apply);
 
         void Teleport(const Location& loc);
 
-        bool IsWalking() const;
-        bool IsMoving() const;
-        bool IsTurning() const;
-        bool IsFlying() const;
-        bool IsFalling() const;
-        bool IsFallingFar() const;
+        bool IsWalking();
+        bool IsMoving();
+        bool IsTurning();
+        bool IsFlying();
+        bool IsFalling();
+        bool IsFallingFar();
 
         void SetCollisionHeight(float value);
-        float GetCollisionHeight() const;
+        float GetCollisionHeight();
 
-        void SetSpeed(SpeedType type, float value);
-        float GetSpeed(SpeedType type) const;
-        float GetCurrentSpeed() const;
+        void SetSpeed(SpeedType speed, float value);
+        float GetSpeed(SpeedType speed);
+        float GetCurrentSpeed();
 
         uint32 dbg_flags;
 
-        void WriteCreate(ByteBuffer& buf) const;
+        void WriteCreate(ByteBuffer& buf);
     };
 }
 

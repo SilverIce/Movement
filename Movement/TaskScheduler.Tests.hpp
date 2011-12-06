@@ -272,7 +272,7 @@ namespace Tasks
         ITaskExecutor2* exec[] = {
             //new taskExecutor<TaskExecutorImpl_VectorPOD110>,
             new taskExecutor<TaskExecutorImpl_LinkedList110>,
-            new taskExecutor<TaskExecutorImpl_LinkedList111>,
+            //new taskExecutor<TaskExecutorImpl_LinkedList111>,
             //new taskExecutor<TaskExecutorImpl_VectorPendingPODWrong111>,
             //new taskExecutor<TaskExecutorImpl_LinkedList112>,
         };

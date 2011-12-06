@@ -29,7 +29,7 @@
 #include "packet_builder.hpp"
 #include "ClientImpl.hpp"
 #include "UnitMovementImpl.hpp"
-#include "UnitMovement.Requests.hpp"
+#include "UnitMovement.Effects.hpp"
 #include "UpdatableSpline.hpp"
 
 #include "UnitMovement.Tests.hpp"
@@ -59,57 +59,62 @@ namespace Movement
         m.SetPosition(position);
     }
 
-    const Location& UnitMovement::GetPosition() const
+    const Location& UnitMovement::GetPosition()
     {
         return m.GetPosition();
     }
 
-    bool UnitMovement::IsWalking() const
+    const Vector3& UnitMovement::GetPosition3()
+    {
+        return m.GetPosition3();
+    }
+
+    bool UnitMovement::IsWalking()
     {
         return m.IsWalking();
     }
 
-    bool UnitMovement::IsMoving() const
+    bool UnitMovement::IsMoving()
     {
         return m.IsMoving();
     }
 
-    bool UnitMovement::IsTurning() const
+    bool UnitMovement::IsTurning()
     {
         return m.IsTurning();
     }
 
-    bool UnitMovement::IsFlying() const
+    bool UnitMovement::IsFlying()
     {
         return m.IsFlying();
     }
 
-    bool UnitMovement::IsFalling() const
+    bool UnitMovement::IsFalling()
     {
         return m.IsFalling();
     }
 
-    bool UnitMovement::IsFallingFar() const
+    bool UnitMovement::IsFallingFar()
     {
         return m.IsFallingFar();
     }
 
-    float UnitMovement::GetCollisionHeight() const
+    float UnitMovement::GetCollisionHeight()
     {
         return m.GetParameter(Parameter_CollisionHeight);
     }
 
-    float UnitMovement::GetSpeed(SpeedType type) const
+    float UnitMovement::GetSpeed(SpeedType type)
     {
         return m.GetParameter((FloatParameter)(0 + type));
     }
 
-    float UnitMovement::GetCurrentSpeed() const
+    float UnitMovement::GetCurrentSpeed()
     {
         return m.GetParameter(Parameter_SpeedMoveSpline);
     }
 
-    std::string UnitMovement::ToString() const
+    std::string UnitMovement::ToString()
     {
         return m.ToString();
     }
@@ -124,38 +129,42 @@ namespace Movement
         m.UnbindOrientation();
     }
 
-    Vector3 UnitMovement::direction() const
+    Vector3 UnitMovement::direction()
     {
         return m.direction();
     }
 
-    uint32 UnitMovement::MoveSplineId() const
+    uint32 UnitMovement::MoveSplineId()
     {
         return m.move_spline->getCurrentMoveId();
     }
 
-    bool UnitMovement::HasMode(MoveMode mode) const
+    bool UnitMovement::HasMode(MoveMode mode)
     {
         return m.HasMode(mode);
     }
 
     void UnitMovement::Teleport(const Location& loc)
     {
-        m.Teleport(loc);
+        TeleportEffect::Launch(&m, loc);
     }
 
     void UnitMovement::SetCollisionHeight(float value)
     {
-        m.SetCollisionHeight(value);
+        FloatValueChangeEffect::Launch(&m, Parameter_CollisionHeight, value);
+    }
+
+    void UnitMovement::SetSpeed(SpeedType speed, float value)
+    {
+        FloatValueChangeEffect::Launch(&m, (FloatParameter)speed, value);
     }
 
     void UnitMovement::ApplyMoveMode(MoveMode mode, bool apply)
     {
-        m.ApplyMoveMode(mode, apply);
+        ModeChangeEffect::Launch(&m, mode, apply);
     }
 
-
-    void UnitMovement::WriteCreate(ByteBuffer& buf) const
+    void UnitMovement::WriteCreate(ByteBuffer& buf)
     {
         PacketBuilder::FullUpdate(Impl(), buf);
     }
@@ -163,15 +172,5 @@ namespace Movement
     void UnitMovement::SetListener(class IListener * listener)
     {
         m.move_spline->SetListener(listener);
-    }
-
-    void UnitMovement::SetSpeed(SpeedType type, float speed)
-    {
-        m.SetSpeed(type, speed);
-    }
-
-    void UnitMovement::Initialize(const Location& position, MoveUpdater& updater)
-    {
-        m.Initialize(position, updater);
     }
 }

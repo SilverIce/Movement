@@ -61,9 +61,6 @@ namespace Movement
 
     public:
         bool HasMode(MoveMode m) const;
-        void ApplyMoveMode(MoveMode mode, bool apply);
-
-        void Teleport(const Location& loc);
 
         bool IsWalking() const { return moveFlags.walk_mode;}
         bool IsFlying() const { return moveFlags.hasFlag(UnitMoveFlag::Flying | UnitMoveFlag::GravityDisabled);}
@@ -73,11 +70,6 @@ namespace Movement
         bool IsFallingFar() const { return moveFlags.fallingfar;}
         bool SplineEnabled() const;
 
-        void SetCollisionHeight(float value);
-        float GetCollisionHeight() const { return GetParameter(Parameter_CollisionHeight);}
-
-        void SetSpeed(SpeedType type, float s);
-        float GetSpeed(SpeedType type) const { return GetParameter((FloatParameter)(0 + type)); }
         float GetCurrentSpeed() const { return GetParameter(SelectSpeedType(moveFlags));}
 
     public:
