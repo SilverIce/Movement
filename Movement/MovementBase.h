@@ -57,7 +57,7 @@ namespace Movement
 
         static Location ToGlobal(const Location& coord_sys, const Vector2& direction, const Location& local_coord)
         {
-            Location result = ToGlobal(static_cast<const Vector3&>(coord_sys),direction,static_cast<const Vector3&>(local_coord));
+            Location result(ToGlobal(static_cast<const Vector3&>(coord_sys),direction,static_cast<const Vector3&>(local_coord)));
             // TODO: normalize orientation to be in range [0, 2pi)
             result.orientation = coord_sys.orientation + local_coord.orientation;
             return result;
@@ -65,7 +65,7 @@ namespace Movement
 
         static Location ToLocal(const Location& coord_sys, const Vector2& direction, const Location& global_coord)
         {
-            Location result = ToLocal(static_cast<const Vector3&>(coord_sys),direction,static_cast<const Vector3&>(global_coord));
+            Location result(ToLocal(static_cast<const Vector3&>(coord_sys),direction,static_cast<const Vector3&>(global_coord)));
             // TODO: normalize orientation to be in range [0, 2pi)
             result.orientation = coord_sys.orientation - global_coord.orientation;
             return result;

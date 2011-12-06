@@ -313,6 +313,7 @@ namespace Movement
             {
                 MoveSplineInit init(*mov);
                 init.MoveTo(loc);
+                init.SetFacing(loc.orientation);
                 init.SetInstant();
                 init.Launch();
             }

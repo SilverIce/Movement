@@ -14,7 +14,7 @@ namespace Movement{
     {
         assert_state(loc.isFinite());
         world_position = loc;
-        Imports::UpdateMapPosition(&Owner, loc);
+        Imports::UpdateMapPosition(&Owner, world_position);
     }
 
     MO_Transport::MO_Transport(WorldObjectType owner) : MovementBase(owner), m_transport(*this)
