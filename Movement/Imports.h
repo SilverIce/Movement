@@ -6,13 +6,29 @@ class WorldPacket;
 namespace Movement{
     struct Location;
     class MovementMessage;
+    class UnitMovement;
 }
 
-namespace Movement { namespace Imports
+namespace Movement
 {
-    extern void BroadcastMoveMessage(WorldObject const* obj, Movement::MovementMessage& msg);
-    extern void UpdateMapPosition(WorldObject*, const Movement::Location&);
-    extern void BroadcastMessage(WorldObject const* obj, WorldPacket& msg);
-    extern void SendPacket(void * socket, const WorldPacket& data);
-    extern unsigned int getMSTime();
-}}
+    struct _Imports 
+    {
+        typedef void (*T_UpdateMapPosition) (WorldObject*, const Movement::Location&);
+        typedef void (*T_BroadcastMoveMessage) (WorldObject const* obj, Movement::MovementMessage& msg);
+        typedef void (*T_BroadcastMessage) (WorldObject const* obj, WorldPacket& msg);
+        typedef void (*T_SendPacket) (void * socket, const WorldPacket& data);
+        typedef unsigned int (*T_getMSTime) ();
+        typedef UnitMovement* (*T_GetUnit) (void* context, uint64 guid);
+
+        T_UpdateMapPosition       UpdateMapPosition;
+        T_BroadcastMoveMessage    BroadcastMoveMessage;
+        T_BroadcastMessage        BroadcastMessage;
+        T_SendPacket              SendPacket;
+        T_getMSTime               getMSTime;
+        T_GetUnit                 GetUnit;
+    };
+
+    extern _Imports Imports;
+
+    void SetupImports(const _Imports& ftable);
+}

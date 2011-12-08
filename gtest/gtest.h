@@ -7,7 +7,7 @@ namespace testing
         explicit TestRegistrable(TestFn testFuntionPtr, const char* name, const char* name2);
     };
 
-    void _check(bool, const char* expression, const char* function);
+    void _check(bool, const char* source, const char* expression);
 }
 
 #define TEST(name, name2) \
@@ -19,7 +19,7 @@ namespace testing
 
 #define TESTCASE_NAME(name, name2) testFunction_##name##_##name2
 
-#define EXPECT_TRUE(a) ::testing::_check(a, #a, __FUNCTION__);
+#define EXPECT_TRUE(a) ::testing::_check(a, __FUNCTION__, #a);
 #define EXPECT_EQ(a, b) EXPECT_TRUE( (a) == (b) );
 
 #define EXPECT_THROW(a, exception) \

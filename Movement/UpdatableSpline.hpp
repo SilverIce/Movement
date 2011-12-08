@@ -13,7 +13,7 @@ namespace Movement
 
     void MoveSplineUpdatable::recache(int32 recacheDelay)
     {
-        MSTime timeNow = Imports::getMSTime();
+        MSTime timeNow = Imports.getMSTime();
         int32 difftime = (timeNow - m_lastQuery).time;
         if (difftime < recacheDelay || !isEnabled())
             return;
@@ -75,7 +75,7 @@ namespace Movement
             return;
 
         m_base.Initialize(args);
-        m_lastQuery = Imports::getMSTime();
+        m_lastQuery = Imports.getMSTime();
         m_moving = true;
 
         if (!m_task.hasExecutor())

@@ -9,7 +9,7 @@ namespace Movement
 
     void MoveUpdater::Update()
     {
-        m_lastUpdate = Imports::getMSTime();
+        m_lastUpdate = Imports.getMSTime();
         Tasks::TaskExecutor::Update(m_lastUpdate);
     }
 

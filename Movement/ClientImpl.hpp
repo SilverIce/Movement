@@ -30,7 +30,7 @@ namespace Movement
                 WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
                 data << m_requestId;
                 client->SendPacket(data);
-                m_requestSendTime = Imports::getMSTime();
+                m_requestSendTime = Imports.getMSTime();
             }
 
             virtual bool OnReply(ClientImpl * client, WorldPacket& data) override
@@ -41,8 +41,8 @@ namespace Movement
                 data >> client_ticks;
                 if (!checkRequestId(client_req_id))
                     return false;
-                MSTime latency = (Imports::getMSTime() - m_requestSendTime.time) / 2;
-                client->SetClientTime(client_ticks + latency);
+                MSTime latency = (Imports.getMSTime() - m_requestSendTime.time) / 2;
+                client->SetClientTime(client->timeRandomModifier + client_ticks + latency);
                 return true;
             }
         };
@@ -104,20 +104,21 @@ namespace Movement
         LostControl();
     }
 
-    void ClientImpl::SetControl(UnitMovementImpl * newly_controlled)
+    void ClientImpl::SetControl(UnitMovementImpl& newly_controlled)
     {
-        if (!commonTasks.hasExecutor())
-        {
-            commonTasks.SetExecutor(newly_controlled->Updater());
+        if (controlled()) {
+            log_function("client already controls mover");
+            return;
+        }
+        if (newly_controlled.client()) {
+            log_function("movement is already controlled");
+            return;
+        }
+        if (!commonTasks.hasExecutor()) {
+            commonTasks.SetExecutor(newly_controlled.Updater());
             new TimeSyncRequestScheduler(this);
         }
-        
-        LostControl();
-
-        if (ClientImpl * client = newly_controlled->client())
-            client->LostControl();
-
-        m_controlled = newly_controlled;
+        m_controlled = &newly_controlled;
         m_controlled->client(this);
     }
 
@@ -230,7 +231,6 @@ namespace Movement
 
     void ClientImpl::OnSplineDone(ClientImpl& client, WorldPacket& data)
     {
-        client.assertControlled();
         ObjectGuid guid;
         ClientMoveStateChange state;
         uint32 splineId;
@@ -246,22 +246,39 @@ namespace Movement
             log_function("incorrect splineId: %u, expected %u", splineId, move_spline->getLastMoveId());
     }
 
+    void ClientImpl::OnNotActiveMover(ClientImpl& client, WorldPacket& data)
+    {
+        ObjectGuid guid;
+        ClientMoveStateChange state;
+        data >> guid.ReadAsPacked();
+        data >> state;
+
+        if (!client.controlled())
+            log_function("control already lost");
+
+        client.QueueState(state);
+        client.LostControl();
+    }
+
+    void ClientImpl::OnActiveMover(ClientImpl& client, WorldPacket& data)
+    {
+        ObjectGuid guid;
+        data >> guid;
+
+        if (UnitMovement * movem = Imports.GetUnit(client.m_socket, guid.GetRawValue())) {
+            client.LostControl();
+            client.SetControl(movem->Impl());
+        }
+        else
+            log_function("can't find mover");
+    }
+
     void ClientImpl::OnNotImplementedMessage(ClientImpl&, WorldPacket& data)
     {
         log_function("Unimplemented message handler called: %s", LookupOpcodeName((ClientOpcode)data.GetOpcode()));
     }
 
     //////////////////////////////////////////////////////////////////////////
-    
-    void Client::LostControl()
-    {
-        m.LostControl();
-    }
-
-    void Client::SetControl(UnitMovement * mov)
-    {
-        m.SetControl(&mov->Impl());
-    }
 
     void Client::SendMoveMessage( MovementMessage& msg ) const
     {

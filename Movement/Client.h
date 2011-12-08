@@ -30,9 +30,6 @@ namespace Movement
         static Client* create(void * socket);
         void dealloc();
 
-        void LostControl();
-        void SetControl(UnitMovement * mov);
-
         /** Receives movemet messages from all visible clients */
         void SendMoveMessage(MovementMessage& message) const;
         /** Handles messages from this client */

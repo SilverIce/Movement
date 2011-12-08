@@ -28,10 +28,12 @@ namespace Movement
         typedef std::list<RespHandler*> RespHdlContainer;
         RespHdlContainer m_resp_handlers;
 
-        static MSTime ServerTime() { return MSTime(Imports::getMSTime());}
+        static MSTime ServerTime() { return MSTime(Imports.getMSTime());}
         MSTime ServerToClientTime(const MSTime& server_time) const { return server_time + m_time_diff;}
         MSTime ClientTime() const {return ServerToClientTime(ServerTime());}
         MSTime ClientToServerTime(const MSTime& client_time) const { return client_time - m_time_diff;}
+
+    public:
 
         void assertControlled() const {
             assertInitialized();
@@ -42,7 +44,6 @@ namespace Movement
             assert_state(commonTasks.hasExecutor());
         }
 
-    public:
 
         TaskTarget_DEV commonTasks;
 
@@ -56,9 +57,9 @@ namespace Movement
         RespHandler* PopRespHandler();
         void Kick() {}  // not implemented
 
-        inline void BroadcastMessage(MovementMessage& msg) const { Imports::BroadcastMoveMessage(&m_controlled->Owner, msg);}
-        inline void BroadcastMessage(WorldPacket& data) const { Imports::BroadcastMessage(&m_controlled->Owner, data);}
-        inline void SendPacket(const WorldPacket& data) const { Imports::SendPacket(m_socket, data);}
+        inline void BroadcastMessage(MovementMessage& msg) const { Imports.BroadcastMoveMessage(&m_controlled->Owner, msg);}
+        inline void BroadcastMessage(WorldPacket& data) const { Imports.BroadcastMessage(&m_controlled->Owner, data);}
+        inline void SendPacket(const WorldPacket& data) const { Imports.SendPacket(m_socket, data);}
 
         void CleanReferences();
         void Dereference(const UnitMovementImpl * m);
@@ -70,7 +71,7 @@ namespace Movement
         std::string ToString() const;
 
         void LostControl();
-        void SetControl(UnitMovementImpl * mov);
+        void SetControl(UnitMovementImpl& mov);
 
         void SendMoveMessage(MovementMessage& msg) const;
 
@@ -80,6 +81,8 @@ namespace Movement
         static void OnMoveTimeSkipped(ClientImpl& client, WorldPacket & recv_data);
         static void OnNotImplementedMessage(ClientImpl& client, WorldPacket& data);
         static void OnSplineDone(ClientImpl& client, WorldPacket& data);
+        static void OnNotActiveMover(ClientImpl& client, WorldPacket& data);
+        static void OnActiveMover(ClientImpl& client, WorldPacket& data);
     };
 
     class MoveHandlersBinder

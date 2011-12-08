@@ -12,6 +12,7 @@ namespace testing
         TestFn testFn;
         const char * Name;
         const char * Name2;
+        bool isFailed;
 
         static bool Disabled(const TestInfo* info) {
             return strncmp(info->Name2, "DISABLED", 8) == 0;
@@ -22,6 +23,7 @@ namespace testing
             test->testFn = testFuntionPtr;
             test->Name = name;
             test->Name2 = name2;
+            test->isFailed = false;
             return test;
         }
 
@@ -76,20 +78,23 @@ namespace testing
         //int countTestsFailed;
         size_t countChecksFailed;
         size_t countDisabledTests;
-        std::set<TestInfo*> testsFailed;
+        size_t countFailedTests;
 
         size_t countTestsFailed() {
-            return testsFailed.size();
+            return countFailedTests;
         }
 
         explicit Statistics() {
             countChecksFailed = 0;
             countDisabledTests = 0;
+            countFailedTests = 0;
         }
 
-        void OnCheckFailed(TestInfo* test) {
+        void OnCheckFailed() {
             ++countChecksFailed;
-            testsFailed.insert(test);
+        }
+        void OnTestFailed() {
+            ++countFailedTests;
         }
     };
 
@@ -102,24 +107,19 @@ namespace testing
             currentTest = NULL;
         }
 
-        void OnCheckFailed() {
-            statistics.OnCheckFailed(currentTest);
-        }
-
-        void RunAllTests()
+        bool RunAllTests()
         {
             std::vector<TestInfo*>& tests = TestRegistry::instance().tests;
             // No need sort tests: their natural order is important. Tests from the same compile unit will be grouped together
             //std::sort(tests.begin(),tests.end(),TestInfo::Compare);
             statistics.countDisabledTests = std::count_if(tests.begin(),tests.end(),TestInfo::Disabled);
 
-            for(std::vector<TestInfo*>::iterator it = tests.begin(); it!=tests.end(); ++it) {
-                currentTest = *it;
-                TestInfo::InvokeTest(currentTest);
-                currentTest = NULL;
-            }
+            for(std::vector<TestInfo*>::iterator it = tests.begin(); it!=tests.end(); ++it)
+                InvokeTest(*it);
 
             OnTestsComplete();
+
+            return statistics.countTestsFailed() == 0;
         }
 
         void OnTestsComplete() {
@@ -129,6 +129,34 @@ namespace testing
             printf("%u tests total amount\n", TestRegistry::instance().totalAmount());
         }
 
+        void InvokeTest(TestInfo * test)
+        {
+            currentTest = test;
+            try {
+                if (TestInfo::Disabled(test)) 
+                    printf("\n    %s::%s is disabled\n", test->Name, test->Name2);
+                else {
+                    printf("\n    %s::%s has been invoked\n", test->Name, test->Name2);
+                    test->testFn();
+                    if (test->isFailed)
+                        printf("\n    %s::%s has been failed!\n", test->Name, test->Name2);
+                }
+            }
+            catch (...) {
+                _check(false, "current test", "exception wasn't expected");
+            }
+            currentTest = NULL;
+        }
+
+        void OnCheckFailed()
+        {
+            statistics.OnCheckFailed();
+            if (!currentTest->isFailed) {
+                currentTest->isFailed = true;
+                statistics.OnTestFailed();
+            }
+        }
+
         static TestRunner& instance() {
             static TestRunner reg;
             return reg;
@@ -136,23 +164,22 @@ namespace testing
     };
 
     bool BREAK_ON_TEST_FAIL = true;
+    bool DETAILED_OUTPUT = true;
 
-    void _check(bool result, const char* expression, const char* function)
+    void _check(bool result, const char* source, const char* expression)
     {
-        //EXPECT_TRUE(TestRunner::instance().currentTest != NULL);
-
         if (result)
             return;
 
-        printf("In '%s': expression '%s' failed!\n", function, expression);
+        printf("In '%s': expression '%s' failed!\n", source, expression);
 
         TestRunner::instance().OnCheckFailed();
         if (BREAK_ON_TEST_FAIL)
             __debugbreak();
     }
 
-    void RunAllTests()
+    bool RunAllTests()
     {
-        TestRunner::instance().RunAllTests();
+        return TestRunner::instance().RunAllTests();
     }
 }

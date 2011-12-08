@@ -1,11 +1,33 @@
 #include "Imports.h"
 #include <windows.h>
 
-namespace Movement { namespace Imports
+namespace Movement
 {
-    void BroadcastMoveMessage(WorldObject const* obj, Movement::MovementMessage& msg) {}
-    void UpdateMapPosition(WorldObject*, const Movement::Location&) {}
-    void BroadcastMessage(WorldObject const* obj, WorldPacket& msg) {}
-    void SendPacket(void * socket, const WorldPacket& data) {}
-    unsigned int getMSTime() { return GetTickCount();}
-}}
+    namespace
+    {
+        void FUpdateMapPosition(WorldObject*, const Movement::Location&) {}
+        void FBroadcastMessage(WorldObject const* obj, Movement::MovementMessage& msg) {}
+        void FBroadcastMessage(WorldObject const* obj, WorldPacket& msg) {}
+        void FSendPacket(void * socket, const WorldPacket& data) {}
+        unsigned int FgetMSTime() { return GetTickCount();}
+
+        UnitMovement* FGetUnit(void* context, uint64 guid)
+        {
+            return NULL;
+        }
+    }
+
+    _Imports Imports = {
+        &FUpdateMapPosition,
+        &FBroadcastMessage,
+        &FBroadcastMessage,
+        &FSendPacket,
+        &FgetMSTime,
+        &FGetUnit,
+    };
+
+    void SetupImports(const _Imports& ftable)
+    {
+        Imports = ftable;
+    }
+}

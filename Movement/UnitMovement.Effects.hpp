@@ -66,7 +66,7 @@ namespace Movement
                     WorldPacket data(opcode, 16);
                     data << mov->Guid.WriteAsPacked();
                     data << value;
-                    Imports::BroadcastMessage(&mov->Owner, data);
+                    Imports.BroadcastMessage(&mov->Owner, data);
                 }
 
                 // FIXME: currently there is no way to change speed of already moving server-side controlled unit (spline movement)
@@ -216,7 +216,7 @@ namespace Movement
                     mov->ApplyMoveFlag(modeInfo[mode].moveFlag, apply);
                     WorldPacket data(opcode, 12);
                     data << mov->Guid.WriteAsPacked();
-                    Imports::BroadcastMessage(&mov->Owner, data);
+                    Imports.BroadcastMessage(&mov->Owner, data);
                 }
                 else
                     log_function("no opcode for mode %u", mode);
@@ -380,10 +380,11 @@ namespace Movement
             CMSG_MOVE_CHNG_TRANSPORT,
             MSG_MOVE_START_DESCEND);
 
-        // TODO:
         assignHandler(&ClientImpl::OnSplineDone, CMSG_MOVE_SPLINE_DONE);
+        // TODO:
         //assignHandler(&ClientImpl::OnNotImplementedMessage, CMSG_MOVE_KNOCK_BACK_ACK);
-        //ASSIGN_HANDLER(&ClientImpl::OnNotImplementedMessage, CMSG_MOVE_NOT_ACTIVE_MOVER, CMSG_SET_ACTIVE_MOVER);
+        assignHandler(&ClientImpl::OnNotActiveMover, CMSG_MOVE_NOT_ACTIVE_MOVER);
+        assignHandler(&ClientImpl::OnActiveMover, CMSG_SET_ACTIVE_MOVER);
 
 #undef ASSIGN_HANDLER
     }

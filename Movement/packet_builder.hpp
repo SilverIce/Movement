@@ -144,7 +144,7 @@ namespace Movement
         else
             WriteLinearPath(spline, data);
 
-        Imports::BroadcastMessage(&mov.Owner, data);
+        Imports.BroadcastMessage(&mov.Owner, data);
     }
 
     void PacketBuilder::FullUpdate(const UnitMovementImpl& mov, ByteBuffer& data)
@@ -276,7 +276,7 @@ namespace Movement
         WorldPacket data(SMSG_FLIGHT_SPLINE_SYNC, 13);
         data << (float)(move_spline.timePassed() / (float)move_spline.Duration());
         data << mov.Guid.WriteAsPacked();
-        Imports::BroadcastMessage(&mov.Owner, data);
+        Imports.BroadcastMessage(&mov.Owner, data);
     }
 
     void PacketBuilder::Send_HeartBeat(const UnitMovementImpl& mov)
@@ -284,6 +284,6 @@ namespace Movement
         WorldPacket data(MSG_MOVE_HEARTBEAT, 64);
         data << mov.Guid.WriteAsPacked();
         WriteClientStatus(mov.ClientState(), data);
-        Imports::BroadcastMessage(&mov.Owner, data);
+        Imports.BroadcastMessage(&mov.Owner, data);
     }
 }

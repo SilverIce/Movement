@@ -1,5 +1,5 @@
 namespace testing{
-    extern void RunAllTests();
+    extern bool RunAllTests();
 }
 
 int main(int argc, char **argv)

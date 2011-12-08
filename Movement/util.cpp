@@ -253,9 +253,9 @@ namespace Movement
     static bool MOV_LOG_FILE_ENABLED     = true;
     static bool MOV_LOG_CONSOLE_ENABLED  = true;
 
-    struct __log_init
+    struct log_instance
     {
-        __log_init()
+        log_instance()
         {
             file = fopen("movement.log","a++");
 
@@ -266,7 +266,7 @@ namespace Movement
             fflush(file);
         }
 
-        ~__log_init()
+        ~log_instance()
         {
             time_t t;
             time(&t);
@@ -275,8 +275,12 @@ namespace Movement
         }
 
         FILE* file;
-
-    } static log;
+    };
+    
+    log_instance& log() {
+        static log_instance _log;
+        return _log;
+    }
 
     void log_write(const char* str, ...)
     {
@@ -286,18 +290,18 @@ namespace Movement
 
         if (MOV_LOG_CONSOLE_ENABLED)
             vfprintf(stdout, str, ap);
-        if (MOV_LOG_FILE_ENABLED && log.file)
-            vfprintf(log.file, str, ap);
+        if (MOV_LOG_FILE_ENABLED && log().file)
+            vfprintf(log().file, str, ap);
 
         va_end(ap);
 
-        if (MOV_LOG_FILE_ENABLED && log.file)
-            fprintf(log.file, "\n" );
+        if (MOV_LOG_FILE_ENABLED && log().file)
+            fprintf(log().file, "\n" );
 
         if (MOV_LOG_CONSOLE_ENABLED)
             printf( "\n" );
 
-        fflush(log.file);
+        fflush(log().file);
         fflush(stdout);
     }
 
