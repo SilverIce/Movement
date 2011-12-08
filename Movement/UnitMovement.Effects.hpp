@@ -340,14 +340,14 @@ namespace Movement
         assignHandler(&ClientImpl::OnMoveTimeSkipped, CMSG_MOVE_TIME_SKIPPED);
 
         for (uint32 i = 0; i < CountOf(ValueChange2Opc_table); ++i)
-            assignHandler(&ClientImpl::OnResponse, ValueChange2Opc_table[i].cmsg_response);
+            assignHandler(&RespHandler::OnResponse, ValueChange2Opc_table[i].cmsg_response);
 
         for (uint32 i = 0; i < CountOf(modeInfo); ++i) {
-            assignHandler(&ClientImpl::OnResponse, modeInfo[i].cmsg_ack[0]);
-            assignHandler(&ClientImpl::OnResponse, modeInfo[i].cmsg_ack[1]);
+            assignHandler(&RespHandler::OnResponse, modeInfo[i].cmsg_ack[0]);
+            assignHandler(&RespHandler::OnResponse, modeInfo[i].cmsg_ack[1]);
         }
 
-        ASSIGN_HANDLER(&ClientImpl::OnResponse,
+        ASSIGN_HANDLER(&RespHandler::OnResponse,
             CMSG_TIME_SYNC_RESP,
             MSG_MOVE_TELEPORT_ACK);
 

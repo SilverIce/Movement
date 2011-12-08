@@ -52,8 +52,8 @@ namespace Movement
         /** The main 'gate' for movement states that incomes from client. */
         void QueueState(ClientMoveStateChange& client_state);
 
-        void RegisterRespHandler(RespHandler* handler);
-        void UnregisterRespHandler(RespHandler* handler);
+        uint32 RegisterRespHandler(RespHandler* handler);
+        RespHandler* PopRespHandler();
         void Kick() {}  // not implemented
 
         inline void BroadcastMessage(MovementMessage& msg) const { Imports::BroadcastMoveMessage(&m_controlled->Owner, msg);}
@@ -77,7 +77,6 @@ namespace Movement
     public:
 
         static void OnCommonMoveMessage(ClientImpl& client, WorldPacket& recv_data);
-        static void OnResponse(ClientImpl& client, WorldPacket& data);
         static void OnMoveTimeSkipped(ClientImpl& client, WorldPacket & recv_data);
         static void OnNotImplementedMessage(ClientImpl& client, WorldPacket& data);
         static void OnSplineDone(ClientImpl& client, WorldPacket& data);
@@ -135,6 +134,8 @@ namespace Movement
         ClientImpl* m_client;
         ClientOpcode m_opcode;
         bool m_wasHandled;
+    protected:
+        uint32 m_requestId;
 
     private:
         void Execute(TaskExecutor_Args& args) override {
@@ -153,7 +154,6 @@ namespace Movement
             return true;
         }
     public:
-        uint32 m_requestId;
 
         /* Default timeout value is 500 milliseconds */
         static uint32 DefaultTimeout;
@@ -161,19 +161,28 @@ namespace Movement
         explicit RespHandler(ClientOpcode _opcode, ClientImpl * client) : m_opcode(_opcode), m_client(client), m_wasHandled(false)
         {
             assert_state(m_client);
-            client->RegisterRespHandler(this);
+            addref();
+            m_requestId = client->RegisterRespHandler(this);
         }
 
-        ~RespHandler() {
+        virtual ~RespHandler() {
             assert_state(m_client);
-            m_client->UnregisterRespHandler(this);
             m_client = NULL;
+        }
+
+        static void OnResponse(ClientImpl& client, WorldPacket& data)
+        {
+            RespHandler * handler = client.PopRespHandler();
+            if (!handler)
+                return;
+            if (!handler->OnReply(data))
+                log_function("client's response (opcode %s) handler failed", LookupOpcodeName(handler->m_opcode));
+            handler->release();
         }
 
         bool OnReply(WorldPacket& data)
         {
             assert_state(!m_wasHandled);
-            assert_state(m_client);
             if (m_opcode != data.GetOpcode()) {
                 log_function("expected reply was: %s, but received instead: %s", LookupOpcodeName(m_opcode), LookupOpcodeName((ClientOpcode)data.GetOpcode()));
                 return false;
@@ -183,5 +192,5 @@ namespace Movement
         }
     };
 
-    uint32 RespHandler::DefaultTimeout = 1000;
+    uint32 RespHandler::DefaultTimeout = 30000;
 }

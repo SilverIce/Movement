@@ -160,21 +160,20 @@ namespace Movement
         return str.str();
     }
 
-    void ClientImpl::OnResponse(ClientImpl& client, WorldPacket& data)
+    uint32 ClientImpl::RegisterRespHandler(RespHandler* handler)
     {
-        client.assertControlled();
+        m_resp_handlers.push_back(handler);
+        return request_counter.NewId();
+    }
 
-        RespHdlContainer& resp_handlers = client.m_resp_handlers;
-        if (resp_handlers.empty())
-        {
-            log_function("no handlers for client's response (opcode %s)", LookupOpcodeName((ClientOpcode)data.GetOpcode()));
-            return;
+    RespHandler* ClientImpl::PopRespHandler()
+    {
+        RespHandler* handler = NULL;
+        if (!m_resp_handlers.empty()) {
+            handler = m_resp_handlers.front();
+            m_resp_handlers.pop_front();
         }
-
-        if (resp_handlers.front()->OnReply(data))
-            resp_handlers.erase(resp_handlers.begin());
-        else
-            log_function("client's response (opcode %s) can not be handled", LookupOpcodeName((ClientOpcode)data.GetOpcode()));
+        return handler;
     }
 
     class ApplyStateTask : public ICallBack
@@ -225,19 +224,8 @@ namespace Movement
         assertControlled();
         MSTime applyTime = ClientToServerTime(client_state.ms_time);
         client_state.ms_time = applyTime;
+
         m_controlled->commonTasks.AddTask(new ApplyStateTask(m_controlled,client_state), applyTime);
-    }
-
-    void ClientImpl::RegisterRespHandler(RespHandler* handler)
-    {
-        handler->m_requestId = request_counter.NewId();
-        m_resp_handlers.push_back(handler);
-        commonTasks.AddTask(handler, ServerTime() + RespHandler::DefaultTimeout);
-    }
-
-    void ClientImpl::UnregisterRespHandler(RespHandler* handler)
-    {
-        m_resp_handlers.remove(handler);
     }
 
     void ClientImpl::OnSplineDone(ClientImpl& client, WorldPacket& data)
