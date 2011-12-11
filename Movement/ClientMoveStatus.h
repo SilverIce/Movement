@@ -41,13 +41,13 @@ namespace Movement
 
     struct ClientMoveState : public _ClientMoveState
     {
-        ClientMoveState() : t_guid(0)
+        ClientMoveState() : transport_guid(0)
         {
         }
 
         Location world_position;
         Location transport_position;
-        uint64 t_guid;
+        uint64 transport_guid;
         UnitMoveFlag moveFlags;
         MSTime ms_time;
 

@@ -19,20 +19,20 @@ namespace testing
 
 #define TESTCASE_NAME(name, name2) testFunction_##name##_##name2
 
-#define EXPECT_TRUE(a) ::testing::_check(a, __FUNCTION__, #a);
+#define EXPECT_TRUE(expression) ::testing::_check(expression, __FUNCTION__, #expression);
 #define EXPECT_EQ(a, b) EXPECT_TRUE( (a) == (b) );
 
-#define EXPECT_THROW(a, exception) \
+#define EXPECT_THROW(expression, exception) \
     try { \
-        a; \
-        ::testing::_check(false, ""); \
+        expression; \
+        ::testing::_check(false, __FUNCTION__, "expression '" #expression " does not throws '" #exception "' exception"); \
     } \
     catch( exception ) {}
 
-#define EXPECT_NOTHROW(a, exception) \
+#define EXPECT_NOTHROW(expression, exception) \
     try { \
-        a; \
+        expression; \
     } catch( exception ) { \
-        ::testing::_check(false, ""); \
+        ::testing::_check(false, __FUNCTION__, "expression '" #expression "' throws '" #exception "' exception"); \
     }
 

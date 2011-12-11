@@ -92,6 +92,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="$(TargetPath)"
 			/>
 		</Configuration>
 		<Configuration
@@ -171,6 +172,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="$(TargetPath)"
 			/>
 		</Configuration>
 	</Configurations>
@@ -182,10 +184,6 @@
 			>
 			<File
 				RelativePath="..\Movement\BasicTests.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\Movement\Imports.h"
 				>
 			</File>
 			<File
@@ -252,7 +250,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\Movement\UnitMovement.Requests.hpp"
+					RelativePath="..\Movement\UnitMovement.Effects.hpp"
 					>
 				</File>
 				<File
@@ -447,6 +445,10 @@
 		</Filter>
 		<File
 			RelativePath="..\Movement\Client.h"
+			>
+		</File>
+		<File
+			RelativePath="..\Movement\Imports.h"
 			>
 		</File>
 		<File

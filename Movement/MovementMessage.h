@@ -95,7 +95,8 @@ namespace Movement
 
     inline void operator >> (ByteBuffer& b, UnitMoveFlag& v)
     {
-        v.raw = uint64(b.read<uint32>()) | (uint64(b.read<uint16>()) << 32);
+        v.raw = b.read<uint32>();
+        v.raw |= (uint64(b.read<uint16>()) << 32);
     }
 
     inline void operator << (ByteBuffer& b, const UnitMoveFlag& v)

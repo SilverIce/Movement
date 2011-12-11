@@ -51,7 +51,7 @@ namespace testing
         std::vector<TestInfo*> tests;
 
         ~TestRegistry() {
-            std::for_each(tests.begin(),tests.end(),TestInfo::Delete);
+            Clear();
         }
 
         size_t totalAmount() {
@@ -60,6 +60,11 @@ namespace testing
 
         void AddTest(TestInfo* test){
             tests.push_back(test);
+        }
+
+        void Clear() {
+            std::for_each(tests.begin(),tests.end(),TestInfo::Delete);
+            tests.clear();
         }
 
         static TestRegistry& instance() {
@@ -79,15 +84,13 @@ namespace testing
         size_t countChecksFailed;
         size_t countDisabledTests;
         size_t countFailedTests;
-
-        size_t countTestsFailed() {
-            return countFailedTests;
-        }
+        size_t countTotalTests;
 
         explicit Statistics() {
             countChecksFailed = 0;
             countDisabledTests = 0;
             countFailedTests = 0;
+            countTotalTests = 0;
         }
 
         void OnCheckFailed() {
@@ -95,6 +98,13 @@ namespace testing
         }
         void OnTestFailed() {
             ++countFailedTests;
+        }
+
+        void OnTestsComplete() {
+            printf("\n");
+            printf("%u tests failed\n", countFailedTests);
+            printf("%u tests disabled\n", countDisabledTests);
+            printf("%u tests total amount\n", countTotalTests);
         }
     };
 
@@ -107,45 +117,37 @@ namespace testing
             currentTest = NULL;
         }
 
-        bool RunAllTests()
+        bool RunAllTests(const std::vector<TestInfo*>& tests)
         {
-            std::vector<TestInfo*>& tests = TestRegistry::instance().tests;
             // No need sort tests: their natural order is important. Tests from the same compile unit will be grouped together
             //std::sort(tests.begin(),tests.end(),TestInfo::Compare);
             statistics.countDisabledTests = std::count_if(tests.begin(),tests.end(),TestInfo::Disabled);
+            statistics.countTotalTests = tests.size();
 
-            for(std::vector<TestInfo*>::iterator it = tests.begin(); it!=tests.end(); ++it)
+            for(std::vector<TestInfo*>::const_iterator it = tests.begin(); it!=tests.end(); ++it)
                 InvokeTest(*it);
 
-            OnTestsComplete();
+            statistics.OnTestsComplete();
 
-            return statistics.countTestsFailed() == 0;
-        }
-
-        void OnTestsComplete() {
-            printf("\n");
-            printf("%u tests failed\n", statistics.countTestsFailed());
-            printf("%u tests disabled\n", statistics.countDisabledTests);
-            printf("%u tests total amount\n", TestRegistry::instance().totalAmount());
+            return statistics.countFailedTests == 0;
         }
 
         void InvokeTest(TestInfo * test)
         {
-            currentTest = test;
-            try {
-                if (TestInfo::Disabled(test)) 
-                    printf("\n    %s::%s is disabled\n", test->Name, test->Name2);
-                else {
-                    printf("\n    %s::%s has been invoked\n", test->Name, test->Name2);
-                    test->testFn();
-                    if (test->isFailed)
-                        printf("\n    %s::%s has been failed!\n", test->Name, test->Name2);
-                }
+            if (TestInfo::Disabled(test)) {
+                printf("\n    %s::%s is disabled\n", test->Name, test->Name2);
+                return;
             }
-            catch (...) {
-                _check(false, "current test", "exception wasn't expected");
+
+            currentTest = test;
+            printf("\n    %s::%s has been invoked\n", test->Name, test->Name2);
+            {
+                EXPECT_NOTHROW( test->testFn(), ... );
             }
             currentTest = NULL;
+
+            if (test->isFailed)
+                printf("\n    %s::%s has been failed!\n", test->Name, test->Name2);
         }
 
         void OnCheckFailed()
@@ -178,8 +180,25 @@ namespace testing
             __debugbreak();
     }
 
+    /** Returns true in case all tests succeed */
     bool RunAllTests()
     {
-        return TestRunner::instance().RunAllTests();
+        bool succeed = TestRunner::instance().RunAllTests(TestRegistry::instance().tests);
+        TestRegistry::instance().Clear();
+        return succeed;
+    }
+
+    TEST(gtest, test_self)
+    {
+        EXPECT_TRUE( true );
+        EXPECT_EQ( 1, 1);
+
+        EXPECT_THROW( throw "expected_exception", const char* );
+        EXPECT_NOTHROW( ; , const char* );
+    }
+
+    TEST_DISABLED(gtest, disabled)
+    {
+        EXPECT_TRUE( false );
     }
 }
