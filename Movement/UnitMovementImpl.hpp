@@ -112,9 +112,9 @@ namespace Movement
             dest_angle += G3D::pi();
 
             if (moveFlags.strafe_right)
-                dest_angle -= G3D::halfPi()*0.5;
-            else if (moveFlags.strafe_left)
                 dest_angle += G3D::halfPi()*0.5;
+            else if (moveFlags.strafe_left)
+                dest_angle -= G3D::halfPi()*0.5;
         }
         else if (moveFlags.strafe_right)
             dest_angle -= G3D::halfPi();
