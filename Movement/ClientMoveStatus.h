@@ -76,7 +76,7 @@ namespace Movement
             st << "seat         Id: " << transport_seat << std::endl;
         }
 
-        if (moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying | UnitMoveFlag::Allow_Pitching))
+        if (moveFlags & UnitMoveFlag::Mask_Pitching)
         {
             st << "pitch angle " << pitchAngle << std::endl;
         }

@@ -6,6 +6,7 @@
 #include <sstream>
 #include <list>
 #include <hash_map>
+#include <typeinfo>
 #include "typedefs_p.h"
 
 #include "Object.h"

@@ -209,7 +209,7 @@ namespace Movement
                 data >> mov.transport_time2;
         }
 
-        if (mov.moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying | UnitMoveFlag::Allow_Pitching))
+        if (mov.moveFlags & UnitMoveFlag::Mask_Pitching)
         {
             data >> mov.pitchAngle;
         }
@@ -247,7 +247,7 @@ namespace Movement
                 data << mov.transport_time2;
         }
 
-        if (mov.moveFlags & (UnitMoveFlag::Swimming | UnitMoveFlag::Flying | UnitMoveFlag::Allow_Pitching))
+        if (mov.moveFlags & UnitMoveFlag::Mask_Pitching)
         {
             data << mov.pitchAngle;
         }

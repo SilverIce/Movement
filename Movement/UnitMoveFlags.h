@@ -70,6 +70,7 @@ namespace Movement
 
             Mask_Speed      = Backward | Flying | Walk_Mode | Swimming,
             Mask_Interp     = Interp_Move | Interp_Turning | Interp_Pitching,
+            Mask_Pitching   = Swimming | Flying | Allow_Pitching,
             Mask_Directions = Forward | Backward | Strafe_Left | Strafe_Right | Turn_Left | Turn_Right,
             Mask_Moving     = Forward | Backward | Strafe_Left | Strafe_Right | Turn_Left | Turn_Right | Falling | Fallingfar | Ascending | Descending
         ;

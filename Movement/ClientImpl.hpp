@@ -158,6 +158,11 @@ namespace Movement
         std::stringstream str;
         str << "Server-side time: " << ServerTime().time << " Client-side time: " << ClientTime().time << std::endl;
         str << "Request  counter: " << request_counter.getCurrent() << std::endl;
+        if (!m_resp_handlers.empty()) {
+            str << "Response handlers queue:" << std::endl;
+            for (RespHdlContainer::const_iterator it = m_resp_handlers.begin();it != m_resp_handlers.end(); ++it)
+                str << typeid(**it).name() << std::endl;
+        }
         return str.str();
     }
 
