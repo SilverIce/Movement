@@ -1,6 +1,8 @@
 #pragma once
 
 #include "typedefs.h"
+#include <assert.h>
+#include <vector>
 
 using Movement::int8;
 using Movement::uint8;
@@ -23,41 +25,79 @@ public:
 
     ByteBuffer() : w_pos(0), r_pos(0) {}
 
-    size_t rpos() {return 0;}
-    size_t wpos() {return 0;}
-    void rpos(int) {}
-    void wpos(int) {}
+    size_t rpos() const {return r_pos;}
+    size_t wpos() const {return w_pos;}
 
-    template<class T> void put(size_t, T&) {}
-    template<class T> T read(int) { return T();}
-    template<class T> T read() { return T();}
-    template<class T> void read(T, size_t) {}
-    template<class T> void write(T, size_t) {}
-
-    template<class T>
-    ByteBuffer& operator << (const T&)
+    template<class T> ByteBuffer& operator << (const T& value)
     {
-        w_pos += sizeof T;
+        append((const uint8*)&value, sizeof T);
         return *this;
     }
 
-    template<class T>
-    ByteBuffer& operator >> (T&)
+    template<class T> void put(size_t pos, const T& value)
     {
-        r_pos += sizeof T;
+        put(pos, (const uint8*)&value, sizeof T);
+    }
+
+    void put(size_t pos, const uint8 *src, size_t cnt)
+    {
+        if(pos + cnt > size())
+            assert(false);
+        memcpy(&buffer[pos], src, cnt);
+    }
+
+    template<class T> void append (const T * array, size_t count)
+    {
+        append((const uint8*)array, count * (sizeof T));
+    }
+
+    void append (const uint8* src, size_t count)
+    {
+        if (!count)
+            return;
+
+        if (buffer.size() < w_pos + count)
+            buffer.resize(w_pos + count);
+        memcpy(&buffer[w_pos], src, count);
+        w_pos += count;
+    }
+
+    template<class T> ByteBuffer& operator >> (T& value)
+    {
+        value = read<T>();
         return *this;
     }
 
-    template<class T>
-    void append(const T&)
+    template <typename T> T read()
     {
-        w_pos += sizeof T;
+        T r = read<T>(r_pos);
+        r_pos += sizeof(T);
+        return r;
     }
 
-    template<class T>
-    void append(const T*, size_t c)
+    template <typename T> T read(size_t pos) const
     {
-        w_pos += c * sizeof T;
+        if (pos + sizeof(T) > size())
+            assert(false);
+            //throw ByteBufferException(false, pos, sizeof(T), size());
+        T val = *((T const*)&buffer[pos]);
+        return val;
+    }
+
+    template <typename T> Unused<T> read(size_t pos) const
+    {
+        if (pos + sizeof(T) > size())
+            assert(false);
+        return Unused<T>();
+    }
+
+    void read(uint8 *dest, size_t len)
+    {
+        if (r_pos  + len > size())
+            assert(false);
+            //throw ByteBufferException(false, _rpos, len, size());
+        memcpy(dest, &buffer[r_pos], len);
+        r_pos += len;
     }
 
     void appendPackXYZ(float,float,float)
@@ -65,19 +105,7 @@ public:
         w_pos += 4;
     }
 
-    template<class T>
-    void appendPackGUID(const T&)
-    {
-        w_pos += 8;
-    }
-
-    uint64 readPackGUID()
-    {
-        r_pos += 8;
-        return 0;
-    }
-
-    bool empty() const { return true;}
+    bool empty() const { return buffer.empty();}
 
     template<class T>
     ByteBuffer& read_skip()
@@ -86,8 +114,10 @@ public:
         return *this;
     }
 
-    size_t size() const { return 0;}
+    size_t size() const { return buffer.size();}
+private:
 
     size_t w_pos;
     size_t r_pos;
+    std::vector<uint8> buffer;
 };

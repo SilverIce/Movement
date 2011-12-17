@@ -200,7 +200,7 @@ namespace Movement
 
         if (mov.moveFlags.ontransport)
         {
-            mov.transport_guid = data.readPackGUID();
+            data >> mov.transport_guid.ReadAsPacked();
             data >> mov.transport_position;
             data >> mov.transport_time;
             data >> mov.transport_seat;
@@ -238,7 +238,7 @@ namespace Movement
 
         if (mov.moveFlags.ontransport)
         {
-            data.appendPackGUID(mov.transport_guid);
+            data << mov.transport_guid.WriteAsPacked();
             data << mov.transport_position;
             data << mov.transport_time;
             data << mov.transport_seat;

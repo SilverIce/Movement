@@ -12,6 +12,15 @@ namespace Movement
         EXPECT_TRUE( f.allowSwimFlyTransition );
         EXPECT_TRUE( f.ToString().find("AllowSwimFlyTransition") != std::string::npos );
         EXPECT_TRUE( sizeof(f.raw) == sizeof(UnitMoveFlag) );
+
+        {
+            ByteBuffer buf;
+            UnitMoveFlag flagIn(UnitMoveFlag::Forward|UnitMoveFlag::AllowSwimFlyTransition);
+            buf << flagIn;
+            UnitMoveFlag flagOut;
+            buf >> flagOut;
+            EXPECT_TRUE( flagIn == flagOut );
+        }
     }
 
     TEST(MoveSpline, MoveSplineFlag)
@@ -24,6 +33,61 @@ namespace Movement
         EXPECT_TRUE( f.done );
         EXPECT_TRUE( f.ToString().find("Done") != std::string::npos );
         EXPECT_TRUE( sizeof(f.raw) == sizeof(MoveSplineFlag) );
+    }
+
+    void testClientMoveStateSerialization(const ClientMoveState& stateIn)
+    {
+        ByteBuffer buf;
+        PacketBuilder::WriteClientStatus(stateIn, buf);
+        ClientMoveState stateOut;
+        PacketBuilder::ReadClientStatus(stateOut, buf);
+
+        #define CMP(field) EXPECT_TRUE(stateIn.field == stateOut.field);
+        CMP(ClientMoveState::fallTime);
+        CMP(ClientMoveState::jump_directionX);
+        CMP(ClientMoveState::jump_directionY);
+        CMP(ClientMoveState::jump_horizontalVelocity);
+        CMP(ClientMoveState::jump_verticalVelocity);
+        CMP(ClientMoveState::jump_verticalVelocity);
+        CMP(ClientMoveState::moveFlags);
+        CMP(ClientMoveState::ms_time);
+        CMP(ClientMoveState::pitchAngle);
+        CMP(ClientMoveState::spline_elevation);
+        CMP(ClientMoveState::transport_guid);
+        CMP(ClientMoveState::transport_position);
+        CMP(ClientMoveState::transport_seat);
+        CMP(ClientMoveState::transport_time);
+        CMP(ClientMoveState::transport_time2);
+        CMP(ClientMoveState::world_position);
+        #undef CMP
+    }
+
+    TEST(ClientMoveState, serialization)
+    {
+        ClientMoveState stateIn;
+
+        stateIn.world_position = Location(10, 20, 30, 1);
+        stateIn.fallTime = 400;
+        stateIn.ms_time = 20000;
+        testClientMoveStateSerialization(stateIn);
+
+        stateIn.moveFlags.ontransport = true;
+        stateIn.transport_position = Location(1, 2, 3, 1);
+        stateIn.transport_seat = 1;
+        testClientMoveStateSerialization(stateIn);
+
+        stateIn.moveFlags.falling = true;
+        stateIn.jump_horizontalVelocity = 9.f;
+        stateIn.jump_verticalVelocity = 8.f;
+        testClientMoveStateSerialization(stateIn);
+
+        stateIn.moveFlags.spline_elevation = true;
+        stateIn.spline_elevation = 2.f;
+        testClientMoveStateSerialization(stateIn);
+
+        stateIn.moveFlags.allow_pitching = true;
+        stateIn.pitchAngle = 0.5f;
+        testClientMoveStateSerialization(stateIn);
     }
 
     TEST(MoveSpline, MoveSplineInitArgs)

@@ -74,6 +74,7 @@ namespace Movement
         void SetPosition(const Location& position);
         const Location& GetPosition();
         const Vector3& GetPosition3();
+        /** Returns current moving direction. Returns Vector3(0,0,0) in case unit is not moving */
         Vector3 direction();
 
     public:
@@ -83,6 +84,7 @@ namespace Movement
 
     public:
         bool HasMode(MoveMode mode);
+        /** Enables or disables movement mode */
         void ApplyMoveMode(MoveMode mode, bool apply);
 
         void Teleport(const Location& loc);
@@ -94,6 +96,7 @@ namespace Movement
         bool IsFalling();
         bool IsFallingFar();
 
+        /** Modifies unit's collision box height */
         void SetCollisionHeight(float value);
         float GetCollisionHeight();
 
