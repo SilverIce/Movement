@@ -68,6 +68,12 @@ public:
         return *this;
     }
 
+    template<typename T> ByteBuffer& operator >> (Unused<T>)
+    {
+        read_skip<T>();
+        return *this;
+    }
+
     template <typename T> T read()
     {
         T r = read<T>(r_pos);
@@ -82,13 +88,6 @@ public:
             //throw ByteBufferException(false, pos, sizeof(T), size());
         T val = *((T const*)&buffer[pos]);
         return val;
-    }
-
-    template <typename T> Unused<T> read(size_t pos) const
-    {
-        if (pos + sizeof(T) > size())
-            assert(false);
-        return Unused<T>();
     }
 
     void read(uint8 *dest, size_t len)
@@ -107,11 +106,9 @@ public:
 
     bool empty() const { return buffer.empty();}
 
-    template<class T>
-    ByteBuffer& read_skip()
+    template<class T> void read_skip()
     {
         r_pos += sizeof T;
-        return *this;
     }
 
     size_t size() const { return buffer.size();}

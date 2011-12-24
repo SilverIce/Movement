@@ -97,7 +97,7 @@ namespace Movement
 
     void MoveSplineInit::SetOrientationInversed()
     {
-        args.flags.backward = true;
+        args.flags.orientationInversed = true;
     }
 
     void MoveSplineInit::SetOrientationFixed(bool enable)

@@ -104,7 +104,6 @@ namespace Movement
         // logic from client here:
         {
             moveFlag_new &= ~(UnitMoveFlag::Mask_Directions | UnitMoveFlag::Mask_Moving);
-            moveFlag_new.backward = args.flags.backward;
             //moveFlag_new.forward = !args.flags.backward && !args.flags.falling;
             moveFlag_new.forward = true;
             moveFlag_new.spline_enabled = true;

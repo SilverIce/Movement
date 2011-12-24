@@ -37,7 +37,7 @@ namespace Movement
             Unknown6     = 0x01000000,
             Unknown7     = 0x02000000,
             Unknown8     = 0x04000000,
-            Backward     = 0x08000000,
+            OrientationInversed = 0x08000000,
             Unknown10    = 0x10000000,
             Unknown11    = 0x20000000,
             Unknown12    = 0x40000000,
@@ -112,7 +112,7 @@ namespace Movement
                 bool unknown6      : 1;
                 bool unknown7      : 1;
                 bool unknown8      : 1;
-                bool backward      : 1;
+                bool orientationInversed : 1;
                 bool unknown10     : 1;
                 bool unknown11     : 1;
                 bool unknown12     : 1;

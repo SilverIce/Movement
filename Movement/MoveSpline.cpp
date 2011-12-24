@@ -38,19 +38,19 @@ Location MoveSpline::ComputePosition() const
         if (splineflags.final_angle)
             c.orientation = facing.angle;
         else if (splineflags.final_point)
-            c.orientation = atan2(facing.y-c.y, facing.x-c.x);
+            c.orientation = atan2f(facing.y-c.y, facing.x-c.x);
         //nothing to do for MoveSplineFlag::Final_Target flag
     }
     else
     {
         if (!splineflags.hasFlag(MoveSplineFlag::RotationFixed|MoveSplineFlag::Falling))
         {
-            Vector3 hermite;
-            spline.evaluate_derivative(point_Idx,u,hermite);
-            c.orientation = atan2(hermite.y, hermite.x);
+            Vector3 direction;
+            spline.evaluate_derivative(point_Idx,u,direction);
+            c.orientation = atan2f(direction.y, direction.x);
         }
 
-        if (splineflags.backward)
+        if (splineflags.orientationInversed)
             c.orientation = -c.orientation;
     }
     return c;
