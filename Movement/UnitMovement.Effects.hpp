@@ -291,7 +291,7 @@ namespace Movement
 
         static void Launch(UnitMovementImpl * mov, const Location& loc)
         {
-            if (mov->client())
+            if (mov->IsClientControlled())
             {
                 new TeleportEffect(mov->client(), loc);
             }
@@ -328,6 +328,97 @@ namespace Movement
         }
     };
 
+    class KnockbackEffect : private RespHandler
+    {
+        Vector2 m_direction2d;
+        float m_horizontalVelocity;
+        float m_verticalVelocity;
+
+        bool OnReply(ClientImpl * client, WorldPacket& data) override
+        {
+            ObjectGuid guid;
+            uint32 requestId;
+            ClientMoveStateChange state;
+
+            data >> guid.ReadAsPacked();
+            data >> requestId;
+            data >> state;
+
+            if (!checkRequestId(requestId))
+                return false;
+
+            if (m_direction2d.x != state.jump_directionX ||
+                m_direction2d.y != state.jump_directionY ||
+                m_horizontalVelocity != state.jump_horizontalVelocity ||
+                m_verticalVelocity != state.jump_verticalVelocity
+                )
+            {
+                log_function("client's movement state has some invalid properties");
+                return false;
+            }
+
+            // client disables Can_Fly flag
+            // all these checks make my code a bit difficult and are dependant on client code
+            state.allowFlagChange = UnitMoveFlag::Can_Fly;
+            state.allowFlagApply = false;
+
+            client->QueueState(state);
+
+            MovementMessage msg(client->controlled(), MSG_MOVE_KNOCK_BACK, data.size() + 16);
+            msg << guid.WriteAsPacked();
+            msg << state;
+            msg << state.jump_directionY;
+            msg << state.jump_directionX;
+            msg << state.jump_horizontalVelocity;
+            msg << state.jump_verticalVelocity;
+            client->BroadcastMessage(msg);
+            return true;
+        }
+
+        KnockbackEffect(ClientImpl& client, float directionAngle, float horizontalVelocity, float verticalVelocity)
+            : RespHandler(CMSG_MOVE_KNOCK_BACK_ACK, &client)
+        {
+            m_direction2d.x = cos(directionAngle);
+            m_direction2d.y = sin(directionAngle);
+            m_horizontalVelocity = horizontalVelocity;
+            // inverse 'verticalVelocity' sign: user's input is positive value
+            // in WoW all landing forces has positive sign and all lift off forces - negative
+            m_verticalVelocity = -verticalVelocity;
+
+            WorldPacket data(SMSG_MOVE_KNOCK_BACK, 32);
+            data << client.controlled()->Guid.WriteAsPacked();
+            data << m_requestId;
+            data << m_direction2d.x;
+            data << m_direction2d.y;
+            data << m_horizontalVelocity;
+            data << m_verticalVelocity;
+            client.SendPacket(data);
+        }
+
+    public:
+
+        static void Launch(UnitMovementImpl& movement, float directionAngle, float horizontalVelocity, float verticalVelocity)
+        {
+            if (movement.IsClientControlled())
+                new KnockbackEffect(*movement.client(), directionAngle, horizontalVelocity, verticalVelocity);
+            else
+            {
+                float moveTimeHalf = verticalVelocity / (float)Gravity();
+                float maxAmplitude = -computeFallElevation(moveTimeHalf,-verticalVelocity);
+                // TODO: correct destination to not make unit fall to void
+                Vector3 destination = movement.GetPosition3() +
+                    2.f * moveTimeHalf * horizontalVelocity * Vector3(cos(directionAngle),sin(directionAngle),0.f);
+
+                MoveSplineInit init(movement);
+                init.MoveTo(destination);
+                init.SetParabolic(maxAmplitude, 0.f);
+                init.SetOrientationFixed(true);
+                init.SetVelocity(horizontalVelocity);
+                init.Launch();
+            }
+        }
+    };
+
     //////////////////////////////////////////////////////////////////////////
 
     MoveHandlersBinder::MoveHandlersBinder()
@@ -349,6 +440,7 @@ namespace Movement
 
         ASSIGN_HANDLER(&RespHandler::OnResponse,
             CMSG_TIME_SYNC_RESP,
+            CMSG_MOVE_KNOCK_BACK_ACK,
             MSG_MOVE_TELEPORT_ACK);
 
         ASSIGN_HANDLER(&ClientImpl::OnCommonMoveMessage,
@@ -381,8 +473,6 @@ namespace Movement
             MSG_MOVE_START_DESCEND);
 
         assignHandler(&ClientImpl::OnSplineDone, CMSG_MOVE_SPLINE_DONE);
-        // TODO:
-        //assignHandler(&ClientImpl::OnNotImplementedMessage, CMSG_MOVE_KNOCK_BACK_ACK);
         assignHandler(&ClientImpl::OnNotActiveMover, CMSG_MOVE_NOT_ACTIVE_MOVER);
         assignHandler(&ClientImpl::OnActiveMover, CMSG_SET_ACTIVE_MOVER);
 

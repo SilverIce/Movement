@@ -5,7 +5,7 @@ namespace Movement
 {
     namespace
     {
-        void FUpdateMapPosition(WorldObject*, const Movement::Location&) {}
+        void FOnPositionChanged(WorldObject*, const Movement::Location&) {}
         void FBroadcastMessage(WorldObject const* obj, Movement::MovementMessage& msg) {}
         void FBroadcastMessage(WorldObject const* obj, WorldPacket& msg) {}
         void FSendPacket(void * socket, const WorldPacket& data) {}
@@ -18,7 +18,7 @@ namespace Movement
     }
 
     _Imports Imports = {
-        &FUpdateMapPosition,
+        &FOnPositionChanged,
         &FBroadcastMessage,
         &FBroadcastMessage,
         &FSendPacket,

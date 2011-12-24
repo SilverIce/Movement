@@ -150,6 +150,11 @@ namespace Movement
         TeleportEffect::Launch(&m, loc);
     }
 
+    void UnitMovement::Knockback(float directionAngle, float horizontalVelocity, float verticalVelocity)
+    {
+        KnockbackEffect::Launch(m, directionAngle, horizontalVelocity, verticalVelocity);
+    }
+
     void UnitMovement::SetCollisionHeight(float value)
     {
         FloatValueChangeEffect::Launch(&m, Parameter_CollisionHeight, value);

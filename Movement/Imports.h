@@ -20,7 +20,7 @@ namespace Movement
         typedef unsigned int (*T_getMSTime) ();
         typedef UnitMovement* (*T_GetUnit) (void* context, uint64 guid);
 
-        T_UpdateMapPosition       UpdateMapPosition;
+        T_OnPositionChanged       OnPositionChanged;
         T_BroadcastMoveMessage    BroadcastMoveMessage;
         T_BroadcastMessage        BroadcastMessage;
         T_SendPacket              SendPacket;

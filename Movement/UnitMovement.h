@@ -88,6 +88,7 @@ namespace Movement
         void ApplyMoveMode(MoveMode mode, bool apply);
 
         void Teleport(const Location& loc);
+        void Knockback(float directionAngle, float horizontalVelocity, float verticalVelocity);
 
         bool IsWalking();
         bool IsMoving();
