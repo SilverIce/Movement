@@ -2,7 +2,6 @@
 
 #include "ByteBuffer.h"
 #include "typedefs.h"
-#include "gtest/gtest.h"
 
 namespace Movement
 {
@@ -13,10 +12,10 @@ namespace Movement
         uint64 _value;
         friend void operator >> (ByteBuffer& buf, ObjectGuid& guid);
     public:
-        explicit ObjectGuid() { Set(0);}
-        explicit ObjectGuid(const uint64& value) { Set(value);}
+        explicit ObjectGuid() { SetRawValue(0);}
+        explicit ObjectGuid(const uint64& value) { SetRawValue(value);}
 
-        void Set(uint64 raw) { _value = raw;}
+        void SetRawValue(uint64 raw) { _value = raw;}
         uint64 GetRawValue() const { return _value;}
 
         PackedGuidReader ReadAsPacked();

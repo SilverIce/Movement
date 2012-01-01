@@ -187,7 +187,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Movement\fake\Imports.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\Movement\LinkedList.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Movement\MoveEnv.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Movement\MoveEnv.UnitTest.hpp"
 				>
 			</File>
 			<File
@@ -211,6 +223,13 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Movement\fake\opcodes.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Movement\fake\opcodes.h"
+				>
+			</File>
 				RelativePath="..\Movement\typedefs_p.h"
 				>
 			</File>
@@ -314,23 +333,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\Movement\fake\Imports.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\Movement\fake\Object.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Movement\fake\ObjectGuid.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Movement\fake\opcodes.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\Movement\fake\opcodes.h"
 					>
 				</File>
 				<File

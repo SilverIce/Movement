@@ -272,6 +272,7 @@ namespace Movement
             time(&t);
             fprintf(file, "Shutdown: %s\n", ctime(&t));
             fclose(file);
+            file = NULL;
         }
 
         FILE* file;

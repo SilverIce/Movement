@@ -1,6 +1,7 @@
 #include "typedefs_p.h"
 #include "MSTime.h"
 #include "LinkedList.h"
+#include "ObjectGuid.h"
 #include "gtest/gtest.h"
 
 #include "MoveEnv.UnitTest.hpp"
@@ -102,5 +103,29 @@ namespace Movement
 
         EXPECT_TRUE( list.size() == 0 );
         EXPECT_TRUE( list.empty() );
+    }
+
+    TEST(ObjectGuid, basic)
+    {
+        const ObjectGuid guidIn((uint64(0xc0ca) << 32) | uint64(0xc01a));
+        {
+            ByteBuffer buffer;
+            buffer << guidIn;
+            ObjectGuid guidOut;
+            buffer >> guidOut;
+            EXPECT_EQ(guidIn, guidOut);
+        }
+        {
+            PackedGuid packed(guidIn);
+            ObjectGuid guidOut(packed.Get());
+            EXPECT_EQ(guidIn, guidOut);
+        }
+        {
+            ByteBuffer buffer;
+            buffer << guidIn.WriteAsPacked();
+            ObjectGuid guidOut;
+            buffer >> guidOut.ReadAsPacked();
+            EXPECT_EQ(guidIn, guidOut);
+        }
     }
 }

@@ -26,7 +26,7 @@ namespace Movement
     };
 
     // class for unit's movement
-    class UnitMovementImpl : public MovementBase
+    class UnitMovementImpl
     {
     public:
 
@@ -46,10 +46,35 @@ namespace Movement
         Vector3 direction() const;
 
     public:
-        const Location& GetLocalPosition() const { return world_position;}
-        const Location& GetPosition() const { return world_position;}
-        const Vector3& GetPosition3() const { return world_position;}
-        void SetPosition(const Location& v) { SetGlobalPosition(v); }
+
+        // TODO: too much aliases here..
+
+        Location GetGlobalPosition() const {
+            return Location(m_entity.GlobalPosition(),m_entity.YawAngle());
+        }
+
+        const Vector3& GetPosition3() const { return m_entity.Position();}
+
+        void SetPosition(const Vector3& position)
+        {
+            m_entity.Position(position);
+            Imports.OnPositionChanged(&Owner, GetGlobalPosition());
+        }
+
+        void SetPosition(const Location& position)
+        {
+            m_entity.Position(position);
+            m_entity.YawAngle(position.orientation);
+            Imports.OnPositionChanged(&Owner, GetGlobalPosition());
+        }
+
+        void SetOrientation(float orientation)
+        {
+            m_entity.YawAngle(orientation);
+            Imports.OnPositionChanged(&Owner, GetGlobalPosition());
+        }
+
+        float GetOrientation() const { return m_entity.YawAngle();}
 
         bool IsBoarded() const { return false;}
         MovementBase* GetTransport() const { mov_assert(false); return NULL; }
@@ -111,6 +136,10 @@ namespace Movement
         MSTime lastMoveEvent;
     public:
         UnitMoveFlag const moveFlags;
+        WorldObjectType Owner;
+        ObjectGuid Guid;
+        MovingEntity_Revolvable m_entity;
+
     private:
         /** Data that cames from client. It affects nothing here but might be used in future. */
         _ClientMoveState m_unused; 

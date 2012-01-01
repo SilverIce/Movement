@@ -44,14 +44,15 @@ template<typename length_type> SplineBase::index_type Spline<length_type>::compu
 
 template<typename length_type> void Spline<length_type>::initLengths()
 {
-    index_type i = index_lo;
-    length_type length = 0;
-    lengths.resize(index_hi+1);
-    while(i < index_hi )
-    {
-        length += SegLength(i);
-        lengths[++i] = length;
-    }
+    struct LengthInitializer {
+        float lenghSumm;
+        float operator()(SplineBase& spline, index_type i) {
+            lenghSumm += spline.SegLength(i);
+            return lenghSumm;
+        }
+    };
+    LengthInitializer init = {0.f};
+    initLengths(init);
 }
 
 }

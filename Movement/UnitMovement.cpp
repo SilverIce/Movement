@@ -16,6 +16,7 @@
 #include "MoveSpline.h"
 #include "MoveUpdater.h"
 #include "MoveListener.h"
+#include "MoveEnv.h"
 #include "MovementBase.h"
 
 #include "UnitMoveFlags.h"
@@ -60,9 +61,9 @@ namespace Movement
         m.SetPosition(position);
     }
 
-    const Location& UnitMovement::GetPosition()
+    Location UnitMovement::GetPosition()
     {
-        return m.GetPosition();
+        return m.GetGlobalPosition();
     }
 
     const Vector3& UnitMovement::GetPosition3()

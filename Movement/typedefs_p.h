@@ -40,6 +40,14 @@ namespace Movement
         __debugbreak(); \
     }
 
+#   ifndef nullptr
+#       ifdef __cplusplus
+#           define nullptr    0
+#       else
+#           define nullptr    ((void *)0)
+#       endif
+#   endif
+
     template<class T, T limit>
     class counter
     {

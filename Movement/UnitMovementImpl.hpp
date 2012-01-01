@@ -39,12 +39,12 @@ namespace Movement
     }
 
     UnitMovementImpl::UnitMovementImpl(WorldObjectType owner, uint64 ownerGuid, MoveUpdater& updater) :
-        MovementBase(owner),
+        Owner(owner),
         move_spline(*this),
         m_updater(&updater),
         m_client(NULL)
     {
-        MovementBase::Guid.Set(ownerGuid);
+        Guid.SetRawValue(ownerGuid);
         commonTasks.SetExecutor(updater);
 
         const float BaseValues[Parameter_End] =
@@ -87,7 +87,6 @@ namespace Movement
         m_targeter_references.Iterate(unbinder());
 
         UnbindOrientation();
-        MovementBase::CleanReferences();
 
         commonTasks.Unregister();
         m_updater = NULL;
@@ -98,7 +97,7 @@ namespace Movement
         if (!moveFlags.hasDirection())
             return Vector3();
 
-        float dest_angle = GetGlobalPosition().orientation;
+        float dest_angle = GetOrientation();
 
         if (moveFlags.forward)
         {
@@ -137,10 +136,11 @@ namespace Movement
         UnitMoveFlag new_flags = new_state.moveFlags;
 
         // Allow world position change only while we are not on transport
-        if (!new_state.moveFlags.ontransport)
-        {
-            SetGlobalPosition(new_state.world_position);
-        }
+        //if (!new_state.moveFlags.ontransport)
+        //{
+            SetPosition(new_state.world_position);
+        //}
+        m_entity.PitchAngle(new_state.pitchAngle);
 
         if (moveFlags.ontransport != new_flags.ontransport)
         {
@@ -245,6 +245,7 @@ namespace Movement
         state.ms_time = lastMoveEvent;
         state.world_position = GetGlobalPosition();
         state.moveFlags = moveFlags;
+        state.pitchAngle = m_entity.PitchAngle();
 
         // correct copyed data
         state.moveFlags.ontransport = IsBoarded();

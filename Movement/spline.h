@@ -171,14 +171,9 @@ public:
     {
         index_type i = index_lo;
         lengths.resize(index_hi+1);
-        length_type prev_length = 0, new_length = 0;
-        while(i < index_hi)
-        {
-            new_length = cacher(*this, i);
-            lengths[++i] = new_length;
-
-            mov_assert(prev_length <= new_length);
-            prev_length = new_length;
+        while (i < index_hi) {
+            set_length(i+1, cacher(*this, i));
+            ++i;
         }
     }
 
@@ -188,7 +183,10 @@ public:
     length_type length(index_type first, index_type last) const { return lengths[last]-lengths[first];}
     length_type length(index_type Idx) const { return lengths[Idx];}
 
-    void set_length(index_type i, length_type length) { lengths[i] = length;}
+    void set_length(index_type i, length_type length) {
+        assert_state(i == 0 || lengths[i-1] <= length);
+        lengths[i] = length;
+    }
 };
 
 }

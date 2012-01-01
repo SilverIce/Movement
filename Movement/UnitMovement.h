@@ -72,7 +72,7 @@ namespace Movement
         /** It changes raw position only and doesn't synchronizes it with clients.
             It has been added as additional initialization step */
         void SetPosition(const Location& position);
-        const Location& GetPosition();
+        Location GetPosition();
         const Vector3& GetPosition3();
         /** Returns current moving direction. Returns Vector3(0,0,0) in case unit is not moving */
         Vector3 direction();
