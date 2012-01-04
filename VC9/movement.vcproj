@@ -223,11 +223,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\fake\opcodes.cpp"
+				RelativePath="..\Movement\opcodes.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\fake\opcodes.h"
+				RelativePath="..\Movement\opcodes.h"
 				>
 			</File>
 				RelativePath="..\Movement\typedefs_p.h"
@@ -361,7 +361,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\Movement\spline_tests.cpp"
+					RelativePath="..\Movement\spline_tests.hpp"
 					>
 				</File>
 			</Filter>

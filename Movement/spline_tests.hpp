@@ -1,4 +1,3 @@
-#include "spline.h"
 #include "gtest\gtest.h"
 
 namespace Movement

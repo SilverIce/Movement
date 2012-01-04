@@ -10,8 +10,9 @@
 #include "typedefs_p.h"
 
 #include "Object.h"
-#include "opcodes.h"
 #include "WorldPacket.h"
+#include "opcodes.h"
+
 #include "Imports.h"
 #include "MoveSpline.h"
 #include "MoveUpdater.h"

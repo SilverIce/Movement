@@ -3,6 +3,8 @@
 #include <sstream>
 #include <G3D/Matrix4.h>
 
+#include "spline_tests.hpp"
+
 namespace Movement{
 
 SplineBase::EvaluationMethtod SplineBase::evaluators[SplineBase::ModeEnd] =

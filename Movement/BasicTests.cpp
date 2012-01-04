@@ -67,7 +67,7 @@ namespace Movement
         {
             LinkedListElement<int> * Node = list.first();
             for (int i = 0; i < CountOf(node); ++i, Node = Node->Next()) {
-                EXPECT_TRUE( Node );
+                EXPECT_TRUE( Node != NULL  );
                 EXPECT_TRUE( Node == &node[i] );
                 EXPECT_TRUE( Node->Value == values[i]);
             }
@@ -75,7 +75,7 @@ namespace Movement
         {
             LinkedListElement<int> * Node = list.last();
             for (int i = (CountOf(node)-1); i >= 0; --i, Node = Node->Previous()) {
-                EXPECT_TRUE( Node );
+                EXPECT_TRUE( Node != NULL );
                 EXPECT_TRUE( Node == &node[i] );
                 EXPECT_TRUE( Node->Value == values[i]);
             }
