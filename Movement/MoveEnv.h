@@ -8,24 +8,45 @@ namespace Movement
     /** Represents abstract environment */
     struct IMoveEnvironment
     {
-        /** Converts local object position that environment contains into global position
+        /** Converts relative object position that environment contains into global position
             Takes 'outGlobal' parameter as local object position offset and converts it into global position */
         virtual void ComputeGlobalPosition(Vector3& outGlobal) = 0;
+
+        /** Converts global into relative object position */
+        virtual void ComputeLocalPosition(Vector3& outLocal) = 0;
     };
 
     struct MovingEntity
     {
+    private:
+        IMoveEnvironment* m_Environment;
     public:
-        IMoveEnvironment* Environment;
         Vector3 Position;
 
-        explicit MovingEntity() : Environment(nullptr) {}
+        explicit MovingEntity() : m_Environment(nullptr) {}
+
+        void Environment(IMoveEnvironment* Env)
+        {
+            if (Env == m_Environment)
+                return;
+
+            Position = GlobalPosition();    // "move" our entity into global coord system
+            if (Env == nullptr)
+                ;   // special case: null environment recognized as global coordinate system, nothing to do
+            else
+                Env->ComputeLocalPosition(Position);    // convert global into relative position
+            m_Environment = Env;
+        }
+
+        IMoveEnvironment* Environment() const {
+            return m_Environment;
+        }
 
         Vector3 GlobalPosition() const
         {
             Vector3 global(Position);
-            if (Environment != nullptr)
-                Environment->ComputeGlobalPosition(global);
+            if (m_Environment != nullptr)
+                m_Environment->ComputeGlobalPosition(global);
             return global;
         }
     };
@@ -41,7 +62,7 @@ namespace Movement
         G3D::Matrix3 m_rotation;
         bool m_matrixUpdated;
 
-        const G3D::Matrix3& getTransform() {
+        const G3D::Matrix3& relativeRotation() {
             if (!m_matrixUpdated) {
                 m_rotation = G3D::Matrix3::fromEulerAnglesZXY(m_Yaw, m_Pitch, m_Roll);
                 m_matrixUpdated = true;
@@ -50,9 +71,25 @@ namespace Movement
         }
 
         void ComputeGlobalPosition(Vector3& outGlobal) override {
-            outGlobal = getTransform() * outGlobal + m_entity.Position;
-            if (m_entity.Environment != nullptr)
-                m_entity.Environment->ComputeGlobalPosition(outGlobal);
+            outGlobal = relativeRotation() * outGlobal + m_entity.Position;
+
+            if (m_entity.Environment() != nullptr)
+                m_entity.Environment()->ComputeGlobalPosition(outGlobal);
+        }
+
+        void ComputeGlobalRotation(G3D::Matrix3& rotation) {
+            if (MovingEntity_Revolvable * env = Environment()) {
+                env->ComputeGlobalRotation(rotation);
+                rotation *= relativeRotation();
+            }
+            else
+                rotation = relativeRotation();
+        }
+
+        void ComputeLocalPosition(Vector3& outLocal) override {
+            G3D::Matrix3 globalRotation;
+            ComputeGlobalRotation(globalRotation);
+            outLocal = (outLocal - GlobalPosition()) * globalRotation;
         }
 
     public:
@@ -69,9 +106,14 @@ namespace Movement
             return m_entity.GlobalPosition();
         }
 
-        void SetEnvironment(IMoveEnvironment* Env) {
+        void SetEnvironment(MovingEntity_Revolvable* Env) {
             assert_state(Env != this);
-            m_entity.Environment = Env;
+            m_entity.Environment(Env);
+        }
+
+    private:
+        MovingEntity_Revolvable* Environment() const {
+            return (MovingEntity_Revolvable*)m_entity.Environment();
         }
 
     public:
@@ -80,8 +122,8 @@ namespace Movement
             m_Yaw(0.f),
             m_Pitch(0.f),
             m_Roll(0.f),
-            m_matrixUpdated(false),
-            m_rotation(G3D::Matrix3::identity())
+            m_rotation(G3D::Matrix3::identity()),
+            m_matrixUpdated(false)
         {
         }
 
@@ -104,7 +146,7 @@ namespace Movement
         }
 
         float RollAngle() const {
-            return m_Pitch;
+            return m_Roll;
         }
 
         void RollAngle(float value) {
