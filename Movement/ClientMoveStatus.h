@@ -69,12 +69,12 @@ namespace Movement
     {
         std::stringstream st;
         st << "Movement  flags: " << moveFlags.ToString() << std::endl;
-        st << "Global position: " << world_position.toString() << std::endl;
+        st << "Global position: " << world_position.ToString() << std::endl;
 
         if (moveFlags.ontransport)
         {
-            st << "Local  position: " << transport_position.toString() << std::endl;
-            st << "seat         Id: " << transport_seat << std::endl;
+            st << "Local  position: " << transport_position.ToString() << std::endl;
+            st << "seat         Id: " << (int32)transport_seat << std::endl;
         }
 
         if (moveFlags & UnitMoveFlag::Mask_Pitching)

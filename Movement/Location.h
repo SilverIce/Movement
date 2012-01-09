@@ -1,5 +1,6 @@
 #pragma once
 #include <G3D/Vector3.h>
+#include <sstream>
 
 namespace Movement
 {
@@ -20,6 +21,12 @@ namespace Movement
         void operator = (const Vector3& vector)
         {
             Vector3::operator = (vector);
+        }
+
+        std::string ToString() const {
+            std::stringstream str;
+            str << '(' << x << ' ' << y << ' '<< z << ' ' << orientation << ')';
+            return str.str();
         }
 
         float orientation;

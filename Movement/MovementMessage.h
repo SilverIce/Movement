@@ -101,7 +101,7 @@ namespace Movement
 
     inline void operator << (ByteBuffer& b, const UnitMoveFlag& v)
     {
-        b << (uint32)v.raw;
-        b << (uint16)(v.raw >> 32);
+        b << (uint32)(v.raw & 0xFFFFFFFF);
+        b << (uint16)((v.raw >> 32) & 0x0000FFFF);
     }
 }

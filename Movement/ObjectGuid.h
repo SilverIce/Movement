@@ -60,7 +60,7 @@ namespace Movement
                 if (guid & 0xFF)
                 {
                     _mask |= (1 << byteIdx);
-                    _packed[_byteCount] = (uint8)guid;
+                    _packed[_byteCount] = (uint8)(guid & 0xFF);
                     ++_byteCount;
                 }
                 guid >>= 8;
