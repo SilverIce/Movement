@@ -61,7 +61,7 @@ void MoveSpline::computeParabolicElevation(float& el) const
     if (time_passed > effect_start_time)
     {
         float t_passedf = MSToSec(time_passed - effect_start_time);
-        float t_durationf = MSToSec(Duration() - effect_start_time); //client use not modified duration here
+        float t_durationf = MSToSec(Duration() - effect_start_time);
 
         // -a*x*x + bx + c:
         //(dur * v3->z_acceleration * dt)/2 - (v3->z_acceleration * dt * dt)/2 + Z;

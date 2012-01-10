@@ -35,18 +35,27 @@ namespace Tasks
     {
     protected:
         SELECTED_CONT<T*> _data;
+        uint32 _allocated;
     public:
 
+        Recycler() {
+            clear();
+        }
+
         ~Recycler() {
+            assert_state(_allocated == 0);
             clear();
         }
 
         void push(T* obj) {
+            assert_state(_allocated > 0);
+            --_allocated;
             obj->clear();
             _data.push_back(obj);
         }
 
         T* pop() {
+            ++_allocated;
             if (_data.empty())
                 return new T();
             else {
@@ -56,9 +65,14 @@ namespace Tasks
             }
         }
 
+        bool cleaned() const {
+            return _allocated == 0;
+        }
+
         void clear() {
             ForEach(T* obj, _data, delete obj);
             _data.clear();
+            _allocated = 0;
         }
     };
 

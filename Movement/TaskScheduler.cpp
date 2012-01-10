@@ -66,7 +66,6 @@ namespace Tasks
     class TaskExecutorImpl : public
         //TaskExecutorImpl_VectorPOD110
         TaskExecutorImpl_LinkedList110
-        //TaskExecutorImpl_VectorHashPending112  -- that one doesn't destructs the task at task cancelling
     {
         friend class TaskExecutor;
     public:

@@ -238,14 +238,7 @@ namespace Movement
 
             if (!checkRequestId(client_req_id))
                 return false;
-            if (modeInfo[m_mode].moveFlag != 0 && m_apply != client_state.moveFlags.hasFlag(modeInfo[m_mode].moveFlag))
-            {
-                log_fatal("wrong client's flag");
-                return false;
-            }
 
-            // Should i queue state or apply it immediately?
-            // very often incoming client state is from past time..
             client_state.allowFlagChange = modeInfo[m_mode].moveFlag;
             client_state.allowFlagApply = m_apply;
             client->QueueState(client_state);

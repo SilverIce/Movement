@@ -7,4 +7,5 @@
 #include <hash_set>
 #include <vector>
 #include <algorithm>
-#include "typedefs.h"
+#include "typedefs_p.h"
+#include "G3D/Vector3.h"

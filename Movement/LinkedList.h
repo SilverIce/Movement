@@ -114,6 +114,11 @@ public:
 
     LinkedList<T>& List() const { return *_container;}
 
+    void delink() {
+        if (_container)
+            _container->delink(*this);
+    }
+
 private:
 
     friend class ListType;

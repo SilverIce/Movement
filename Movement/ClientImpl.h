@@ -158,7 +158,7 @@ namespace Movement
         }
     public:
 
-        /* Default timeout value is 500 milliseconds */
+        /* Default timeout, in milliseconds */
         static uint32 DefaultTimeout;
 
         explicit RespHandler(ClientOpcode _opcode, ClientImpl * client) : m_opcode(_opcode), m_client(client), m_wasHandled(false)

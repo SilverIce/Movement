@@ -185,6 +185,7 @@ namespace Movement
             data << move_spline.effect_start_time;
 
             uint32 nodes = move_spline.getPath().size();
+            assert_state(nodes >= 3);
             data << nodes;
             data.append<Vector3>(&move_spline.getPath()[0], nodes);
             data << uint8(move_spline.spline.mode());

@@ -203,8 +203,10 @@ namespace Movement
                 return true;
             }
             else {
-                log_function("movement flag desync. flag difference '%s', flag difference allowed '%s'",
-                    bitChanged.ToString().c_str(), state.allowFlagChange.ToString().c_str());
+                log_function("flag difference '%s', but %s of '%s' flag was expected",
+                    bitChanged.ToString().c_str(),
+                    (state.allowFlagApply ? "apply" : "remove"),
+                    state.allowFlagChange.ToString().c_str());
                 return false;
             }
         }

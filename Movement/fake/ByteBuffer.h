@@ -27,6 +27,8 @@ public:
 
     size_t rpos() const {return r_pos;}
     size_t wpos() const {return w_pos;}
+    void rpos(size_t value) { r_pos = value;}
+    void wpos(size_t value) { w_pos = value;}
 
     template<class T> ByteBuffer& operator << (const T& value)
     {
