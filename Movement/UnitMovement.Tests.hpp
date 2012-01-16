@@ -177,7 +177,7 @@ namespace Movement
         struct UpdateResultHandler
         {
             explicit UpdateResultHandler(MoveSpline& spl) : spline(spl) {
-                point = spline.currentPathIdx();
+                point = spline.currentPathPointIdx();
                 prevResult = MoveSpline::Result_None;
                 receiveCounter = 0;
             }
@@ -192,7 +192,7 @@ namespace Movement
                 if (res == MoveSpline::Result_None)
                     return;
 
-                int32 currPoint = spline.currentPathIdx();
+                int32 currPoint = spline.currentPathPointIdx();
                 int32 difference = currPoint - point;
                 EXPECT_TRUE( difference == 1 );
                 EXPECT_TRUE( currPoint == (++receiveCounter) );
@@ -220,7 +220,7 @@ namespace Movement
 
             Location loc = mov.ComputePosition();
             EXPECT_TRUE( loc.isFinite() );
-            EXPECT_TRUE( arg.path[mov.currentPathIdx()].fuzzyEq( loc ) );
+            EXPECT_TRUE( arg.path[mov.currentPathPointIdx()].fuzzyEq( loc ) );
         }
     }
 

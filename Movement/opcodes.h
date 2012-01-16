@@ -1,7 +1,5 @@
 #pragma once
 
-#include "typedefs.h"
-
 namespace Movement
 {
     enum ClientOpcode

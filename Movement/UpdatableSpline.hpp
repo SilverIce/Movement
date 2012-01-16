@@ -31,11 +31,11 @@ namespace Movement
                 const MoveSpline& moveSpline = m_owner.moveSpline();
                 switch (result) {
                 case MoveSpline::Result_NextSegment:
-                    events.push_back( OnEventArgs::OnPoint(moveSpline.GetId(),moveSpline.currentPathIdx()) );
+                    events.push_back( OnEventArgs::OnPoint(moveSpline.GetId(),moveSpline.currentPathPointIdx()) );
                     break;
                 case MoveSpline::Result_Arrived:
                     m_owner.Disable();
-                    events.push_back( OnEventArgs::OnPoint(moveSpline.GetId(),moveSpline.currentPathIdx()) );
+                    events.push_back( OnEventArgs::OnPoint(moveSpline.GetId(),moveSpline.currentPathPointIdx()) );
                     events.push_back( OnEventArgs::OnArrived(moveSpline.GetId()) );
                     break;
                 case MoveSpline::Result_NextCycle:

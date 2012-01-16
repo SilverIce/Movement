@@ -139,7 +139,7 @@ void MoveSpline::init_spline(const MoveSplineInitArgs& args)
     else
     {
         if (splineflags.falling)
-            spline.initLengths( FallInitializer(spline.getPoint(spline.first()).z) );
+            spline.initLengths( FallInitializer(args.path[0].z) );
         else
             spline.initLengths(CommonInitializer(args.velocity));
     }
@@ -287,7 +287,7 @@ std::string MoveSpline::ToString() const
     str << "time passed: " << time_passed << std::endl;
     str << "total  time: " << Duration() << std::endl;
     str << "spline point Id: " << point_Idx << std::endl;
-    str << "path  point  Id: " << currentPathIdx() << std::endl;
+    str << "path  point  Id: " << currentPathPointIdx() << std::endl;
     str << spline.ToString();
     return str.str();
 }
@@ -299,7 +299,7 @@ void MoveSpline::Finalize()
     time_passed = Duration();
 }
 
-int32 MoveSpline::currentPathIdx() const
+int32 MoveSpline::currentPathPointIdx() const
 {
     int32 point = point_Idx_offset + point_Idx - spline.first() + (int32)Arrived();
     if (isCyclic())

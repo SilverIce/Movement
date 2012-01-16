@@ -66,15 +66,12 @@ namespace Movement
         client.BroadcastMessage(msg);
     }
 
-    /* For test. if set to true, enables old & wrong time correction */
-    static bool send_self = false;
-
     static MSTime timestamp_incr = 5000;
     static MSTime timestamp_decr = 0;
 
     void ClientImpl::SendMoveMessage(MovementMessage& msg) const
     {
-        if (msg.Source() == m_controlled && !send_self)
+        if (msg.Source() == m_controlled)
             return;
 
         msg.CorrectTimeStamp(msg.OrigTime() + timestamp_incr - timestamp_decr);
@@ -203,9 +200,10 @@ namespace Movement
                 return true;
             }
             else {
-                log_function("flag difference '%s', but %s of '%s' flag was expected",
+                log_function("client %s '%s' flag, but %s of '%s' flag was expected",
+                    state.moveFlags.hasFlag(bitChanged) ? "enabled" : "disabled",
                     bitChanged.ToString().c_str(),
-                    (state.allowFlagApply ? "apply" : "remove"),
+                    (state.allowFlagApply ? "enabling" : "disabling"),
                     state.allowFlagChange.ToString().c_str());
                 return false;
             }
