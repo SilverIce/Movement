@@ -98,7 +98,7 @@ namespace Movement {
         uint32 GetId() const { return m_Id;}
         bool Arrived() const { return Duration() == timePassed(); }
         bool isCyclic() const { return splineflags.cyclic;}
-        int32 Duration() const { return spline.length();}
+        int32 Duration() const { return spline.lengthTotal();}
         int32 timeElapsed() const { return Duration() - time_passed;}
         int32 timePassed() const { return time_passed;}
         int32 next_timestamp() const { return spline.length(point_Idx+1);}

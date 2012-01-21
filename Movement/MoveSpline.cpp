@@ -85,30 +85,8 @@ void MoveSpline::computeFallElevation(float& el) const
         el = z_now;
 }
 
-struct FallInitializer
-{
-    FallInitializer(float _start_elevation) : start_elevation(_start_elevation) {}
-    float start_elevation;
-    inline int32 operator()(Spline<int32>& s, int32 i)
-    {
-        return Movement::computeFallTime(start_elevation - s.getPoint(i+1).z) * 1000.f;
-    }
-};
-
 enum{
     minimal_duration = 1,
-};
-
-struct CommonInitializer
-{
-    CommonInitializer(float _velocity) : velocityInv(1000.f/_velocity), time(minimal_duration) {}
-    float velocityInv;
-    int32 time;
-    inline int32 operator()(Spline<int32>& s, int32 i)
-    {
-        time += (s.SegLength(i) * velocityInv);
-        return time;
-    }
 };
 
 void MoveSpline::init_spline(const MoveSplineInitArgs& args)
@@ -138,18 +116,36 @@ void MoveSpline::init_spline(const MoveSplineInitArgs& args)
     }
     else
     {
-        if (splineflags.falling)
+        if (splineflags.falling) {
+            struct FallInitializer {
+                FallInitializer(float _start_elevation) : start_elevation(_start_elevation) {}
+                float start_elevation;
+                int32 operator()(Spline<int32>& s, int32 i) {
+                    return Movement::computeFallTime(start_elevation - s.getPoint(i+1).z) * 1000.f;
+                }
+            };
             spline.initLengths( FallInitializer(args.path[0].z) );
-        else
+        }
+        else {
+            struct CommonInitializer {
+                CommonInitializer(float _velocity) : velocityInv(1000.f/_velocity), time(minimal_duration) {}
+                float velocityInv;
+                int32 time;
+                int32 operator()(Spline<int32>& s, int32 i) {
+                    time += (s.SegLength(i) * velocityInv);
+                    return time;
+                }
+            };
             spline.initLengths(CommonInitializer(args.velocity));
+        }
     }
 
     // TODO: what to do in such cases? problem is in input data (all points are at same coords)
     // critical only for cyclic movement
-    if (spline.isCyclic() && spline.length() <= minimal_duration)
+    if (args.flags.cyclic && spline.lengthTotal() <= minimal_duration)
     {
         log_write("MoveSpline::init_spline: Zero length spline");
-        spline.set_length(spline.last(), 1000);
+        spline.lengthTotal(1000);
     }
     point_Idx = spline.first();
 }
@@ -253,7 +249,7 @@ MoveSpline::UpdateResult MoveSpline::_updateState(int32& ms_time_diff)
         }
         else
         {
-            if (spline.isCyclic())
+            if (isCyclic())
             {
                 point_Idx = spline.first();
                 time_passed = time_passed % Duration();

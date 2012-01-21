@@ -44,7 +44,6 @@ namespace Movement
             assert_state(commonTasks.hasExecutor());
         }
 
-
         TaskTarget_DEV commonTasks;
 
         UnitMovementImpl* controlled() const { return m_controlled;}

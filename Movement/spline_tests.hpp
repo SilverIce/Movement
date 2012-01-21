@@ -36,7 +36,7 @@ namespace Movement
         splines[2].init_spline(nodes, CountOf(nodes), SplineBase::ModeCatmullrom);
         splines[3].init_cyclic_spline(nodes, CountOf(nodes), SplineBase::ModeCatmullrom, 0);
 
-        float properLengths[] = {
+        const float properLengths[4] = {
             253.202179f,
             292.727539f,
             256.882568f,
@@ -45,20 +45,18 @@ namespace Movement
 
         for (int i = 0; i < CountOf(splines); ++i)
         {
-            splines[i].initLengths();
-            EXPECT_TRUE( G3D::fuzzyEq(splines[i].length(),properLengths[i]) );
-        }
+            Spline<float>& spline = splines[i];
 
-        for (int i = 0; i < CountOf(splines); ++i)
-            testforNaN(splines[i]);
+            spline.initLengths();
+            EXPECT_TRUE( G3D::fuzzyEq(spline.lengthTotal(),properLengths[i]) );
 
-        for (int splineIdx = 0; splineIdx < CountOf(splines); ++splineIdx) {
-            for (int i = 0; i < CountOf(nodes); ++i) {
-                Spline<float>& spline = splines[splineIdx];
-                if ((spline.first() + i) < spline.last()) {
+            testforNaN(spline);
+
+            for (int pointIdx = 0; pointIdx < CountOf(nodes); ++pointIdx) {
+                if ((spline.first() + pointIdx) < spline.last()) {
                     Vector3 calculated;
-                    spline.evaluate_percent(spline.first() + i, 0.f, calculated);
-                    EXPECT_TRUE( calculated.fuzzyEq(nodes[i]) );
+                    spline.evaluate_percent(spline.first() + pointIdx, 0.f, calculated);
+                    EXPECT_TRUE( calculated.fuzzyEq(nodes[pointIdx]) );
                 }
             }
         }
