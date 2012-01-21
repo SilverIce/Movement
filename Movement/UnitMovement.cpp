@@ -34,6 +34,7 @@
 #include "UnitMovementImpl.hpp"
 #include "UnitMovement.Effects.hpp"
 #include "UpdatableSpline.hpp"
+#include "FallFormulas.hpp"
 
 #include "UnitMovement.Tests.hpp"
 
