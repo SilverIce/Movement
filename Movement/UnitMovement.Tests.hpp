@@ -10,7 +10,7 @@ namespace Movement
         EXPECT_TRUE( (f & Flag) != 0 );
         EXPECT_TRUE( f.raw == Flag );
         EXPECT_TRUE( f.allowSwimFlyTransition );
-        EXPECT_TRUE( f.ToString().find("AllowSwimFlyTransition") != std::string::npos );
+        EXPECT_TRUE( f.ToString() == "AllowSwimFlyTransition" );
         EXPECT_TRUE( sizeof(f.raw) == sizeof(UnitMoveFlag) );
 
         {
@@ -31,7 +31,7 @@ namespace Movement
         EXPECT_TRUE( (f & Flag) != 0 );
         EXPECT_TRUE( f.raw == Flag );
         EXPECT_TRUE( f.done );
-        EXPECT_TRUE( f.ToString().find("Done") != std::string::npos );
+        EXPECT_TRUE( f.ToString() == "Done" );
         EXPECT_TRUE( sizeof(f.raw) == sizeof(MoveSplineFlag) );
     }
 

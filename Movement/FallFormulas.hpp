@@ -132,10 +132,16 @@ namespace Movement
             return;
         }
 
-        for (int i = 0; i < N; ++i)
+        static_assert(N <= (sizeof(Flags) * 8), "flag names array size is always lesser or equal to flag bits amount");
+
+        for (int i = 0, flagsAppended = 0; i < N; ++i)
         {
-            if ((flag & (Flags(1) << i)) && names[i] != NULL)
-                str.append(" ").append(names[i]);
+            if ((flag & (Flags(1) << i)) && names[i] != NULL) {
+                if (flagsAppended > 0)
+                    str += ' ';
+                str += names[i];
+                ++flagsAppended;
+            }
         }
     }
 

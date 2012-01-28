@@ -3,6 +3,7 @@
 #include <memory>
 #include <algorithm>
 #include <vector>
+#include "typedefs_p.h"
 
 namespace Tasks
 {
@@ -64,6 +65,9 @@ namespace Tasks
 
                 setElements(mem, newCapacity);
             }
+            else if (lowBound == _size) {
+                // push_back case
+            }
             else {
                 memmove(_data + lowBound + size, _data + lowBound, _size - lowBound);
             }
@@ -100,6 +104,7 @@ namespace Tasks
         }
 
         void erase(size_t lowBound, size_t count) {
+            _assertInRange(lowBound);
             size_t hiBound = lowBound + count;
             if (hiBound < _size)
                 memmove(_data + lowBound, _data + hiBound, _size - hiBound);
