@@ -104,11 +104,11 @@ namespace Movement
     void ClientImpl::SetControl(UnitMovementImpl& newly_controlled)
     {
         if (controlled()) {
-            log_function("client already controls mover");
+            log_function("can not control a unit - client already controls some unit");
             return;
         }
         if (newly_controlled.client()) {
-            log_function("movement is already controlled");
+            log_function("can not control a unit - unit is already controlled");
             return;
         }
         if (!commonTasks.hasExecutor()) {
@@ -200,10 +200,10 @@ namespace Movement
                 return true;
             }
             else {
-                log_function("client %s '%s' flag, but %s of '%s' flag was expected",
+                log_function("invalid state change - client %s '%s' flag, but %s of '%s' flag was expected",
                     state.moveFlags.hasFlag(bitChanged) ? "enabled" : "disabled",
                     bitChanged.ToString().c_str(),
-                    (state.allowFlagApply ? "enabling" : "disabling"),
+                    state.allowFlagApply ? "enabling" : "disabling",
                     state.allowFlagChange.ToString().c_str());
                 return false;
             }
@@ -258,10 +258,11 @@ namespace Movement
         data >> guid.ReadAsPacked();
         data >> state;
 
-        if (!client.controlled())
+        if (!client.controlled()){
             log_function("control already lost");
-
-        client.QueueState(state);
+            return;
+        }
+        client.QueueState(state, guid);
         client.LostControl();
     }
 
@@ -280,7 +281,7 @@ namespace Movement
 
     void ClientImpl::OnNotImplementedMessage(ClientImpl&, WorldPacket& data)
     {
-        log_function("Unimplemented message handler called: %s", LookupOpcodeName((ClientOpcode)data.GetOpcode()));
+        log_function("Unimplemented message handler called: %s", OpcodeName((ClientOpcode)data.GetOpcode()));
     }
 
     //////////////////////////////////////////////////////////////////////////

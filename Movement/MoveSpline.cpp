@@ -12,10 +12,6 @@ inline float MSToSec(uint32 ms) {
     return ms / 1000.f;
 }
 
-inline uint32 computeDuration(float length, float velocity) {
-    return SecToMS(length / velocity);
-}
-
 Location MoveSpline::ComputePosition() const
 {
     float u = 1.f;
@@ -95,7 +91,7 @@ void MoveSpline::init_spline(const MoveSplineInitArgs& args)
     if (args.flags.cyclic)
     {
         uint32 cyclic_point = 0;
-        // MoveSplineFlag::Enter_Cycle support dropped
+        // MoveSplineFlag::Enter_Cycle no more supported
         //if (splineflags & MoveSplineFlag::Enter_Cycle)
         //cyclic_point = 1;   // shouldn't be modified, came from client
         spline.init_cyclic_spline(&args.path[0], args.path.size(), modes[args.flags.isSmooth()], cyclic_point);

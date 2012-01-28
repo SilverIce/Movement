@@ -1319,7 +1319,7 @@ namespace Movement
         STR(SMSG_COMPRESSED_UNKNOWN_1310),
     };
 
-    const char* LookupOpcodeName(ClientOpcode id)
+    const char* OpcodeName(ClientOpcode id)
     {
         if (id >= NUM_MSG_TYPES)
             return "unknown opcode id, it's more than max!";

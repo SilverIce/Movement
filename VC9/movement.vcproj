@@ -253,6 +253,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\Movement\FallFormulas.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\Movement\MovementMessage.h"
 					>
 				</File>

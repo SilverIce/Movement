@@ -94,7 +94,7 @@ namespace Movement
         {
             ClientOpcode opcode = (ClientOpcode)msg.GetOpcode();
             HandlerMap::const_iterator it = instance().handlers.find(opcode);
-            assert_state_msg(it != instance().handlers.end(), "no handlers for %s", LookupOpcodeName(opcode));
+            assert_state_msg(it != instance().handlers.end(), "no handlers for %s", OpcodeName(opcode));
             (it->second) (client, msg);
         }
 
@@ -134,15 +134,26 @@ namespace Movement
     {
     private:
         ClientImpl* m_client;
-        ClientOpcode m_opcode;
-        bool m_wasHandled;
+        ClientOpcode m_targetOpcode;
+        bool m_replyReceived;
+        MSTime m_TimeoutLaunchTime;
     protected:
         uint32 m_requestId;
 
     private:
         void Execute(TaskExecutor_Args& args) override {
-            if (!m_wasHandled)
-                log_function("response timeout (opcode: %s)", LookupOpcodeName(m_opcode));
+            if (!m_replyReceived) {
+                /** Currently this problem is caused by some unaccounted wow-client's code technical details:
+                    wow-client ignores requests while in busy state(for ex. during teleporting).*/
+                log_function("response handler %s timed out. timeout is %u seconds",
+                    OpcodeName(m_targetOpcode), (args.now - m_TimeoutLaunchTime).time/1000 );
+            }
+        }
+
+        void LaunchTimeoutCheck(MSTime timeout)
+        {
+            m_TimeoutLaunchTime = Imports.getMSTime();
+            m_client->commonTasks.AddTask(this, m_TimeoutLaunchTime + timeout);
         }
 
     protected:
@@ -150,21 +161,28 @@ namespace Movement
 
         bool checkRequestId(uint32 requestId) const {
             if (m_requestId != requestId) {
-                log_function("wrong request Id: %u expected Id: %u", requestId, m_requestId);
-                return false;
+                /** Currently this problem is caused by some unaccounted wow-client's code technical details:
+                    wow-client ignores request packets while in busy state(for ex. during teleporting).
+                    When client is not busy and able send responses, servers sends some new request and client send a reply, 
+                    but since there is still old unreplyed response handler queued*/
+                log_function("can not handle response %s - wrong request Id %u, expected request %u",
+                    OpcodeName(m_targetOpcode), requestId, m_requestId);
+                //return false;
             }
             return true;
         }
-    public:
 
         /* Default timeout, in milliseconds */
         static uint32 DefaultTimeout;
 
-        explicit RespHandler(ClientOpcode _opcode, ClientImpl * client) : m_opcode(_opcode), m_client(client), m_wasHandled(false)
-        {
-            assert_state(m_client);
-            addref();
-            m_requestId = client->RegisterRespHandler(this);
+        explicit RespHandler(ClientOpcode targetOpcode, ClientImpl * client) {
+            assert_state(client);
+            assert_state(targetOpcode != MSG_NULL_ACTION);
+            m_targetOpcode = targetOpcode;
+            m_client = client;
+            m_replyReceived = false;
+            m_requestId = client->RegisterRespHandler(Reference<RespHandler>(this));
+            LaunchTimeoutCheck(DefaultTimeout);
         }
 
         virtual ~RespHandler() {
@@ -172,25 +190,27 @@ namespace Movement
             m_client = NULL;
         }
 
+    public:
+
         static void OnResponse(ClientImpl& client, WorldPacket& data)
         {
-            RespHandler * handler = client.PopRespHandler();
-            if (!handler)
+            Reference<RespHandler> handler = client.PopRespHandler();
+            if (!handler.pointer()) {
+                log_function("can not handle response %s - no response handlers queued", OpcodeName((ClientOpcode)data.GetOpcode()));
                 return;
-            if (!handler->OnReply(data))
-                log_function("client's response (opcode %s) handler failed", LookupOpcodeName(handler->m_opcode));
-            handler->release();
-        }
-
-        bool OnReply(WorldPacket& data)
-        {
-            assert_state(!m_wasHandled);
-            if (m_opcode != data.GetOpcode()) {
-                log_function("expected reply was: %s, but received instead: %s", LookupOpcodeName(m_opcode), LookupOpcodeName((ClientOpcode)data.GetOpcode()));
-                return false;
             }
-            m_wasHandled = OnReply(m_client, data);
-            return m_wasHandled;
+
+            assert_state(!handler->m_replyReceived);
+            assert_state(handler->m_client == &client);
+
+            handler->m_replyReceived = true;
+            if (handler->m_targetOpcode != data.GetOpcode()) {
+                log_function("can not handle response %s - expected response is %s",
+                    OpcodeName((ClientOpcode)data.GetOpcode()), OpcodeName(handler->m_targetOpcode));
+                return;
+            }
+
+            handler->OnReply(&client, data);
         }
     };
 
