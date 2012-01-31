@@ -56,9 +56,20 @@ namespace Movement
         RespHandler* PopRespHandler();
         void Kick() {}  // not implemented
 
-        inline void BroadcastMessage(MovementMessage& msg) const { Imports.BroadcastMoveMessage(&m_controlled->Owner, msg);}
-        inline void BroadcastMessage(WorldPacket& data) const { Imports.BroadcastMessage(&m_controlled->Owner, data);}
-        inline void SendPacket(const WorldPacket& data) const { Imports.SendPacket(m_socket, data);}
+        void BroadcastMessage(MovementMessage& msg) const {
+            assert_state(msg.Packet().GetOpcode() != MSG_NULL_ACTION);
+            Imports.BroadcastMoveMessage(m_controlled->Owner, msg);
+        }
+
+        void BroadcastMessage(WorldPacket& data) const {
+            assert_state(data.GetOpcode() != MSG_NULL_ACTION);
+            Imports.BroadcastMessage(m_controlled->Owner, data);
+        }
+
+        void SendPacket(const WorldPacket& data) const {
+            assert_state(data.GetOpcode() != MSG_NULL_ACTION);
+            Imports.SendPacket(m_socket, data);
+        }
 
         void CleanReferences();
         void Dereference(const UnitMovementImpl * m);
@@ -96,12 +107,22 @@ namespace Movement
             HandlerMap::const_iterator it = instance().handlers.find(opcode);
             assert_state_msg(it != instance().handlers.end(), "no handlers for %s", OpcodeName(opcode));
             (it->second) (client, msg);
+            ensureParsed(msg);
         }
 
         static void FillSubscribeList(std::vector<uint16>& opcodes)
         {
             for (HandlerMap::const_iterator it = instance().handlers.begin(); it != instance().handlers.end(); ++it)
                 opcodes.push_back(it->first);
+        }
+
+        static void ensureParsed(const WorldPacket& msg)
+        {
+            if (msg.size() != msg.rpos())
+            {
+                log_write("message %s seems wasn't parsed properly, %u bytes weren't parsed",
+                    OpcodeName(ClientOpcode(msg.GetOpcode())), uint32(msg.size() - msg.rpos()));
+            }
         }
 
     private:

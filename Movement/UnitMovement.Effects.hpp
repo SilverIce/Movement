@@ -12,7 +12,7 @@ namespace Movement
 
     /* request-response-msg order*/
 #define VALUE_CHANGE(mode)   {SMSG_FORCE_##mode##_CHANGE, CMSG_FORCE_##mode##_CHANGE_ACK, MSG_MOVE_SET_##mode,SMSG_SPLINE_SET_##mode},
-    static const ReqRespMsg ValueChange2Opc_table[Parameter_End] =
+    static const ReqRespMsg ValueChange2Opc_table[] =
     {
         VALUE_CHANGE(WALK_SPEED)
         VALUE_CHANGE(RUN_SPEED)
@@ -24,7 +24,6 @@ namespace Movement
         VALUE_CHANGE(TURN_RATE)
         VALUE_CHANGE(PITCH_RATE)
         {SMSG_MOVE_SET_COLLISION_HGT,CMSG_MOVE_SET_COLLISION_HGT_ACK,MSG_MOVE_SET_COLLISION_HGT,MSG_NULL_ACTION},
-        {MSG_NULL_ACTION,MSG_NULL_ACTION,MSG_NULL_ACTION,MSG_NULL_ACTION},
     };
 #undef VALUE_CHANGE
 
@@ -38,27 +37,27 @@ namespace Movement
             m_value_type(value_type),
             m_value(value)
         {
-            if (ClientOpcode opcode = ValueChange2Opc_table[value_type].smsg_request)
-            {
-                WorldPacket data(opcode, 32);
-                data << client->controlled()->Guid.WriteAsPacked();
-                data << m_requestId;
-                if (m_value_type == Parameter_SpeedRun)
-                    data << int8(0);                               // new 2.1.0
-                data << m_value;
-                client->SendPacket(data);
-            }
+            WorldPacket data(ValueChange2Opc_table[value_type].smsg_request, 32);
+            data << client->controlled()->Guid.WriteAsPacked();
+            data << m_requestId;
+            if (m_value_type == Parameter_SpeedRun)
+                data << int8(0);                               // new 2.1.0
+            data << m_value;
+            client->SendPacket(data);
         }
 
     public:
 
         static void Launch(UnitMovementImpl * mov, FloatParameter value_type, float value)
         {
+            assert_state(value_type != Parameter_SpeedMoveSpline);
+
             if (mov->IsClientControlled())
             {
-                new FloatValueChangeEffect(mov->client(), value_type, value);
+                if (ClientOpcode opcode = ValueChange2Opc_table[value_type].smsg_spline)
+                    new FloatValueChangeEffect(mov->client(), value_type, value);
             }
-            else
+            else if (ClientOpcode opcode = ValueChange2Opc_table[value_type].smsg_spline)
             {
                 mov->SetParameter(value_type, value);
                 // FIXME: currently there is no way to change speed of already moving server-side controlled unit (spline movement)
@@ -85,19 +84,17 @@ namespace Movement
                 return false;
             if (client_state.floatValue != m_value)
             {
-                log_fatal("wrong float value(type %u): %f and should be: %f",m_value_type,client_state.floatValue,m_value);
+                log_function("wrong float value(type %u): %f and should be: %f",m_value_type,client_state.floatValue,m_value);
                 return false;
             }
             client_state.floatValueType = m_value_type;
             client->QueueState(client_state);
-            if (ClientOpcode opcode = ValueChange2Opc_table[m_value_type].msg)
-            {
-                MovementMessage msg(client->controlled(), opcode, 64);
-                msg << guid.WriteAsPacked();
-                msg << client_state;
-                msg << m_value;
-                client->BroadcastMessage(msg);
-            }
+
+            MovementMessage msg(client->controlled(), ValueChange2Opc_table[m_value_type].msg, 64);
+            msg << guid.WriteAsPacked();
+            msg << client_state;
+            msg << m_value;
+            client->BroadcastMessage(msg);
             return true;
         }
     };
@@ -240,13 +237,10 @@ namespace Movement
             client_state.allowFlagApply = m_apply;
             client->QueueState(client_state);
 
-            if (ClientOpcode opcode = modeInfo[m_mode].msg_apply[!m_apply])
-            {
-                MovementMessage msg(client->controlled(), opcode, 64);
-                msg << guid.WriteAsPacked();
-                msg << client_state;
-                client->BroadcastMessage(msg);
-            }
+            MovementMessage msg(client->controlled(), modeInfo[m_mode].msg_apply[!m_apply], 64);
+            msg << guid.WriteAsPacked();
+            msg << client_state;
+            client->BroadcastMessage(msg);
             return true;
         }
     };
@@ -347,8 +341,8 @@ namespace Movement
                 return false;
             }
 
-            // client disables Can_Fly flag
-            // all these checks make my code a bit difficult and are dependant on client code
+            // need allow Can_Fly flag change: client disables it
+            // all these checks make my code a bit difficult and the worst thing, make it dependant on client code
             state.allowFlagChange = UnitMoveFlag::Can_Fly;
             state.allowFlagApply = false;
 
