@@ -62,7 +62,6 @@ namespace Movement
         // Constant interface
 
         bool isSmooth() const { return hasFlag(Mask_CatmullRom);}
-        bool isLinear() const { return !isSmooth();}
         bool isFacing() const { return hasFlag(Mask_Final_Facing);}
 
         uint8 getAnimationId() const { return animId;}

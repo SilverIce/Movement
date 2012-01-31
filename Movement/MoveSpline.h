@@ -69,16 +69,6 @@ namespace Movement {
         explicit MoveSpline();
         void Initialize(const MoveSplineInitArgs&);
 
-        static bool Initialize(MoveSpline *& obj, const MoveSplineInitArgs& args)
-        {
-            if (!args.Validate())
-                return false;
-            if (obj == NULL)
-                obj = new MoveSpline();
-            obj->Initialize(args);
-            return true;
-        }
-
         template<class UpdateHandler>
         void updateState(int32 difftime, UpdateHandler& handler)
         {

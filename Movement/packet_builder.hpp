@@ -71,6 +71,14 @@ namespace Movement
         }
     }
 
+    inline int32 packValue(float value, int32 mask)
+    {
+        int32 result = (int32)(value / 0.25f);
+        //if (result & ~mask)
+            //log_function("too big value, it can not be packed properly");
+        return (int32)result & mask;
+    }
+
     void PacketBuilder::WriteLinearPath(const Spline<int32>& spline, ByteBuffer& data)
     {
         uint32 last_idx = spline.getPointCount() - 3;
@@ -86,7 +94,12 @@ namespace Movement
             for(uint32 i = 1; i < last_idx; ++i)
             {
                 offset = middle - real_path[i];
-                data.appendPackXYZ(offset.x, offset.y, offset.z);
+
+                uint32 packed = 0;
+                packed |= packValue(offset.x, 0x7FF);
+                packed |= packValue(offset.y, 0x7FF) << 11;
+                packed |= packValue(offset.z, 0x3FF) << 22;
+                data << packed;
             }
         }
     }

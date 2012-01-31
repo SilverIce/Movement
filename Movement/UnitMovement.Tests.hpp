@@ -99,9 +99,10 @@ namespace Movement
         ar.velocity = 10.f;
         EXPECT_TRUE(ar.Validate());
 
-        extern float VelocityLimit;
+       /* extern float VelocityLimit;
         ar.velocity = VelocityLimit + 1;
         EXPECT_TRUE(!ar.Validate());
+*/
 
         ar.velocity = -1.f;
         EXPECT_TRUE(!ar.Validate());
@@ -114,27 +115,26 @@ namespace Movement
             Vector3(10,10,10),
         };
 
-        MoveSpline * mov = NULL;
+        MoveSpline mov;
         MoveSplineInitArgs ar;
         ar.path.assign(path, path + CountOf(path));
         ar.velocity = 10.f;
         EXPECT_TRUE(ar.Validate());
 
-        EXPECT_TRUE(MoveSpline::Initialize(mov,ar));
-        EXPECT_TRUE(mov->Duration() > 0);
-        EXPECT_TRUE(mov->timePassed() == 0);
+        mov.Initialize(ar);
+        EXPECT_TRUE(mov.Duration() > 0);
+        EXPECT_TRUE(mov.timePassed() == 0);
 
-        Vector3 pos = mov->FinalDestination();
+        Vector3 pos = mov.FinalDestination();
         EXPECT_TRUE(pos.fuzzyEq(path[1]));
 
-        pos = mov->ComputePosition();
+        pos = mov.ComputePosition();
         EXPECT_TRUE( pos.fuzzyEq(path[0]) );
 
-        mov->updateState(mov->Duration());
-        EXPECT_TRUE(mov->Arrived());
-        EXPECT_TRUE(mov->Duration() == mov->timePassed());
-        EXPECT_TRUE( mov->ComputePosition().fuzzyEq(path[1]) );
-        delete mov;
+        mov.updateState(mov.Duration());
+        EXPECT_TRUE(mov.Arrived());
+        EXPECT_TRUE(mov.Duration() == mov.timePassed());
+        EXPECT_TRUE( mov.ComputePosition().fuzzyEq(path[1]) );
     }
 
     struct MoveSplineInitArgs_Default : public MoveSplineInitArgs

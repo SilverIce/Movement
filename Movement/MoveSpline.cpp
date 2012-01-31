@@ -182,6 +182,8 @@ MoveSpline::MoveSpline() : m_Id(0), time_passed(0),
 
 /// ============================================================================================
 
+float VelocityLimit = 200.f;
+
 bool MoveSplineInitArgs::Validate() const
 {
 #define CHECK(exp) \
@@ -191,32 +193,10 @@ bool MoveSplineInitArgs::Validate() const
         return false;\
     }
     CHECK(path.size() > 1);
-    CHECK(velocity > 0.f && velocity <= 200.f);
+    CHECK(velocity > 0.f && velocity < VelocityLimit);
     CHECK(time_perc >= 0.f && time_perc <= 1.f);
-    CHECK(_checkPathBounds());
     return true;
 #undef CHECK
-}
-
-// MONSTER_MOVE packet format limitation for not CatmullRom movement:
-// each vertex offset packed into 11 bytes
-bool MoveSplineInitArgs::_checkPathBounds() const
-{
-    if (!(flags & MoveSplineFlag::Mask_CatmullRom) && path.size() > 2)
-    {
-        enum{
-            MAX_OFFSET = (1 << 11) / 2,
-        };
-        Vector3 middle = (path.front()+path.back()) / 2;
-        Vector3 offset;
-        for (uint32 i = 1; i < path.size()-1; ++i)
-        {
-            offset = path[i] - middle;
-            if (fabs(offset.x) >= MAX_OFFSET || fabs(offset.y) >= MAX_OFFSET || fabs(offset.z) >= MAX_OFFSET)
-                return false;
-        }
-    }
-    return true;
 }
 
 /// ============================================================================================
