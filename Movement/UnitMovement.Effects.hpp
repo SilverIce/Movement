@@ -88,7 +88,7 @@ namespace Movement
                 return false;
             }
             client_state.floatValueType = m_value_type;
-            client->QueueState(client_state);
+            client->QueueState(client_state, guid);
 
             MovementMessage msg(client->controlled(), ValueChange2Opc_table[m_value_type].msg, 64);
             msg << guid.WriteAsPacked();
@@ -235,7 +235,7 @@ namespace Movement
 
             client_state.allowFlagChange = modeInfo[m_mode].moveFlag;
             client_state.allowFlagApply = m_apply;
-            client->QueueState(client_state);
+            client->QueueState(client_state, guid);
 
             MovementMessage msg(client->controlled(), modeInfo[m_mode].msg_apply[!m_apply], 64);
             msg << guid.WriteAsPacked();
@@ -346,7 +346,7 @@ namespace Movement
             state.allowFlagChange = UnitMoveFlag::Can_Fly;
             state.allowFlagApply = false;
 
-            client->QueueState(state);
+            client->QueueState(state, guid);
 
             MovementMessage msg(client->controlled(), MSG_MOVE_KNOCK_BACK, data.size() + 16);
             msg << guid.WriteAsPacked();

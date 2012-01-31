@@ -50,7 +50,7 @@ namespace Movement
         void SetClientTime(const MSTime& client_time) { m_time_diff = client_time - ServerTime();}
 
         /** The main 'gate' for movement states that incomes from client. */
-        void QueueState(ClientMoveStateChange& client_state);
+        void QueueState(ClientMoveStateChange& client_state, const ObjectGuid& source);
 
         uint32 RegisterRespHandler(RespHandler* handler);
         RespHandler* PopRespHandler();

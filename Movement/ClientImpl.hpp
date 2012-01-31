@@ -58,7 +58,7 @@ namespace Movement
         recv_data >> guid.ReadAsPacked();
         recv_data >> state;
 
-        client.QueueState(state);
+        client.QueueState(state, guid);
 
         MovementMessage msg(client.controlled(), recv_data.GetOpcode(), recv_data.size());
         msg << guid.WriteAsPacked();
@@ -225,9 +225,10 @@ namespace Movement
         }
     };
 
-    void ClientImpl::QueueState(ClientMoveStateChange& client_state)
+    void ClientImpl::QueueState(ClientMoveStateChange& client_state, const ObjectGuid& source)
     {
         assertControlled();
+        assert_state(source == controlled()->Guid);
         MSTime applyTime = ClientToServerTime(client_state.ms_time);
         client_state.ms_time = applyTime;
 
@@ -244,7 +245,7 @@ namespace Movement
         data >> state;
         data >> splineId;
 
-        client.QueueState(state);
+        client.QueueState(state, guid);
 
         MoveSplineUpdatable * move_spline = client.controlled()->getAspect<MoveSplineUpdatable>();
         /*move_spline->updateState(1);
