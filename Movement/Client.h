@@ -18,7 +18,7 @@ namespace Movement
     class UnitMovement;
     class ClientImpl;
 
-    class Client
+    class EXPORT Client
     {
         ClientImpl& m;
         Client(ClientImpl& client) : m(client) {}

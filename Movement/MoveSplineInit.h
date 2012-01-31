@@ -25,7 +25,7 @@ namespace Movement
 
     /*  Initializes and launches spline movement
      */
-    class MoveSplineInit
+    class EXPORT MoveSplineInit
     {
     public:
 

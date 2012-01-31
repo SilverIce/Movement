@@ -37,14 +37,16 @@ namespace Movement
         Speed_End           = 9,
     };
 
-    double computeFallTime(float path_length);
-    double computeFallElevation2(float time_passed, float start_velocy);
-    double computeFallElevation(float time_passed);
+    EXPORT double Gravity();
+    EXPORT double computeFallTime(float path_length);
+    EXPORT double computeFallElevation(float time_passed, float start_velocy);
+    EXPORT double computeFallElevation(float time_passed);
 
     class MoveUpdater;
     class UnitMovementImpl;
+    struct Location;
 
-    class UnitMovement
+    class EXPORT UnitMovement
     {
         UnitMovementImpl& m;
         UnitMovement(UnitMovementImpl& impl) : m(impl), dbg_flags(0) {}
