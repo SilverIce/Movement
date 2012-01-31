@@ -15,6 +15,8 @@ namespace Movement
     class UnitMovement;
     class UnitMovementImpl;
 
+    typedef std::vector<Vector3> PointsArray;
+
     enum AnimType
     {
         UNK0 = 0, // 460 = ToGround, index of AnimationData.dbc
@@ -31,6 +33,7 @@ namespace Movement
 
         explicit MoveSplineInit(UnitMovement& m);
         explicit MoveSplineInit(UnitMovementImpl& m);
+        ~MoveSplineInit();
 
         /*  Final pass of initialization that launches spline movement.
          */
@@ -67,7 +70,7 @@ namespace Movement
         /* Sets Id of fisrt point of the path. When N-th path point will be done ILisener will notify that pointId + N done
          * Needed for waypoint movement where path splitten into parts
          */
-        void SetFirstPointId(int32 pointId) { args.path_Idx_offset = pointId; }
+        void SetFirstPointId(int32 pointId);
 
         /* Enables CatmullRom spline interpolation mode(makes path smooth)
          * if not enabled linear spline mode will be choosen
@@ -102,12 +105,13 @@ namespace Movement
          */
         void SetVelocity(float velocity);
 
-        PointsArray& Path() { return args.path; }
+        PointsArray& Path();
 
     private:
 
-        MoveSplineInitArgs args;
+        struct MoveSplineInitArgs& args;
         UnitMovementImpl&  state;
+        char args_Size[76];
     };
 
     inline void MoveJumpInit(UnitMovementImpl& st, const Vector3& dest, float velocity, float parabolic_heigth = 0.5f)

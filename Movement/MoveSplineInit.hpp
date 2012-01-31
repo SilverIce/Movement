@@ -15,6 +15,8 @@ namespace Movement
         args.path[1] = dest;
     }
 
+    void MoveSplineInit::SetFirstPointId(int32 pointId) { args.path_Idx_offset = pointId; }
+
     void MoveSplineInit::SetFly()
     {
         args.flags.EnableFlying();
@@ -77,16 +79,29 @@ namespace Movement
         args.flags.EnableFacingPoint();
     }
 
-    MoveSplineInit::MoveSplineInit(UnitMovement& m) : state(m.Impl())
+    PointsArray& MoveSplineInit::Path() { return args.path; }
+
+    MoveSplineInit::MoveSplineInit(UnitMovement& m) :
+        args(*new(args_Size)MoveSplineInitArgs()),
+        state(m.Impl())
     {
+        static_assert(sizeof(args_Size) >= sizeof(MoveSplineInitArgs), "");
         args.flags.runmode = !m.IsWalking();
         args.flags.flying = m.IsFlying();
     }
 
-    MoveSplineInit::MoveSplineInit(UnitMovementImpl& m) : state(m)
+    MoveSplineInit::MoveSplineInit(UnitMovementImpl& m) :
+        args(*new(args_Size)MoveSplineInitArgs()),
+        state(m)
     {
+        static_assert(sizeof(args_Size) >= sizeof(MoveSplineInitArgs), "");
         args.flags.runmode = !m.IsWalking();
         args.flags.flying = m.IsFlying();
+    }
+
+    MoveSplineInit::~MoveSplineInit()
+    {
+        args.~MoveSplineInitArgs();
     }
 
     void MoveSplineInit::SetAnimation(AnimType anim, float anim_time)
