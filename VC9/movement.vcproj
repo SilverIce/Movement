@@ -17,7 +17,7 @@
 	</ToolFiles>
 	<Configurations>
 		<Configuration
-			Name="ReleaseOptTests|Win32"
+			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
@@ -45,17 +45,20 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				OmitFramePointers="true"
-				EnableFiberSafeOptimizations="false"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\dep\g3dlite\include\;..\Movement\fake\;..\Movement\;..\"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0;_CRT_SECURE_NO_WARNINGS"
+				AdditionalIncludeDirectories="../dep/g3dlite/include/;../Movement/fake/;../framework/"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_WARNINGS;_CONSOLE;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0"
+				StringPooling="true"
+				BasicRuntimeChecks="0"
+				SmallerTypeCheck="false"
 				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
+				EnableFunctionLevelLinking="false"
+				EnableEnhancedInstructionSet="1"
+				FloatingPointModel="2"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="pch.h"
 				WarningLevel="3"
-				DebugInformationFormat="3"
+				DebugInformationFormat="1"
 				ForcedIncludeFiles="pch.h"
 			/>
 			<Tool
@@ -69,7 +72,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				LinkIncremental="1"
 				GenerateDebugInformation="true"
+				LinkTimeCodeGeneration="1"
 				Profile="true"
 			/>
 			<Tool
@@ -96,7 +101,7 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="ReleaseTests|Win32"
+			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
@@ -121,21 +126,20 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				InlineFunctionExpansion="0"
-				EnableIntrinsicFunctions="false"
-				FavorSizeOrSpeed="0"
-				OmitFramePointers="false"
-				EnableFiberSafeOptimizations="false"
 				WholeProgramOptimization="false"
-				AdditionalIncludeDirectories="..\dep\g3dlite\include\;..\Movement\fake\;..\Movement\;..\"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;TASKSCHEDULER_DEBUGGING"
+				AdditionalIncludeDirectories="../dep/g3dlite/include/;../Movement/fake/;../"
+				PreprocessorDefinitions="WIN32;_CONSOLE"
+				StringPooling="true"
 				BasicRuntimeChecks="3"
+				SmallerTypeCheck="true"
 				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
+				EnableFunctionLevelLinking="false"
+				EnableEnhancedInstructionSet="1"
+				FloatingPointModel="2"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="pch.h"
 				WarningLevel="3"
-				DebugInformationFormat="3"
+				DebugInformationFormat="1"
 				ForcedIncludeFiles="pch.h"
 			/>
 			<Tool
@@ -150,6 +154,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				GenerateDebugInformation="true"
+				LinkTimeCodeGeneration="0"
 				Profile="true"
 			/>
 			<Tool
@@ -177,6 +182,14 @@
 		</Configuration>
 	</Configurations>
 	<References>
+		<ProjectReference
+			ReferencedProjectIdentifier="{B304F5F9-1123-42C9-93E8-14E3B3F89B49}"
+			RelativePathToProject="..\dep\g3dlite\win\VC9\G3D.lib.vcproj"
+		/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{688A630C-A0EB-4C3C-8ACF-125CFF744AE0}"
+			RelativePathToProject="..\framework\framework.vcproj"
+		/>
 	</References>
 	<Files>
 		<Filter
@@ -187,7 +200,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Movement\fake\Imports.cpp"
+				RelativePath="..\Movement\Imports.cpp"
 				>
 			</File>
 			<File
@@ -414,21 +427,13 @@
 				</File>
 			</Filter>
 			<Filter
-				Name="gtest"
-				>
-				<File
-					RelativePath="..\Movement\gtest_main.cc"
-					>
-				</File>
-			</Filter>
-			<Filter
 				Name="pch"
 				>
 				<File
 					RelativePath="..\Movement\pch.cpp"
 					>
 					<FileConfiguration
-						Name="ReleaseOptTests|Win32"
+						Name="Release|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -436,7 +441,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="ReleaseTests|Win32"
+						Name="Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"

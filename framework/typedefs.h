@@ -15,6 +15,10 @@ namespace G3D
     class Vector4;
 }
 
+#define EXPORT __declspec( dllexport )
+#define IMPORT __declspec( dllimport )
+#define CDECL  __cdecl
+
 namespace Movement
 {
     typedef signed char     int8;

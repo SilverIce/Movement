@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "typedefs_p.h"
-#include "TaskScheduler.h"
+#include "framework/typedefs_p.h"
+#include "Movement/TaskScheduler.h"
 
 namespace Movement
 {

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "MoveSplineInitArgs.h"
+#include "framework/typedefs.h"
 
 namespace Movement
 {

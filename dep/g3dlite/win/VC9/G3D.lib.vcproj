@@ -44,9 +44,11 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
+				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="..\..\..\..\dep\g3dlite\include\;..\..\..\..\dep\zlib\include\"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
+				FloatingPointModel="2"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="G3D/g3d_pch.h"
 				WarningLevel="3"
@@ -83,6 +85,10 @@
 		</Configuration>
 	</Configurations>
 	<References>
+		<ProjectReference
+			ReferencedProjectIdentifier="{1B66DDFF-4739-4911-B44D-D63E8B696075}"
+			RelativePathToProject="..\dep\zlib\win\VC9\zlib.lib.vcproj"
+		/>
 	</References>
 	<Files>
 		<Filter
@@ -215,24 +221,10 @@
 			<File
 				RelativePath="..\..\source\BinaryInput.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\source\BinaryOutput.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\source\Box.cpp"
@@ -253,13 +245,6 @@
 			<File
 				RelativePath="..\..\source\Crypto.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\source\Cylinder.cpp"

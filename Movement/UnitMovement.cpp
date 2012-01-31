@@ -7,7 +7,8 @@
 #include <list>
 #include <hash_map>
 #include <typeinfo>
-#include "typedefs_p.h"
+#include "framework/typedefs_p.h"
+#include "framework/TypeContainer.h"
 
 #include "Object.h"
 #include "WorldPacket.h"

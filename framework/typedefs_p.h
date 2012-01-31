@@ -16,11 +16,11 @@ namespace Movement
     #define static_assert(expr, msg) typedef char CONCAT(static_assert_failed_at_line_, __LINE__) [(expr) ? 1 : -1]
 #endif
 
-#define mov_assert(expr) \
+#define mov_assert(expr) { \
     if (!(expr)){ \
         log_write("In "__FUNCTION__": assertion '"#expr"' failed"); \
         __debugbreak(); \
-    }
+    } }
 
 /** Use it to validate object state */
 #define assert_state(expr) mov_assert(expr)
@@ -39,6 +39,8 @@ namespace Movement
         log_function(msg, __VA_ARGS__); \
         __debugbreak(); \
     }
+
+#define log_debug log_console
 
 #   ifndef nullptr
 #       ifdef __cplusplus

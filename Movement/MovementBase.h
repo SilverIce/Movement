@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "typedefs_p.h"
+#include "framework/typedefs_p.h"
 #include "LinkedList.h"
 #include "Location.h"
 #include "ObjectGuid.h"

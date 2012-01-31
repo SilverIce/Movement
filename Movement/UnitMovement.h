@@ -1,8 +1,7 @@
 #pragma once
 
-#include "typedefs.h"
-#include "Location.h"
-#include "MoveSplineInit.h"
+#include "framework/typedefs.h"
+#include "Movement/MoveSplineInit.h"
 
 class WorldObject;
 class ByteBuffer;

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "typedefs.h"
-#include "MSTime.h"
+#include "framework/typedefs.h"
+#include "Movement/MSTime.h"
 
 namespace Tasks
 {

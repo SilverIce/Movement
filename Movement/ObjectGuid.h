@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ByteBuffer.h"
-#include "typedefs.h"
+#include "framework/typedefs.h"
 
 namespace Movement
 {

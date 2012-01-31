@@ -3,7 +3,8 @@
 #include <memory>
 #include <algorithm>
 #include <vector>
-#include "typedefs_p.h"
+#include "framework/typedefs_p.h"
+#include "framework/gtest.h"
 
 namespace Tasks
 {

@@ -8,7 +8,7 @@ public:
     explicit RdtscTimer() { reset();}
 
     rt_time passed() const { return passed_time;}
-    rt_time avg() const { return (callsCount ? passed_time / callsCount : 0);}
+    unsigned int avg() const { return (callsCount ? (unsigned int)(passed_time / callsCount) : 0);}
     rt_time count() const { return callsCount;}
     bool InProgress() const { return inside;}
 
@@ -56,6 +56,15 @@ private:
     {
         __asm rdtsc;
     }
+    // returns nanoseconds (1 nanosecond is 1 * 10^-9 second)
+    /*static unsigned __int64 now()
+    {
+        __int64 COUNTER;
+        __int64 FREQ;
+        QueryPerformanceCounter((LARGE_INTEGER*)&COUNTER);
+        QueryPerformanceFrequency((LARGE_INTEGER*)&FREQ);
+        return ((double)COUNTER / (double)FREQ) * 1000000000;
+    }*/
     rt_time start_call;
     rt_time passed_time;
     rt_time callsCount;

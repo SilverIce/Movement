@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <stdio.h>
 #include <intrin.h>
-#include <set>
 
 namespace testing
 {
@@ -73,7 +72,7 @@ namespace testing
         }
     };
 
-    TestRegistrable::TestRegistrable(TestFn testFuntionPtr, const char* name, const char* name2)
+    void RegisterTest(TestFn testFuntionPtr, const char* name, const char* name2)
     {
         TestRegistry::instance().AddTest( TestInfo::create(testFuntionPtr,name,name2) );
     }
@@ -142,7 +141,7 @@ namespace testing
             currentTest = test;
             printf("\n    %s::%s has been invoked\n", test->Name, test->Name2);
             {
-                EXPECT_NOTHROW( test->testFn(), ... );
+                EXPECT_NOTHROW( test->testFn() );
             }
             currentTest = NULL;
 
@@ -193,8 +192,8 @@ namespace testing
         EXPECT_TRUE( true );
         EXPECT_EQ( 1, 1);
 
-        EXPECT_THROW( throw "expected_exception", const char* );
-        EXPECT_NOTHROW( ; , const char* );
+        EXPECT_THROW( throw "expected_exception", char* );
+        EXPECT_NOTHROW( ; );
     }
 
     TEST_DISABLED(gtest, disabled)

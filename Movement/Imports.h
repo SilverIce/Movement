@@ -1,5 +1,7 @@
 #pragma once
 
+#include "framework/typedefs.h"
+
 class WorldObject;
 class WorldPacket;
 
