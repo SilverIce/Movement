@@ -246,9 +246,10 @@ namespace Movement
 
         client.QueueState(state);
 
-        MoveSplineUpdatable * move_spline = client.controlled()->move_spline.operator->();
+        MoveSplineUpdatable * move_spline = client.controlled()->getAspect<MoveSplineUpdatable>();
+        /*move_spline->updateState(1);
         if (splineId != move_spline->getLastMoveId())
-            log_function("incorrect splineId: %u, expected %u", splineId, move_spline->getLastMoveId());
+            log_function("incorrect splineId: %u, expected %u", splineId, move_spline->getLastMoveId());*/
     }
 
     void ClientImpl::OnNotActiveMover(ClientImpl& client, WorldPacket& data)

@@ -4,16 +4,18 @@ namespace Movement
 
     class UnitMovementImpl;
 
-    class MoveSplineUpdatable
+    class MoveSplineUpdatable : public ComponentT<MoveSplineUpdatable>
     {
     private:
         MSTime m_lastQuery;
         MoveSpline m_base;
-        UnitMovementImpl& m_owner;
+        UnitMovementImpl * m_owner;
         IListener * m_listener;
+        MoveUpdater * m_updater;
         bool m_moving;
-        TaskTarget_DEV m_task;
-
+        TaskTarget m_updateMovementTask;
+        TaskTarget m_updateRotationTask;
+        ObjectGuid m_targetGuid;
         std::vector<OnEventArgs> events;
 
     private:
@@ -23,39 +25,61 @@ namespace Movement
             UpdateDelay = 400,
         };
 
-        inline MSTime NextUpdateTime() const {
-            return m_lastQuery + std::min(m_base.next_timestamp() - m_base.timePassed(), (int32)UpdateDelay);
-        }
-
-        void recache(int32 recacheDelay = 100);
+        /*inline MSTime NextUpdateTime() const {
+            return m_lastQuery + m_base.next_timestamp() - m_base.timePassed();
+        }*/
+        MSTime NextUpdateTime() const;
 
         void PrepareMoveSplineArgs(MoveSplineInitArgs& args, UnitMoveFlag& moveFlag_new);
 
-        void Execute(TaskExecutor_Args& args);
+        void OnUpdateCallback(TaskExecutor_Args& args);
 
-        void Disable();
+        void OnArrived();
 
     public:
-        bool isEnabled() const { return m_moving;}
+        bool IsMoving() const { return m_moving;}
         void SetListener(IListener * listener) { m_listener = listener;}
         void ResetLisener() { m_listener = NULL; }
 
         void Launch(MoveSplineInitArgs& args);
         std::string ToString() const { return m_base.ToString();}
 
-        explicit MoveSplineUpdatable(UnitMovementImpl& owner);
-
-        ~MoveSplineUpdatable() {
-            Disable();
-            m_task.Unregister();
-            ResetLisener();
+        explicit MoveSplineUpdatable() :
+            m_owner(nullptr),
+            m_listener(nullptr),
+            m_updater(nullptr),
+            m_moving(false)
+        {
         }
 
-        const MoveSpline& moveSpline() const { return m_base;}
+        void Init(Component& tree);
+
+        void CleanReferences() {
+            OnArrived();
+            m_updater->Unregister(m_updateMovementTask);
+            UnbindOrientation();
+            ResetLisener();
+            ComponentDetach();
+            m_owner = nullptr;
+            m_updater = nullptr;
+        }
+
+        ~MoveSplineUpdatable() {
+            assert_state(!m_listener);
+            assert_state(!m_owner);
+            assert_state(!m_updater);
+        }
+
+        void updateState(int32 recacheDelay = 150);
+
+        const MoveSpline& moveSpline() const {
+            assert_state(IsMoving());
+            return m_base;
+        }
 
         uint32 getCurrentMoveId() const
         {
-            if (isEnabled())
+            if (IsMoving())
                 return m_base.GetId();
             else
                 return 0;
@@ -68,22 +92,16 @@ namespace Movement
         MSTime ArriveTime() const {
             return m_lastQuery + m_base.timeElapsed();
         }
-    };
 
-    class MoveSplineUpdatablePtr
-    {
-        MoveSplineUpdatable m_base;
-    public:
-        explicit MoveSplineUpdatablePtr(UnitMovementImpl& owner) : m_base(owner) {}
+        void BindOrientationTo(const UnitMovementImpl& target);
+        void UnbindOrientation();
 
-        ~MoveSplineUpdatablePtr() {
+        bool IsOrientationBinded() const {
+            return m_updateRotationTask.isRegistered();
         }
 
-        inline MoveSplineUpdatable* operator ->() {
-            return &m_base;
-        }
-        inline const MoveSplineUpdatable* operator ->() const {
-            return &m_base;
+        UnitMovementImpl& controlled() const {
+            return *m_owner;
         }
     };
 }

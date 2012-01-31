@@ -61,16 +61,13 @@ namespace Movement
             else
             {
                 mov->SetParameter(value_type, value);
-                if (ClientOpcode opcode = ValueChange2Opc_table[value_type].smsg_spline)
-                {
-                    WorldPacket data(opcode, 16);
-                    data << mov->Guid.WriteAsPacked();
-                    data << value;
-                    Imports.BroadcastMessage(&mov->Owner, data);
-                }
-
                 // FIXME: currently there is no way to change speed of already moving server-side controlled unit (spline movement)
                 // there is only one hacky way - launch new spline movement.. that's how blizz doing this
+
+                WorldPacket data(opcode, 16);
+                data << mov->Guid.WriteAsPacked();
+                data << value;
+                Imports.BroadcastMessage(mov->Owner, data);
             }
         }
 
@@ -216,7 +213,7 @@ namespace Movement
                     mov->ApplyMoveFlag(modeInfo[mode].moveFlag, apply);
                     WorldPacket data(opcode, 12);
                     data << mov->Guid.WriteAsPacked();
-                    Imports.BroadcastMessage(&mov->Owner, data);
+                    Imports.BroadcastMessage(mov->Owner, data);
                 }
                 else
                     log_function("no opcode for mode %u", mode);
@@ -311,7 +308,7 @@ namespace Movement
             if (!checkRequestId(client_req_id))
                 return false;
 
-            client->controlled()->SetPosition(m_location);
+            client->controlled()->SetRelativePosition(m_location);
 
             MovementMessage msg(client->controlled(), MSG_MOVE_TELEPORT, 64);
             msg << guid.WriteAsPacked();
@@ -399,7 +396,7 @@ namespace Movement
                 float moveTimeHalf = verticalVelocity / (float)Gravity();
                 float maxAmplitude = -computeFallElevation(moveTimeHalf,-verticalVelocity);
                 // TODO: correct destination to not make unit fall to void
-                Vector3 destination = movement.GetPosition3() +
+                Vector3 destination = movement.GetRelativePosition() +
                     2.f * moveTimeHalf * horizontalVelocity * Vector3(cos(directionAngle),sin(directionAngle),0.f);
 
                 MoveSplineInit init(movement);

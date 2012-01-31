@@ -52,10 +52,11 @@ namespace Movement
         if (args.path.empty())
         {
             // TODO: should i do the things that user should do?
-            MoveTo(state.GetPosition3());
+            MoveTo(state.GetRelativePosition());
         }
 
-        state.move_spline->Launch(args);
+        MoveSplineUpdatable * movespline = state.getAspect<MoveSplineUpdatable>();
+        movespline->Launch(args);
     }
 
     void MoveSplineInit::SetParabolic(float amplitude, float time_shift)

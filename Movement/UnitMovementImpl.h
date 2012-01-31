@@ -15,33 +15,19 @@ namespace Movement
     class ClientImpl;
     struct MoveSplineInitArgs;
 
-    struct TargetLink
-    {
-        TargetLink() : target(0), targeter(0) {}
-        TargetLink(UnitMovementImpl* target_, UnitMovementImpl* targeter_)
-            : target(target_), targeter(targeter_) {}
-
-        UnitMovementImpl* target;
-        UnitMovementImpl* targeter;
-    };
-
     // class for unit's movement
-    class UnitMovementImpl
+    class UnitMovementImpl : public ComponentT<UnitMovementImpl>
     {
     public:
 
-        explicit UnitMovementImpl(WorldObjectType owner, uint64 ownerGuid, MoveUpdater& updater);
+        explicit UnitMovementImpl();
+
+        void Init(Component& tree, MoveUpdater& updater, UnitMovement* publicFace);
         virtual ~UnitMovementImpl();
 
-        virtual void CleanReferences();
+        void CleanReferences();
 
         std::string ToString() const;
-
-        /* Needed for monster movement only*/
-        void BindOrientationTo(UnitMovementImpl& target);
-        void UnbindOrientation();
-        bool IsOrientationBinded() const { return m_target_link.linked(); }
-        const UnitMovementImpl* GetTarget() const { return m_target_link.Value.target;}
 
         Vector3 direction() const;
 
@@ -50,39 +36,40 @@ namespace Movement
         // TODO: too much aliases here..
 
         Location GetGlobalPosition() const {
-            return Location(m_entity.GlobalPosition(),m_entity.YawAngle());
+            return Location(m_entity->GlobalPosition(),m_entity->YawAngle());
         }
 
-        const Vector3& GetPosition3() const { return m_entity.Position();}
-
-        void SetPosition(const Vector3& position)
-        {
-            m_entity.Position(position);
-            Imports.OnPositionChanged(&Owner, GetGlobalPosition());
+        const Vector3& GetGlobalPosition3() const {
+            return m_entity->GlobalPosition();
         }
 
-        void SetPosition(const Location& position)
+        const Vector3& GetRelativePosition() const { return m_entity->RelativePosition();}
+
+        void SetRelativePosition(const Vector3& position)
         {
-            m_entity.Position(position);
-            m_entity.YawAngle(position.orientation);
-            Imports.OnPositionChanged(&Owner, GetGlobalPosition());
+            m_entity->RelativePosition(position);
+            lastPositionChangeTime = Imports.getMSTime();
+            Imports.OnPositionChanged(Owner, GetGlobalPosition());
+        }
+
+        void SetRelativePosition(const Location& position)
+        {
+            m_entity->RelativePosition(position);
+            m_entity->YawAngle(position.orientation);
+            lastPositionChangeTime = Imports.getMSTime();
+            Imports.OnPositionChanged(Owner, GetGlobalPosition());
         }
 
         void SetOrientation(float orientation)
         {
-            m_entity.YawAngle(orientation);
-            Imports.OnPositionChanged(&Owner, GetGlobalPosition());
+            m_entity->YawAngle(orientation);
+            Imports.OnPositionChanged(Owner, GetGlobalPosition());
         }
 
-        float GetOrientation() const { return m_entity.YawAngle();}
-
-        bool IsBoarded() const { return false;}
-        MovementBase* GetTransport() const { mov_assert(false); return NULL; }
+        float GetOrientation() const { return m_entity->YawAngle();}
 
     public:
-        friend class MoveSplineUpdatable;
-
-        MoveSplineUpdatablePtr move_spline;
+        //friend class MoveSplineUpdatable;
 
     public:
         bool HasMode(MoveMode m) const;
@@ -130,22 +117,24 @@ namespace Movement
     private:
         friend class PacketBuilder;
 
+        void assertCleaned() const;
+
         MoveUpdater* m_updater;
         ClientImpl* m_client;
+        MovingEntity_Revolvable2 * m_entity;
         MSTime lastMoveEvent;
     public:
         UnitMoveFlag const moveFlags;
-        WorldObjectType Owner;
+        MSTime lastPositionChangeTime;
+
+        UnitMovement* PublicFace;
+        WorldObject* Owner;
         ObjectGuid Guid;
-        MovingEntity_Revolvable m_entity;
 
     private:
         /** Data that cames from client. It affects nothing here but might be used in future. */
-        _ClientMoveState m_unused; 
+        _ClientMoveState m_unused;
 
         float m_float_values[Parameter_End];
-        TaskTarget m_updateRotationTask;
-        LinkedListElement<TargetLink> m_target_link;
-        LinkedList<TargetLink> m_targeter_references;
     };
 }

@@ -38,15 +38,13 @@ namespace Movement
         }
     }
 
-    UnitMovementImpl::UnitMovementImpl(WorldObjectType owner, uint64 ownerGuid, MoveUpdater& updater) :
-        Owner(owner),
-        move_spline(*this),
-        m_updater(&updater),
+    UnitMovementImpl::UnitMovementImpl() :
+        Owner(NULL),
+        m_updater(NULL),
+        m_entity(NULL),
+        PublicFace(NULL),
         m_client(NULL)
     {
-        Guid.SetRawValue(ownerGuid);
-        commonTasks.SetExecutor(updater);
-
         const float BaseValues[Parameter_End] =
         {
             2.5f,                                                   // SpeedWalk
@@ -61,17 +59,34 @@ namespace Movement
             2.0f,                                                   // CollisionHeight
             7.0f,                                                   // SpeedCurrent
         };
-
         memcpy(m_float_values,BaseValues, sizeof m_float_values);
+    }
+
+    void UnitMovementImpl::Init(Component& tree, MoveUpdater& updater, UnitMovement* publicFace)
+    {
+        ComponentInit(this, tree);
+
+        WowObject * wobj = getAspect<WowObject>();
+        Owner = wobj->object;
+        Guid = wobj->guid;
+
+        m_updater = &updater;
+        PublicFace = publicFace;
+        m_entity = getAspect<MovingEntity_Revolvable2>();
+
+        commonTasks.SetExecutor(updater);
+    }
+
+    void UnitMovementImpl::assertCleaned() const
+    {
+        mov_assert(m_client == NULL);
+        mov_assert(m_updater == NULL);
+        mov_assert(!commonTasks.hasExecutor());
     }
 
     UnitMovementImpl::~UnitMovementImpl()
     {
-        mov_assert(m_targeter_references.empty());
-        mov_assert(!m_target_link.linked());
-        mov_assert(m_client == NULL);
-        mov_assert(m_updater == NULL);
-        mov_assert(!commonTasks.hasExecutor());
+        assertCleaned();
     }
 
     void UnitMovementImpl::CleanReferences()
@@ -81,15 +96,11 @@ namespace Movement
             m_client = NULL;
         }
 
-        struct unbinder{
-            inline void operator()(TargetLink& link) { link.targeter->UnbindOrientation();}
-        };
-        m_targeter_references.Iterate(unbinder());
-
-        UnbindOrientation();
-
         commonTasks.Unregister();
         m_updater = NULL;
+        m_entity = nullptr;
+        PublicFace = nullptr;
+        Owner = nullptr;
     }
 
     Vector3 UnitMovementImpl::direction() const
@@ -135,12 +146,8 @@ namespace Movement
 
         UnitMoveFlag new_flags = new_state.moveFlags;
 
-        // Allow world position change only while we are not on transport
-        //if (!new_state.moveFlags.ontransport)
-        //{
-            SetPosition(new_state.world_position);
-        //}
-        m_entity.PitchAngle(new_state.pitchAngle);
+        SetRelativePosition(new_state.moveFlags.ontransport ? new_state.transport_position : new_state.world_position);
+        m_entity->PitchAngle(new_state.pitchAngle);
 
         if (moveFlags.ontransport != new_flags.ontransport)
         {
@@ -160,59 +167,6 @@ namespace Movement
         m_unused = new_state;
     }
 
-    void UnitMovementImpl::BindOrientationTo(UnitMovementImpl& target)
-    {
-        if (&target == this)
-        {
-            log_function("trying to target self, skipped");
-            return;
-        }
-
-        struct OrientationUpdater : public ICallBack
-        {
-            UnitMovementImpl& me;
-            enum{
-                RotationUpdateDelay = 250,
-            };
-
-            explicit OrientationUpdater(UnitMovementImpl* _me) : me(*_me) {}
-
-            void Execute(TaskExecutor_Args& args) override {
-                mov_assert(me.IsOrientationBinded());
-                args.executor.AddTask(args.callback,args.now + RotationUpdateDelay,args.objectId);
-                if (me.IsMoving() || me.IsClientControlled())
-                    return;
-
-                const Vector3& targetPos = me.GetTarget()->GetGlobalPosition();
-                Location myPos = me.GetPosition();
-                myPos.orientation = atan2(targetPos.y - myPos.y, targetPos.x - myPos.x);
-                me.SetPosition(myPos);
-            }
-        };
-
-        // TODO: this place is big field for improvements. List of units that are subscribed to receive
-        // orientation updates might be moved to new class. This class can be automatically deleted when none targets unit
-
-        // create OrientationUpdater task only in case there is no more such tasks
-        if (!m_updateRotationTask.isRegistered())
-            m_updater->AddTask(new OrientationUpdater(this),0,m_updateRotationTask);
-
-        if (m_target_link.linked())
-            m_target_link.List().delink(m_target_link);
-        m_target_link.Value = TargetLink(&target, this);
-        target.m_targeter_references.link_first(m_target_link);
-        Owner.SetGuidValue(UNIT_FIELD_TARGET, target.Owner.GetObjectGuid());
-    }
-
-    void UnitMovementImpl::UnbindOrientation()
-    {
-        m_updater->Unregister(m_updateRotationTask);
-        if (m_target_link.linked())
-            m_target_link.List().delink(m_target_link);
-        m_target_link.Value = TargetLink();
-        Owner.SetGuidValue(UNIT_FIELD_TARGET, ObjectGuid());
-    }
-
     std::string UnitMovementImpl::ToString() const
     {
         std::stringstream st;
@@ -220,12 +174,12 @@ namespace Movement
         if (m_client)
             st << m_client->ToString();
         if (SplineEnabled())
-            st << move_spline->ToString();
+            st << getAspect<MoveSplineUpdatable>()->ToString();
         return st.str();
     }
 
     bool UnitMovementImpl::SplineEnabled() const {
-        return move_spline->isEnabled();
+        return moveFlags.spline_enabled;
     }
 
     void UnitMovementImpl::SetMoveFlag(const UnitMoveFlag& newFlags)
@@ -245,10 +199,18 @@ namespace Movement
         state.ms_time = lastMoveEvent;
         state.world_position = GetGlobalPosition();
         state.moveFlags = moveFlags;
-        state.pitchAngle = m_entity.PitchAngle();
+        state.pitchAngle = m_entity->PitchAngle();
 
         // correct copyed data
         state.moveFlags.ontransport = IsBoarded();
+        if (SplineEnabled())
+        {
+            state.moveFlags = state.moveFlags & ~UnitMoveFlag::Mask_Directions | UnitMoveFlag::Forward;
+            state.moveFlags.spline_enabled = true;
+        }
+        else
+            state.moveFlags.spline_enabled = false;
+
         return state;
     }
 }

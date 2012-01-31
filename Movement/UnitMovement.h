@@ -48,6 +48,7 @@ namespace Movement
 
     class EXPORT UnitMovement
     {
+        friend struct UnitMovementStruct;
         UnitMovementImpl& m;
         UnitMovement(UnitMovementImpl& impl) : m(impl), dbg_flags(0) {}
         UnitMovement(const UnitMovement&);

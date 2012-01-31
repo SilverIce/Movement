@@ -13,7 +13,7 @@ namespace Movement
 
     void PacketBuilder::WriteCommonMonsterMovePart(const UnitMovementImpl& mov, WorldPacket& data)
     {
-        const MoveSpline& move_spline = mov.move_spline->moveSpline();
+        const MoveSpline& move_spline = mov.getAspect<MoveSplineUpdatable>()->moveSpline();
         MoveSplineFlag splineflags = move_spline.splineflags;
 
         if (mov.IsBoarded())
@@ -30,7 +30,7 @@ namespace Movement
         }
 
         data << uint8(0);       // boolean variable. toggles UnitMoveFlag::Unk4 flag
-        data << mov.GetPosition3();
+        data << mov.GetRelativePosition();
         data << move_spline.GetId();
 
         switch(splineflags & MoveSplineFlag::Mask_Final_Facing)
@@ -144,7 +144,7 @@ namespace Movement
         WorldPacket data(MSG_NULL_ACTION, 64);
         WriteCommonMonsterMovePart(mov, data);
 
-        const MoveSpline& move_spline = mov.move_spline->moveSpline();
+        const MoveSpline& move_spline = mov.getAspect<MoveSplineUpdatable>()->moveSpline();
         const Spline<int32>& spline = move_spline.spline;
         MoveSplineFlag splineflags = move_spline.splineflags;
         if (splineflags & MoveSplineFlag::Mask_CatmullRom)
@@ -157,19 +157,20 @@ namespace Movement
         else
             WriteLinearPath(spline, data);
 
-        Imports.BroadcastMessage(&mov.Owner, data);
+        Imports.BroadcastMessage(mov.Owner, data);
     }
 
     void PacketBuilder::FullUpdate(const UnitMovementImpl& mov, ByteBuffer& data)
     {
         ClientMoveState state(mov.ClientState());
+
         WriteClientStatus(state,data);
 
         data.append<float>(&mov.m_float_values[SpeedWalk], Speed_End);
 
         if (state.moveFlags.spline_enabled)
         {
-            const MoveSpline& move_spline = mov.move_spline->moveSpline();
+            const MoveSpline& move_spline = mov.getAspect<MoveSplineUpdatable>()->moveSpline();
             MoveSplineFlag splineFlags = move_spline.splineflags;
 
             data << splineFlags.raw;
@@ -285,12 +286,12 @@ namespace Movement
     void PacketBuilder::SplineSyncSend(const UnitMovementImpl& mov)
     {
         mov_assert(mov.SplineEnabled());
-        const MoveSpline& move_spline = mov.move_spline->moveSpline();
+        const MoveSpline& move_spline = mov.getAspect<MoveSplineUpdatable>()->moveSpline();
 
         WorldPacket data(SMSG_FLIGHT_SPLINE_SYNC, 13);
         data << (float)(move_spline.timePassed() / (float)move_spline.Duration());
         data << mov.Guid.WriteAsPacked();
-        Imports.BroadcastMessage(&mov.Owner, data);
+        Imports.BroadcastMessage(mov.Owner, data);
     }
 
     void PacketBuilder::Send_HeartBeat(const UnitMovementImpl& mov)
@@ -298,6 +299,6 @@ namespace Movement
         WorldPacket data(MSG_MOVE_HEARTBEAT, 64);
         data << mov.Guid.WriteAsPacked();
         WriteClientStatus(mov.ClientState(), data);
-        Imports.BroadcastMessage(&mov.Owner, data);
+        Imports.BroadcastMessage(mov.Owner, data);
     }
 }

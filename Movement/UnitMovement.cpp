@@ -8,9 +8,9 @@
 #include <hash_map>
 #include <typeinfo>
 #include "framework/typedefs_p.h"
-#include "framework/TypeContainer.h"
+#include "framework/Component.h"
 
-#include "Object.h"
+//#include "Object.h"
 #include "WorldPacket.h"
 #include "opcodes.h"
 
@@ -41,17 +41,43 @@
 
 namespace Movement
 {
+    struct UnitMovementStruct
+    {
+        UnitMovement pubface;
+
+        UnitMovementImpl unit;
+        WowObject wowObject;
+        MovingEntity_Revolvable2 entity;
+        MoveSplineUpdatable monsterController;
+
+        UnitMovementStruct(WorldObjectType owner, uint64 ownerGuid, MoveUpdater& updater) : pubface(unit)
+        {
+            entity.ComponentInit(&entity);
+
+            wowObject.ComponentInit(&wowObject, entity);
+            wowObject.guid.SetRawValue(ownerGuid);
+            wowObject.object = &owner;
+
+            unit.Init(entity, updater, &pubface);
+            monsterController.Init(entity);
+        }
+
+        ~UnitMovementStruct()
+        {
+            monsterController.CleanReferences();
+            unit.CleanReferences();
+        }
+    };
+
     UnitMovement* UnitMovement::create(WorldObjectType owner, uint64 ownerGuid, MoveUpdater& updater)
     {
-        char * data = (char*)operator new(sizeof(UnitMovement) + sizeof(UnitMovementImpl));
-        UnitMovementImpl* impl = new(data + sizeof(UnitMovement))UnitMovementImpl(owner, ownerGuid, updater);
-        return new(data)UnitMovement(*impl);
+        UnitMovementStruct* impl = new UnitMovementStruct(owner, ownerGuid, updater);
+        return &impl->pubface;
     }
 
     void UnitMovement::dealloc()
     {
-        m.~UnitMovementImpl();
-        delete this;
+        delete ((UnitMovementStruct*)this);
     }
 
     void UnitMovement::CleanReferences()
@@ -61,7 +87,7 @@ namespace Movement
 
     void UnitMovement::SetPosition(const Location& position)
     {
-        m.SetPosition(position);
+        m.SetRelativePosition(position);
     }
 
     Location UnitMovement::GetPosition()
@@ -71,7 +97,7 @@ namespace Movement
 
     const Vector3& UnitMovement::GetPosition3()
     {
-        return m.GetPosition3();
+        return m.GetGlobalPosition3();
     }
 
     bool UnitMovement::IsWalking()
@@ -126,12 +152,12 @@ namespace Movement
 
     void UnitMovement::BindOrientationTo(UnitMovement& target)
     {
-        m.BindOrientationTo(target.Impl());
+        m.getAspect<MoveSplineUpdatable>()->BindOrientationTo(target.Impl());
     }
 
     void UnitMovement::UnbindOrientation()
     {
-        m.UnbindOrientation();
+        m.getAspect<MoveSplineUpdatable>()->UnbindOrientation();
     }
 
     Vector3 UnitMovement::direction()
@@ -141,7 +167,7 @@ namespace Movement
 
     uint32 UnitMovement::MoveSplineId()
     {
-        return m.move_spline->getCurrentMoveId();
+        return m.getAspect<MoveSplineUpdatable>()->getCurrentMoveId();
     }
 
     bool UnitMovement::HasMode(MoveMode mode)
@@ -181,6 +207,6 @@ namespace Movement
 
     void UnitMovement::SetListener(class IListener * listener)
     {
-        m.move_spline->SetListener(listener);
+        m.getAspect<MoveSplineUpdatable>()->SetListener(listener);
     }
 }

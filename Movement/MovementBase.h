@@ -9,6 +9,7 @@
 #pragma once
 
 #include "framework/typedefs_p.h"
+#include "framework/Component.h"
 #include "LinkedList.h"
 #include "Location.h"
 #include "ObjectGuid.h"
@@ -86,6 +87,12 @@ namespace Movement
 
     typedef WorldObject& WorldObjectType;
 
+    struct WowObject : ComponentT<WowObject>
+    {
+        WorldObject* object;
+        ObjectGuid guid;
+    };
+
     class MovementBase
     {
     public:
@@ -100,7 +107,7 @@ namespace Movement
         const Location& GetGlobalPosition() const { return world_position;}
         void SetGlobalPosition(const Location& loc);
 
-        WorldObjectType Owner;
+        WorldObject& Owner;
         ObjectGuid Guid;
 
     protected:
