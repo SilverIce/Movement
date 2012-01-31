@@ -1,18 +1,20 @@
 #include "MoveEnv.h"
+#include "framework/gtest.h"
 
 namespace Movement
 {
-    TEST(MoveEnv, basic)
+    template<class T> void MoveEnv_basic()
     {
         {
-            MovingEntity_Revolvable entity;
+            T entity;
             EXPECT_TRUE( entity.YawAngle() == 0.f );
             EXPECT_TRUE( entity.RollAngle() == 0.f );
             EXPECT_TRUE( entity.PitchAngle() == 0.f );
-            EXPECT_TRUE( entity.Position().isZero() );
+            EXPECT_TRUE( entity.RelativePosition().isZero() );
+            EXPECT_TRUE( entity.Environment() == nullptr );
         }
         {
-            MovingEntity_Revolvable entity;
+            T entity, environment;
             float yaw = G3D::uniformRandom(0.f, G3D::twoPi());
             float pitch = G3D::uniformRandom(0.f, G3D::twoPi());
             float roll = G3D::uniformRandom(0.f, G3D::twoPi());
@@ -21,16 +23,21 @@ namespace Movement
             entity.YawAngle(yaw);
             entity.PitchAngle(pitch);
             entity.RollAngle(roll);
-            entity.Position(offset);
+            entity.RelativePosition(offset);
+            entity.SetEnvironment(&environment);
 
             EXPECT_TRUE( entity.YawAngle() == yaw );
             EXPECT_TRUE( entity.PitchAngle() == pitch );
             EXPECT_TRUE( entity.RollAngle() == roll );
-            EXPECT_TRUE( entity.Position() == offset );
+            EXPECT_TRUE( entity.RelativePosition() == offset );
+            EXPECT_TRUE( entity.Environment() == &environment );
+            
+            entity.SetEnvironment(nullptr);
+            EXPECT_TRUE( entity.Environment() == nullptr );
         }
     }
 
-    struct MovingEntity_RevolvableRandom : MovingEntity_Revolvable
+    template<class T> struct MovingEntity_RevolvableRandom : T
     {
         explicit MovingEntity_RevolvableRandom()
         {
@@ -39,38 +46,40 @@ namespace Movement
             float pitch = G3D::uniformRandom(0.f, G3D::twoPi());
             float roll = G3D::uniformRandom(0.f, G3D::twoPi());
 
-            Position(platf_offset);
+            RelativePosition(platf_offset);
             YawAngle(yaw);
             PitchAngle(pitch);
             RollAngle(roll);
         }
     };
 
-    TEST(MoveEnv, rotation)
+    template<class T> void MoveEnv_rotation()
     {
         int testCount = 2;
         while(testCount-- > 0)
         {
-            MovingEntity_RevolvableRandom platform;
-            MovingEntity_RevolvableRandom entity;
+            MovingEntity_RevolvableRandom<T> platform;
+            MovingEntity_RevolvableRandom<T> entity;
             entity.SetEnvironment(&platform);
 
             Vector3 computedGlobal = G3D::Matrix3::fromEulerAnglesZXY(platform.YawAngle(),
-                platform.PitchAngle(),platform.RollAngle())*entity.Position() + platform.Position();
+                platform.PitchAngle(),platform.RollAngle())*entity.RelativePosition() + platform.RelativePosition();
             Vector3 resultGlobal = entity.GlobalPosition();
             EXPECT_TRUE( resultGlobal.fuzzyEq(computedGlobal) );
+
+            entity.SetEnvironment(nullptr);
         }
     }
 
-    TEST(MoveEnv, global_returns_same)
+    template<class T> void MoveEnv_global_returns_same()
     {
         int testCount = 2;
         while(testCount-- > 0)
         {
-            MovingEntity_RevolvableRandom entity0;
-            MovingEntity_RevolvableRandom entity1;
-            MovingEntity_RevolvableRandom entity2;
-            MovingEntity_RevolvableRandom obj;
+            MovingEntity_RevolvableRandom<T> entity0;
+            MovingEntity_RevolvableRandom<T> entity1;
+            MovingEntity_RevolvableRandom<T> entity2;
+            MovingEntity_RevolvableRandom<T> obj;
 
             entity1.SetEnvironment(&entity0);
             entity2.SetEnvironment(&entity1);
@@ -90,6 +99,26 @@ namespace Movement
             obj.SetEnvironment(nullptr);
             globalNow = obj.GlobalPosition();
             EXPECT_TRUE( global.fuzzyEq(globalNow) );
+
+            entity0.SetEnvironment(nullptr);
+            entity1.SetEnvironment(nullptr);
+            entity2.SetEnvironment(nullptr);
+            obj.SetEnvironment(nullptr);
         }
+    }
+
+    template<class T> void MoveEnv_LaunchTests()
+    {
+        MoveEnv_basic<T>();
+        MoveEnv_rotation<T>();
+        MoveEnv_global_returns_same<T>();
+    }
+
+    TEST(MoveEnv, MovingEntity_Revolvable) {
+        MoveEnv_LaunchTests<MovingEntity_Revolvable>();
+    }
+
+    TEST(MoveEnv, MovingEntity_Revolvable2) {
+        MoveEnv_LaunchTests<MovingEntity_Revolvable2>();
     }
 }

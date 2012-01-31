@@ -2,8 +2,9 @@
 
 #include "G3D/Matrix3.h"
 #include "framework/typedefs_p.h"
-#include "framework/TypeContainer.h"
+#include "framework/Component.h"
 #include "framework/RdtscTimer.h"
+#include "LinkedList.h"
 
 namespace Movement
 {
@@ -96,11 +97,11 @@ namespace Movement
 
     public:
 
-        void Position(const Vector3& position) {
+        void RelativePosition(const Vector3& position) {
             m_entity.Position = position;
         }
 
-        const Vector3& Position() const {
+        const Vector3& RelativePosition() const {
             return m_entity.Position;
         }
 
@@ -113,7 +114,6 @@ namespace Movement
             m_entity.Environment(Env);
         }
 
-    private:
         MovingEntity_Revolvable* Environment() const {
             return (MovingEntity_Revolvable*)m_entity.Environment();
         }
@@ -160,6 +160,113 @@ namespace Movement
             YawAngle(atan2f(tangent.y, tangent.x));
             PitchAngle( atan2f(tangent.z,tangent.xy().length()) );
             RollAngle(0.f);
+        }
+    };
+
+    struct MovingEntity_Revolvable2 : ComponentT<MovingEntity_Revolvable2>
+    {
+        MovingEntity_Revolvable m_entity;
+
+        MovingEntity_Revolvable2 * m_Environment;
+        mutable Vector3 m_globalPosition;
+        mutable bool m_globalPositionOutdated;
+
+        LinkedList<MovingEntity_Revolvable2*> m_binded;
+        LinkedListElement<MovingEntity_Revolvable2*> m_me;
+
+        void OnPositionChanged() {
+            m_globalPositionOutdated = true;
+            struct {
+                void operator()(MovingEntity_Revolvable2* entity) { entity->OnPositionChanged();}
+            } notifier;
+            m_binded.Visit(notifier);
+        }
+
+        void OnRotationChanged() {
+            struct {
+                void operator()(MovingEntity_Revolvable2* entity) { entity->OnPositionChanged();}
+            } notifier;
+            m_binded.Visit(notifier);
+        }
+
+    public:
+
+        void RelativePosition(const Vector3& position) {
+            m_entity.RelativePosition(position);
+            OnPositionChanged();
+        }
+
+        const Vector3& RelativePosition() const {
+            return m_entity.RelativePosition();
+        }
+
+        const Vector3& GlobalPosition() const {
+            if (m_globalPositionOutdated) {
+                m_globalPosition = m_entity.GlobalPosition();
+                m_globalPositionOutdated = false;
+            }
+            return m_globalPosition;
+        }
+
+        MovingEntity_Revolvable2* Environment() const {
+            return m_Environment;
+        }
+
+        void SetEnvironment(MovingEntity_Revolvable2* env)
+        {
+            if (m_Environment == env)
+                return;
+            if (env) {
+                m_me.delink();
+                env->m_binded.link_last(m_me);
+                m_entity.SetEnvironment(&env->m_entity);
+            }
+            else {
+                m_me.delink();
+                m_entity.SetEnvironment(nullptr);
+            }
+            m_Environment = env;
+        }
+
+        typedef LinkedList<MovingEntity_Revolvable2*> Entities;
+        const Entities& BindedEntities() const {
+            return m_binded;
+        }
+
+    public:
+
+        explicit MovingEntity_Revolvable2() :
+            m_Environment(nullptr),
+            m_globalPositionOutdated(true)
+        {
+            m_me.Value = this;
+        }
+
+        void YawAngle(float value) {
+            m_entity.YawAngle(value);
+            OnRotationChanged();
+        }
+
+        void PitchAngle(float value) {
+            m_entity.PitchAngle(value);
+            OnRotationChanged();
+        }
+
+        void RollAngle(float value) {
+            m_entity.RollAngle(value);
+            OnRotationChanged();
+        }
+
+        float YawAngle() const {
+            return m_entity.YawAngle();
+        }
+
+        float PitchAngle() const {
+            return m_entity.PitchAngle();
+        }
+
+        float RollAngle() const {
+            return m_entity.RollAngle();
         }
     };
 
