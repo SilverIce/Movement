@@ -200,6 +200,10 @@
 			</File>
 		</Filter>
 		<File
+			RelativePath=".\logging.cpp"
+			>
+		</File>
+		<File
 			RelativePath=".\pch.cpp"
 			>
 			<FileConfiguration
