@@ -64,7 +64,7 @@ namespace Movement
 
     void UnitMovementImpl::Init(Component& tree, MoveUpdater& updater, UnitMovement* publicFace)
     {
-        ComponentInit(this, tree);
+        tree.ComponentAttach(this);
 
         WowObject * wobj = getAspect<WowObject>();
         Owner = wobj->object;

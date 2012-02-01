@@ -54,7 +54,7 @@ namespace Movement
         {
             entity.ComponentInit(&entity);
 
-            wowObject.ComponentInit(&wowObject, entity);
+            entity.ComponentAttach(&wowObject);
             wowObject.guid.SetRawValue(ownerGuid);
             wowObject.object = &owner;
 

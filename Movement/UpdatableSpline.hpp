@@ -2,7 +2,7 @@ namespace Movement
 {
     void MoveSplineUpdatable::Init(Component& tree) 
     {
-        ComponentInit(this, tree);
+        tree.ComponentAttach(this);
         m_owner = getAspect<UnitMovementImpl>();
         assert_state(m_owner);
         m_updater = &m_owner->Updater();

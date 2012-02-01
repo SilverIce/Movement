@@ -14,6 +14,7 @@ namespace Movement
 
         private: void* _getAspect(AspectTypeId objectTypeId) const;
         private: void _ComponentInit(void * me, AspectTypeId objectTypeId, ComponentTree * tree);
+        private: void _ComponentAttach(void * object, AspectTypeId objectTypeId, Component * com);
 
         public: ComponentTree& Tree() const {
             return *m_tree;
@@ -35,8 +36,8 @@ namespace Movement
             _ComponentInit(me, MyType::getTypeId(), 0);
         }
 
-        public: template<class MyType> void ComponentInit(MyType * me, Component& other) {
-            _ComponentInit(me, MyType::getTypeId(), other.m_tree);
+        public: template<class T> void ComponentAttach(T * object) {
+            _ComponentAttach(object, T::getTypeId(), object);
         }
 
         public: void ComponentDetach();

@@ -91,11 +91,17 @@ namespace Movement
         m_tree->addAspect(objectTypeId, me);
     }
 
+    void Component::_ComponentAttach(void * object, AspectTypeId objectTypeId, Component * com)
+    {
+        assert_state(com);
+        assert_state(m_tree);
+        com->_ComponentInit(object, objectTypeId, m_tree);
+    }
+
     void* Component::_getAspect(AspectTypeId objectTypeId) const {
         assert_state(m_tree);
         return m_tree->getAspect(objectTypeId);
     }
-
 }
 
 namespace Movement
@@ -108,6 +114,9 @@ namespace Movement
     };
     struct TypeC : ComponentT<TypeC> {
         int c;
+    };
+    struct TypeD : ComponentT<TypeD> {
+        int d;
     };
 
     TEST(TypeContainer, typeId)
@@ -163,5 +172,48 @@ namespace Movement
 
         EXPECT_TRUE( atype.as<TypeA>() == &atype );
         EXPECT_TRUE( btype.as<TypeB>() == &btype );
+    }
+
+    TEST(TypeContainer, as_cast_performance)
+    {
+        TypeA atype;
+        TypeB btype;
+        TypeC ctype;
+        TypeD dtype;
+
+        atype.ComponentInit(&atype);
+        atype.ComponentAttach(&btype);
+        atype.ComponentAttach(&ctype);
+        atype.ComponentAttach(&dtype);
+
+        RdtscTimer tim;
+        size_t obj = 0;
+        uint64 callsCount = 0;
+        for (int idx = 0; idx < 2000; ++idx)
+        {
+            {
+                RdtscCall c(tim);
+                obj |= (size_t)atype.as<TypeA>();
+            }
+            assert_state(tim.count() > callsCount);
+            callsCount = tim.count();
+            {
+                RdtscCall c(tim);
+                obj |= (size_t)atype.as<TypeB>();
+            }
+            assert_state(tim.count() > callsCount);
+            callsCount = tim.count();
+            {
+                RdtscCall c(tim);
+                obj |= (size_t)atype.as<TypeC>();
+            }
+            assert_state(tim.count() > callsCount);
+            callsCount = tim.count();
+            {
+                RdtscCall c(tim);
+                obj |= (size_t)atype.as<TypeD>();
+            }
+        }
+        log_console("average as<T> cast takes %u CPU ticks, casts count %u", tim.avg(), (uint32)tim.count());
     }
 }
