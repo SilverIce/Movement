@@ -22,8 +22,10 @@ namespace Movement
     {
     private:
         std::vector<Type> m_types;
-        int m_refCount;
+        int32 m_refCount;
     public:
+
+        explicit ComponentTree() : m_refCount(0) {}
 
         void addRef() { ++m_refCount;}
 
@@ -32,7 +34,11 @@ namespace Movement
             return m_refCount <= 0;
         }
 
-        int Count() const {
+        int32 refCount() const {
+            return m_refCount;
+        }
+
+        int32 Count() const {
             return m_types.size();
         }
 
@@ -123,8 +129,25 @@ namespace Movement
     {
         // expects that different object types has different ids
         EXPECT_TRUE( TypeA::getTypeId() != TypeB::getTypeId() );
+    }
 
+    TEST(TypeContainer, ComponentTree_ref_count)
+    {
+        ComponentTree tree;
+        EXPECT_TRUE( tree.refCount() == 0 );
 
+        const int refsCount = 5;
+        for (int idx = 0; idx < refsCount; ) {
+            tree.addRef();
+            ++idx;
+            EXPECT_TRUE( tree.refCount() == idx );
+        }
+        for (int idx = refsCount; idx > 0; ) {
+            if (tree.release())
+                EXPECT_TRUE( tree.refCount() == 0 );
+            --idx;
+            EXPECT_TRUE( tree.refCount() == idx );
+        }
     }
 
     TEST(TypeContainer, ComponentTree)
@@ -168,7 +191,7 @@ namespace Movement
         EXPECT_TRUE( atype.as<TypeB>() == nullptr );
    
         TypeB btype;
-        btype.ComponentInit(&btype, atype);
+        atype.ComponentAttach(&btype);
 
         EXPECT_TRUE( atype.as<TypeA>() == &atype );
         EXPECT_TRUE( btype.as<TypeB>() == &btype );

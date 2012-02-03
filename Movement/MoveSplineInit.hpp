@@ -49,12 +49,6 @@ namespace Movement
 
     void MoveSplineInit::Launch()
     {
-        if (args.path.empty())
-        {
-            // TODO: should i do the things that user should do?
-            MoveTo(state.GetRelativePosition());
-        }
-
         MoveSplineUpdatable * movespline = state.getAspect<MoveSplineUpdatable>();
         movespline->Launch(args);
     }

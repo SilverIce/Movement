@@ -113,6 +113,11 @@ namespace Movement
         if (IsMoving())
             updateState(1);
 
+        if (args.path.empty()) {
+            args.path.resize(2);
+            args.path[1] = m_owner->GetRelativePosition();
+        }
+
         mov_assert(!args.path.empty());
         args.path[0] = m_owner->GetRelativePosition();    //correct first vertex
         args.splineId = m_updater->NewMoveSplineId();
