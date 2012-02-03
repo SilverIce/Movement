@@ -82,7 +82,9 @@ namespace Movement
         bool IsFallingFar() const { return moveFlags.fallingfar;}
         bool SplineEnabled() const;
 
-        float GetCurrentSpeed() const { return GetParameter(SelectSpeedType(moveFlags));}
+        float GetCurrentSpeed() const {
+            return GetParameter(m_currentSpeedType);
+        }
 
     public:
 
@@ -125,6 +127,7 @@ namespace Movement
         MSTime lastMoveEvent;
     public:
         UnitMoveFlag const moveFlags;
+        FloatParameter m_currentSpeedType;
         MSTime lastPositionChangeTime;
 
         UnitMovement* PublicFace;

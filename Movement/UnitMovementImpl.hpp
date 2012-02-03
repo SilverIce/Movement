@@ -60,6 +60,7 @@ namespace Movement
             7.0f,                                                   // SpeedCurrent
         };
         memcpy(m_float_values,BaseValues, sizeof m_float_values);
+        m_currentSpeedType = Parameter_SpeedRun;
     }
 
     void UnitMovementImpl::Init(Component& tree, MoveUpdater& updater, UnitMovement* publicFace)
@@ -184,11 +185,9 @@ namespace Movement
 
     void UnitMovementImpl::SetMoveFlag(const UnitMoveFlag& newFlags)
     {
-        /*if ((moveFlags & UnitMoveFlag::Mask_Speed) != (newFlags & UnitMoveFlag::Mask_Speed))
-        {
-            m_currentSpeed = UnitMovementImpl::SelectSpeedType(newFlags);
-        }*/
 
+        if ((moveFlags & UnitMoveFlag::Mask_Speed) != (newFlags & UnitMoveFlag::Mask_Speed))
+            m_currentSpeedType = UnitMovementImpl::SelectSpeedType(newFlags);
         const_cast<UnitMoveFlag&>(moveFlags) = newFlags;
     }
 

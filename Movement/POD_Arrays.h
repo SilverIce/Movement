@@ -8,12 +8,6 @@
 
 namespace Tasks
 {
-#   ifdef  TASKSCHEDULER_DEBUGGING
-#       define pod_assert(expr) mov_assert(expr)
-#   else
-#       define pod_assert(expr)
-#   endif
-
     struct MemBlock 
     {
         char * _data;
@@ -125,18 +119,17 @@ namespace Tasks
         }
 
         inline void _assertInRange(const char *  at) const {
-            pod_assert(at >= _data && at <= (_data + _size));
+            assert_state(at >= _data && at <= (_data + _size));
         }
 
         inline void _assertNotInRange(const char *  at) const {
-            pod_assert(at < _data || at > (_data + _size));
+            assert_state(at < _data || at > (_data + _size));
         }
 
         inline void _assertInRange(size_t at) const {
-            pod_assert(at <= _size);
+            assert_state(at <= _size);
         }
     };
-    
 
     /** Efficient container desinged specially for POD types.
         It never deallocates memory when clear, erase methods called*/
@@ -267,7 +260,7 @@ namespace Tasks
         void assign(const_iterator beg, const_iterator end) {
             _assertNotInRange(beg);
             _assertNotInRange(end);
-            pod_assert(beg <= end);
+            assert_state(beg <= end);
 
             block.clear();
             block.insert((size_t)0, (const char *)beg, (end - beg) * elSize);
@@ -286,7 +279,7 @@ namespace Tasks
         }
 
         iterator erase(const_iterator at) {
-            pod_assert(!empty());
+            assert_state(!empty());
             _assertInRange(at);
             block.erase((at - begin())*elSize, elSize);
             return (iterator)at;
@@ -295,7 +288,7 @@ namespace Tasks
         void erase(const_iterator first, const_iterator last) {
             _assertInRange(first);
             _assertInRange(last);
-            pod_assert(first <= last);
+            assert_state(first <= last);
             block.erase((first - begin())*elSize, (last - first) * elSize);
         }
 
@@ -310,11 +303,11 @@ namespace Tasks
     private:
 
         inline void _assertInRange(const_iterator at) const {
-            pod_assert(at >= begin() && at <= end());
+            assert_state(at >= begin() && at <= end());
         }
 
         inline void _assertNotInRange(const_iterator at) const {
-            pod_assert(at < begin() || at > end() || at == 0);
+            assert_state(at < begin() || at > end() || at == 0);
         }
     };
 

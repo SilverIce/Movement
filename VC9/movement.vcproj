@@ -46,7 +46,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="../dep/g3dlite/include/;../Movement/fake/;../framework/"
+				AdditionalIncludeDirectories="../dep/g3dlite/include/;../Movement/fake/;../"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_WARNINGS;_CONSOLE;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0"
 				StringPooling="true"
 				BasicRuntimeChecks="0"
@@ -241,13 +241,6 @@
 			</File>
 			<File
 				RelativePath="..\Movement\opcodes.h"
-				>
-			</File>
-				RelativePath="..\Movement\typedefs_p.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Movement\util.cpp"
 				>
 			</File>
 			<Filter
