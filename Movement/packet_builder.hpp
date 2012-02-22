@@ -62,7 +62,7 @@ namespace Movement
             data << move_spline.effect_start_time;
         }
 
-        data << move_spline.Duration();
+        data << move_spline.timeTotal();
 
         if (splineflags.parabolic)
         {
@@ -189,7 +189,7 @@ namespace Movement
             }
 
             data << move_spline.timePassed();
-            data << move_spline.Duration();
+            data << move_spline.timeTotal();
             data << move_spline.GetId();
 
             data << float(1.f);//splineInfo.duration_mod;
@@ -289,7 +289,7 @@ namespace Movement
         const MoveSpline& move_spline = mov.getAspect<MoveSplineUpdatable>()->moveSpline();
 
         WorldPacket data(SMSG_FLIGHT_SPLINE_SYNC, 13);
-        data << (float)(move_spline.timePassed() / (float)move_spline.Duration());
+        data << (float)(move_spline.timePassed() / (float)move_spline.timeTotal());
         data << mov.Guid.WriteAsPacked();
         Imports.BroadcastMessage(mov.Owner, data);
     }

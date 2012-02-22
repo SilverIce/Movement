@@ -57,7 +57,7 @@ void MoveSpline::computeParabolicElevation(float& el) const
     if (time_passed > effect_start_time)
     {
         float t_passedf = MSToSec(time_passed - effect_start_time);
-        float t_durationf = MSToSec(Duration() - effect_start_time);
+        float t_durationf = MSToSec(timeTotal() - effect_start_time);
 
         // -a*x*x + bx + c:
         //(dur * v3->z_acceleration * dt)/2 - (v3->z_acceleration * dt * dt)/2 + Z;
@@ -166,10 +166,10 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
     // spline initialized, duration known and i able to compute parabolic acceleration
     if (args.flags & (MoveSplineFlag::Parabolic | MoveSplineFlag::Animation))
     {
-        effect_start_time = Duration() * args.time_perc;
-        if (args.flags.parabolic && effect_start_time < Duration())
+        effect_start_time = timeTotal() * args.time_perc;
+        if (args.flags.parabolic && effect_start_time < timeTotal())
         {
-            float f_duration = MSToSec(Duration() - effect_start_time);
+            float f_duration = MSToSec(timeTotal() - effect_start_time);
             vertical_acceleration = args.parabolic_amplitude * 8.f / (f_duration * f_duration);
         }
     }
@@ -216,7 +216,7 @@ MoveSpline::UpdateResult MoveSpline::_updateState(int32& ms_time_diff)
     time_passed += minimal_diff;
     ms_time_diff -= minimal_diff;
 
-    if (time_passed >= next_timestamp())
+    if (time_passed >= timeInNextPoint())
     {
         ++point_Idx;
         if (point_Idx < spline.last())
@@ -228,7 +228,7 @@ MoveSpline::UpdateResult MoveSpline::_updateState(int32& ms_time_diff)
             if (isCyclic())
             {
                 point_Idx = spline.first();
-                time_passed = time_passed % Duration();
+                time_passed = time_passed % timeTotal();
                 result = Result_NextSegment;
             }
             else
@@ -257,7 +257,7 @@ std::string MoveSpline::ToString() const
         str << "facing  point: " << facing.x << " " << facing.y << " " << facing.z;
     str << std::endl;
     str << "time passed: " << time_passed << std::endl;
-    str << "total  time: " << Duration() << std::endl;
+    str << "total  time: " << timeTotal() << std::endl;
     str << "spline point Id: " << point_Idx << std::endl;
     str << "path  point  Id: " << currentPathPointIdx() << std::endl;
     str << spline.ToString();
@@ -268,7 +268,7 @@ void MoveSpline::Finalize()
 {
     splineflags.done = true;
     point_Idx = spline.last() - 1;
-    time_passed = Duration();
+    time_passed = timeTotal();
 }
 
 int32 MoveSpline::currentPathPointIdx() const

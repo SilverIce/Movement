@@ -59,7 +59,7 @@ namespace Movement {
         void computeFallElevation(float& el) const;
 
         UpdateResult _updateState(int32& ms_time_diff);
-        int32 segment_time_elapsed() const { return next_timestamp()-time_passed;}
+        int32 segment_time_elapsed() const { return timeInNextPoint()-time_passed;}
 
         void Finalize();
 
@@ -86,12 +86,12 @@ namespace Movement {
         Location ComputePosition() const;
 
         uint32 GetId() const { return m_Id;}
-        bool Arrived() const { return Duration() == timePassed(); }
+        bool Arrived() const { return timeTotal() == timePassed(); }
         bool isCyclic() const { return splineflags.cyclic;}
-        int32 Duration() const { return spline.lengthTotal();}
-        int32 timeElapsed() const { return Duration() - time_passed;}
+        int32 timeTotal() const { return spline.lengthTotal();}
+        int32 timeElapsed() const { return timeTotal() - time_passed;}
         int32 timePassed() const { return time_passed;}
-        int32 next_timestamp() const { return spline.length(point_Idx+1);}
+        int32 timeInNextPoint() const { return spline.length(point_Idx+1);}
         const Vector3& FinalDestination() const { return spline.getPoint(spline.last());}
         const Vector3& CurrentDestination() const { return spline.getPoint(point_Idx+1);}
         int32 currentPathPointIdx() const;
