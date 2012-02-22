@@ -10,10 +10,15 @@ namespace testing
     void _check(bool, const char* source, const char* expression);
 }
 
-#define TEST(name, name2) \
-    void TESTCASE_NAME(name,name2)(void); \
-    DELAYED_CALL_ARGS(::testing::RegisterTest, RegTest_##name##_##name2, TESTCASE_NAME(name,name2), #name, #name2); \
-    void TESTCASE_NAME(name,name2)(void) // function body
+#ifndef GTEST_DISABLED
+    #define TEST(name, name2) \
+        void TESTCASE_NAME(name,name2)(void); \
+        DELAYED_CALL_ARGS(::testing::RegisterTest, RegTest_##name##_##name2, TESTCASE_NAME(name,name2), #name, #name2); \
+        void TESTCASE_NAME(name,name2)(void) // function body
+#else
+    #define TEST(name, name2) \
+        void TESTCASE_NAME(name,name2)(void)
+#endif
 
 #define TEST_DISABLED(name, name2) TEST(name, DISABLED_##name2)
 

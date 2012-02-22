@@ -26,6 +26,7 @@ namespace Movement
     public:
 
         explicit ComponentTree() : m_refCount(0) {}
+        ~ComponentTree() { assert_state(m_refCount <= 0);}
 
         void addRef() { ++m_refCount;}
 
