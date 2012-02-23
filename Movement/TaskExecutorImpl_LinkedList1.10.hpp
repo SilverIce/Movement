@@ -27,8 +27,8 @@ namespace Tasks
         _Pr comp;    // the comparator object
     };
 
-#define SELECTED_CONT std::vector
-// #define SELECTED_CONT POD_Array
+//#define SELECTED_CONT std::vector
+ #define SELECTED_CONT POD_Array
 
     template<class T>
     class Recycler
@@ -72,6 +72,58 @@ namespace Tasks
         void clear() {
             ForEach(T* obj, _data, delete obj);
             _data.clear();
+            _allocated = 0;
+        }
+    };
+
+    /** A simple linkedlist based recycler. 
+        TODO: how to ensure that T is LinkedListElement<V> ?
+    */
+    template<class T>
+    class Recycler3
+    {
+    protected:
+        Movement::LinkedList<typename T::value_type> _data;
+        uint32 _allocated;
+    public:
+
+        Recycler3() {
+            clear();
+        }
+
+        ~Recycler3() {
+            assert_state(_allocated == 0);
+            clear();
+        }
+
+        void push(T* obj) {
+            assert_state(_allocated > 0);
+            --_allocated;
+            obj->clear();
+            _data.link_last(*obj);
+        }
+
+        T* pop() {
+            ++_allocated;
+            if (_data.empty())
+                return new T();
+            else {
+                T * obj = static_cast<T*>(_data.last());
+                _data.delink_last();
+                return obj;
+            }
+        }
+
+        bool cleaned() const {
+            return _allocated == 0;
+        }
+
+        void clear() {
+            while( T * node = static_cast<T*>(_data.last()) ) {
+                _data.delink_last();
+                delete node;
+            }
+            assert_state(_data.empty());
             _allocated = 0;
         }
     };
@@ -178,6 +230,46 @@ namespace Tasks
         }
     };
 
+    template<typename T>
+    class RecyclerPullFake
+    {
+        uint32 NodesActive;
+    public:
+
+        uint32 PullTotalSize() const { return 0;}
+        uint32 PullAllocActiveSize() const { return 0;}
+
+        uint32 TotalActiveSize() const { return NodesActive;}
+        uint32 DynamicActiveSize() const { return NodesActive - PullAllocActiveSize();}
+
+    public:
+        RecyclerPullFake(uint32 pullSize = 800) : NodesActive(0) {
+        }
+
+        ~RecyclerPullFake() {
+            clear();
+        }
+
+        T* pop() {
+            ++NodesActive;
+            return new T;
+        }
+
+        void push(T* node) {
+            delete node;
+            assert_state(NodesActive > 0);
+            --NodesActive;
+        }
+
+        bool cleaned() const {
+            return NodesActive == 0;
+        }
+
+        void clear() {
+            assert_state( cleaned() );
+        }
+    };
+
     class TaskExecutorImpl_LinkedList110
     {
     public:
@@ -187,17 +279,17 @@ namespace Tasks
         struct TimeComparator;
         struct ObjectIdComparator;
 
-        typedef Movement::LinkedList<Node*> TaskList;
-        typedef TaskList::element_type TaskNode;
+        typedef Movement::LinkedList<Node*> TaskTargetList;
+        typedef TaskTargetList::element_type TaskTargetNode;
 
-        typedef stdext::hash_map<ObjectId, TaskList* /*,ObjectId_hash_compare*/ > NodeTable;
-        struct NodeTableEntry {
+        //typedef stdext::hash_map<ObjectId, TaskList* /*,ObjectId_hash_compare*/ > NodeTable;
+        /*struct NodeTableEntry {
             ObjectId objectId;
             TaskList* list;
         };
-        /*typedef SortedList<NodeTableEntry, ObjectIdComparator> NodeTable;*/
+        typedef SortedList<NodeTableEntry, ObjectIdComparator> NodeTable;*/
 
-        typedef Movement::LinkedList<NullValue> LinkedList;
+        typedef Movement::LinkedList<NullValue> SortedTaskList;
 
         struct MarkInfo {
             uint32 time;
@@ -208,17 +300,17 @@ namespace Tasks
         };
         typedef SortedList<MarkInfo, TimeComparator> MarkArray;
 
-        struct Node : public LinkedList::element_type
+        struct Node : public SortedTaskList::element_type
         {
             uint32 execution_time;
-            ObjectId objectId;
             CallBack* callback;
-            TaskNode tasknode;
+            TaskTarget* taskTarget; 
+            TaskTargetNode tasknode;
 
             Node() {
                 execution_time = 0;
-                objectId = 0;
                 callback = 0;
+                taskTarget = 0;
                 tasknode.Value = this;
             }
 
@@ -229,14 +321,14 @@ namespace Tasks
                 if (linked())
                     List().delink(*this);
                 execution_time = 0;
-                objectId = 0;
                 callback = 0;
+                taskTarget = 0;
                 if (tasknode.linked())
                     tasknode.List().delink(tasknode);
             }
 
             bool cleaned() const {
-                return !objectId && !callback && !tasknode.linked() && !linked();
+                return !callback && !tasknode.linked() && !linked() && !taskTarget;
             }
 
             bool isMarkNode() {
@@ -263,29 +355,18 @@ namespace Tasks
             }
         };
 
-        struct ObjectIdComparator {
-            bool operator()(const NodeTableEntry& left, const NodeTableEntry& right) {
-                return left.objectId < right.objectId;
-            }
-        };
-
-        LinkedList top;
-        NodeTable callbacks;
-        RecyclerPull<TaskList> unusedTaskLists;
-        RecyclerPull<Node> unusedNodes;
+        SortedTaskList top;
+        Recycler3<Node> unusedNodes;
         MarkArray marks;
-        POD_Array<CallBack*> callbackTempList;
 
-        TaskExecutorImpl_LinkedList110() :
-            unusedNodes(NodePullSize),
-            unusedTaskLists(NodeListPullSize)
+        TaskExecutorImpl_LinkedList110()
         {
         }
 
         ~TaskExecutorImpl_LinkedList110() { CancelAllTasks();}
 
         bool hasCallbacks() const {
-            return !callbacks.empty();
+            return !top.empty();
         }
 
         void printStats()
@@ -302,41 +383,10 @@ namespace Tasks
                 _PULL_STAT_(pull, TotalActiveSize); \
                 _PULL_STAT_(pull, DynamicActiveSize);
 
-            PULL_STAT(unusedNodes);
-            PULL_STAT(unusedTaskLists);
+            //PULL_STAT(unusedNodes);
+            //PULL_STAT(unusedTaskLists);
             #undef PULL_STAT
             #undef _PULL_STAT_
-        }
-
-
-        /** Returns a such node, so node's execution_time > time
-            to not break a sorted nodes sequence need insert after node */
-        Node* GetPlaceAfter(Node * node, uint32 time)
-        {
-            assert_state( time >= node->execution_time );
-            while (true) {
-                Node * next = (Node*)node->Next();
-                if (!next || next->execution_time > time)
-                    break;
-                node = next;
-            }
-            assert_state( time >= node->execution_time );
-            return node;
-        }
-
-        /** Returns a such node, so node's execution_time > time
-            to not break a sorted nodes sequence need insert before node */
-        Node* GetPlaceBefore(Node * node, uint32 time)
-        {
-            assert_state( node->execution_time > time );
-            while (true) {
-                Node * next = (Node*)node->Previous();
-                if (!next || time >= next->execution_time)
-                    break;
-                node = next;
-            }
-            assert_state( node->execution_time > time );
-            return node;
         }
 
         void PushIntoList(Node * newNode)
@@ -353,19 +403,54 @@ namespace Tasks
                 if (it == marks.end())
                     top.link_first(*mark.node);
                 else {
-                    Node * node = GetPlaceAfter(it->node, mark.time);
-                    top.link_after(node, mark.node);
+                    InsertAfter(it->node, mark.node);
                 }
                 marks.insert(it, mark);
                 ensureSorted();
             }
 
-            Node * node = GetPlaceBefore(mark.node, newNode->execution_time);
-            top.link_before(node, newNode);
+            InsertBefore(mark.node, newNode);
+
             ensureSorted();
         }
 
-        void AddTask(CallBack* obj, MSTime exec_time, ObjectId objectId)
+        /** Inserts a newNode in such way, that newNode.execution_time > first.execution_time
+        */
+        void InsertAfter(Node * first, Node * newNode) 
+        {
+            Node * node = first;
+            uint32 time = newNode->execution_time;
+            assert_state( time >= node->execution_time );
+            while (true) {
+                Node * next = (Node*)node->Next();
+                if (!next || next->execution_time > time)
+                    break;
+                node = next;
+            }
+            assert_state( time >= node->execution_time );
+
+            top.link_after(node, newNode);
+        }
+
+        /** Inserts a newNode in such way, that newNode.execution_time > first.execution_time
+        */
+        void InsertBefore(Node * first, Node * newNode) 
+        {
+            Node * node = first;
+            uint32 time = newNode->execution_time;
+            assert_state( node->execution_time > time );
+            while (true) {
+                Node * next = (Node*)node->Previous();
+                if (!next || time >= next->execution_time)
+                    break;
+                node = next;
+            }
+            assert_state( node->execution_time > time );
+
+            top.link_before(node, newNode);
+        }
+
+        void AddTask(CallBack* obj, MSTime exec_time, TaskTarget& target)
         {
             obj->addref();
 
@@ -373,31 +458,39 @@ namespace Tasks
             //assert_state( newNode->cleaned() );
             newNode->callback = obj;
             newNode->execution_time = exec_time.time;
-            newNode->objectId = objectId;
+            //newNode->objectId = target.objectId;
+            newNode->taskTarget = &target;
 
             PushIntoList(newNode);
-            PushIntoTable(newNode);
+            PushIntoTable(newNode, target);
             ensureSorted();
         }
 
-        void PushIntoTable(Node * newNode)
+        void PushIntoTable(Node * newNode, TaskTarget& target)
         {
-            TaskList * list = NULL;
-            NodeTable::iterator it = callbacks.find(newNode->objectId);
-            if (it != callbacks.end())
-                list = it->second;
-            else {
-                list = unusedTaskLists.pop();
-                callbacks.insert(NodeTable::value_type(newNode->objectId, list));
+            getImpl(target).list.link_last((Movement::LinkedList<TaskHandle*>::element_type&)newNode->tasknode);
+        }
+
+        void RegisterObject(TaskTarget& obj)
+        {
+        }
+
+        void CancelTasks(TaskTarget& target)
+        {
+            TaskTargetList& list = (TaskTargetList&)getImpl(target).list;
+            if (list.empty())
+                return;
+
+            while (TaskTargetNode * node = list.first()) {
+                CallBack * callback = node->Value->callback;
+                unusedNodes.push(node->Value);
+                callback->release();
             }
-            list->link_last(newNode->tasknode);
+            assert_state( list.empty() );
+            ensureSorted();
         }
 
-        void RegisterObject(ObjectId& obj)
-        {
-        }
-
-        void CancelTasks(ObjectId objectId)
+        /*void CancelTasks(ObjectId objectId);
         {
             NodeTable::iterator it = callbacks.find(objectId);
             if (it == callbacks.end())
@@ -413,27 +506,36 @@ namespace Tasks
             }
 
             assert_state( list.empty() );
-            unusedTaskLists.push(&list);
             ensureSorted();
 
             ForEach(CallBack* cb, callbackTempList, cb->release());
-        }
+        }*/
 
         void CancelAllTasks()
         {
-            while(!callbacks.empty())
-                CancelTasks(callbacks.begin()->first);
+            while (Node * firstNode = (Node*)top.first())
+            {
+                CallBack * callback = NULL;
+                if (!firstNode->isMarkNode())
+                    callback = firstNode->callback;
+                else
+                {
+                    MarkInfo info = {firstNode->execution_time, firstNode};
+                    marks.erase(info);
+                }
+                unusedNodes.push(firstNode);
 
-            // 'top' still contains mark-nodes
-            while (Node * node = (Node*)top.last()) {
-                unusedNodes.push(node);
+                if (callback) {
+                    callback->release();
+                }
             }
-            marks.clear();
+            assert_state(top.empty());
+            assert_state(marks.empty());
         }
 
-        void RemoveObject(ObjectId& obj)
+        void RemoveObject(TaskTarget& target)
         {
-            CancelTasks(obj);
+            CancelTasks(target);
         }
 
         void ensureSorted()
@@ -463,13 +565,8 @@ namespace Tasks
                 CallBack * callback = NULL;
                 if (!firstNode->isMarkNode())
                 {
-                    TaskList& list = firstNode->tasknode.List();
-                    if (list.size() == 1) {
-                        callbacks.erase(firstNode->objectId);
-                        unusedTaskLists.push(&list);
-                    }
                     args.callback = callback = firstNode->callback;
-                    args.objectId.objectId = firstNode->objectId;
+                    args.objectId = firstNode->taskTarget;
                 }
                 else
                 {

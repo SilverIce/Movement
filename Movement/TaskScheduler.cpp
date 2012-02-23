@@ -6,7 +6,6 @@ namespace Tasks
     typedef Movement::counter<ObjectId, ~ObjectId(0)> ObjectCounter;
 
     using Movement::log_write;
-    using Movement::log_write_trace;
     using Movement::log_console;
     using Movement::uint64;
 
@@ -37,6 +36,25 @@ namespace Tasks
 #endif
 
     typedef ICallBack CallBack;
+
+    class TaskHandle;
+    class TaskTargetImpl
+    {
+    public:
+        Movement::LinkedList<TaskHandle*> list;
+        bool registered;
+
+        bool isRegistered() const { return registered;}
+
+        ~TaskTargetImpl() { mov_assert(!isRegistered()); }
+        explicit TaskTargetImpl() : registered(false) {}
+    };
+
+    static_assert(sizeof(TaskTargetImpl) <= sizeof(TaskTarget), "");
+
+    inline TaskTargetImpl& getImpl(TaskTarget& target) {
+        return (TaskTargetImpl&)target;
+    }
 }
 
 #define ForEach(element, _array, action) { \
@@ -58,7 +76,9 @@ namespace Tasks
 
 #include "TaskExecutorImpl_Vector1.10.hpp"
 #include "TaskExecutorImpl_LinkedList1.10.hpp"
-
+/*
+#include "TaskExecutorImpl_LinkedList1.11.hpp"
+#include "TaskExecutorImpl_LinkedList1.13.hpp"*/
 #include "TaskScheduler.Tests.hpp"
 
 namespace Tasks
@@ -80,20 +100,20 @@ namespace Tasks
         assert_state(task);
         if (!ownerId.isRegistered())
             Register(ownerId);
-        impl.AddTask(task, exec_time, ownerId.objectId);
+        impl.AddTask(task, exec_time, ownerId);
     }
 
-    void TaskExecutor::CancelTasks(const TaskTarget& ownerId)
+    void TaskExecutor::CancelTasks(TaskTarget& obj)
     {
-        impl.CancelTasks(ownerId.objectId);
+        impl.CancelTasks(obj);
     }
 
     void TaskExecutor::Register(TaskTarget& obj)
     {
         assert_state_msg(!obj.isRegistered(), "object is already registered somewhere");
         ++m_objectsRegistered;
-        obj.objectId = impl.counter.NewId();
-        impl.RegisterObject(obj.objectId);
+        impl.RegisterObject(obj);
+        getImpl(obj).registered = true;
     }
 
     void TaskExecutor::Unregister(TaskTarget& obj)
@@ -103,15 +123,14 @@ namespace Tasks
 
         assert_state(m_objectsRegistered > 0);
         --m_objectsRegistered;
-        impl.RemoveObject(obj.objectId);
-        obj.objectId = 0;
+        impl.RemoveObject(obj);
+        getImpl(obj).registered = false;
     }
 
     void TaskExecutor::Update(MSTime time)
     {
-        TaskExecutor_Args tt = {*this, NULL, time, TaskTarget()};
+        TaskExecutor_Args tt(*this, time);
         impl.Update(tt);
-        tt.objectId = TaskTarget(); // overwrite it to not fail assertion in TaskTarget destructor
     }
 
     void TaskExecutor::CancelAllTasks()
@@ -121,8 +140,16 @@ namespace Tasks
 
     //////////////////////////////////////////////////////////////////////////
 
+    TaskTarget::TaskTarget() {
+        getImpl(*this).TaskTargetImpl::TaskTargetImpl();
+    }
+
     TaskTarget::~TaskTarget() {
-        mov_assert(!isRegistered());
+        getImpl(*this).~TaskTargetImpl();
+    }
+
+    bool TaskTarget::isRegistered() const {
+        return ((TaskTargetImpl*)this)->registered;
     }
 
     void TaskTarget_DEV::SetExecutor(ITaskExecutor& executor)

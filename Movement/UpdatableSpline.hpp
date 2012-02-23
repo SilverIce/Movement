@@ -75,7 +75,7 @@ namespace Movement
     {
         updateState(1);
         if (IsMoving())    // ensure that moving, it migh became stopped after state update
-            args.executor.AddTask(args.callback, NextUpdateTime(), args.objectId);
+            RescheduleTask(args, NextUpdateTime());
         if (uint32 size = events.size()) {
             uint32 itr = 0;
             while (m_listener && itr < size)
@@ -175,7 +175,7 @@ namespace Movement
                 UnitMovementImpl& controlled = me.controlled();
                 if (UnitMovement * target = Imports.GetUnit2(controlled.Owner, me.m_targetGuid.GetRawValue()))
                 {
-                    args.executor.AddTask(args.callback,args.now + RotationUpdateDelay,args.objectId);
+                    RescheduleTaskWithDelay(args, RotationUpdateDelay);
                     lastOrientationUpdate = args.now;
                     if (controlled.IsMoving() || controlled.IsClientControlled() ||   // task inactive while moving or in controlled by client state
                         // or target's position wasn't changed since last orientation update

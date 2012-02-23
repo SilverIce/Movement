@@ -2,11 +2,13 @@
 #include "framework/gtest.h"
 #include <typeinfo>
 #include <map>
+#include <set>
 
 #include "POD_Array.Tests.hpp"
 
 namespace Tasks
 {
+    #pragma region performance test
     enum{
         exec_delay_min = 100,   //ms
         exec_delay_max = 50 * 1000,  //ms
@@ -22,18 +24,20 @@ namespace Tasks
         PseudoSleepTime = 100,
     };
 
-    #pragma region details
     class ITaskExecutor2 : public ITaskExecutor
     {
     public:
-        virtual void Register(TaskTarget& obj) = 0;
-        virtual void Unregister(TaskTarget& obj) = 0;
         virtual bool HasCallBacks() const = 0;
-        virtual ~ITaskExecutor2() {}
         virtual uint64 summaryTicks() const = 0;
         virtual void reportTest() = 0;
 
         const char* name;
+
+        RdtscTimer timerAddTask;
+        RdtscTimer timerCancelTask;
+        RdtscTimer timerUpdate;
+
+        std::set<TaskTarget*> taskList;
     };
 
     template<class Impl>
@@ -47,10 +51,6 @@ namespace Tasks
     public:
 
         typedef Impl IMPL;
-
-        RdtscTimer timerAddTask;
-        RdtscTimer timerCancelTask;
-        RdtscTimer timerUpdate;
 
         taskExecutor() : impl(*new Impl()), m_objectsRegistered(0) {
             name = typeid(Impl).name();
@@ -68,20 +68,20 @@ namespace Tasks
             if (timerUpdate.InProgress()) {
                 RdtscInterrupt in(timerUpdate);
                 RdtscCall c(timerAddTask);
-                impl.AddTask(task, exec_time, ownerId.objectId) ;
+                impl.AddTask(task, exec_time, ownerId) ;
             }
             else {
                 RdtscCall c(timerAddTask);
-                impl.AddTask(task, exec_time, ownerId.objectId) ;
+                impl.AddTask(task, exec_time, ownerId) ;
             }
         }
 
         void Update(MSTime time) override
         {
             RdtscCall c(timerUpdate);
-            TaskExecutor_Args tt = {*this, NULL, time, TaskTarget()};
+            TaskTarget target;
+            TaskExecutor_Args tt(*this, time);
             impl.Update(tt);
-            tt.objectId = TaskTarget();
         }
 
         void Register(TaskTarget& obj) override
@@ -91,8 +91,9 @@ namespace Tasks
                 return;
             }*/
 
-            obj.objectId = m_counter.NewId();
-            impl.RegisterObject(obj.objectId);
+            taskList.insert(&obj);
+            impl.RegisterObject(obj);
+            getImpl(obj).registered = true;
         }
 
         void Unregister(TaskTarget& obj) override
@@ -100,14 +101,15 @@ namespace Tasks
             if (!obj.isRegistered())
                 return;
 
+            taskList.erase(&obj);
             RdtscCall c(timerCancelTask);
-            impl.RemoveObject(obj.objectId);
-            obj.objectId = 0;
+            impl.RemoveObject(obj);
+            getImpl(obj).registered = false;
         }
 
-        void CancelTasks(const TaskTarget& ownerId) override
+        void CancelTasks(TaskTarget& ownerId) override
         {
-            impl.CancelTasks(ownerId.objectId);
+            impl.CancelTasks(ownerId);
         }
 
         bool HasCallBacks() const override {
@@ -121,14 +123,14 @@ namespace Tasks
         void reportTest()
         {
 //#define WRITET(timer) " avg _count %I64d %I64d %I64d", timer.passed(), timer.avg(), timer._count());
-#define WRITET(timer) " avg count %I64d %I64d", timer.avg(), timer.count());
+#define WRITET(timer_lowerbound) " avg count %u %I64d", timer_lowerbound.avg(), timer_lowerbound.count());
 
             log_console(" ======= %s ======= ", typeid(Impl).name());
             log_console("timerAddTask   " WRITET(timerAddTask);
             log_console("timerUpdate    " WRITET(timerUpdate);
             log_console("timerCancelTask" WRITET(timerCancelTask);
             log_console("summary ticks  %I64d", summaryTicks());
-            impl.printStats();
+            //impl.printStats();
             log_console("");
         }
     };
@@ -141,11 +143,9 @@ namespace Tasks
         log_console("timerUpdate     %I64d", timerUpdate.passed() );
         log_console("timerCancelTask %I64d", timerCancelTask.passed() );
     }
-    #pragma endregion
 
     void produceExecutors(std::vector<ITaskExecutor2*>& executors) {
         ITaskExecutor2* exec[] = {
-            new taskExecutor<TaskExecutorImpl_VectorPOD110>,
             //new taskExecutor<TaskExecutorImpl_VectorPendingPODWrong111>,
             new taskExecutor<TaskExecutorImpl_LinkedList110>,
             //new taskExecutor<TaskExecutorImpl_LinkedList111>,
@@ -153,29 +153,29 @@ namespace Tasks
         executors.assign(exec, exec + CountOf(exec));
     }
 
-    #pragma region details
-
     struct DoNothingTask : public ICallBack {
         uint32 period;
         myAdress adr;
         char data[60];
 
-        DoNothingTask() {
+        explicit DoNothingTask() {
             period = exec_delay_min + rand() % (exec_delay_max - exec_delay_min);
+        }
+        explicit DoNothingTask(uint32 _period) {
+            period = _period;
         }
 
         void Execute(TaskExecutor_Args& a) override {
             adr();
-            a.executor.AddTask(a.callback, a.now + period, a.objectId);
+            RescheduleTaskWithDelay(a, period);
         }
     };
 
-    struct TT : public ICallBack
+    struct TT
     {
         uint32 m_ticksCount;
         MSTime lastUpdate;
         std::vector<ITaskExecutor2*> executors;
-        std::vector<TaskTarget*> owners;
         uint32 owners_spawned;
         bool pushed;
 
@@ -191,61 +191,67 @@ namespace Tasks
             ForEach(ITaskExecutor2* elem, executors, {
                 stats.insert(std::multimap<uint64, const char*>::value_type(elem->summaryTicks(),elem->name));
                 elem->reportTest();
-                delete elem;
             });
             log_console(" ======= summary statistics ======= ");
             uint32 ii = 0;
             for (std::multimap<uint64,const  char*>::iterator it = stats.begin(); it!=stats.end(); ++it, ++ii)
                 log_console("%u. %I64d %s", ii, it->first, it->second);
 
-            ForEach(TaskTarget* elem, owners, {
-                *elem = TaskTarget();
-                delete elem;
+            ForEach(ITaskExecutor2* elem, executors, {
+                while (!elem->taskList.empty()) {
+                    TaskTarget * targ = *elem->taskList.begin();
+                    elem->Unregister(*targ);
+                    delete targ;
+                }
             });
+
+            ForEach(ITaskExecutor2* elem, executors, delete elem);
         }
 
         void PushTaskOwners(uint32 amount)
         {
             while(amount-- > 0)
             {
-                TaskTarget* target = new TaskTarget();
-                ForEach(ITaskExecutor2 * ex, executors, {
-                    ex->Register(*target);
-                });
-                owners.push_back(target);
                 ++owners_spawned;
 
-                uint32 taskCount = TasksPerOwner;
-                while(taskCount-- > 0) {
-                    DoNothingTask t;
-                    ForEach(ITaskExecutor2 * ex, executors, {
-                        ex->AddTask(new DoNothingTask(t), lastUpdate + t.period, *target );
-                    });
-                }
+                DoNothingTask t;
+
+                ForEach(ITaskExecutor2 * ex, executors, {
+                    TaskTarget* target = new TaskTarget();
+                    ex->Register(*target);
+                    uint32 taskCount = TasksPerOwner;
+                    while(taskCount-- > 0)
+                        ex->AddTask(new DoNothingTask(t.period), lastUpdate + t.period, *target );
+                });
             }
         }
 
         void CancelTaskOwners(uint32 amount)
         {
-            while((amount-- > 0) && !owners.empty()) {
-                std::vector<TaskTarget*>::iterator target = owners.begin() + (rand() % owners.size());
+            while((amount-- > 0) /*&& !owners.empty()*/) {
                 ForEach(ITaskExecutor2 * ex, executors, {
-                    TaskTarget tt(**target);
-                    ex->Unregister(tt);
-                    tt = TaskTarget();
+                    std::set<TaskTarget*>& owners = ex->taskList;
+                    if (owners.empty())
+                        continue;
+
+                    uint32 randomIdx = rand() % owners.size();
+                    std::set<TaskTarget*>::iterator it = owners.begin();
+                    while(randomIdx-- > 0)
+                        ++it;
+
+                    TaskTarget& target = **it;
+                    ex->Unregister(target);
+                    delete &target;
                 });
-                **target = TaskTarget();
-                delete (*target);
-                owners.erase(target);
                 --owners_spawned;
             }
         }
 
-        void Execute(TaskExecutor_Args& args) override
+        bool Execute(MSTime timeNow)
         {
-            lastUpdate = args.now;
+            lastUpdate = timeNow;
             ForEach(ITaskExecutor2 * ex, executors, {
-                ex->Update(args.now);
+                ex->Update(timeNow);
             });
             ++m_ticksCount;
 
@@ -261,11 +267,21 @@ namespace Tasks
                 }
             }
 
-            if (m_ticksCount < UpdateTicksAmount && !owners.empty())
-                args.executor.AddTask(args.callback, args.now + 1, args.objectId);
+            return (m_ticksCount < UpdateTicksAmount);
         }
     };
-#pragma endregion
+
+    TEST(TaskExecutorTest, performance)
+    {
+        TT tester;
+        MSTime time;
+        do {
+            time += PseudoSleepTime;
+        }
+        while(tester.Execute(time));
+    }
+
+    #pragma endregion
 
     void testExecutors(void (*testExecutorFn)(ITaskExecutor2&))
     {
@@ -276,6 +292,8 @@ namespace Tasks
             //new taskExecutor<TaskExecutorImpl_VectorPendingPODWrong111>,
             //new taskExecutor<TaskExecutorImpl_LinkedList112>,
         };
+
+        EXPECT_TRUE( CountOf(exec) > 0 );
 
         for(int i = 0; i < CountOf(exec); ++i)
             testExecutorFn(*exec[i]);
@@ -425,7 +443,7 @@ namespace Tasks
 
             void Execute(TaskExecutor_Args& args) override {
                 lastUpdate = args.now;
-                args.executor.AddTask(args.callback, args.now + MarkTaskPeriod, args.objectId);
+                RescheduleTaskWithDelay(args, MarkTaskPeriod);
             }
         };
 
@@ -504,18 +522,4 @@ namespace Tasks
         testExecutors(&TaskExecutorTest_sequenceTest);
     }
 
-    TEST(TaskExecutorTest, performance)
-    {
-        taskExecutor<TaskExecutorImpl_VectorPOD110> executor;
-        TaskTarget target;
-        executor.Register(target);
-        executor.AddTask(new TT, 0, target);
-
-        MSTime time_;
-        while(executor.HasCallBacks()) {
-            time_ += PseudoSleepTime;
-            executor.Update(time_);
-        }
-        executor.Unregister(target);
-    }
 }

@@ -27,7 +27,7 @@ namespace Tasks
     {
     public:
         virtual void AddTask(ICallBack * task, MSTime exec_time, TaskTarget& ownerId) = 0;
-        virtual void CancelTasks(const TaskTarget& ownerId) = 0;
+        virtual void CancelTasks(TaskTarget& ownerId) = 0;
         virtual void Update(MSTime time) = 0;
         virtual void Register(TaskTarget& obj) = 0;
         virtual void Unregister(TaskTarget& obj) = 0;
@@ -64,7 +64,7 @@ namespace Tasks
         ~TaskExecutor();
 
         void AddTask(ICallBack * task, MSTime exec_time, TaskTarget& ownerId) override;
-        void CancelTasks(const TaskTarget& ownerId) override;
+        void CancelTasks(TaskTarget& ownerId) override;
         void CancelAllTasks();
 
         void Register(TaskTarget& obj) override;
@@ -78,26 +78,37 @@ namespace Tasks
     class TaskTarget
     {
     private:
-        friend class TaskExecutor;
-        template<class T> friend class taskExecutor;// temp
-    public:     // temp
-        ObjectId objectId;
-    private:
-        //NON_COPYABLE(TaskTarget);
-        explicit TaskTarget(ObjectId Id) : objectId(Id) {}
+        char m_fields[8+8];
+        NON_COPYABLE(TaskTarget);
     public:
-        bool isRegistered() const { return objectId != 0;}
-        explicit TaskTarget() : objectId(0) {}
+        bool isRegistered() const;
+        explicit TaskTarget();
         ~TaskTarget();
     };
 
     struct TaskExecutor_Args
     {
+        explicit TaskExecutor_Args(ITaskExecutor& Executor, MSTime timeNow) :
+            executor(Executor),
+            callback(0),
+            objectId(0),
+            now(timeNow)
+        {
+        }
+
         ITaskExecutor& executor;
         ICallBack* callback;
+        TaskTarget* objectId;
         const MSTime now;
-        TaskTarget objectId;
     };
+
+    inline void RescheduleTaskWithDelay(TaskExecutor_Args& args, int32 delay) {
+        args.executor.AddTask(args.callback, args.now + delay, *args.objectId);
+    }
+
+    inline void RescheduleTask(TaskExecutor_Args& args, MSTime executionTime) {
+        args.executor.AddTask(args.callback, executionTime, *args.objectId);
+    }
 
     class TaskTarget_DEV
     {
@@ -132,4 +143,8 @@ namespace Tasks
         Class*  _obj;
         Method  _func;
     };
+
+    template<class Class> inline ICallBack * NewITaskP0(Class* _class_instance, void (Class::*_method)(TaskExecutor_Args&)) {
+        return new ITaskP0<Class>(_class_instance, _method);
+    }
 }

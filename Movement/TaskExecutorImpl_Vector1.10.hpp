@@ -1,5 +1,6 @@
 namespace Tasks
 {
+/*
     class TaskExecutorImpl_VectorPOD110
     {
     public:
@@ -91,4 +92,5 @@ namespace Tasks
             }
         }
     };
+*/
 }

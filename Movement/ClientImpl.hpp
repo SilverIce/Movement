@@ -13,7 +13,7 @@ namespace Movement
 
         void Execute(TaskExecutor_Args& args) override {
             new TimeSyncRequest(m_client);
-            args.executor.AddTask(args.callback, args.now + TimeSyncRequest::SyncTimePeriod, args.objectId);
+            RescheduleTaskWithDelay(args, TimeSyncRequest::SyncTimePeriod);
         }
 
     private:

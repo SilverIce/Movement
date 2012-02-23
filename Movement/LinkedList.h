@@ -90,6 +90,8 @@ class LinkedListElement : private LinkedListNodeBase<LinkedListElement<T> >
     typedef LinkedList<T> ListType;
 public:
 
+    typedef T value_type;
+
     explicit LinkedListElement() : _container(NULL) {
     }
 
