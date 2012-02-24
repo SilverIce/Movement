@@ -471,10 +471,6 @@ namespace Tasks
             getImpl(target).list.link_last((Movement::LinkedList<TaskHandle*>::element_type&)newNode->tasknode);
         }
 
-        void RegisterObject(TaskTarget& obj)
-        {
-        }
-
         void CancelTasks(TaskTarget& target)
         {
             TaskTargetList& list = (TaskTargetList&)getImpl(target).list;
@@ -489,27 +485,6 @@ namespace Tasks
             assert_state( list.empty() );
             ensureSorted();
         }
-
-        /*void CancelTasks(ObjectId objectId);
-        {
-            NodeTable::iterator it = callbacks.find(objectId);
-            if (it == callbacks.end())
-                return;
-
-            TaskList& list = *it->second;
-            callbacks.erase(it);
-
-            callbackTempList.clear();
-            while (TaskNode * node = list.last()) {
-                callbackTempList.push_back(node->Value->callback);
-                unusedNodes.push(node->Value);
-            }
-
-            assert_state( list.empty() );
-            ensureSorted();
-
-            ForEach(CallBack* cb, callbackTempList, cb->release());
-        }*/
 
         void CancelAllTasks()
         {
@@ -531,11 +506,6 @@ namespace Tasks
             }
             assert_state(top.empty());
             assert_state(marks.empty());
-        }
-
-        void RemoveObject(TaskTarget& target)
-        {
-            CancelTasks(target);
         }
 
         void ensureSorted()

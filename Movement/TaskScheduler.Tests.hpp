@@ -62,7 +62,7 @@ namespace Tasks
 
         void AddTask(ICallBack * task, MSTime exec_time, TaskTarget& ownerId) override
         {
-            if (!ownerId.isRegistered())
+            if (!ownerId.hasTaskAttached())
                 Register(ownerId);
 
             if (timerUpdate.InProgress()) {
@@ -84,32 +84,16 @@ namespace Tasks
             impl.Update(tt);
         }
 
-        void Register(TaskTarget& obj) override
+        void Register(TaskTarget& obj)
         {
-            /*if (obj.isRegistered()){
-                log_fatal("object is already registered somewhere");
-                return;
-            }*/
-
             taskList.insert(&obj);
-            impl.RegisterObject(obj);
-            getImpl(obj).registered = true;
         }
 
-        void Unregister(TaskTarget& obj) override
+        void CancelTasks(TaskTarget& obj) override
         {
-            if (!obj.isRegistered())
-                return;
-
             taskList.erase(&obj);
             RdtscCall c(timerCancelTask);
-            impl.RemoveObject(obj);
-            getImpl(obj).registered = false;
-        }
-
-        void CancelTasks(TaskTarget& ownerId) override
-        {
-            impl.CancelTasks(ownerId);
+            impl.CancelTasks(obj);
         }
 
         bool HasCallBacks() const override {
@@ -200,7 +184,7 @@ namespace Tasks
             ForEach(ITaskExecutor2* elem, executors, {
                 while (!elem->taskList.empty()) {
                     TaskTarget * targ = *elem->taskList.begin();
-                    elem->Unregister(*targ);
+                    elem->CancelTasks(*targ);
                     delete targ;
                 }
             });
@@ -218,7 +202,6 @@ namespace Tasks
 
                 ForEach(ITaskExecutor2 * ex, executors, {
                     TaskTarget* target = new TaskTarget();
-                    ex->Register(*target);
                     uint32 taskCount = TasksPerOwner;
                     while(taskCount-- > 0)
                         ex->AddTask(new DoNothingTask(t.period), lastUpdate + t.period, *target );
@@ -240,7 +223,7 @@ namespace Tasks
                         ++it;
 
                     TaskTarget& target = **it;
-                    ex->Unregister(target);
+                    ex->CancelTasks(target);
                     delete &target;
                 });
                 --owners_spawned;
@@ -312,48 +295,25 @@ namespace Tasks
     void TaskExecutorTest_basicTest(ITaskExecutor2& executor)
     {
         TaskTarget target;
-        EXPECT_TRUE( !target.isRegistered() );
-
-        executor.Register(target);
-        EXPECT_TRUE( target.isRegistered() );
+        EXPECT_TRUE( !target.hasTaskAttached() );
 
         executor.AddTask(new DoNothingTask, 0, target);
+        EXPECT_TRUE( target.hasTaskAttached() );
 
         executor.CancelTasks(target);
-
-        executor.Unregister(target);
-        EXPECT_TRUE( !target.isRegistered() );
+        EXPECT_TRUE( !target.hasTaskAttached() );
 
         {
             TaskTarget target2;
             executor.AddTask(new DoNothingTask, 0, target2);
-            EXPECT_TRUE( target2.isRegistered() );
-            executor.Unregister(target2);
+            EXPECT_TRUE( target2.hasTaskAttached() );
+            executor.CancelTasks(target2);
         }
     }
 
     TEST(TaskExecutorTest, basicTest)
     {
         testExecutors(&TaskExecutorTest_basicTest);
-    }
-
-    void TaskExecutorTest_basicTest2(ITaskExecutor2& executor)
-    {
-        TaskTarget target;
-
-        EXPECT_TRUE( !target.isRegistered() );
-        executor.Register(target);
-        EXPECT_TRUE( target.isRegistered() );
-
-        executor.AddTask(new DoNothingTask, 0, target);
-
-        executor.Unregister(target);
-        EXPECT_TRUE( !target.isRegistered() );
-    }
-
-    TEST(TaskExecutorTest, basicTest2)
-    {
-        testExecutors(&TaskExecutorTest_basicTest2);
     }
 
     void TaskExecutorTest_basicTest4(ITaskExecutor2& executor)
@@ -400,7 +360,7 @@ namespace Tasks
             EXPECT_TRUE( info.executed );
             EXPECT_TRUE( info.callsCount == 2 );
             EXPECT_TRUE( info.deleteCalled );
-            executor.Unregister(target);
+            executor.CancelTasks(target);
         }
 
         {
@@ -414,7 +374,7 @@ namespace Tasks
 
             executor.Update(10);
             EXPECT_TRUE( !info.executed && info.callsCount == 1 && info.deleteCalled );
-            executor.Unregister(target);
+            executor.CancelTasks(target);
             EXPECT_TRUE( !info.executed && info.callsCount == 1 && info.deleteCalled );
         }
     }
@@ -476,7 +436,7 @@ namespace Tasks
             }
         }
         allowTaskDelete = true;
-        executor.Unregister(target);
+        executor.CancelTasks(target);
     }
 
     TEST(TaskExecutorTest, pulse)
@@ -514,7 +474,7 @@ namespace Tasks
 
         taskId = 0;
         executor.Update(15000);
-        executor.Unregister(target);
+        executor.CancelTasks(target);
     }
 
     TEST(TaskExecutorTest, sequenceTest)

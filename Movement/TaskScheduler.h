@@ -29,8 +29,6 @@ namespace Tasks
         virtual void AddTask(ICallBack * task, MSTime exec_time, TaskTarget& ownerId) = 0;
         virtual void CancelTasks(TaskTarget& ownerId) = 0;
         virtual void Update(MSTime time) = 0;
-        virtual void Register(TaskTarget& obj) = 0;
-        virtual void Unregister(TaskTarget& obj) = 0;
     protected:
         ~ITaskExecutor() {}
     };
@@ -55,7 +53,6 @@ namespace Tasks
     class TaskExecutor : public ITaskExecutor
     {
         class TaskExecutorImpl& impl;
-        int32 m_objectsRegistered;
 
         NON_COPYABLE(TaskExecutor);
     public:
@@ -66,9 +63,6 @@ namespace Tasks
         void AddTask(ICallBack * task, MSTime exec_time, TaskTarget& ownerId) override;
         void CancelTasks(TaskTarget& ownerId) override;
         void CancelAllTasks();
-
-        void Register(TaskTarget& obj) override;
-        void Unregister(TaskTarget& obj) override;
 
         void Update(MSTime time) override;
     };
@@ -81,7 +75,7 @@ namespace Tasks
         char m_fields[8+8];
         NON_COPYABLE(TaskTarget);
     public:
-        bool isRegistered() const;
+        bool hasTaskAttached() const;
         explicit TaskTarget();
         ~TaskTarget();
     };
@@ -117,9 +111,7 @@ namespace Tasks
         TaskTarget m_objectId;
     private:
         NON_COPYABLE(TaskTarget_DEV);
-        bool isRegisteredIn(const ITaskExecutor * _owner) const { return isRegistered() && _owner == m_executor;}
     public:
-        bool isRegistered() const { return m_objectId.isRegistered();}
         bool hasExecutor() const { return m_executor != 0;}
         explicit TaskTarget_DEV() : m_executor(0) {}
 

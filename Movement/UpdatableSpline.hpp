@@ -191,7 +191,7 @@ namespace Movement
         };
 
         // create OrientationUpdater task only in case there is no more such tasks
-        if (!m_updateRotationTask.isRegistered())
+        if (!m_updateRotationTask.hasTaskAttached())
             m_updater->AddTask(new OrientationUpdater(*this),0,m_updateRotationTask);
         m_targetGuid = target.Guid;
         //Owner.SetGuidValue(UNIT_FIELD_TARGET, target.Owner.GetObjectGuid());
@@ -199,7 +199,7 @@ namespace Movement
 
     void MoveSplineUpdatable::UnbindOrientation()
     {
-        m_updater->Unregister(m_updateRotationTask);
+        m_updater->CancelTasks(m_updateRotationTask);
         m_targetGuid = ObjectGuid();
         //Owner.SetGuidValue(UNIT_FIELD_TARGET, ObjectGuid());
     }

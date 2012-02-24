@@ -56,7 +56,7 @@ namespace Movement
 
         void CleanReferences() {
             OnArrived();
-            m_updater->Unregister(m_updateMovementTask);
+            m_updater->CancelTasks(m_updateMovementTask);
             UnbindOrientation();
             ResetLisener();
             ComponentDetach();
@@ -97,7 +97,7 @@ namespace Movement
         void UnbindOrientation();
 
         bool IsOrientationBinded() const {
-            return m_updateRotationTask.isRegistered();
+            return m_updateRotationTask.hasTaskAttached();
         }
 
         UnitMovementImpl& controlled() const {

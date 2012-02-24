@@ -42,17 +42,17 @@ namespace Tasks
     {
     public:
         Movement::LinkedList<TaskHandle*> list;
-        bool registered;
 
-        bool isRegistered() const { return registered;}
-
-        ~TaskTargetImpl() { mov_assert(!isRegistered()); }
-        explicit TaskTargetImpl() : registered(false) {}
+        ~TaskTargetImpl() { assert_state(list.empty()); }
+        explicit TaskTargetImpl() {}
     };
 
     static_assert(sizeof(TaskTargetImpl) <= sizeof(TaskTarget), "");
 
     inline TaskTargetImpl& getImpl(TaskTarget& target) {
+        return (TaskTargetImpl&)target;
+    }
+    inline const TaskTargetImpl& getImpl(const TaskTarget& target) {
         return (TaskTargetImpl&)target;
     }
 }
@@ -92,39 +92,18 @@ namespace Tasks
         ObjectCounter counter;
     };
 
-    TaskExecutor::TaskExecutor() : impl(*new TaskExecutorImpl()), m_objectsRegistered(0) {}
+    TaskExecutor::TaskExecutor() : impl(*new TaskExecutorImpl()) {}
     TaskExecutor::~TaskExecutor() { delete &impl;}
 
     void TaskExecutor::AddTask(ICallBack * task, MSTime exec_time, TaskTarget& ownerId)
     {
         assert_state(task);
-        if (!ownerId.isRegistered())
-            Register(ownerId);
         impl.AddTask(task, exec_time, ownerId);
     }
 
     void TaskExecutor::CancelTasks(TaskTarget& obj)
     {
         impl.CancelTasks(obj);
-    }
-
-    void TaskExecutor::Register(TaskTarget& obj)
-    {
-        assert_state_msg(!obj.isRegistered(), "object is already registered somewhere");
-        ++m_objectsRegistered;
-        impl.RegisterObject(obj);
-        getImpl(obj).registered = true;
-    }
-
-    void TaskExecutor::Unregister(TaskTarget& obj)
-    {
-        if (!obj.isRegistered())
-            return;
-
-        assert_state(m_objectsRegistered > 0);
-        --m_objectsRegistered;
-        impl.RemoveObject(obj);
-        getImpl(obj).registered = false;
     }
 
     void TaskExecutor::Update(MSTime time)
@@ -148,29 +127,27 @@ namespace Tasks
         getImpl(*this).~TaskTargetImpl();
     }
 
-    bool TaskTarget::isRegistered() const {
-        return ((TaskTargetImpl*)this)->registered;
+    bool TaskTarget::hasTaskAttached() const {
+        return !getImpl(*this).list.empty();
     }
 
     void TaskTarget_DEV::SetExecutor(ITaskExecutor& executor)
     {
-        mov_assert(!m_executor && !isRegistered());
+        mov_assert(!m_executor);
         m_executor = &executor;
     }
 
     void TaskTarget_DEV::Unregister()
     {
-        if (isRegistered()) {
-            mov_assert(m_executor);
-            m_executor->Unregister(m_objectId);
+        if (m_executor) {
+            m_executor->CancelTasks(m_objectId);
         }
         m_executor = NULL;
     }
 
     void TaskTarget_DEV::CancelTasks()
     {
-        if (isRegistered()) {
-            mov_assert(m_executor);
+        if (m_executor) {
             m_executor->CancelTasks(m_objectId);
         }
     }
