@@ -292,6 +292,147 @@ namespace Movement
         }
     };
 
+    struct MovingEntity_Revolvable3 : ComponentT<MovingEntity_Revolvable3>
+    {
+        Vector3 m_RelativePosition;
+        LazyRotation m_rotation;
+
+        MovingEntity_Revolvable3 * m_Environment;
+        mutable Vector3 m_globalPosition;
+        mutable bool m_globalPositionOutdated;
+
+        mutable G3D::Matrix3 m_globalRotation;
+        mutable bool m_globalRotationOutdated;
+
+        LinkedList<MovingEntity_Revolvable3*> m_binded;
+        LinkedListElement<MovingEntity_Revolvable3*> m_me;
+
+        /** Current entity position change outdates global position of all attached entities and
+            current global position. */
+        void OnPositionChanged() {
+            m_globalPositionOutdated = true;
+            struct {
+                void operator()(MovingEntity_Revolvable3* entity) { entity->OnPositionChanged();}
+            } notifier;
+            m_binded.Visit(notifier);
+        }
+
+        /** Current entity rotation change outdates global position of all attached entities,
+            but does not outdates current global position. */
+        void OnRotationChanged() {
+            m_globalRotationOutdated = true;
+            struct {
+                void operator()(MovingEntity_Revolvable3* entity) { entity->OutdateRotationAndPosition();}
+            } notifier;
+            m_binded.Visit(notifier);
+        }
+
+        void OutdateRotationAndPosition() {
+            m_globalRotationOutdated = true;
+            m_globalPositionOutdated = true;
+            struct {
+                void operator()(MovingEntity_Revolvable3* entity) { entity->OutdateRotationAndPosition();}
+            } notifier;
+            m_binded.Visit(notifier);
+        }
+
+        const G3D::Matrix3& GlobalRotation() const
+        {
+            if (m_globalRotationOutdated) {
+                m_globalRotationOutdated = false;
+                if (MovingEntity_Revolvable3 * env = Environment())
+                    m_globalRotation = env->GlobalRotation() * m_rotation.relativeRotation();
+                else
+                    m_globalRotation = m_rotation.relativeRotation();
+            }
+            return m_globalRotation;
+        }
+
+    public:
+
+        void RelativePosition(const Vector3& position) {
+            m_RelativePosition = position;
+            OnPositionChanged();
+        }
+
+        const Vector3& RelativePosition() const {
+            return m_RelativePosition;
+        }
+
+        const Vector3& GlobalPosition() const {
+            if (m_globalPositionOutdated) {
+                m_globalPositionOutdated = false;
+                if (MovingEntity_Revolvable3 * env = Environment())
+                    m_globalPosition = env->GlobalRotation() * RelativePosition() + env->GlobalPosition();
+                else
+                    m_globalPosition = RelativePosition();
+            }
+            return m_globalPosition;
+        }
+
+        MovingEntity_Revolvable3* Environment() const {
+            return m_Environment;
+        }
+
+        void SetEnvironment(MovingEntity_Revolvable3* env)
+        {
+            if (m_Environment == env)
+                return;
+            if (env) {
+                m_me.delink();
+                env->m_binded.link_last(m_me);
+                m_RelativePosition = (GlobalPosition() - env->GlobalPosition()) * env->GlobalRotation();
+            }
+            else {
+                m_me.delink();
+                m_RelativePosition = GlobalPosition();
+            }
+            m_Environment = env;
+        }
+
+        typedef LinkedList<MovingEntity_Revolvable3*> Entities;
+        const Entities& BindedEntities() const {
+            return m_binded;
+        }
+
+    public:
+
+        explicit MovingEntity_Revolvable3() :
+            m_Environment(nullptr),
+            m_globalPositionOutdated(true),
+            m_globalRotationOutdated(true)
+        {
+            m_me.Value = this;
+        }
+
+        void YawAngle(float value) {
+            m_rotation.YawAngle(value);
+            OnRotationChanged();
+        }
+
+        void PitchAngle(float value) {
+            m_rotation.PitchAngle(value);
+            OnRotationChanged();
+        }
+
+        void RollAngle(float value) {
+            m_rotation.RollAngle(value);
+            OnRotationChanged();
+        }
+
+        float YawAngle() const {
+            return m_rotation.YawAngle();
+        }
+
+        float PitchAngle() const {
+            return m_rotation.PitchAngle();
+        }
+
+        float RollAngle() const {
+            return m_rotation.RollAngle();
+        }
+    };
+
     /*struct MovingEntity_Transport : MovingEntity, IMoveEnvironment
     {
     public:

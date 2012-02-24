@@ -121,4 +121,8 @@ namespace Movement
     TEST(MoveEnv, MovingEntity_Revolvable2) {
         MoveEnv_LaunchTests<MovingEntity_Revolvable2>();
     }
+
+    TEST(MoveEnv, MovingEntity_Revolvable3) {
+        MoveEnv_LaunchTests<MovingEntity_Revolvable3>();
+    }
 }
