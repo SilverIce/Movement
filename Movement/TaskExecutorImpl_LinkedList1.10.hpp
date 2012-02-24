@@ -366,7 +366,7 @@ namespace Tasks
         ~TaskExecutorImpl_LinkedList110() { CancelAllTasks();}
 
         bool hasCallbacks() const {
-            return !top.empty();
+            return top.size() > marks.size();
         }
 
         void printStats()
