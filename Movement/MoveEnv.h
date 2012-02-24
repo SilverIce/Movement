@@ -54,24 +54,86 @@ namespace Movement
         }
     };
 
-    struct MovingEntity_Revolvable : IMoveEnvironment
+    struct LazyRotation
     {
     private:
-        MovingEntity m_entity;
         float m_Yaw;
         float m_Pitch;
         float m_Roll;
 
-        G3D::Matrix3 m_rotation;
-        bool m_matrixUpdated;
+        mutable G3D::Matrix3 m_rotation;
+        mutable bool m_matrixUpdated;
 
-        const G3D::Matrix3& relativeRotation() {
+    public:
+
+        explicit LazyRotation() :
+            m_Yaw(0.f),
+            m_Pitch(0.f),
+            m_Roll(0.f),
+            m_rotation(G3D::Matrix3::identity()),
+            m_matrixUpdated(false)
+        {
+        }
+
+        const G3D::Matrix3& relativeRotation() const {
             if (!m_matrixUpdated) {
                 m_rotation = G3D::Matrix3::fromEulerAnglesZXY(m_Yaw, m_Pitch, m_Roll);
                 m_matrixUpdated = true;
             }
             return m_rotation;
         }
+
+        float YawAngle() const {
+            return m_Yaw;
+        }
+
+        void YawAngle(float value) {
+            m_Yaw = value;
+            m_matrixUpdated = false;
+        }
+
+        float PitchAngle() const {
+            return m_Pitch;
+        }
+
+        void PitchAngle(float value) {
+            m_Pitch = value;
+            m_matrixUpdated = false;
+        }
+
+        float RollAngle() const {
+            return m_Roll;
+        }
+
+        void RollAngle(float value) {
+            m_Roll = value;
+            m_matrixUpdated = false;
+        }
+
+        void EulerAngles(const Vector3& value) {
+            m_Yaw = value.x;
+            m_Pitch = value.y;
+            m_Roll = value.z;
+            m_matrixUpdated = false;
+        }
+
+        Vector3 EulerAngles() const {
+            return Vector3(m_Yaw, m_Pitch, m_Roll);
+        }
+
+        void SetRotationFromTangentLine(const Vector3& tangent) {
+            YawAngle(atan2f(tangent.y, tangent.x));
+            PitchAngle( atan2f(tangent.z,tangent.xy().length()) );
+            RollAngle(0.f);
+        }
+    };
+
+    struct MovingEntity_Revolvable : IMoveEnvironment, LazyRotation
+    {
+    private:
+        MovingEntity m_entity;
+
+        using LazyRotation::relativeRotation;
 
         void ComputeGlobalPosition(Vector3& outGlobal) override {
             outGlobal = relativeRotation() * outGlobal + m_entity.Position;
@@ -118,48 +180,8 @@ namespace Movement
             return (MovingEntity_Revolvable*)m_entity.Environment();
         }
 
-    public:
-
-        explicit MovingEntity_Revolvable() :
-            m_Yaw(0.f),
-            m_Pitch(0.f),
-            m_Roll(0.f),
-            m_rotation(G3D::Matrix3::identity()),
-            m_matrixUpdated(false)
+        explicit MovingEntity_Revolvable()
         {
-        }
-
-        float YawAngle() const {
-            return m_Yaw;
-        }
-
-        void YawAngle(float value) {
-            m_Yaw = value;
-            m_matrixUpdated = false;
-        }
-
-        float PitchAngle() const {
-            return m_Pitch;
-        }
-
-        void PitchAngle(float value) {
-            m_Pitch = value;
-            m_matrixUpdated = false;
-        }
-
-        float RollAngle() const {
-            return m_Roll;
-        }
-
-        void RollAngle(float value) {
-            m_Roll = value;
-            m_matrixUpdated = false;
-        }
-
-        void SetRotationFromTangentLine(const Vector3& tangent) {
-            YawAngle(atan2f(tangent.y, tangent.x));
-            PitchAngle( atan2f(tangent.z,tangent.xy().length()) );
-            RollAngle(0.f);
         }
     };
 
