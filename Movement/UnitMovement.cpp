@@ -50,7 +50,7 @@ namespace Movement
         MovingEntity_Revolvable2 entity;
         MoveSplineUpdatable monsterController;
 
-        UnitMovementStruct(WorldObjectType owner, uint64 ownerGuid, MoveUpdater& updater) : pubface(unit)
+        UnitMovementStruct(WorldObject& owner, uint64 ownerGuid, MoveUpdater& updater) : pubface(unit)
         {
             entity.ComponentInit(&entity);
 
@@ -69,7 +69,7 @@ namespace Movement
         }
     };
 
-    UnitMovement* UnitMovement::create(WorldObjectType owner, uint64 ownerGuid, MoveUpdater& updater)
+    UnitMovement* UnitMovement::create(WorldObject& owner, uint64 ownerGuid, MoveUpdater& updater)
     {
         UnitMovementStruct* impl = new UnitMovementStruct(owner, ownerGuid, updater);
         return &impl->pubface;
