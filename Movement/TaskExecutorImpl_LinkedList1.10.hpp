@@ -279,7 +279,7 @@ namespace Tasks
         struct TimeComparator;
         struct ObjectIdComparator;
 
-        typedef Movement::LinkedList<Node*> TaskTargetList;
+        typedef Movement::LinkedList<TaskHandle*> TaskTargetList;
         typedef TaskTargetList::element_type TaskTargetNode;
 
         //typedef stdext::hash_map<ObjectId, TaskList* /*,ObjectId_hash_compare*/ > NodeTable;
@@ -300,7 +300,7 @@ namespace Tasks
         };
         typedef SortedList<MarkInfo, TimeComparator> MarkArray;
 
-        struct Node : public SortedTaskList::element_type
+        struct Node : public SortedTaskList::element_type, public TaskHandle
         {
             uint32 execution_time;
             CallBack* callback;
@@ -468,18 +468,19 @@ namespace Tasks
 
         void PushIntoTable(Node * newNode, TaskTarget& target)
         {
-            getImpl(target).list.link_last((Movement::LinkedList<TaskHandle*>::element_type&)newNode->tasknode);
+            getImpl(target).list.link_last(newNode->tasknode);
         }
 
         void CancelTasks(TaskTarget& target)
         {
-            TaskTargetList& list = (TaskTargetList&)getImpl(target).list;
+            TaskTargetList& list = getImpl(target).list;
             if (list.empty())
                 return;
 
-            while (TaskTargetNode * node = list.first()) {
-                CallBack * callback = node->Value->callback;
-                unusedNodes.push(node->Value);
+            while (TaskTargetNode * targetNode = list.first()) {
+                Node * node = static_cast<Node*>(targetNode->Value);
+                CallBack * callback = node->callback;
+                unusedNodes.push(node);
                 callback->release();
             }
             assert_state( list.empty() );

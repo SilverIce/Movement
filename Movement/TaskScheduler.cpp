@@ -1,6 +1,8 @@
 #include "framework/typedefs_p.h"
 #include "TaskScheduler.h"
 
+#include "LinkedList.h"
+
 namespace Tasks
 {
     typedef Movement::counter<ObjectId, ~ObjectId(0)> ObjectCounter;
@@ -37,7 +39,7 @@ namespace Tasks
 
     typedef ICallBack CallBack;
 
-    class TaskHandle;
+    class TaskHandle {};
     class TaskTargetImpl
     {
     public:
@@ -72,7 +74,6 @@ namespace Tasks
 #include <hash_map>
 #include <hash_set>
 #include "POD_Arrays.h"
-#include "LinkedList.h"
 
 #include "TaskExecutorImpl_Vector1.10.hpp"
 #include "TaskExecutorImpl_LinkedList1.10.hpp"
