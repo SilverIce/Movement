@@ -103,7 +103,7 @@ namespace Movement
         m_updater->AddTask(NewITaskP0(this,&MoveSplineUpdatable::OnUpdateCallback), NextUpdateTime(), m_updateMovementTask);
 
         m_owner->SetMoveFlag(moveFlag_new);
-        m_owner->SetParameter(Parameter_SpeedMoveSpline, args.velocity);
+        m_owner->SetParameter(Parameter_SpeedCustom, args.velocity);
 
         PacketBuilder::SplinePathSend(controlled());
     }

@@ -142,7 +142,7 @@ namespace Movement
 
     float UnitMovement::GetCurrentSpeed()
     {
-        return m.GetParameter(Parameter_SpeedMoveSpline);
+        return m.GetCurrentSpeed();
     }
 
     std::string UnitMovement::ToString()

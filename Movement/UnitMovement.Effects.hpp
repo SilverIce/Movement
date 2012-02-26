@@ -50,7 +50,7 @@ namespace Movement
 
         static void Launch(UnitMovementImpl * mov, FloatParameter value_type, float value)
         {
-            assert_state(value_type != Parameter_SpeedMoveSpline);
+            assert_state(value_type != Parameter_SpeedCustom);
 
             if (mov->IsClientControlled())
             {

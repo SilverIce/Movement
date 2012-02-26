@@ -5,7 +5,7 @@ namespace Movement
     FloatParameter UnitMovementImpl::SelectSpeedType(UnitMoveFlag moveFlags)
     {
         if (moveFlags.spline_enabled)
-            return Parameter_SpeedMoveSpline;
+            return Parameter_SpeedCustom;
 
         bool use_walk_forced = false;
         if ( moveFlags.flying )

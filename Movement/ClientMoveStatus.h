@@ -14,7 +14,7 @@ namespace Movement
         Parameter_SpeedTurn,
         Parameter_SpeedPitch,
         Parameter_CollisionHeight,
-        Parameter_SpeedMoveSpline,
+        Parameter_SpeedCustom,
         Parameter_End,
     };
 
