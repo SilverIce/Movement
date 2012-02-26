@@ -334,10 +334,6 @@ namespace Tasks
             bool isMarkNode() {
                 return callback == 0;
             }
-
-            bool empty() {
-                return callback == 0;
-            }
         };
 
         enum Config{
@@ -479,9 +475,8 @@ namespace Tasks
 
             while (TaskTargetNode * targetNode = list.first()) {
                 Node * node = static_cast<Node*>(targetNode->Value);
-                CallBack * callback = node->callback;
+                node->callback->release();
                 unusedNodes.push(node);
-                callback->release();
             }
             assert_state( list.empty() );
             ensureSorted();
@@ -489,21 +484,15 @@ namespace Tasks
 
         void CancelAllTasks()
         {
-            while (Node * firstNode = (Node*)top.first())
+            while (Node * firstNode = static_cast<Node*>(top.first()))
             {
-                CallBack * callback = NULL;
                 if (!firstNode->isMarkNode())
-                    callback = firstNode->callback;
-                else
-                {
+                    firstNode->callback->release();
+                else {
                     MarkInfo info = {firstNode->execution_time, firstNode};
                     marks.erase(info);
                 }
                 unusedNodes.push(firstNode);
-
-                if (callback) {
-                    callback->release();
-                }
             }
             assert_state(top.empty());
             assert_state(marks.empty());
@@ -531,13 +520,15 @@ namespace Tasks
         {
             ensureSorted();
             Node * firstNode = NULL;
-            while ((firstNode = (Node*)top.first()) && firstNode->execution_time <= args.now.time)
+            while ((firstNode = static_cast<Node*>(top.first())) && firstNode->execution_time <= args.now.time)
             {
-                CallBack * callback = NULL;
                 if (!firstNode->isMarkNode())
                 {
-                    args.callback = callback = firstNode->callback;
+                    args.callback = firstNode->callback;
                     args.objectId = firstNode->taskTarget;
+
+                    args.callback->Execute(args);
+                    args.callback->release();
                 }
                 else
                 {
@@ -545,11 +536,6 @@ namespace Tasks
                     marks.erase(info);
                 }
                 unusedNodes.push(firstNode);
-
-                if (callback) {
-                    callback->Execute(args);
-                    callback->release();
-                }
             }
         }
     };
