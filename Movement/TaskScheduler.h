@@ -67,8 +67,6 @@ namespace Tasks
         void Update(MSTime time) override;
     };
 
-    typedef uint32 ObjectId;
-
     class TaskTarget
     {
     private:

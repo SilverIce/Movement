@@ -1,32 +1,5 @@
 namespace Tasks
 {
-    class ObjectId_hash_compare
-    {
-        typedef std::less<ObjectId> _Pr;
-    public:
-        enum {    // parameters for hash table
-            bucket_size = 4,
-            min_buckets = 8    // min_buckets = 2 ^^ N, 0 < N
-        };
-
-        ObjectId_hash_compare() : comp()
-        {}
-
-        ObjectId_hash_compare(_Pr _Pred) : comp(_Pred)
-        {}
-
-        size_t operator()(const ObjectId& _Keyval) const {
-            return _Keyval;
-        }
-
-        bool operator()(const ObjectId& _Keyval1, const ObjectId& _Keyval2) const {
-            return (comp(_Keyval1, _Keyval2));
-        }
-
-    protected:
-        _Pr comp;    // the comparator object
-    };
-
 //#define SELECTED_CONT std::vector
  #define SELECTED_CONT POD_Array
 

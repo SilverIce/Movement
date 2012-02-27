@@ -45,7 +45,6 @@ namespace Tasks
     {
         Impl& impl;
         int32 m_objectsRegistered;
-        ObjectCounter m_counter;
 
         NON_COPYABLE(taskExecutor);
     public:

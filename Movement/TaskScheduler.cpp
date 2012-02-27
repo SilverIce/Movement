@@ -5,7 +5,6 @@
 
 namespace Tasks
 {
-    typedef Movement::counter<ObjectId, ~ObjectId(0)> ObjectCounter;
 
     using Movement::log_write;
     using Movement::log_console;
@@ -90,7 +89,6 @@ namespace Tasks
     {
         friend class TaskExecutor;
     public:
-        ObjectCounter counter;
     };
 
     TaskExecutor::TaskExecutor() : impl(*new TaskExecutorImpl()) {}

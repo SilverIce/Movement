@@ -8,7 +8,7 @@
 
 namespace Movement
 {
-    /** Represents abstract environment */
+    /** Represents abstract environment for objects that inside */
     struct IMoveEnvironment
     {
         /** Converts relative object position that environment contains into global position
@@ -24,10 +24,15 @@ namespace Movement
     private:
         IMoveEnvironment* m_Environment;
     public:
+
+        /** Relative position */
         Vector3 Position;
 
         explicit MovingEntity() : m_Environment(nullptr) {}
 
+        /** Attaches entity to environment.
+            Null environment can be passed also. In this case entity will be attached to global coordinate system.
+            Note: environment switch does not changes global position. */
         void Environment(IMoveEnvironment* Env)
         {
             if (Env == m_Environment)
@@ -41,6 +46,8 @@ namespace Movement
             m_Environment = Env;
         }
 
+        /** Current environment entity attached.
+            In case environment is null - it means that entity attached to global coordinate system. */
         IMoveEnvironment* Environment() const {
             return m_Environment;
         }
@@ -317,7 +324,7 @@ namespace Movement
             m_binded.Visit(notifier);
         }
 
-        /** Current entity rotation change outdates global position of all attached entities,
+        /** Current entity rotation change outdates global positions and rotations of all attached entities,
             but does not outdates current global position. */
         void OnRotationChanged() {
             m_globalRotationOutdated = true;
