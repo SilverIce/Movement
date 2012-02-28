@@ -196,7 +196,7 @@ namespace Movement
         ClientMoveState state;
         static_cast<_ClientMoveState&>(state) = m_unused;
         state.ms_time = lastMoveEvent;
-        state.world_position = GetGlobalPosition();
+        state.globalPosition = GetGlobalPosition();
         state.moveFlags = moveFlags;
         state.pitchAngle = m_entity->PitchAngle();
 

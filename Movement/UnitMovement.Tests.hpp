@@ -54,11 +54,11 @@ namespace Movement
         CMP(ClientMoveState::pitchAngle);
         CMP(ClientMoveState::spline_elevation);
         CMP(ClientMoveState::transport_guid);
-        CMP(ClientMoveState::transport_position);
+        CMP(ClientMoveState::relativePosition);
         CMP(ClientMoveState::transport_seat);
         CMP(ClientMoveState::transport_time);
         CMP(ClientMoveState::transport_time2);
-        CMP(ClientMoveState::world_position);
+        CMP(ClientMoveState::globalPosition);
         #undef CMP
     }
 
@@ -66,13 +66,13 @@ namespace Movement
     {
         ClientMoveState stateIn;
 
-        stateIn.world_position = Location(10, 20, 30, 1);
+        stateIn.globalPosition = Location(10, 20, 30, 1);
         stateIn.fallTime = 400;
         stateIn.ms_time = 20000;
         testClientMoveStateSerialization(stateIn);
 
         stateIn.moveFlags.ontransport = true;
-        stateIn.transport_position = Location(1, 2, 3, 1);
+        stateIn.relativePosition = Location(1, 2, 3, 1);
         stateIn.transport_seat = 1;
         testClientMoveStateSerialization(stateIn);
 

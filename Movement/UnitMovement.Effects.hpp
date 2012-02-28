@@ -260,9 +260,9 @@ namespace Movement
             ClientMoveState state(client->controlled()->ClientState());
             // TODO: add set of functions for state modifying
             if (state.moveFlags.ontransport)
-                state.transport_position = m_location;
+                state.relativePosition = m_location;
             else
-                state.world_position = m_location;
+                state.globalPosition = m_location;
 
             MovementMessage msg(NULL, MSG_MOVE_TELEPORT_ACK, 64);   // message source is null - client shouldn't skip that message
             msg << client->controlled()->Guid.WriteAsPacked();

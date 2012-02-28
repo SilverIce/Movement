@@ -211,12 +211,12 @@ namespace Movement
     {
         data >> mov.moveFlags;
         data >> mov.ms_time;
-        data >> mov.world_position;
+        data >> mov.globalPosition;
 
         if (mov.moveFlags.ontransport)
         {
             data >> mov.transport_guid.ReadAsPacked();
-            data >> mov.transport_position;
+            data >> mov.relativePosition;
             data >> mov.transport_time;
             data >> mov.transport_seat;
 
@@ -249,12 +249,12 @@ namespace Movement
     {
         data << mov.moveFlags;
         data << mov.ms_time;
-        data << mov.world_position;
+        data << mov.globalPosition;
 
         if (mov.moveFlags.ontransport)
         {
             data << mov.transport_guid.WriteAsPacked();
-            data << mov.transport_position;
+            data << mov.relativePosition;
             data << mov.transport_time;
             data << mov.transport_seat;
 

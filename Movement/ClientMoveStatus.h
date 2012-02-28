@@ -45,8 +45,8 @@ namespace Movement
         {
         }
 
-        Location world_position;
-        Location transport_position;
+        Location globalPosition;
+        Location relativePosition;
         ObjectGuid transport_guid;
         UnitMoveFlag moveFlags;
         MSTime ms_time;
@@ -69,11 +69,11 @@ namespace Movement
     {
         std::stringstream st;
         st << "Movement  flags: " << moveFlags.ToString() << std::endl;
-        st << "Global position: " << world_position.ToString() << std::endl;
+        st << "Global position: " << globalPosition.ToString() << std::endl;
 
         if (moveFlags.ontransport)
         {
-            st << "Local  position: " << transport_position.ToString() << std::endl;
+            st << "Local  position: " << relativePosition.ToString() << std::endl;
             st << "seat         Id: " << (int32)transport_seat << std::endl;
         }
 
