@@ -6,7 +6,7 @@
 #include "framework/typedefs_p.h"
 #include "framework/gtest.h"
 
-namespace Tasks
+namespace Tasks { namespace detail
 {
     struct MemBlock 
     {
@@ -318,4 +318,5 @@ namespace Tasks
 
 
     };
+}
 }

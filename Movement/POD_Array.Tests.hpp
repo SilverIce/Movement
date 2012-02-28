@@ -1,4 +1,4 @@
-namespace Tasks
+namespace Tasks { namespace detail
 {
     TEST(POD_ArrayTest, vec_test_1)
     {
@@ -443,4 +443,5 @@ namespace Tasks
       delete pv2;
       delete pv1;
     }*/
+}
 }

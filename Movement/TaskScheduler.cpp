@@ -5,7 +5,12 @@
 
 namespace Tasks
 {
+    namespace detail {}
+    using namespace ::Tasks::detail;
+}
 
+namespace Tasks { namespace detail
+{
     using Movement::log_write;
     using Movement::log_console;
     using Movement::uint64;
@@ -56,6 +61,7 @@ namespace Tasks
     inline const TaskTargetImpl& getImpl(const TaskTarget& target) {
         return (TaskTargetImpl&)target;
     }
+}
 }
 
 #define ForEach(element, _array, action) { \

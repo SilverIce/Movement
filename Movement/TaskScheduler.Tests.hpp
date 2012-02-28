@@ -6,7 +6,7 @@
 
 #include "POD_Array.Tests.hpp"
 
-namespace Tasks
+namespace Tasks { namespace detail
 {
     #pragma region performance test
     enum{
@@ -481,4 +481,5 @@ namespace Tasks
         testExecutors(&TaskExecutorTest_sequenceTest);
     }
 
+}
 }

@@ -1,4 +1,4 @@
-namespace Tasks
+namespace Tasks { namespace detail
 {
 //#define SELECTED_CONT std::vector
  #define SELECTED_CONT POD_Array
@@ -512,4 +512,5 @@ namespace Tasks
             }
         }
     };
+}
 }

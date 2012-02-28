@@ -11,7 +11,6 @@
 
 namespace Movement
 {
-    class MovementBase;
     class UnitMovement;
     class UnitMovementImpl;
 
