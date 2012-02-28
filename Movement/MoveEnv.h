@@ -190,6 +190,10 @@ namespace Movement
         explicit MovingEntity_Revolvable()
         {
         }
+
+        ~MovingEntity_Revolvable() {
+            assert_state(!Environment());
+        }
     };
 
     struct MovingEntity_Revolvable2 : ComponentT<MovingEntity_Revolvable2>
@@ -243,6 +247,7 @@ namespace Movement
 
         void SetEnvironment(MovingEntity_Revolvable2* env)
         {
+            assert_state(env != this);
             if (m_Environment == env)
                 return;
             if (env) {
@@ -269,6 +274,11 @@ namespace Movement
             m_globalPositionOutdated(true)
         {
             m_me.Value = this;
+        }
+
+        ~MovingEntity_Revolvable2() {
+            assert_state(!Environment());
+            assert_state(BindedEntities().empty());
         }
 
         void YawAngle(float value) {
@@ -383,6 +393,7 @@ namespace Movement
 
         void SetEnvironment(MovingEntity_Revolvable3* env)
         {
+            assert_state(env != this);
             if (m_Environment == env)
                 return;
             if (env) {
@@ -410,6 +421,11 @@ namespace Movement
             m_globalRotationOutdated(true)
         {
             m_me.Value = this;
+        }
+
+        ~MovingEntity_Revolvable3() {
+            assert_state(!Environment());
+            assert_state(BindedEntities().empty());
         }
 
         void YawAngle(float value) {
