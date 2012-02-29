@@ -7,11 +7,11 @@ namespace Movement
         for (float t = 0.f; t < 1.f; t += 0.001f)
         {
             Vector3 point;
-            spline.evaluate_percent(t, point);
+            spline.evaluatePosition(t, point);
             EXPECT_TRUE( point.isFinite() );
 
             Vector3 direction;
-            spline.evaluate_derivative(t, direction);
+            spline.evaluateDerivative(t, direction);
             EXPECT_TRUE( direction.isFinite() );
         }
     }
@@ -31,10 +31,10 @@ namespace Movement
         };
 
         Spline<float> splines[4];
-        splines[0].init_spline(nodes, CountOf(nodes), SplineBase::ModeLinear);
-        splines[1].init_cyclic_spline(nodes, CountOf(nodes), SplineBase::ModeLinear, 0);
-        splines[2].init_spline(nodes, CountOf(nodes), SplineBase::ModeCatmullrom);
-        splines[3].init_cyclic_spline(nodes, CountOf(nodes), SplineBase::ModeCatmullrom, 0);
+        splines[0].initSpline(nodes, CountOf(nodes), SplineBase::ModeLinear);
+        splines[1].initCyclicSpline(nodes, CountOf(nodes), SplineBase::ModeLinear, 0);
+        splines[2].initSpline(nodes, CountOf(nodes), SplineBase::ModeCatmullrom);
+        splines[3].initCyclicSpline(nodes, CountOf(nodes), SplineBase::ModeCatmullrom, 0);
 
         const float properLengths[4] = {
             253.202179f,
@@ -55,7 +55,7 @@ namespace Movement
             for (int pointIdx = 0; pointIdx < CountOf(nodes); ++pointIdx) {
                 if ((spline.first() + pointIdx) < spline.last()) {
                     Vector3 calculated;
-                    spline.evaluate_percent(spline.first() + pointIdx, 0.f, calculated);
+                    spline.evaluatePosition(spline.first() + pointIdx, 0.f, calculated);
                     EXPECT_TRUE( calculated.fuzzyEq(nodes[pointIdx]) );
                 }
             }

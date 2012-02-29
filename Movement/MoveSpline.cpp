@@ -20,7 +20,7 @@ Location MoveSpline::ComputePosition() const
         u = (time_passed - spline.length(point_Idx)) / (float)seg_time;
     Location c;
     c.orientation = initialOrientation;
-    spline.evaluate_percent(point_Idx, u, c);
+    spline.evaluatePosition(point_Idx, u, c);
 
     if (splineflags.animation)
         ;// MoveSplineFlag::Animation disables falling or parabolic movement
@@ -42,7 +42,7 @@ Location MoveSpline::ComputePosition() const
         if (!splineflags.hasFlag(MoveSplineFlag::RotationFixed|MoveSplineFlag::Falling))
         {
             Vector3 direction;
-            spline.evaluate_derivative(point_Idx,u,direction);
+            spline.evaluateDerivative(point_Idx,u,direction);
             c.orientation = atan2f(direction.y, direction.x);
         }
 
@@ -94,11 +94,11 @@ void MoveSpline::init_spline(const MoveSplineInitArgs& args)
         // MoveSplineFlag::Enter_Cycle no more supported
         //if (splineflags & MoveSplineFlag::Enter_Cycle)
         //cyclic_point = 1;   // shouldn't be modified, came from client
-        spline.init_cyclic_spline(&args.path[0], args.path.size(), modes[args.flags.isSmooth()], cyclic_point);
+        spline.initCyclicSpline(&args.path[0], args.path.size(), modes[args.flags.isSmooth()], cyclic_point);
     }
     else
     {
-        spline.init_spline(&args.path[0], args.path.size(), modes[args.flags.isSmooth()]);
+        spline.initSpline(&args.path[0], args.path.size(), modes[args.flags.isSmooth()]);
     }
 
     // init spline timestamps
@@ -128,7 +128,7 @@ void MoveSpline::init_spline(const MoveSplineInitArgs& args)
                 float velocityInv;
                 int32 time;
                 int32 operator()(Spline<int32>& s, int32 i) {
-                    time += (s.SegLength(i) * velocityInv);
+                    time += (s.segmentLength(i) * velocityInv);
                     return time;
                 }
             };

@@ -2,20 +2,20 @@
 
 namespace Movement
 {
-template<typename length_type> void Spline<length_type>::evaluate_percent( float t, Vector3 & c ) const
+template<typename length_type> void Spline<length_type>::evaluatePosition( float t, Vector3 & c ) const
 {
     index_type Index;
     float u;
     computeIndex(t, Index, u);
-    evaluate_percent(Index, u, c);
+    evaluatePosition(Index, u, c);
 }
 
-template<typename length_type> void Spline<length_type>::evaluate_derivative(float t, Vector3& hermite) const
+template<typename length_type> void Spline<length_type>::evaluateDerivative(float t, Vector3& hermite) const
 {
     index_type Index;
     float u;
     computeIndex(t, Index, u);
-    evaluate_derivative(Index, u, hermite);
+    evaluateDerivative(Index, u, hermite);
 }
 
 template<typename length_type> SplineBase::index_type Spline<length_type>::computeIndexFromLength(length_type length_) const
@@ -45,10 +45,10 @@ template<typename length_type> SplineBase::index_type Spline<length_type>::compu
 template<typename length_type> void Spline<length_type>::initLengths()
 {
     struct LengthInitializer {
-        float lenghSumm;
+        float lengthSumm;
         float operator()(SplineBase& spline, index_type i) {
-            lenghSumm += spline.SegLength(i);
-            return lenghSumm;
+            lengthSumm += spline.segmentLength(i);
+            return lengthSumm;
         }
     };
     LengthInitializer init = {0.f};

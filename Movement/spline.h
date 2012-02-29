@@ -77,20 +77,20 @@ public:
 
     explicit SplineBase() : m_mode(ModeUninitialized), index_lo(0), index_hi(0) {}
 
-    /** Caclulates the position for given segment Idx, and percent of segment length t
+    /** Caclulates position for given segment Idx and percent of segment length u
         @param Idx - spline segment index, should be in range [first, last)
-        @param u - percent of segment length, assumes that t in range [0, 1]
+        @param u - percent of segment length, assumes that u in range [0, 1]
      */
-    void evaluate_percent(index_type Idx, float u, Vector3& c) const {
+    void evaluatePosition(index_type Idx, float u, Vector3& c) const {
         assertInitialized();
         (this->*evaluators[m_mode])(Idx,u,c);
     }
 
-    /** Caclulates derivation in index Idx, and percent of segment length t
+    /** Caclulates derivation in index Idx and percent of segment length u
         @param Idx - spline segment index, should be in range [first, last)
-        @param u - percent of spline segment length, assumes that t in range [0, 1]
+        @param u - percent of spline segment length, assumes that u in range [0, 1]
      */
-    void evaluate_derivative(index_type Idx, float u, Vector3& hermite) const {
+    void evaluateDerivative(index_type Idx, float u, Vector3& hermite) const {
         assertInitialized();
         (this->*derivative_evaluators[m_mode])(Idx,u,hermite);
     }
@@ -107,18 +107,18 @@ public:
     const Vector3& getPoint(index_type i) const { return points[i];}
 
     /**	Initializes spline. Don't call other methods while spline not initialized. */
-    void init_spline(const Vector3 * controls, index_type count, EvaluationMode m);
-    void init_cyclic_spline(const Vector3 * controls, index_type count, EvaluationMode m, index_type cyclic_point);
+    void initSpline(const Vector3 * controls, index_type count, EvaluationMode m);
+    void initCyclicSpline(const Vector3 * controls, index_type count, EvaluationMode m, index_type cyclic_point);
 
     /** As i can see there are a lot of ways how spline can be initialized
         would be no harm to have some custom initializers. */
-    template<class Init> inline void init_spline(Init& initializer)
+    template<class Init> inline void initSpline(Init& initializer)
     {
         initializer(m_mode,points,index_lo,index_hi);
     }
 
     /** Calculates distance between [i; i+1] points, assumes that index i is in bounds. */
-    float SegLength(index_type i) const {
+    float segmentLength(index_type i) const {
         assertInitialized();
         return (this->*seglengths[m_mode])(i);
     }
@@ -152,21 +152,21 @@ public:
 
     /** Calculates the position for given t
         @param t - percent of spline's length, assumes that t in range [0, 1]. */
-    void evaluate_percent(float t, Vector3 & c) const;
+    void evaluatePosition(float t, Vector3 & c) const;
 
     /** Calculates derivation for given t
         @param t - percent of spline's length, assumes that t in range [0, 1]. */
-    void evaluate_derivative(float t, Vector3& hermite) const;
+    void evaluateDerivative(float t, Vector3& hermite) const;
 
-    /** Calculates the position for given segment Idx, and percent of segment length t
-        @param u - partial_segment_length / whole_segment_length
-        @param Idx - spline segment index, should be in range [first, last). */   
-    void evaluate_percent(index_type Idx, float u, Vector3& c) const { SplineBase::evaluate_percent(Idx,u,c);}
+    /** Calculates the position for given segment Idx and percent of segment length u
+        @param Idx - spline segment index, should be in range [first, last)
+        @param u - partial_segment_length / whole_segment_length. */
+    void evaluatePosition(index_type Idx, float u, Vector3& c) const { SplineBase::evaluatePosition(Idx,u,c);}
 
-    /** Calculates derivation for index Idx, and percent of segment length t
+    /** Calculates derivation for index Idx and percent of segment length u
         @param Idx - spline segment index, should be in range [first, last)
         @param u - percent of spline segment length, u in range [0, 1]. */
-    void evaluate_derivative(index_type Idx, float u, Vector3& c) const { SplineBase::evaluate_derivative(Idx,u,c);}
+    void evaluateDerivative(index_type Idx, float u, Vector3& c) const { SplineBase::evaluateDerivative(Idx,u,c);}
 
     /** Computes a such spline segment @index that 'lenghts[index] < t * lengthTotal < lenghts[index+1]'
         @param t - percent of spline's length, assumes that t in range [0, 1]. */
@@ -178,13 +178,15 @@ public:
     void computeIndex(float t, index_type& out_idx, float& out_u) const;
 
     /**	Initializes spline. Don't call other methods while spline not initialized. */
-    void init_spline(const Vector3 * controls, index_type count, EvaluationMode m) {
-        SplineBase::init_spline(controls,count,m);
+    void initSpline(const Vector3 * controls, index_type count, EvaluationMode m) {
+        SplineBase::initSpline(controls,count,m);
     }
 
-    /**	Initializes spline. Don't call other methods while spline not initialized. */
-    void init_cyclic_spline(const Vector3 * controls, index_type count, EvaluationMode m, index_type cyclic_point) {
-        SplineBase::init_cyclic_spline(controls,count,m,cyclic_point);
+    /**	Initializes cyclic spline. Don't call other methods while spline not initialized.
+        @param cyclic_point - a such index of the path where path tail will smoothly transite to that index
+    */
+    void initCyclicSpline(const Vector3 * controls, index_type count, EvaluationMode m, index_type cyclic_point) {
+        SplineBase::initCyclicSpline(controls,count,m,cyclic_point);
     }
 
     /**  Initializes lengths with SplineBase::SegLength method. */    

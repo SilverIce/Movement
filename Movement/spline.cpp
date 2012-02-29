@@ -140,13 +140,13 @@ float SplineBase::SegLengthCatmullRom( index_type index ) const
     return length;
 }
 
-void SplineBase::init_spline(const Vector3 * controls, index_type count, EvaluationMode m)
+void SplineBase::initSpline(const Vector3 * controls, index_type count, EvaluationMode m)
 {
     m_mode = m;
     (this->*initializers[m_mode])(controls, count, false, 0);
 }
 
-void SplineBase::init_cyclic_spline(const Vector3 * controls, index_type count, EvaluationMode m, index_type cyclic_point)
+void SplineBase::initCyclicSpline(const Vector3 * controls, index_type count, EvaluationMode m, index_type cyclic_point)
 {
     m_mode = m;
     (this->*initializers[m_mode])(controls, count, true, cyclic_point);
