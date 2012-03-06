@@ -76,8 +76,8 @@ namespace Tasks { namespace detail
 
 #include <vector>
 #include <algorithm>
-#include <hash_map>
-#include <hash_set>
+//#include <hash_map>
+//#include <hash_set>
 #include "POD_Arrays.h"
 
 #include "TaskExecutorImpl_Vector1.10.hpp"

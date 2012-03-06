@@ -33,16 +33,6 @@ namespace testing
         static void Delete(TestInfo* test) {
             delete test;
         }
-
-        static void InvokeTest(TestInfo* test)
-        {
-            if (!TestInfo::Disabled(test)) {
-                printf("\n    %s::%s has been invoked\n", test->Name, test->Name2);
-                test->testFn();
-            }
-            else
-                printf("\n    %s::%s is disabled\n", test->Name, test->Name2);
-        }
     };
 
     struct TestRegistry
@@ -134,19 +124,19 @@ namespace testing
         void InvokeTest(TestInfo * test)
         {
             if (TestInfo::Disabled(test)) {
-                printf("\n    %s::%s is disabled\n", test->Name, test->Name2);
+                printf("    %s::%s is disabled\n", test->Name, test->Name2);
                 return;
             }
 
             currentTest = test;
-            printf("\n    %s::%s has been invoked\n", test->Name, test->Name2);
+            printf("    %s::%s has been invoked\n", test->Name, test->Name2);
             {
                 EXPECT_NOTHROW( test->testFn() );
             }
             currentTest = NULL;
 
             if (test->isFailed)
-                printf("\n    %s::%s has been failed!\n", test->Name, test->Name2);
+                printf("    %s::%s has been failed!\n", test->Name, test->Name2);
         }
 
         void OnCheckFailed()

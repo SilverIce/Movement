@@ -109,8 +109,13 @@ namespace Movement
         if (!moveFlags.hasDirection())
             return Vector3();
 
-        float dest_angle = GetOrientation();
+        float dir = directionAngle();
+        return Vector3(cos(dir), sin(dir), 0);
+    }
 
+    float UnitMovementImpl::directionAngle() const
+    {
+        float dest_angle = GetOrientation();
         if (moveFlags.forward)
         {
             if (moveFlags.strafe_right)
@@ -131,8 +136,7 @@ namespace Movement
             dest_angle -= G3D::halfPi();
         else if (moveFlags.strafe_left)
             dest_angle += G3D::halfPi();
-
-        return Vector3(cos(dest_angle), sin(dest_angle), 0);
+        return dest_angle;
     }
 
     void UnitMovementImpl::ApplyState(const ClientMoveState& new_state)

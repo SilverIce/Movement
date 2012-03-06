@@ -37,12 +37,8 @@ public:
         }
     }
 
-    void UnPause()
-    {
-        if (!inside) {
-            inside = true;
-            start_call = now();
-        }
+    void UnPause() {
+        onCallBegin();
     }
 
     void reset() {

@@ -31,6 +31,8 @@ namespace Movement
 
         Vector3 direction() const;
 
+        float directionAngle() const;
+
     public:
 
         // TODO: too much aliases here..

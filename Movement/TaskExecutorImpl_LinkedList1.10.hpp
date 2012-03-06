@@ -343,19 +343,6 @@ namespace Tasks { namespace detail
             log_console("tasks active: %u", top.size());
             log_console("delta time: %u ms", ((Node*)top.last())->execution_time - ((Node*)top.first())->execution_time);
             log_console("marks amount: %u", marks.size());
-
-            #define _PULL_STAT_(pull, stat) log_console(#stat " %u", pull.stat());
-            #define PULL_STAT(pull) \
-                log_console(#pull " stats"); \
-                _PULL_STAT_(pull, PullTotalSize); \
-                _PULL_STAT_(pull, PullAllocActiveSize); \
-                _PULL_STAT_(pull, TotalActiveSize); \
-                _PULL_STAT_(pull, DynamicActiveSize);
-
-            //PULL_STAT(unusedNodes);
-            //PULL_STAT(unusedTaskLists);
-            #undef PULL_STAT
-            #undef _PULL_STAT_
         }
 
         void PushIntoList(Node * newNode)
