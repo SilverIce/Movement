@@ -139,12 +139,6 @@ protected:
 
     index_type computeIndexFromLength(length_type length) const;
 
-    void set_length(index_type i, length_type length) {
-        assert_state(i >= 0 && !lengths.empty());
-        assert_state(i == 0 || lengths[i-1] <= length);
-        lengths[i] = length;
-    }
-
     #pragma endregion
 public:
 
@@ -180,6 +174,7 @@ public:
     /**	Initializes spline. Don't call other methods while spline not initialized. */
     void initSpline(const Vector3 * controls, index_type count, EvaluationMode m) {
         SplineBase::initSpline(controls,count,m);
+        lengths.resize(index_hi+1);
     }
 
     /**	Initializes cyclic spline. Don't call other methods while spline not initialized.
@@ -187,6 +182,7 @@ public:
     */
     void initCyclicSpline(const Vector3 * controls, index_type count, EvaluationMode m, index_type cyclic_point) {
         SplineBase::initCyclicSpline(controls,count,m,cyclic_point);
+        lengths.resize(index_hi+1);
     }
 
     /**  Initializes lengths with SplineBase::SegLength method. */    
@@ -197,7 +193,6 @@ public:
     template<class T> inline void initLengths(T& cacher)
     {
         index_type i = index_lo;
-        lengths.resize(index_hi+1);
         while (i < index_hi) {
             set_length(i+1, cacher(*this, i));
             ++i;
@@ -210,10 +205,17 @@ public:
         set_length(index_hi, value);
     }
 
-    /** Returns length between given nodes. */
+    /** Returns length between two points. */
     length_type length(index_type first, index_type last) const { return lengths[last]-lengths[first];}
-    /** Returns length of given spline index. */
+    /** Returns length between [first; Idx] points. */
     length_type length(index_type Idx) const { return lengths[Idx];}
+
+    /** Sets length between [first; i] points. */
+    void set_length(index_type i, length_type length) {
+        assert_state(i > index_lo && i < (int32)lengths.size());
+        assert_state(i == 0 || lengths[i-1] <= length);
+        lengths[i] = length;
+    }
 };
 
 }

@@ -19,5 +19,7 @@ namespace Movement
     {
         ObjectGuid guid;
         WorldObject* object;
+
+        explicit WowObject() : object(nullptr) {}
     };
 }
