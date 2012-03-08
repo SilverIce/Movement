@@ -45,6 +45,7 @@ namespace Tasks { namespace detail
     {
         Impl& impl;
         int32 m_objectsRegistered;
+        MSTime updateCounter;
 
         NON_COPYABLE(taskExecutor);
     public:
@@ -78,9 +79,9 @@ namespace Tasks { namespace detail
         void Update(MSTime time) override
         {
             RdtscCall c(timerUpdate);
-            TaskTarget target;
-            TaskExecutor_Args tt(*this, time);
+            TaskExecutor_Args tt(*this, time, updateCounter.time);
             impl.Update(tt);
+            updateCounter += 1;
         }
 
         void Register(TaskTarget& obj)
@@ -481,5 +482,27 @@ namespace Tasks { namespace detail
         testExecutors(&TaskExecutorTest_sequenceTest);
     }
 
+    void TaskExecutorTest_UpdateCounter(ITaskExecutor2& executor)
+    {
+        struct Task : public ICallBack {
+            uint32 updateCount;
+            explicit Task() : updateCount(0) {}
+            void Execute(TaskExecutor_Args& args) {
+                RescheduleTask(args, args.now+1);
+                EXPECT_TRUE(updateCount == args.updateCount);
+                ++updateCount;
+            }
+        };
+        TaskTarget target;
+        executor.AddTask(new Task, 0, target);
+
+        for (uint32 updateCount = 0; updateCount < 4; ++updateCount)
+            executor.Update(updateCount);
+
+        executor.CancelTasks(target);
+    }
+    TEST(TaskExecutorTest, UpdateCounter) {
+        testExecutors(&TaskExecutorTest_UpdateCounter);
+    }
 }
 }

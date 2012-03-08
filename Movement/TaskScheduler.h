@@ -53,6 +53,7 @@ namespace Tasks
     class TaskExecutor : public ITaskExecutor
     {
         class TaskExecutorImpl& impl;
+        MSTime m_updateCounter;
 
         NON_COPYABLE(TaskExecutor);
     public:
@@ -80,11 +81,12 @@ namespace Tasks
 
     struct TaskExecutor_Args
     {
-        explicit TaskExecutor_Args(ITaskExecutor& Executor, MSTime timeNow) :
+        explicit TaskExecutor_Args(ITaskExecutor& Executor, MSTime timeNow, uint32 updCount) :
             executor(Executor),
             callback(0),
             objectId(0),
-            now(timeNow)
+            now(timeNow),
+            updateCount(updCount)
         {
         }
 
@@ -92,6 +94,7 @@ namespace Tasks
         ICallBack* callback;
         TaskTarget* objectId;
         const MSTime now;
+        const uint32 updateCount;
     };
 
     inline void RescheduleTaskWithDelay(TaskExecutor_Args& args, int32 delay) {

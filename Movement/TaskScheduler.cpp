@@ -113,8 +113,9 @@ namespace Tasks
 
     void TaskExecutor::Update(MSTime time)
     {
-        TaskExecutor_Args tt(*this, time);
+        TaskExecutor_Args tt(*this, time, m_updateCounter.time);
         impl.Update(tt);
+        m_updateCounter += 1;
     }
 
     void TaskExecutor::CancelAllTasks()
