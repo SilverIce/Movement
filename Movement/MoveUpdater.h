@@ -20,13 +20,5 @@ namespace Movement
         EXPORT explicit MoveUpdater();
         EXPORT ~MoveUpdater();
         EXPORT void Update();
-
-        uint32 NewMoveSplineId() { return movespline_counter.NewId();}
-        MSTime lastUpdate() const { return m_lastUpdate;}
-
-    private:
-
-        UInt32Counter movespline_counter;
-        MSTime m_lastUpdate;
     };
 }

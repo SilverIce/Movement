@@ -108,6 +108,8 @@ namespace Movement
         PacketBuilder::SplinePathSend(controlled());
     }
 
+    static UInt32Counter movesplineIdGenerator;
+
     void MoveSplineUpdatable::PrepareMoveSplineArgs(MoveSplineInitArgs& args, UnitMoveFlag& moveFlag_new)
     {
         if (IsMoving())
@@ -120,7 +122,8 @@ namespace Movement
 
         mov_assert(!args.path.empty());
         args.path[0] = m_owner->GetRelativePosition();    //correct first vertex
-        args.splineId = m_updater->NewMoveSplineId();
+        if (args.splineId == 0)
+            args.splineId = movesplineIdGenerator.NewId();
         args.initialOrientation = m_owner->GetOrientation();
 
         moveFlag_new = m_owner->moveFlags;
