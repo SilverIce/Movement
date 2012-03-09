@@ -70,15 +70,7 @@ extern double computeFallTime(float elevation);
 
 void MoveSpline::computeFallElevation(float& el) const
 {
-    float z_now = spline.getPoint(spline.first()).z - Movement::computeFallElevation(MSToSec(time_passed));
-    float final_z = FinalDestination().z;
-    if (z_now < final_z)
-    {
-        el = final_z;
-        log_write("MoveSpline::computeFallElevation: z_now < finalDestination.z");
-    }
-    else
-        el = z_now;
+    el = spline.getPoint(spline.first()).z - Movement::computeFallElevation(MSToSec(time_passed));
 }
 
 enum{

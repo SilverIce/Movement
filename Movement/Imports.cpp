@@ -1,8 +1,9 @@
 #include "Imports.h"
-
-#include <windows.h>
-#include "G3D/Vector3.h"
 #include "framework/DelayInit.h"
+
+#include "G3D/Vector3.h"
+#include "framework/typedefs_p.h"
+#include <windows.h>
 
 namespace testing {
     extern bool RunAllTests();
@@ -16,7 +17,7 @@ namespace Movement
         void FBroadcastMessage(WorldObject const* obj, Movement::MovementMessage& msg) {}
         void FBroadcastMessage(WorldObject const* obj, WorldPacket& msg) {}
         void FSendPacket(void * socket, const WorldPacket& data) {}
-        unsigned int FgetMSTime() { return GetTickCount();}
+        uint32 FgetMSTime() { return GetTickCount();}
 
         void FGeneratePath(WorldObject const* obj, const G3D::Vector3& fromVec,
             const G3D::Vector3& toVec, bool flightPath, std::vector<G3D::Vector3>& path)

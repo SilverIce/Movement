@@ -97,7 +97,7 @@ namespace Movement
         void UnbindOrientation();
 
         bool IsOrientationBinded() const {
-            return m_updateRotationTask.hasTaskAttached();
+            return m_targetGuid.GetRawValue() != 0;
         }
 
         UnitMovementImpl& controlled() const {

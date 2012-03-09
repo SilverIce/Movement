@@ -1,4 +1,5 @@
 #include "DelayInit.h"
+#include "typedefs_p.h"
 
 namespace delayInit
 {
@@ -13,6 +14,7 @@ namespace delayInit
     static node * first = 0;
     static node * last = 0;
     static unsigned int listSize = 0;
+    static bool delayInit_called = false;
 
     void register_node(node * n) {
         if (!first)
@@ -24,6 +26,10 @@ namespace delayInit
     }
 
     void callCtors() {
+        // function assumes that it's safe to assert before delayed object initialization
+        assert_state(delayInit_called == false);
+        delayInit_called = true;
+
         node * n = first;
         while(n) {
             n->ctor();

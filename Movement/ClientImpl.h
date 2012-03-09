@@ -28,12 +28,11 @@ namespace Movement
         typedef std::list<RespHandler*> RespHdlContainer;
         RespHdlContainer m_resp_handlers;
 
+    public:
         static MSTime ServerTime() { return MSTime(Imports.getMSTime());}
         MSTime ServerToClientTime(const MSTime& server_time) const { return server_time + m_time_diff;}
         MSTime ClientTime() const {return ServerToClientTime(ServerTime());}
         MSTime ClientToServerTime(const MSTime& client_time) const { return client_time - m_time_diff;}
-
-    public:
 
         void assertControlled() const {
             assertInitialized();

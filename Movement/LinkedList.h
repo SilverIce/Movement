@@ -244,13 +244,13 @@ public:
     }
 
     template<class Func>
-    void Iterate(Func functor)
+    void Iterate(Func functor) const
     {
         Visit<Func>(functor);
     }
 
     template<class Visitor>
-    void Visit(Visitor& visitor)
+    void Visit(Visitor& visitor) const
     {
         element_type * i = _first;
         while(i)

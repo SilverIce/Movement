@@ -307,6 +307,11 @@ namespace Movement
         float RollAngle() const {
             return m_entity.RollAngle();
         }
+
+        void SetRotationFromTangentLine(const Vector3& tangent) {
+            m_entity.SetRotationFromTangentLine(tangent);
+            OnRotationChanged();
+        }
     };
 
     struct MovingEntity_Revolvable3 : ComponentT<MovingEntity_Revolvable3>
