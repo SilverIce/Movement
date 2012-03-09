@@ -22,7 +22,7 @@ namespace Movement
 
         explicit UnitMovementImpl();
 
-        void Init(Component& tree, MoveUpdater& updater, UnitMovement* publicFace);
+        void Init(Component& tree, Tasks::ITaskExecutor& updater, UnitMovement* publicFace);
         virtual ~UnitMovementImpl();
 
         void CleanReferences();
@@ -74,9 +74,6 @@ namespace Movement
         float PitchAngle() const { return m_entity->PitchAngle();}
 
     public:
-        //friend class MoveSplineUpdatable;
-
-    public:
         bool HasMode(MoveMode m) const;
 
         bool IsWalking() const { return moveFlags.walk_mode;}
@@ -107,8 +104,7 @@ namespace Movement
         void SetMoveFlag(const UnitMoveFlag& newFlags);
         static FloatParameter SelectSpeedType(UnitMoveFlag moveFlags);
 
-        bool HasUpdater() const { return m_updater != NULL;}
-        MoveUpdater& Updater() const { return *m_updater;}
+        Tasks::ITaskExecutor& Updater() const { return *commonTasks.getExecutor();}
         TaskTarget_DEV commonTasks;
 
         ClientImpl* client() const { return m_client;}
@@ -123,7 +119,6 @@ namespace Movement
 
         void assertCleaned() const;
 
-        MoveUpdater* m_updater;
         ClientImpl* m_client;
         MovingEntity_Revolvable2 * m_entity;
         MSTime lastMoveEvent;

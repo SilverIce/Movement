@@ -469,10 +469,6 @@
 			>
 		</File>
 		<File
-			RelativePath="..\Movement\MoveUpdater.h"
-			>
-		</File>
-		<File
 			RelativePath="..\Movement\typedefs.h"
 			>
 		</File>

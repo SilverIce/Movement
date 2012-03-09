@@ -114,6 +114,7 @@ namespace Tasks
         NON_COPYABLE(TaskTarget_DEV);
     public:
         bool hasExecutor() const { return m_executor != 0;}
+        ITaskExecutor* getExecutor() const { return m_executor;}
         explicit TaskTarget_DEV() : m_executor(0) {}
 
         void SetExecutor(ITaskExecutor& executor);

@@ -40,7 +40,6 @@ namespace Movement
 
     UnitMovementImpl::UnitMovementImpl() :
         Owner(NULL),
-        m_updater(NULL),
         m_entity(NULL),
         PublicFace(NULL),
         m_client(NULL)
@@ -63,7 +62,7 @@ namespace Movement
         m_currentSpeedType = Parameter_SpeedRun;
     }
 
-    void UnitMovementImpl::Init(Component& tree, MoveUpdater& updater, UnitMovement* publicFace)
+    void UnitMovementImpl::Init(Component& tree, Tasks::ITaskExecutor& updater, UnitMovement* publicFace)
     {
         tree.ComponentAttach(this);
 
@@ -71,7 +70,6 @@ namespace Movement
         Owner = wobj->object;
         Guid = wobj->guid;
 
-        m_updater = &updater;
         PublicFace = publicFace;
         m_entity = getAspect<MovingEntity_Revolvable2>();
 
@@ -81,7 +79,6 @@ namespace Movement
     void UnitMovementImpl::assertCleaned() const
     {
         mov_assert(m_client == NULL);
-        mov_assert(m_updater == NULL);
         mov_assert(!commonTasks.hasExecutor());
     }
 
@@ -98,7 +95,6 @@ namespace Movement
         }
 
         commonTasks.Unregister();
-        m_updater = NULL;
         m_entity = nullptr;
         PublicFace = nullptr;
         Owner = nullptr;

@@ -5,7 +5,7 @@
 
 #include "framework/Component.h"
 #include "Imports.h"
-#include "MoveUpdater.h"
+#include "TaskScheduler.h"
 #include "framework/typedefs_p.h"
 
 #include <sstream>
@@ -52,7 +52,7 @@ namespace Movement
         MovingEntity_Revolvable2 entity;
         MoveSplineUpdatable monsterController;
 
-        UnitMovementStruct(WorldObject& owner, uint64 ownerGuid, MoveUpdater& updater) : pubface(unit)
+        UnitMovementStruct(WorldObject& owner, uint64 ownerGuid, Tasks::ITaskExecutor& updater) : pubface(unit)
         {
             entity.ComponentInit(&entity);
 
@@ -72,7 +72,7 @@ namespace Movement
         }
     };
 
-    UnitMovement* UnitMovement::create(WorldObject& owner, uint64 ownerGuid, MoveUpdater& updater)
+    UnitMovement* UnitMovement::create(WorldObject& owner, uint64 ownerGuid, Tasks::ITaskExecutor& updater)
     {
         UnitMovementStruct* impl = new UnitMovementStruct(owner, ownerGuid, updater);
         return &impl->pubface;

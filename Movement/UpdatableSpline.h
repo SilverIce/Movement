@@ -11,7 +11,7 @@ namespace Movement
         MoveSpline m_base;
         UnitMovementImpl * m_owner;
         IListener * m_listener;
-        MoveUpdater * m_updater;
+        Tasks::ITaskExecutor * m_updater;
         bool m_moving;
         TaskTarget m_updateMovementTask;
         TaskTarget m_updateRotationTask;

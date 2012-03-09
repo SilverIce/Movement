@@ -6,6 +6,10 @@
 class WorldObject;
 class ByteBuffer;
 
+namespace Tasks {
+    class ITaskExecutor;
+}
+
 namespace Movement
 {
     enum MoveMode
@@ -42,7 +46,6 @@ namespace Movement
     EXPORT double computeFallElevation(float time_passed, float start_velocy);
     EXPORT double computeFallElevation(float time_passed);
 
-    class MoveUpdater;
     class UnitMovementImpl;
     struct Location;
 
@@ -56,7 +59,7 @@ namespace Movement
         ~UnitMovement() {}
     public:
 
-        static UnitMovement* create(WorldObject& owner, uint64 ownerGuid, MoveUpdater& updater);
+        static UnitMovement* create(WorldObject& owner, uint64 ownerGuid, Tasks::ITaskExecutor& updater);
         void dealloc();
 
         inline UnitMovementImpl& Impl() { return m;}
