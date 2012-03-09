@@ -16,12 +16,12 @@ namespace Movement
         const MoveSpline& move_spline = mov.getAspect<MoveSplineUpdatable>()->moveSpline();
         MoveSplineFlag splineflags = move_spline.splineflags;
 
-        if (mov.IsBoarded())
+        if (Unit_Passenger * passenger = mov.getAspect<Unit_Passenger>())
         {
             data.SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
             data << mov.Guid.WriteAsPacked();
-            data << mov.GetTransport()->Guid.WriteAsPacked();
-            data << int8(mov.m_unused.transport_seat);
+            data << passenger->TransportGuid().WriteAsPacked();
+            data << (int8)passenger->SeatId();
         }
         else
         {
@@ -162,7 +162,7 @@ namespace Movement
 
     void PacketBuilder::FullUpdate(const UnitMovementImpl& mov, ByteBuffer& data)
     {
-        ClientMoveState state(mov.ClientState());
+        const ClientMoveState& state = CreateMoveState(mov);
 
         WriteClientStatus(state,data);
 
@@ -205,6 +205,39 @@ namespace Movement
             data << uint8(move_spline.spline.mode());
             data << (move_spline.isCyclic() ? Vector3::zero() : move_spline.FinalDestination());
         }
+    }
+
+    ClientMoveState PacketBuilder::CreateMoveState(const UnitMovementImpl& mov)
+    {
+        ClientMoveState state;
+        static_cast<_ClientMoveState&>(state) = mov.m_unused;
+        state.ms_time = Imports.getMSTime();
+        state.globalPosition = mov.GetGlobalPosition();
+        state.moveFlags = mov.moveFlags;
+        state.pitchAngle = mov.PitchAngle();
+
+        if (Unit_Passenger * psg = mov.getAspect<Unit_Passenger>())
+        {
+            state.moveFlags.ontransport = true;
+            state.relativePosition = mov.GetRelativePosition();
+            state.relativePosition.orientation = mov.m_entity->YawAngle();
+            state.transport_seat = psg->SeatId();
+            state.transport_guid = psg->TransportGuid();
+        }
+        else
+            state.moveFlags.ontransport = false;
+
+        if (mov.SplineEnabled())
+        {
+            state.moveFlags = state.moveFlags & ~UnitMoveFlag::Mask_Directions | UnitMoveFlag::Forward;
+            state.moveFlags.spline_enabled = true;
+        }
+        else
+            state.moveFlags.spline_enabled = false;
+
+        validateFLags(state.moveFlags);
+
+        return state;
     }
 
     void PacketBuilder::ReadClientStatus(ClientMoveState& mov, ByteBuffer& data)
@@ -298,7 +331,7 @@ namespace Movement
     {
         WorldPacket data(MSG_MOVE_HEARTBEAT, 64);
         data << mov.Guid.WriteAsPacked();
-        WriteClientStatus(mov.ClientState(), data);
+        WriteClientStatus(CreateMoveState(mov), data);
         Imports.BroadcastMessage(mov.Owner, data);
     }
 }

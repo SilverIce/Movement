@@ -257,7 +257,7 @@ namespace Movement
         TeleportEffect(ClientImpl * client, const Location& loc) :
             RespHandler(MSG_MOVE_TELEPORT_ACK, client), m_location(loc)
         {
-            ClientMoveState state(client->controlled()->ClientState());
+            ClientMoveState& state = PacketBuilder::CreateMoveState(*client->controlled());
             // TODO: add set of functions for state modifying
             if (state.moveFlags.ontransport)
                 state.relativePosition = m_location;
@@ -306,7 +306,7 @@ namespace Movement
 
             MovementMessage msg(client->controlled(), MSG_MOVE_TELEPORT, 64);
             msg << guid.WriteAsPacked();
-            msg << client->controlled()->ClientState();
+            msg << PacketBuilder::CreateMoveState(*client->controlled());
             client->BroadcastMessage(msg);
             return true;
         }

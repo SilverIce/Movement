@@ -3,20 +3,21 @@
 #include "Client.h"
 #include "MoveSplineInit.h"
 
+#include "framework/Component.h"
+#include "Imports.h"
+#include "MoveUpdater.h"
+#include "framework/typedefs_p.h"
+
 #include <sstream>
 #include <list>
 #include <hash_map>
 #include <typeinfo>
-#include "framework/typedefs_p.h"
-#include "framework/Component.h"
 
 //#include "Object.h"
 #include "WorldPacket.h"
 #include "opcodes.h"
 
-#include "Imports.h"
 #include "MoveSpline.h"
-#include "MoveUpdater.h"
 #include "MoveListener.h"
 #include "MoveEnv.h"
 #include "MovementBase.h"
@@ -28,13 +29,14 @@
 #include "UpdatableSpline.h"
 #include "UnitMovementImpl.h"
 #include "ClientImpl.h"
+#include "UnitMovement.Passenger.h"
 
-#include "MoveSplineInit.hpp"
-#include "packet_builder.hpp"
-#include "ClientImpl.hpp"
-#include "UnitMovementImpl.hpp"
 #include "UnitMovement.Effects.hpp"
+#include "MoveSplineInit.hpp"
+#include "ClientImpl.hpp"
 #include "UpdatableSpline.hpp"
+#include "UnitMovementImpl.hpp"
+#include "packet_builder.hpp"
 #include "FallFormulas.hpp"
 
 #include "UnitMovement.Tests.hpp"
@@ -64,6 +66,7 @@ namespace Movement
 
         ~UnitMovementStruct()
         {
+            delete unit.getAspect<Unit_Passenger>();
             monsterController.CleanReferences();
             unit.CleanReferences();
         }

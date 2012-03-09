@@ -21,10 +21,15 @@ namespace Movement
     /** Contains unused fields */
     struct _ClientMoveState
     {
-        _ClientMoveState() : fallTime(0),
-            jump_verticalVelocity(0), jump_directionY(0), jump_directionX(0), jump_horizontalVelocity(0), spline_elevation(0),
-            transport_time(0), transport_seat(0), transport_time2(0)
-        {
+        _ClientMoveState() {
+            transport_time = 0;
+            transport_time2 = 0;
+            fallTime = 0;
+            jump_verticalVelocity = 0;
+            jump_directionX = 0;
+            jump_directionY = 0;
+            jump_horizontalVelocity = 0;
+            spline_elevation = 0;
         }
 
         uint32 transport_time;
@@ -35,14 +40,13 @@ namespace Movement
         float jump_directionY;
         float jump_horizontalVelocity;
         float spline_elevation;
-        int8 transport_seat;
     };
 
     struct ClientMoveState : public _ClientMoveState
     {
-        ClientMoveState() :
-            pitchAngle(0.f)
-        {
+        ClientMoveState() {
+            pitchAngle = 0;
+            transport_seat = 0;
         }
 
         Location globalPosition;
@@ -51,6 +55,7 @@ namespace Movement
         UnitMoveFlag moveFlags;
         MSTime ms_time;
         float pitchAngle;
+        int8 transport_seat;
 
         std::string ToString() const;
     };

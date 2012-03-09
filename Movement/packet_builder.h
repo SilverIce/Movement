@@ -31,6 +31,7 @@ namespace Movement
 
         static void WriteClientStatus(const ClientMoveState& mov, ByteBuffer& data);
         static void ReadClientStatus(ClientMoveState& state, ByteBuffer& data);
+        static ClientMoveState CreateMoveState(const UnitMovementImpl& mov);
         static void Send_HeartBeat(const UnitMovementImpl& mov);     // actually i shouldn't use it: only client is author of such packets
     };
 }

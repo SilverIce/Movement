@@ -70,6 +70,9 @@ namespace Movement
 
         float GetOrientation() const { return m_entity->YawAngle();}
 
+        void PitchAngle(float pitchAngle) { m_entity->PitchAngle(pitchAngle);}
+        float PitchAngle() const { return m_entity->PitchAngle();}
+
     public:
         //friend class MoveSplineUpdatable;
 
@@ -104,9 +107,6 @@ namespace Movement
         void SetMoveFlag(const UnitMoveFlag& newFlags);
         static FloatParameter SelectSpeedType(UnitMoveFlag moveFlags);
 
-        ClientMoveState ClientState() const;
-        void ApplyState(const ClientMoveState& state);
-
         bool HasUpdater() const { return m_updater != NULL;}
         MoveUpdater& Updater() const { return *m_updater;}
         TaskTarget_DEV commonTasks;
@@ -136,9 +136,9 @@ namespace Movement
         WorldObject* Owner;
         ObjectGuid Guid;
 
-    private:
         /** Data that cames from client. It affects nothing here but might be used in future. */
         _ClientMoveState m_unused;
+    private:
 
         float m_float_values[Parameter_End];
     };

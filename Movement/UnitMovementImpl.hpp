@@ -139,43 +139,11 @@ namespace Movement
         return dest_angle;
     }
 
-    void UnitMovementImpl::ApplyState(const ClientMoveState& new_state)
-    {
-        if (SplineEnabled())
-        {
-            // This is not fatal error and even not error at all:
-            // it' just a bit outdated state that should not to be applied
-            //log_fatal("while in server control");
-            return;
-        }
-
-        UnitMoveFlag new_flags = new_state.moveFlags;
-
-        SetRelativePosition(new_state.moveFlags.ontransport ? new_state.transport_position : new_state.world_position);
-        m_entity->PitchAngle(new_state.pitchAngle);
-
-        if (moveFlags.ontransport != new_flags.ontransport)
-        {
-            if (new_flags.ontransport)
-            {
-                // TODO: find transport by guid, board
-                // BoardOn(transport, state.transport_position, state.transport_seat);
-            }
-            else
-            {
-                // Unboard();
-            }
-        }
-
-        SetMoveFlag(new_flags);
-        lastMoveEvent = new_state.ms_time;
-        m_unused = new_state;
-    }
 
     std::string UnitMovementImpl::ToString() const
     {
         std::stringstream st;
-        st << ClientState().ToString();
+        st << PacketBuilder::CreateMoveState(*this).ToString();
         if (m_client)
             st << m_client->ToString();
         if (SplineEnabled())
@@ -187,33 +155,25 @@ namespace Movement
         return moveFlags.spline_enabled;
     }
 
+    void validateFLags(const UnitMoveFlag& newFlags)
+    {
+        // Some movement flag combinations freeze the client
+        // asserts that flags aren't enabled in same time
+
+        assert_state( (newFlags.forward & newFlags.backward) == 0 );
+        assert_state( (newFlags.strafe_left & newFlags.strafe_right) == 0);
+        assert_state( (newFlags.ascending & newFlags.descending) == 0);
+        assert_state( (newFlags.pitch_up & newFlags.pitch_down) == 0);
+
+        //assert_state( (newFlags.spline_enabled & newFlags.root) == 0); //confirmed
+    }
+
     void UnitMovementImpl::SetMoveFlag(const UnitMoveFlag& newFlags)
     {
+        validateFLags(newFlags);
 
         if ((moveFlags & UnitMoveFlag::Mask_Speed) != (newFlags & UnitMoveFlag::Mask_Speed))
             m_currentSpeedType = UnitMovementImpl::SelectSpeedType(newFlags);
         const_cast<UnitMoveFlag&>(moveFlags) = newFlags;
-    }
-
-    ClientMoveState UnitMovementImpl::ClientState() const
-    {
-        ClientMoveState state;
-        static_cast<_ClientMoveState&>(state) = m_unused;
-        state.ms_time = lastMoveEvent;
-        state.globalPosition = GetGlobalPosition();
-        state.moveFlags = moveFlags;
-        state.pitchAngle = m_entity->PitchAngle();
-
-        // correct copyed data
-        state.moveFlags.ontransport = IsBoarded();
-        if (SplineEnabled())
-        {
-            state.moveFlags = state.moveFlags & ~UnitMoveFlag::Mask_Directions | UnitMoveFlag::Forward;
-            state.moveFlags.spline_enabled = true;
-        }
-        else
-            state.moveFlags.spline_enabled = false;
-
-        return state;
     }
 }

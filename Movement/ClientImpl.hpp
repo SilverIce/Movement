@@ -181,7 +181,7 @@ namespace Movement
 
     class ApplyStateTask : public ICallBack
     {
-        UnitMovementImpl * owner;
+        UnitMovementImpl& unit;
         ClientMoveStateChange state;
 
         /** Only server should have permission enable or disable such flags */
@@ -193,7 +193,7 @@ namespace Movement
         /** It tries detect unallowed state change by comparing current and new movement flags */
         bool ValidateStateChange() const
         {
-            UnitMoveFlag bitChanged((owner->moveFlags.raw ^ state.moveFlags.raw) & ImportantFlags);
+            UnitMoveFlag bitChanged((unit.moveFlags.raw ^ state.moveFlags.raw) & ImportantFlags);
             if ( state.allowFlagApply == state.moveFlags.hasFlag(state.allowFlagChange) &&
                 (bitChanged == state.allowFlagChange || bitChanged.raw == 0) )
             {
@@ -211,17 +211,35 @@ namespace Movement
 
     public:
 
-        explicit ApplyStateTask(UnitMovementImpl * own, const ClientMoveStateChange& client_state)
-            : state(client_state), owner(own) {}
+        explicit ApplyStateTask(UnitMovementImpl& own, const ClientMoveStateChange& client_state)
+            : state(client_state), unit(own) {}
 
         void Execute(TaskExecutor_Args&) override
         {
             if (!ValidateStateChange())
                 return;
 
-            owner->ApplyState(state);
+            // just a bit outdated state that should not be applied
+            if (unit.SplineEnabled())
+                return;
+
+            UnitMoveFlag newFlags = state.moveFlags;
+
+            if (unit.moveFlags.ontransport != newFlags.ontransport)
+            {
+                if (newFlags.ontransport)
+                {
+                }
+                else {
+                }
+            }
+
+            unit.SetRelativePosition(state.moveFlags.ontransport ? state.relativePosition : state.globalPosition);
+            unit.PitchAngle(state.pitchAngle);
+            unit.SetMoveFlag(newFlags);
+            unit.m_unused = state;
             if (state.floatValueType != Parameter_End)
-                owner->SetParameter(state.floatValueType, state.floatValue);
+                unit.SetParameter(state.floatValueType, state.floatValue);
         }
     };
 
@@ -232,7 +250,7 @@ namespace Movement
         MSTime applyTime = ClientToServerTime(client_state.ms_time);
         client_state.ms_time = applyTime;
 
-        m_controlled->commonTasks.AddTask(new ApplyStateTask(m_controlled,client_state), applyTime);
+        m_controlled->commonTasks.AddTask(new ApplyStateTask(*m_controlled,client_state), client_state.ms_time);
     }
 
     void ClientImpl::OnSplineDone(ClientImpl& client, WorldPacket& data)
