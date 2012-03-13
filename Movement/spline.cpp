@@ -114,25 +114,27 @@ void SplineBase::EvaluateDerivativeCatmullRom(index_type index, float t, Vector3
     C_Evaluate_Derivative(&points[index - 1], t, s_catmullRomCoeffs, result);
 }
 
-float SplineBase::SegLengthLinear(index_type index) const
+float SplineBase::SegLengthLinear(index_type index, uint32) const
 {
     mov_assert(index >= index_lo && index < index_hi);
     return (points[index] - points[index+1]).length();
 }
 
-float SplineBase::SegLengthCatmullRom( index_type index ) const
+float SplineBase::SegLengthCatmullRom(index_type index, uint32 iterationCount) const
 {
     mov_assert(index >= index_lo && index < index_hi);
+    mov_assert(iterationCount > 0);
 
     Vector3 curPos, nextPos;
     const Vector3 * p = &points[index - 1];
     curPos = nextPos = p[1];
 
-    index_type i = 1;
+    uint32 i = 1;
     double length = 0;
-    while (i <= STEPS_PER_SEGMENT)
+    float iterationCountInv = 1.f / (float)iterationCount;
+    while (i <= iterationCount)
     {
-        C_Evaluate(p, float(i) / float(STEPS_PER_SEGMENT), s_catmullRomCoeffs, nextPos);
+        C_Evaluate(p, float(i) * iterationCountInv, s_catmullRomCoeffs, nextPos);
         length += (nextPos - curPos).length();
         curPos = nextPos;
         ++i;

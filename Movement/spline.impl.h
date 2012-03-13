@@ -42,16 +42,17 @@ template<typename length_type> SplineBase::index_type Spline<length_type>::compu
     return computeIndexFromLength(t * lengthTotal());
 }
 
-template<typename length_type> void Spline<length_type>::initLengths()
+template<typename length_type> void Spline<length_type>::initLengths(uint32 precision)
 {
     struct LengthInitializer {
         float lengthSumm;
+        uint32 precision;
         float operator()(SplineBase& spline, index_type i) {
-            lengthSumm += spline.segmentLength(i);
+            lengthSumm += spline.segmentLength(i, precision);
             return lengthSumm;
         }
     };
-    LengthInitializer init = {0.f};
+    LengthInitializer init = {0.f, precision};
     initLengths(init);
 }
 

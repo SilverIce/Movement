@@ -39,14 +39,6 @@ protected:
 
     uint8 m_mode;
 
-    enum{
-        // can be modified, affects segment length evaluation precision
-        // lesser value saves more performance in cost of lover precision
-        // minimal value is 1
-        // client's value is 20, blizzs use 2-3 steps to compute length
-        STEPS_PER_SEGMENT = 3,
-    };
-    static_assert(STEPS_PER_SEGMENT > 0, "");
 
     inline void assertInitialized() const {
         assert_state(m_mode != ModeUninitialized);
@@ -62,9 +54,9 @@ protected:
     void EvaluateDerivativeCatmullRom(index_type, float, Vector3&) const;
     static EvaluationMethtod derivative_evaluators[ModeEnd];
 
-    float SegLengthLinear(index_type) const;
-    float SegLengthCatmullRom(index_type) const;
-    typedef float (SplineBase::*SegLenghtMethtod)(index_type) const;
+    float SegLengthLinear(index_type,uint32) const;
+    float SegLengthCatmullRom(index_type,uint32) const;
+    typedef float (SplineBase::*SegLenghtMethtod)(index_type,uint32) const;
     static SegLenghtMethtod seglengths[ModeEnd];
 
     void InitLinear(const Vector3*, index_type, bool, index_type);
@@ -117,10 +109,20 @@ public:
         initializer(m_mode,points,index_lo,index_hi);
     }
 
+    /** Segment length evaluation precision.
+        Lesser value saves more performance in cost of lover precision.
+        It's a iteration amount that need to be done to compute length.
+        minimal value is 1. */
+    enum LengthPrecision {
+        LengthPrecisionDefault = 3,
+        /* World of Warcraft client precision */
+        LengthPrecisionWoWClient = 20,
+    };
+
     /** Calculates distance between [i; i+1] points, assumes that index i is in bounds. */
-    float segmentLength(index_type i) const {
+    float segmentLength(index_type i, uint32 precision = LengthPrecisionDefault) const {
         assertInitialized();
-        return (this->*seglengths[m_mode])(i);
+        return (this->*seglengths[m_mode])(i, precision);
     }
 
     std::string ToString() const;
@@ -185,8 +187,8 @@ public:
         lengths.resize(index_hi+1);
     }
 
-    /**  Initializes lengths with SplineBase::SegLength method. */    
-    void initLengths();
+    /**  Initializes lengths with SplineBase::segmentLength method. */    
+    void initLengths(uint32 precision = SplineBase::LengthPrecisionDefault);
 
     /** Initializes lengths in some custom way
         Note that value returned by cacher must be greater or equal to previous value. */

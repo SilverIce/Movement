@@ -47,7 +47,7 @@ namespace Movement
         {
             Spline<float>& spline = splines[i];
 
-            spline.initLengths();
+            spline.initLengths(3);
             EXPECT_TRUE( G3D::fuzzyEq(spline.lengthTotal(),properLengths[i]) );
 
             testforNaN(spline);
