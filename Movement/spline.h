@@ -30,18 +30,12 @@ public:
 protected:
     ControlArray points;
 
-    enum {
-        ModeUninitialized = 0xFF,
-    };
-
     index_type index_lo;
     index_type index_hi;
-
-    uint8 m_mode;
-
+    EvaluationMode m_mode;
 
     inline void assertInitialized() const {
-        assert_state(m_mode != ModeUninitialized);
+        assert_state(m_mode != ModeEnd);
     }
 
 protected:
@@ -67,24 +61,24 @@ protected:
     #pragma endregion
 public:
 
-    explicit SplineBase() : m_mode(ModeUninitialized), index_lo(0), index_hi(0) {}
+    explicit SplineBase() : index_lo(0), index_hi(0), m_mode(ModeEnd) {}
 
-    /** Caclulates position for given segment Idx and percent of segment length u
+    /** Calculates position for given segment Idx and percent of segment length u
         @param Idx - spline segment index, should be in range [first, last)
         @param u - percent of segment length, assumes that u in range [0, 1]
      */
-    void evaluatePosition(index_type Idx, float u, Vector3& c) const {
+    void evaluatePosition(index_type Idx, float u, Vector3& pos) const {
         assertInitialized();
-        (this->*evaluators[m_mode])(Idx,u,c);
+        (this->*evaluators[m_mode])(Idx,u,pos);
     }
 
-    /** Caclulates derivation in index Idx and percent of segment length u
+    /** Calculates derivation in index Idx and percent of segment length u
         @param Idx - spline segment index, should be in range [first, last)
         @param u - percent of spline segment length, assumes that u in range [0, 1]
      */
-    void evaluateDerivative(index_type Idx, float u, Vector3& hermite) const {
+    void evaluateDerivative(index_type Idx, float u, Vector3& der) const {
         assertInitialized();
-        (this->*derivative_evaluators[m_mode])(Idx,u,hermite);
+        (this->*derivative_evaluators[m_mode])(Idx,u,der);
     }
 
     /**  Bounds for spline indexes. All indexes should be in range [first, last). */
@@ -148,21 +142,21 @@ public:
 
     /** Calculates the position for given t
         @param t - percent of spline's length, assumes that t in range [0, 1]. */
-    void evaluatePosition(float t, Vector3 & c) const;
+    void evaluatePosition(float t, Vector3& pos) const;
 
     /** Calculates derivation for given t
         @param t - percent of spline's length, assumes that t in range [0, 1]. */
-    void evaluateDerivative(float t, Vector3& hermite) const;
+    void evaluateDerivative(float t, Vector3& der) const;
 
     /** Calculates the position for given segment Idx and percent of segment length u
         @param Idx - spline segment index, should be in range [first, last)
         @param u - partial_segment_length / whole_segment_length. */
-    void evaluatePosition(index_type Idx, float u, Vector3& c) const { SplineBase::evaluatePosition(Idx,u,c);}
+    void evaluatePosition(index_type Idx, float u, Vector3& pos) const { SplineBase::evaluatePosition(Idx,u,pos);}
 
     /** Calculates derivation for index Idx and percent of segment length u
         @param Idx - spline segment index, should be in range [first, last)
         @param u - percent of spline segment length, u in range [0, 1]. */
-    void evaluateDerivative(index_type Idx, float u, Vector3& c) const { SplineBase::evaluateDerivative(Idx,u,c);}
+    void evaluateDerivative(index_type Idx, float u, Vector3& der) const { SplineBase::evaluateDerivative(Idx,u,der);}
 
     /** Computes a such spline segment @index that 'lenghts[index] < t * lengthTotal < lenghts[index+1]'
         @param t - percent of spline's length, assumes that t in range [0, 1]. */

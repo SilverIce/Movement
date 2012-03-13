@@ -2,20 +2,20 @@
 
 namespace Movement
 {
-template<typename length_type> void Spline<length_type>::evaluatePosition( float t, Vector3 & c ) const
+template<typename length_type> void Spline<length_type>::evaluatePosition(float t, Vector3& pos) const
 {
     index_type Index;
     float u;
     computeIndex(t, Index, u);
-    evaluatePosition(Index, u, c);
+    evaluatePosition(Index, u, pos);
 }
 
-template<typename length_type> void Spline<length_type>::evaluateDerivative(float t, Vector3& hermite) const
+template<typename length_type> void Spline<length_type>::evaluateDerivative(float t, Vector3& der) const
 {
     index_type Index;
     float u;
     computeIndex(t, Index, u);
-    evaluateDerivative(Index, u, hermite);
+    evaluateDerivative(Index, u, der);
 }
 
 template<typename length_type> SplineBase::index_type Spline<length_type>::computeIndexFromLength(length_type length_) const
