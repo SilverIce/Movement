@@ -23,7 +23,7 @@ namespace Movement
         void * m_socket;
         UnitMovementImpl * m_controlled;
         MSTime m_time_diff;             // difference between client and server time: diff = client_ticks - server_ticks
-        UInt32Counter request_counter;
+        UInt32Counter m_requestCounter;
         //int32 time_skipped;
         typedef std::list<RespHandler*> RespHdlContainer;
         RespHdlContainer m_resp_handlers;
@@ -155,10 +155,12 @@ namespace Movement
     private:
         ClientImpl* m_client;
         ClientOpcode m_targetOpcode;
-        bool m_replyReceived;
         MSTime m_TimeoutLaunchTime;
-    protected:
         uint32 m_requestId;
+        bool m_replyReceived;
+    protected:
+
+        uint32 requestId() const { return m_requestId;}
 
     private:
         void Execute(TaskExecutor_Args& args) override {
@@ -179,14 +181,14 @@ namespace Movement
     protected:
         virtual bool OnReply(ClientImpl * client, WorldPacket& data) = 0;
 
-        bool checkRequestId(uint32 requestId) const {
-            if (m_requestId != requestId) {
+        bool checkRequestId(uint32 RequestId) const {
+            if (requestId() != RequestId) {
                 /** Currently this problem is caused by some unaccounted wow-client's code technical details:
                     wow-client ignores request packets while in busy state(for ex. during teleporting).
                     When client is not busy and able send responses, servers sends some new request and client send a reply, 
                     but since there is still old unreplyed response handler queued*/
                 log_function("can not handle response %s - wrong request Id %u, expected request %u",
-                    OpcodeName(m_targetOpcode), requestId, m_requestId);
+                    OpcodeName(m_targetOpcode), RequestId, m_requestId);
                 //return false;
             }
             return true;

@@ -39,7 +39,7 @@ namespace Movement
         {
             WorldPacket data(ValueChange2Opc_table[value_type].smsg_request, 32);
             data << client->controlled()->Guid.WriteAsPacked();
-            data << m_requestId;
+            data << requestId();
             if (m_value_type == Parameter_SpeedRun)
                 data << int8(0);                               // new 2.1.0
             data << m_value;
@@ -182,7 +182,7 @@ namespace Movement
         {
             MovementMessage msg(NULL, modeInfo[mode].smsg_apply[!apply], 16);
             msg << client->controlled()->Guid.WriteAsPacked();
-            msg << m_requestId;
+            msg << requestId();
             client->SendMoveMessage(msg);
         }
 
@@ -266,7 +266,7 @@ namespace Movement
 
             MovementMessage msg(NULL, MSG_MOVE_TELEPORT_ACK, 64);   // message source is null - client shouldn't skip that message
             msg << client->controlled()->Guid.WriteAsPacked();
-            msg << m_requestId;
+            msg << requestId();
             msg << state;
             client->SendMoveMessage(msg);
         }
@@ -371,7 +371,7 @@ namespace Movement
 
             WorldPacket data(SMSG_MOVE_KNOCK_BACK, 32);
             data << client.controlled()->Guid.WriteAsPacked();
-            data << m_requestId;
+            data << requestId();
             data << m_direction2d.x;
             data << m_direction2d.y;
             data << m_horizontalVelocity;

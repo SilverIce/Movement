@@ -28,7 +28,7 @@ namespace Movement
             explicit TimeSyncRequest(ClientImpl * client) : RespHandler(CMSG_TIME_SYNC_RESP, client)
             {
                 WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
-                data << m_requestId;
+                data << requestId();
                 client->SendPacket(data);
                 m_requestSendTime = Imports.getMSTime();
             }
@@ -154,7 +154,7 @@ namespace Movement
     {
         std::stringstream str;
         str << "Server-side time: " << ServerTime().time << " Client-side time: " << ClientTime().time << std::endl;
-        str << "Request  counter: " << request_counter.getCurrent() << std::endl;
+        str << "Request  counter: " << m_requestCounter.getCurrent() << std::endl;
         if (!m_resp_handlers.empty()) {
             str << "Response handlers queue:" << std::endl;
             for (RespHdlContainer::const_iterator it = m_resp_handlers.begin();it != m_resp_handlers.end(); ++it)
@@ -166,7 +166,7 @@ namespace Movement
     uint32 ClientImpl::RegisterRespHandler(RespHandler* handler)
     {
         m_resp_handlers.push_back(handler);
-        return request_counter.NewId();
+        return m_requestCounter.NewId();
     }
 
     RespHandler* ClientImpl::PopRespHandler()
