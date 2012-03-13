@@ -166,7 +166,7 @@ namespace Movement
         void Execute(TaskExecutor_Args& args) override {
             if (!m_replyReceived) {
                 /** Currently this problem is caused by some unaccounted wow-client's code technical details:
-                    wow-client ignores requests while in busy state(for ex. during teleporting).*/
+                    wow-client ignores requests while in busy state(for ex. during teleport).*/
                 log_function("response handler %s timed out. timeout is %u seconds",
                     OpcodeName(m_targetOpcode), (args.now - m_TimeoutLaunchTime).time/1000 );
             }

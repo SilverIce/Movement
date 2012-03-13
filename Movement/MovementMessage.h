@@ -38,6 +38,7 @@ namespace Movement
 
         void operator << (const ClientMoveState& state)
         {
+            assert_state(time_position == NO_TIMESTAMP); // asserts that this is first state input
             original_time = state.ms_time;
             time_position = m_packet.wpos() + UnitMoveFlag::Size;
             PacketBuilder::WriteClientStatus(state, m_packet);

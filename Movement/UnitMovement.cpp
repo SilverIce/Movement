@@ -2,6 +2,7 @@
 #include "UnitMovement.h"
 #include "Client.h"
 #include "MoveSplineInit.h"
+#include "MoveListener.h"
 
 #include "framework/Component.h"
 #include "Imports.h"
@@ -18,7 +19,6 @@
 #include "opcodes.h"
 
 #include "MoveSpline.h"
-#include "MoveListener.h"
 #include "MoveEnv.h"
 #include "MovementBase.h"
 
@@ -26,8 +26,8 @@
 #include "ClientMoveStatus.h"
 #include "packet_builder.h"
 #include "MovementMessage.h"
-#include "UpdatableSpline.h"
 #include "UnitMovementImpl.h"
+#include "UpdatableSpline.h"
 #include "ClientImpl.h"
 #include "UnitMovement.Passenger.h"
 

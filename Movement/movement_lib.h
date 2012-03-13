@@ -11,10 +11,6 @@ namespace G3D
 
 namespace Movement
 {
-    class MovementBase;
-    class GameobjectMovement;
-    class Transportable;
-    class MO_Transport;
     class UnitMovement;
     class Client;
     struct Location;
