@@ -190,7 +190,7 @@ namespace Movement
             UnitMoveFlag::Waterwalking | UnitMoveFlag::GravityDisabled | UnitMoveFlag::Can_Safe_Fall | UnitMoveFlag::Root |
             UnitMoveFlag::Spline_Enabled;
 
-        /** It tries detect unallowed state change by comparing current and new movement flags */
+        /** It tries detect not allowed state change by comparing current and new movement flags */
         bool ValidateStateChange() const
         {
             UnitMoveFlag bitChanged((unit.moveFlags.raw ^ state.moveFlags.raw) & ImportantFlags);
@@ -313,7 +313,7 @@ namespace Movement
 
     void Client::OnMovementMessage(WorldPacket& message)
     {
-        MoveHandlersBinder::InvokeHander(m, message);
+        HandlersHolder::InvokeHander(m, message);
     }
 
     Client* Client::create(void * socket)
@@ -332,6 +332,6 @@ namespace Movement
 
     void Client::FillSubscribeList(std::vector<uint16>& opcodes)
     {
-        MoveHandlersBinder::FillSubscribeList(opcodes);
+        HandlersHolder::FillSubscribeList(opcodes);
     }
 }

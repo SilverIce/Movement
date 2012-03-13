@@ -7,6 +7,7 @@
 #include "framework/Component.h"
 #include "Imports.h"
 #include "TaskScheduler.h"
+#include "framework/DelayInit.h"
 #include "framework/typedefs_p.h"
 
 #include <sstream>

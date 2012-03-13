@@ -94,11 +94,23 @@ namespace Movement
         static void OnActiveMover(ClientImpl& client, WorldPacket& data);
     };
 
-    class MoveHandlersBinder
+    class HandlersHolder
     {
     public:
         typedef void (*Handler)(ClientImpl&, WorldPacket& msg);
         typedef stdext::hash_map<ClientOpcode, Handler> HandlerMap;
+
+    private:
+        HandlerMap handlers;
+
+        explicit HandlersHolder() {}
+
+        static HandlersHolder& instance() {
+            static HandlersHolder _instance;
+            return _instance;
+        }
+
+    public:
 
         static void InvokeHander(ClientImpl& client, WorldPacket& msg)
         {
@@ -111,6 +123,7 @@ namespace Movement
 
         static void FillSubscribeList(std::vector<uint16>& opcodes)
         {
+            assert_state_msg(!instance().handlers.empty(), "bad news, no handlers binded");
             for (HandlerMap::const_iterator it = instance().handlers.begin(); it != instance().handlers.end(); ++it)
                 opcodes.push_back(it->first);
         }
@@ -124,27 +137,16 @@ namespace Movement
             }
         }
 
-    private:
-
-        explicit MoveHandlersBinder();
-
-        static MoveHandlersBinder& instance() {
-            static MoveHandlersBinder _instance;
-            return _instance;
-        }
-
-        HandlerMap handlers;
-
-        void assignHandler(Handler hdl, ClientOpcode opcode) {
+        static void assignHandler(Handler hdl, ClientOpcode opcode) {
             if (opcode == MSG_NULL_ACTION)
                 return;
-            HandlerMap::const_iterator it = handlers.find(opcode);
+            HandlerMap::const_iterator it = instance().handlers.find(opcode);
             // two normal cases here: handler wasn't assigned yet or same handler for same opcode
-            assert_state(it == handlers.end() || it->second == hdl);
-            handlers.insert(HandlerMap::value_type(opcode,hdl));
+            assert_state(it == instance().handlers.end() || it->second == hdl);
+            instance().handlers.insert(HandlerMap::value_type(opcode,hdl));
         }
 
-        void assignHandler(Handler hdl, const ClientOpcode * opcodes, uint32 count) {
+        static void assignHandler(Handler hdl, const ClientOpcode * opcodes, uint32 count) {
             for (uint32 i = 0; i < count; ++i)
                 assignHandler(hdl, opcodes[i]);
         }

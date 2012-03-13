@@ -405,21 +405,21 @@ namespace Movement
 
     //////////////////////////////////////////////////////////////////////////
 
-    MoveHandlersBinder::MoveHandlersBinder()
+    void registerGenericMovementHandlers()
     {
 
 #define ASSIGN_HANDLER(MessageHanger, ... ) { \
-    ClientOpcode opcodes[] = {__VA_ARGS__}; \
-    assignHandler(MessageHanger, opcodes, CountOf(opcodes)); \
+        ClientOpcode opcodes[] = {__VA_ARGS__}; \
+        HandlersHolder::assignHandler(MessageHanger, opcodes, CountOf(opcodes)); \
     }
-        assignHandler(&ClientImpl::OnMoveTimeSkipped, CMSG_MOVE_TIME_SKIPPED);
+        HandlersHolder::assignHandler(&ClientImpl::OnMoveTimeSkipped, CMSG_MOVE_TIME_SKIPPED);
 
         for (uint32 i = 0; i < CountOf(ValueChange2Opc_table); ++i)
-            assignHandler(&RespHandler::OnResponse, ValueChange2Opc_table[i].cmsg_response);
+            HandlersHolder::assignHandler(&RespHandler::OnResponse, ValueChange2Opc_table[i].cmsg_response);
 
         for (uint32 i = 0; i < CountOf(modeInfo); ++i) {
-            assignHandler(&RespHandler::OnResponse, modeInfo[i].cmsg_ack[0]);
-            assignHandler(&RespHandler::OnResponse, modeInfo[i].cmsg_ack[1]);
+            HandlersHolder::assignHandler(&RespHandler::OnResponse, modeInfo[i].cmsg_ack[0]);
+            HandlersHolder::assignHandler(&RespHandler::OnResponse, modeInfo[i].cmsg_ack[1]);
         }
 
         ASSIGN_HANDLER(&RespHandler::OnResponse,
@@ -456,10 +456,11 @@ namespace Movement
             CMSG_MOVE_CHNG_TRANSPORT,
             MSG_MOVE_START_DESCEND);
 
-        assignHandler(&ClientImpl::OnSplineDone, CMSG_MOVE_SPLINE_DONE);
-        assignHandler(&ClientImpl::OnNotActiveMover, CMSG_MOVE_NOT_ACTIVE_MOVER);
-        assignHandler(&ClientImpl::OnActiveMover, CMSG_SET_ACTIVE_MOVER);
+        HandlersHolder::assignHandler(&ClientImpl::OnSplineDone, CMSG_MOVE_SPLINE_DONE);
+        HandlersHolder::assignHandler(&ClientImpl::OnNotActiveMover, CMSG_MOVE_NOT_ACTIVE_MOVER);
+        HandlersHolder::assignHandler(&ClientImpl::OnActiveMover, CMSG_SET_ACTIVE_MOVER);
 
 #undef ASSIGN_HANDLER
     }
+    DELAYED_CALL(registerGenericMovementHandlers);
 }
