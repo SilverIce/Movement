@@ -12,7 +12,7 @@ namespace Movement
 
     struct Type {
         AspectTypeId typeId;
-        void * pointer;
+        Component * pointer;
         bool operator < (const Type& other) const {
             return typeId < other.typeId;
         }
@@ -43,9 +43,9 @@ namespace Movement
             return m_types.size();
         }
 
-        void addAspect(AspectTypeId objectTypeId, void * object)
+        void addAspect(AspectTypeId objectTypeId, Component & object)
         {
-            Type type = {objectTypeId, object};
+            Type type = {objectTypeId, &object};
             std::vector<Type>::const_iterator itr = std::lower_bound(m_types.begin(),m_types.end(),type);
             if (itr != m_types.end() && itr->typeId == type.typeId)
                 throw std::runtime_error("aspect of same type added already");
@@ -60,7 +60,7 @@ namespace Movement
                 m_types.erase(itr);
         }
 
-        void* getAspect(AspectTypeId objectTypeId) const
+        Component* getAspect(AspectTypeId objectTypeId) const
         {
             Type fake = {objectTypeId, NULL};
             std::vector<Type>::const_iterator itr = std::lower_bound(m_types.begin(),m_types.end(),fake);
@@ -93,9 +93,10 @@ namespace Movement
         if (!tree)
             tree = new ComponentTree();
         m_tree = tree;
+        m_this = me;
         m_typeId = objectTypeId;
         m_tree->addRef();
-        m_tree->addAspect(objectTypeId, me);
+        m_tree->addAspect(objectTypeId, *this);
     }
 
     void Component::_ComponentAttach(void * object, AspectTypeId objectTypeId, Component * com)
@@ -107,7 +108,9 @@ namespace Movement
 
     void* Component::_getAspect(AspectTypeId objectTypeId) const {
         assert_state(m_tree);
-        return m_tree->getAspect(objectTypeId);
+        if (Component * com = m_tree->getAspect(objectTypeId))
+            return com->m_this;
+        return nullptr;
     }
 }
 
@@ -157,18 +160,18 @@ namespace Movement
         EXPECT_TRUE( cnt.Count() == 0 );
 
         TypeA atype;
-        cnt.addAspect(atype.getTypeId(), &atype);
+        cnt.addAspect(atype.getTypeId(), atype);
 
         EXPECT_TRUE( cnt.getAspect(atype.getTypeId()) == &atype );
         EXPECT_TRUE( cnt.Count() == 1 );
 
         TypeB btype;
-        cnt.addAspect(btype.getTypeId(), &btype);
+        cnt.addAspect(btype.getTypeId(), btype);
         EXPECT_TRUE( cnt.getAspect(btype.getTypeId()) == &btype );
         EXPECT_TRUE( cnt.Count() == 2 );
 
         TypeA atypeAnother;
-        EXPECT_THROW( cnt.addAspect(atypeAnother.getTypeId(),&atypeAnother), std::runtime_error );
+        EXPECT_THROW( cnt.addAspect(atypeAnother.getTypeId(),atypeAnother), std::runtime_error );
         EXPECT_TRUE( cnt.Count() == 2 );
 
         EXPECT_TRUE( cnt.getAspect(TypeC::getTypeId()) == NULL );

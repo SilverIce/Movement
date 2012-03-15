@@ -7,17 +7,18 @@ namespace Movement
     typedef size_t AspectTypeId;
     class ComponentTree;
 
-    struct Component
+    struct EXPORT Component
     {
         private: ComponentTree* m_tree;
+        private: void* m_this;
         private: AspectTypeId m_typeId;
 
         private: void* _getAspect(AspectTypeId objectTypeId) const;
         private: void _ComponentInit(void * me, AspectTypeId objectTypeId, ComponentTree * tree);
         private: void _ComponentAttach(void * object, AspectTypeId objectTypeId, Component * com);
 
-        public: ComponentTree& Tree() const {
-            return *m_tree;
+        public: ComponentTree* Tree() const {
+            return m_tree;
         }
 
         public: template<class T> T* getAspect() const {
@@ -28,7 +29,7 @@ namespace Movement
             return (T*)_getAspect(T::getTypeId());
         }
 
-        public: explicit Component() : m_tree(0), m_typeId(0) {}
+        public: explicit Component() : m_tree(0), m_this(0), m_typeId(0) {}
 
         public: virtual ~Component();
 
