@@ -52,7 +52,7 @@ namespace Movement
         } hdl = {*this, events, false};
 
         m_base.updateState(difftime,hdl);
-        m_owner->SetRelativePosition(m_base.ComputePosition());
+        m_owner->RelativeLocation(m_base.ComputePosition());
 
         if (hdl.needSync)
             PacketBuilder::SplineSyncSend(controlled());
@@ -117,14 +117,14 @@ namespace Movement
 
         if (args.path.empty()) {
             args.path.resize(2);
-            args.path[1] = m_owner->GetRelativePosition();
+            args.path[1] = m_owner->RelativePosition();
         }
 
-        mov_assert(!args.path.empty());
-        args.path[0] = m_owner->GetRelativePosition();    //correct first vertex
+        //mov_assert(!args.path.empty());
+        args.path[0] = m_owner->RelativePosition();    //correct first vertex
         if (args.splineId == 0)
             args.splineId = movesplineIdGenerator.NewId();
-        args.initialOrientation = m_owner->GetOrientation();
+        args.initialOrientation = m_owner->YawAngle();
 
         moveFlag_new = m_owner->moveFlags;
         // logic from client here:
@@ -180,13 +180,11 @@ namespace Movement
                 {
                     RescheduleTaskWithDelay(args, RotationUpdateDelay);
                     lastOrientationUpdate = args.now;
-                    if (controlled.IsMoving() || controlled.IsClientControlled() ||   // task inactive while moving or in controlled by client state
-                        // or target's position wasn't changed since last orientation update
-                        (target->Impl().lastPositionChangeTime < lastOrientationUpdate))
+                    if (controlled.IsMoving() || controlled.IsClientControlled())   // task inactive while moving or in controlled by client state
                         return;
 
                     const Vector3& targetPos = target->GetPosition3();
-                    const Vector3& myPos = controlled.GetRelativePosition();
+                    const Vector3& myPos = controlled.GlobalPosition();
                     float orientation = atan2f(targetPos.y - myPos.y, targetPos.x - myPos.x);
                     controlled.SetOrientation(orientation);
                 } 

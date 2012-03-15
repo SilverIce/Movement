@@ -39,8 +39,6 @@ namespace Movement
     }
 
     UnitMovementImpl::UnitMovementImpl() :
-        Owner(NULL),
-        m_entity(NULL),
         PublicFace(NULL),
         m_client(NULL)
     {
@@ -62,17 +60,9 @@ namespace Movement
         m_currentSpeedType = Parameter_SpeedRun;
     }
 
-    void UnitMovementImpl::Init(Component& tree, Tasks::ITaskExecutor& updater, UnitMovement* publicFace)
+    void UnitMovementImpl::Init(Tasks::ITaskExecutor& updater, UnitMovement* publicFace)
     {
-        tree.ComponentAttach(this);
-
-        WowObject * wobj = getAspect<WowObject>();
-        Owner = wobj->object;
-        Guid = wobj->guid;
-
         PublicFace = publicFace;
-        m_entity = getAspect<MovingEntity_Revolvable2>();
-
         commonTasks.SetExecutor(updater);
     }
 
@@ -95,7 +85,6 @@ namespace Movement
         }
 
         commonTasks.Unregister();
-        m_entity = nullptr;
         PublicFace = nullptr;
         Owner = nullptr;
     }
@@ -111,7 +100,7 @@ namespace Movement
 
     float UnitMovementImpl::directionAngle() const
     {
-        float dest_angle = GetOrientation();
+        float dest_angle = YawAngle();
         if (moveFlags.forward)
         {
             if (moveFlags.strafe_right)

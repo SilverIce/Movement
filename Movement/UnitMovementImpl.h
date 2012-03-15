@@ -15,14 +15,13 @@ namespace Movement
     class ClientImpl;
     struct MoveSplineInitArgs;
 
-    // class for unit's movement
-    class UnitMovementImpl : public ComponentT<UnitMovementImpl>
+    class UnitMovementImpl : public MovingEntity_WOW
     {
     public:
 
         explicit UnitMovementImpl();
 
-        void Init(Component& tree, Tasks::ITaskExecutor& updater, UnitMovement* publicFace);
+        void Init(Tasks::ITaskExecutor& updater, UnitMovement* publicFace);
         virtual ~UnitMovementImpl();
 
         void CleanReferences();
@@ -32,46 +31,6 @@ namespace Movement
         Vector3 direction() const;
 
         float directionAngle() const;
-
-    public:
-
-        // TODO: too much aliases here..
-
-        Location GetGlobalPosition() const {
-            return Location(m_entity->GlobalPosition(),m_entity->YawAngle());
-        }
-
-        const Vector3& GetGlobalPosition3() const {
-            return m_entity->GlobalPosition();
-        }
-
-        const Vector3& GetRelativePosition() const { return m_entity->RelativePosition();}
-
-        void SetRelativePosition(const Vector3& position)
-        {
-            m_entity->RelativePosition(position);
-            lastPositionChangeTime = Imports.getMSTime();
-            Imports.OnPositionChanged(Owner, GetGlobalPosition());
-        }
-
-        void SetRelativePosition(const Location& position)
-        {
-            m_entity->RelativePosition(position);
-            m_entity->YawAngle(position.orientation);
-            lastPositionChangeTime = Imports.getMSTime();
-            Imports.OnPositionChanged(Owner, GetGlobalPosition());
-        }
-
-        void SetOrientation(float orientation)
-        {
-            m_entity->YawAngle(orientation);
-            Imports.OnPositionChanged(Owner, GetGlobalPosition());
-        }
-
-        float GetOrientation() const { return m_entity->YawAngle();}
-
-        void PitchAngle(float pitchAngle) { m_entity->PitchAngle(pitchAngle);}
-        float PitchAngle() const { return m_entity->PitchAngle();}
 
     public:
         bool HasMode(MoveMode m) const;
@@ -105,7 +64,7 @@ namespace Movement
         static FloatParameter SelectSpeedType(UnitMoveFlag moveFlags);
 
         Tasks::ITaskExecutor& Updater() const { return *commonTasks.getExecutor();}
-        TaskTarget_DEV commonTasks;
+        Tasks::TaskTarget_DEV commonTasks;
 
         ClientImpl* client() const { return m_client;}
         void client(ClientImpl* c) {
@@ -120,16 +79,12 @@ namespace Movement
         void assertCleaned() const;
 
         ClientImpl* m_client;
-        MovingEntity_Revolvable2 * m_entity;
         MSTime lastMoveEvent;
     public:
         UnitMoveFlag const moveFlags;
         FloatParameter m_currentSpeedType;
-        MSTime lastPositionChangeTime;
 
         UnitMovement* PublicFace;
-        WorldObject* Owner;
-        ObjectGuid Guid;
 
         /** Data that cames from client. It affects nothing here but might be used in future. */
         _ClientMoveState m_unused;

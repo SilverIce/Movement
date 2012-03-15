@@ -234,7 +234,7 @@ namespace Movement
                 }
             }
 
-            unit.SetRelativePosition(state.moveFlags.ontransport ? state.relativePosition : state.globalPosition);
+            unit.RelativeLocation(state.moveFlags.ontransport ? state.relativePosition : state.globalPosition);
             unit.PitchAngle(state.pitchAngle);
             unit.SetMoveFlag(newFlags);
             unit.m_unused = state;

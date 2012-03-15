@@ -302,7 +302,7 @@ namespace Movement
             if (!checkRequestId(client_req_id))
                 return false;
 
-            client->controlled()->SetRelativePosition(m_location);
+            client->controlled()->RelativeLocation(m_location);
 
             MovementMessage msg(client->controlled(), MSG_MOVE_TELEPORT, 64);
             msg << guid.WriteAsPacked();
@@ -390,7 +390,7 @@ namespace Movement
                 float moveTimeHalf = verticalVelocity / (float)Gravity();
                 float maxAmplitude = -computeFallElevation(moveTimeHalf,-verticalVelocity);
                 // TODO: correct destination to not make unit fall to void
-                Vector3 destination = movement.GetRelativePosition() +
+                Vector3 destination = movement.RelativePosition() +
                     2.f * moveTimeHalf * horizontalVelocity * Vector3(cos(directionAngle),sin(directionAngle),0.f);
 
                 MoveSplineInit init(movement);

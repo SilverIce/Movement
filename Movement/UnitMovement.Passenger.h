@@ -16,7 +16,7 @@ namespace Movement
 
         void OnUpdatePositionCallback(Tasks::TaskExecutor_Args& args) {
             RescheduleTaskWithDelay(args, 1000);
-            Imports.OnPositionChanged(m_unit->Owner, m_unit->GetGlobalPosition());
+            Imports.OnPositionChanged(m_unit->Owner, m_unit->GetGlobalLocation());
         }
 
         /*struct PassengerImpl : IPassenger
@@ -40,13 +40,13 @@ namespace Movement
             return m_transportGuid;
         }
 
-        explicit Unit_Passenger(UnitMovementImpl& unitPassenger, MovingEntity_Revolvable2& transport,
+        explicit Unit_Passenger(UnitMovementImpl& unitPassenger, MovingEntity_WOW& transport,
             OnPassengerDestroy* onDestr, int8 seatId)
         {
             unitPassenger.ComponentAttach(this);
             //unitPassenger.ComponentAttach<IPassenger>(&m_PassengerImpl);
 
-            m_transportGuid = transport.getAspect<WowObject>()->guid;
+            m_transportGuid = transport.Guid;
             m_unit = &unitPassenger;
             m_seatId = seatId;
             m_onDestroy = onDestr;
@@ -54,7 +54,7 @@ namespace Movement
 
             // TODO: need force stop spline movement effect before any coordinate system switch, otherwise
             // such effect will move us into wrong place
-            getAspect<MovingEntity_Revolvable2>()->SetEnvironment(&transport);
+            ToUnit().SetEnvironment(&transport);
             m_updatePosTask.AddTask(NewITaskP0(this,&Unit_Passenger::OnUpdatePositionCallback), 0);
         }
 
@@ -62,7 +62,7 @@ namespace Movement
             m_updatePosTask.CancelTasks();
             // TODO: need force stop spline movement effect before any coordinate system switch, otherwise
             // such effect will move us into wrong place
-            getAspect<MovingEntity_Revolvable2>()->SetEnvironment(nullptr);
+            ToUnit().SetEnvironment(nullptr);
             ComponentDetach();
 
             if (m_onDestroy)

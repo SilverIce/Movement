@@ -30,7 +30,7 @@ namespace Movement
         }
 
         data << uint8(0);       // boolean variable. toggles UnitMoveFlag::Unk4 flag
-        data << mov.GetRelativePosition();
+        data << mov.RelativePosition();
         data << move_spline.GetId();
 
         switch(splineflags & MoveSplineFlag::Mask_Final_Facing)
@@ -212,15 +212,14 @@ namespace Movement
         ClientMoveState state;
         static_cast<_ClientMoveState&>(state) = mov.m_unused;
         state.ms_time = Imports.getMSTime();
-        state.globalPosition = mov.GetGlobalPosition();
+        state.globalPosition = mov.GetGlobalLocation();
         state.moveFlags = mov.moveFlags;
         state.pitchAngle = mov.PitchAngle();
 
         if (Unit_Passenger * psg = mov.getAspect<Unit_Passenger>())
         {
             state.moveFlags.ontransport = true;
-            state.relativePosition = mov.GetRelativePosition();
-            state.relativePosition.orientation = mov.m_entity->YawAngle();
+            state.relativePosition = mov.RelativeLocation();
             state.transport_seat = psg->SeatId();
             state.transport_guid = psg->TransportGuid();
         }

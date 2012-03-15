@@ -49,20 +49,18 @@ namespace Movement
         UnitMovement pubface;
 
         UnitMovementImpl unit;
-        WowObject wowObject;
-        MovingEntity_Revolvable2 entity;
         MoveSplineUpdatable monsterController;
 
         UnitMovementStruct(WorldObject& owner, uint64 ownerGuid, Tasks::ITaskExecutor& updater) : pubface(unit)
         {
-            entity.ComponentInit(&entity);
+            assert_state(this);
+            unit.ComponentInit(&unit);
 
-            entity.ComponentAttach(&wowObject);
-            wowObject.guid.SetRawValue(ownerGuid);
-            wowObject.object = &owner;
+            unit.Guid.SetRawValue(ownerGuid);
+            unit.Owner = &owner;
+            unit.Init(updater, &pubface);
+            monsterController.Init(unit);
 
-            unit.Init(entity, updater, &pubface);
-            monsterController.Init(entity);
         }
 
         ~UnitMovementStruct()
@@ -91,17 +89,17 @@ namespace Movement
 
     void UnitMovement::SetPosition(const Location& position)
     {
-        m.SetRelativePosition(position);
+        m.RelativeLocation(position);
     }
 
     Location UnitMovement::GetPosition()
     {
-        return m.GetGlobalPosition();
+        return m.GetGlobalLocation();
     }
 
     const Vector3& UnitMovement::GetPosition3()
     {
-        return m.GetGlobalPosition3();
+        return m.GlobalPosition();
     }
 
     bool UnitMovement::IsWalking()
