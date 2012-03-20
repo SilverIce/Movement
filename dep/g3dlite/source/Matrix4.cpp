@@ -23,6 +23,7 @@
 namespace G3D {
 
 
+/*
 Matrix4::Matrix4(const Any& any) {
     any.verifyName("Matrix4");
     any.verifyType(Any::ARRAY);
@@ -61,6 +62,7 @@ Matrix4::operator Any() const {
 
     return any;
 }
+*/
 
 const Matrix4& Matrix4::identity() {
     static Matrix4 m(
@@ -475,7 +477,7 @@ float Matrix4::subDeterminant(int excludeRow, int excludeCol) const {
       elt[row[0]][col[2]] * cofactor20;
 }
 
-
+/*
 CoordinateFrame Matrix4::approxCoordinateFrame() const {
     CoordinateFrame cframe;
 
@@ -491,6 +493,7 @@ CoordinateFrame Matrix4::approxCoordinateFrame() const {
 
     return cframe;
 }
+
 
 void Matrix4::serialize(class BinaryOutput& b) const {
     for (int r = 0; r < 4; ++r) {
@@ -508,6 +511,7 @@ void Matrix4::deserialize(class BinaryInput& b) {
         }
     }
 }
+*/
 
 std::string Matrix4::toString() const {
     return G3D::format("[%g, %g, %g, %g; %g, %g, %g, %g; %g, %g, %g, %g; %g, %g, %g, %g]",

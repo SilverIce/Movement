@@ -21,6 +21,7 @@ namespace G3D {
 
 int32 Sphere::dummy;
 
+/*
 Sphere::Sphere(class BinaryInput& b) {
     deserialize(b);
 }
@@ -36,6 +37,7 @@ void Sphere::deserialize(class BinaryInput& b) {
     center.deserialize(b);
     radius = (float)b.readFloat64();
 }
+*/
 
 
 std::string Sphere::toString() const {

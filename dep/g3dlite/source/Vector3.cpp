@@ -29,6 +29,7 @@
 #include "G3D/Any.h"
  
 namespace G3D {
+/*
 
 Vector3::Vector3(const Any& any) {
     any.verifyName("Vector3");
@@ -53,6 +54,7 @@ Vector3::operator Any() const {
     return any;
 }
 
+*/
 Vector3::Vector3(const class Color3& v) : x(v.r), y(v.g), z(v.b) {}
 
 Vector3::Vector3(const class Vector3int32& v) : x((float)v.x), y((float)v.y), z((float)v.z) {}
@@ -122,6 +124,7 @@ double frand() {
     return rand() / (double) RAND_MAX;
 }
 
+/*
 Vector3::Vector3(TextInput& t) {
 	deserialize(t);
 }
@@ -129,6 +132,7 @@ Vector3::Vector3(TextInput& t) {
 Vector3::Vector3(BinaryInput& b) {
     deserialize(b);
 }
+*/
 
 
 Vector3::Vector3(const class Vector3int16& v) {
@@ -137,6 +141,7 @@ Vector3::Vector3(const class Vector3int16& v) {
     z = v.z;
 }
 
+/*
 
 void Vector3::deserialize(BinaryInput& b) {
     x = b.readFloat32();
@@ -173,6 +178,7 @@ void Vector3::serialize(BinaryOutput& b) const {
     b.writeFloat32(z);
 }
 
+*/
 
 Vector3 Vector3::random(Random& r) {
     Vector3 result;
@@ -363,6 +369,7 @@ Matrix3 Vector3::cross() const {
                    -y,  x,  0);
 }
 
+/*
 
 void serialize(const Vector3::Axis& a, class BinaryOutput& bo) {
     bo.writeUInt8((uint8)a);
@@ -372,6 +379,7 @@ void deserialize(Vector3::Axis& a, class BinaryInput& bi) {
     a = (Vector3::Axis)bi.readUInt8();
 }
 
+*/
 //----------------------------------------------------------------------------
 // 2-char swizzles
 

@@ -26,6 +26,7 @@ namespace G3D {
 
 const float Matrix3::EPSILON = 1e-06f;
 
+/*
 Matrix3::Matrix3(const Any& any) {
     any.verifyName("Matrix3");
     any.verifyType(Any::ARRAY);
@@ -50,6 +51,7 @@ Matrix3::operator Any() const {
 
     return any;
 }
+*/
 
 const Matrix3& Matrix3::zero() {
     static Matrix3 m(0, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -65,9 +67,10 @@ const Matrix3& Matrix3::identity() {
 const float Matrix3::ms_fSvdEpsilon = 1e-04f;
 const int Matrix3::ms_iSvdMaxIterations = 32;
 
+/*
 Matrix3::Matrix3(BinaryInput& b) {
     deserialize(b);
-}
+}*/
 
 bool Matrix3::fuzzyEq(const Matrix3& b) const {
     for (int r = 0; r < 3; ++r) {
@@ -168,6 +171,7 @@ void Matrix3::set(
 }
 
 
+/*
 void Matrix3::deserialize(BinaryInput& b) {
     int r,c;
     for (c = 0; c < 3; ++c) {
@@ -186,6 +190,7 @@ void Matrix3::serialize(BinaryOutput& b) const {
         }
     }
 }
+*/
 
 
 //----------------------------------------------------------------------------

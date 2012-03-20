@@ -25,6 +25,7 @@
 
 namespace G3D {
 
+/*
 
 Vector2::Vector2(const Any& any) {
     any.verifyName("Vector2");
@@ -48,6 +49,7 @@ Vector2::operator Any() const {
     return any;
 }
 
+*/
 
 const Vector2& Vector2::one() { 
     static const Vector2 v(1, 1); return v; 
@@ -99,6 +101,7 @@ size_t Vector2::hashCode() const {
 
     return xhash + (yhash * 37);
 }
+/*
 
 
 Vector2::Vector2(BinaryInput& b) {
@@ -134,6 +137,7 @@ void Vector2::serialize(TextOutput& t) const {
    t.writeNumber(y);
    t.writeSymbol(")");
 }
+*/
 
 //----------------------------------------------------------------------------
 

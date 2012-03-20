@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="G3D.lib"
+	Name="G3D"
 	ProjectGUID="{B304F5F9-1123-42C9-93E8-14E3B3F89B49}"
 	RootNamespace="G3Dlib"
 	TargetFrameworkVersion="196613"
@@ -85,10 +85,6 @@
 		</Configuration>
 	</Configurations>
 	<References>
-		<ProjectReference
-			ReferencedProjectIdentifier="{1B66DDFF-4739-4911-B44D-D63E8B696075}"
-			RelativePathToProject="..\dep\zlib\win\VC9\zlib.lib.vcproj"
-		/>
 	</References>
 	<Files>
 		<Filter
@@ -211,51 +207,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\source\Any.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\source\BinaryFormat.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\source\BinaryInput.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\source\BinaryOutput.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\source\Box.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\source\Capsule.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\source\CollisionDetection.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\source\CoordinateFrame.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\source\Crypto.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\source\Cylinder.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\source\debugAssert.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\source\fileutils.cpp"
 				>
 			</File>
 			<File
@@ -271,14 +223,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\source\Line.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\source\LineSegment.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\source\Log.cpp"
 				>
 			</File>
@@ -291,27 +235,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\source\MemoryManager.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\source\Plane.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\source\prompt.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\source\Quat.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\source\Random.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\source\Ray.cpp"
 				>
 			</File>
 			<File
@@ -328,26 +256,6 @@
 			</File>
 			<File
 				RelativePath="..\..\source\stringutils.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\source\System.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\source\TextInput.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\source\TextOutput.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\source\Triangle.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\source\UprightFrame.cpp"
 				>
 			</File>
 			<File

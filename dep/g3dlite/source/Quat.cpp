@@ -219,6 +219,7 @@ Quat Quat::unitRandom() {
 }
 
 
+/*
 void Quat::deserialize(class BinaryInput& b) {
     x = b.readFloat32();
     y = b.readFloat32();
@@ -233,6 +234,7 @@ void Quat::serialize(class BinaryOutput& b) const {
     b.writeFloat32(z);
     b.writeFloat32(w);
 }
+*/
 
 
 // 2-char swizzles

@@ -55,16 +55,16 @@ std::string vformat(const char *fmt, va_list argPtr) {
 
         if (actualSize < maxSize) {
 
-            heapBuffer = (char*)System::malloc(maxSize + 1);
+            heapBuffer = (char*)malloc(maxSize + 1);
             _vsnprintf(heapBuffer, maxSize, fmt, argPtr);
             heapBuffer[maxSize] = '\0';
         } else {
-            heapBuffer = (char*)System::malloc(actualSize);
+            heapBuffer = (char*)malloc(actualSize);
             vsprintf(heapBuffer, fmt, argPtr);            
         }
 
         std::string formattedString(heapBuffer);
-        System::free(heapBuffer);
+        free(heapBuffer);
         return formattedString;
     } else {
 
@@ -95,19 +95,19 @@ std::string vformat(const char *fmt, va_list argPtr) {
 
         int heapSize = 512;
         double powSize = 1.0;
-        char* heapBuffer = (char*)System::malloc(heapSize);
+        char* heapBuffer = (char*)malloc(heapSize);
         
         while ((_vsnprintf(heapBuffer, heapSize, fmt, argPtr) == -1) &&
             (heapSize  < maxSize)) {
 
             heapSize = iCeil(heapSize * ::pow((double)2.0, powSize++));
-            heapBuffer = (char*)System::realloc(heapBuffer, heapSize);
+            heapBuffer = (char*)realloc(heapBuffer, heapSize);
         }
 
         heapBuffer[heapSize-1] = '\0';
 
         std::string heapString(heapBuffer);
-        System::free(heapBuffer);
+        free(heapBuffer);
 
         return heapString;
     } else {
@@ -135,7 +135,7 @@ std::string vformat(const char* fmt, va_list argPtr) {
 
     if (numChars >= bufSize) {
       // We didn't allocate a big enough string.
-      char* heapBuffer = (char*)System::malloc((numChars + 1) * sizeof(char));
+      char* heapBuffer = (char*)malloc((numChars + 1) * sizeof(char));
 
       debugAssert(heapBuffer);
       int numChars2 = vsnprintf(heapBuffer, numChars + 1, fmt, argPtr);
@@ -144,7 +144,7 @@ std::string vformat(const char* fmt, va_list argPtr) {
 
       std::string result(heapBuffer);
       
-      System::free(heapBuffer);
+      free(heapBuffer);
 
       return result;
 

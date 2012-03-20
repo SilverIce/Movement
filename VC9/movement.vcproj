@@ -391,15 +391,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\Movement\TaskExecutorImpl_EntirelyNew.hpp"
-					>
-				</File>
-				<File
 					RelativePath="..\Movement\TaskExecutorImpl_LinkedList1.10.hpp"
-					>
-				</File>
-				<File
-					RelativePath="..\Movement\TaskExecutorImpl_LinkedList1.11.hpp"
 					>
 				</File>
 				<File
@@ -466,10 +458,6 @@
 		</File>
 		<File
 			RelativePath="..\Movement\MoveSplineInit.h"
-			>
-		</File>
-		<File
-			RelativePath="..\Movement\typedefs.h"
 			>
 		</File>
 		<File
