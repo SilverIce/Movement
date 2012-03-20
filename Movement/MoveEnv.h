@@ -196,7 +196,7 @@ namespace Movement
         }
     };
 
-    struct MovingEntity_Revolvable2 : ComponentT<MovingEntity_Revolvable2>
+    struct MovingEntity_Revolvable2 : Component
     {
         MovingEntity_Revolvable m_entity;
 

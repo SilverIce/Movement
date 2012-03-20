@@ -7,6 +7,14 @@ namespace Tasks
 {
     namespace detail {}
     using namespace ::Tasks::detail;
+
+    void ReferenceCountable::release()
+    {
+        assert_state(refCount > 0); // asserts that already released(deleted) object will not be released again
+        --refCount;
+        if (refCount == 0)
+            delete this;
+    }
 }
 
 namespace Tasks { namespace detail

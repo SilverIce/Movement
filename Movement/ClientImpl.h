@@ -25,7 +25,7 @@ namespace Movement
         MSTime m_time_diff;             // difference between client and server time: diff = client_ticks - server_ticks
         UInt32Counter m_requestCounter;
         //int32 time_skipped;
-        typedef std::list<RespHandler*> RespHdlContainer;
+        typedef std::list<Reference<RespHandler> > RespHdlContainer;
         RespHdlContainer m_resp_handlers;
 
     public:
@@ -51,8 +51,9 @@ namespace Movement
         /** The main 'gate' for movement states that incomes from client. */
         void QueueState(ClientMoveStateChange& client_state, const ObjectGuid& source);
 
-        uint32 RegisterRespHandler(RespHandler* handler);
-        RespHandler* PopRespHandler();
+        uint32 RegisterRespHandler(Reference<RespHandler> handler);
+        Reference<RespHandler> PopRespHandler();
+
         void Kick() {}  // not implemented
 
         void BroadcastMessage(MovementMessage& msg) const {

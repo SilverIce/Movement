@@ -9,6 +9,51 @@ namespace Tasks
     using Movement::uint32;
     using Movement::MSTime;
 
+    class ReferenceCountable
+    {
+    private:
+        int32 refCount;
+    public:
+        explicit ReferenceCountable() : refCount(0) {}
+        virtual ~ReferenceCountable() {}
+        void addref() { ++refCount;}
+        void release();
+    private:
+        ReferenceCountable(const ReferenceCountable &);
+        ReferenceCountable& operator = (const ReferenceCountable &);
+    };
+
+    template<class T> class Reference
+    {
+    private:
+        T * m_pointer;
+        void setPointer(T * ptr) {
+            if (ptr)
+                ptr->ReferenceCountable::addref();    // ensure that T inherits ReferenceCountable
+            if (m_pointer)
+                m_pointer->ReferenceCountable::release();
+            m_pointer = ptr;
+        }
+    public:
+        explicit Reference() : m_pointer(NULL) {}
+        explicit Reference(T * ptr) : m_pointer(NULL) { setPointer(ptr);}
+        Reference(const Reference& other) : m_pointer(NULL) { setPointer(other.pointer());}
+        ~Reference() { setPointer(NULL);}
+
+        T* operator ->() const { return m_pointer;}
+        T* pointer() const { return m_pointer;}
+
+        Reference& operator = (const Reference& other) {
+            setPointer(other.pointer());
+            return *this;
+        }
+
+        Reference& operator = (T * ptr) {
+            setPointer(ptr);
+            return *this;
+        }
+    };
+
 #define NON_COPYABLE(Class) \
     Class(const Class &); \
     Class& operator = (const Class &);
@@ -33,24 +78,15 @@ namespace Tasks
         ~ITaskExecutor() {}
     };
 
-    class ICallBack
+    class ICallBack : public ReferenceCountable
     {
+    protected:
+        explicit ICallBack() {}
     public:
-        explicit ICallBack() : refCount(0) {}
-        virtual ~ICallBack() {}
-
         virtual void Execute(TaskExecutor_Args& args) = 0;
-
-        void addref() { ++refCount;}
-        void release() {
-            if ((--refCount) <= 0)
-                delete this;
-        }
-    private:
-        int32 refCount;
     };
 
-    class TaskExecutor : public ITaskExecutor
+    class EXPORT TaskExecutor : public ITaskExecutor
     {
         class TaskExecutorImpl& impl;
         MSTime m_updateCounter;

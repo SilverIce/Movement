@@ -158,20 +158,20 @@ namespace Movement
         if (!m_resp_handlers.empty()) {
             str << "Response handlers queue:" << std::endl;
             for (RespHdlContainer::const_iterator it = m_resp_handlers.begin();it != m_resp_handlers.end(); ++it)
-                str << typeid(**it).name() << std::endl;
+                str << typeid(*it->pointer()).name() << std::endl;
         }
         return str.str();
     }
 
-    uint32 ClientImpl::RegisterRespHandler(RespHandler* handler)
+    uint32 ClientImpl::RegisterRespHandler(Reference<RespHandler> handler)
     {
         m_resp_handlers.push_back(handler);
         return m_requestCounter.NewId();
     }
 
-    RespHandler* ClientImpl::PopRespHandler()
+    Reference<RespHandler> ClientImpl::PopRespHandler()
     {
-        RespHandler* handler = NULL;
+        Reference<RespHandler> handler;
         if (!m_resp_handlers.empty()) {
             handler = m_resp_handlers.front();
             m_resp_handlers.pop_front();
