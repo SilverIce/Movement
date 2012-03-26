@@ -76,11 +76,11 @@ namespace Tasks { namespace detail
             }
         }
 
-        void Update(MSTime time) override
+        void Execute(MSTime time) override
         {
             RdtscCall c(timerUpdate);
             TaskExecutor_Args tt(*this, time, updateCounter.time);
-            impl.Update(tt);
+            impl.Execute(tt);
             updateCounter += 1;
         }
 
@@ -234,7 +234,7 @@ namespace Tasks { namespace detail
         {
             lastUpdate = timeNow;
             ForEach(ITaskExecutor2 * ex, executors, {
-                ex->Update(timeNow);
+                ex->Execute(timeNow);
             });
             ++m_ticksCount;
 
@@ -353,10 +353,10 @@ namespace Tasks { namespace detail
             TaskTarget target;
             executor.AddTask(task, 10, target);
 
-            executor.Update(9);
+            executor.Execute(9);
             EXPECT_TRUE( !info.executed && info.callsCount == 0 );
 
-            executor.Update(10);
+            executor.Execute(10);
             EXPECT_TRUE( info.executed );
             EXPECT_TRUE( info.callsCount == 2 );
             EXPECT_TRUE( info.deleteCalled );
@@ -372,7 +372,7 @@ namespace Tasks { namespace detail
             executor.CancelTasks(target);
             EXPECT_TRUE( !info.executed && info.callsCount == 1 && info.deleteCalled );
 
-            executor.Update(10);
+            executor.Execute(10);
             EXPECT_TRUE( !info.executed && info.callsCount == 1 && info.deleteCalled );
             executor.CancelTasks(target);
             EXPECT_TRUE( !info.executed && info.callsCount == 1 && info.deleteCalled );
@@ -427,7 +427,7 @@ namespace Tasks { namespace detail
         {
             time += 100;
 
-            executor.Update(time);
+            executor.Execute(time);
             for (int i = 0; i < CountOf(marks); ++i)
             {
                 Fake& mark = *marks[i];
@@ -447,34 +447,36 @@ namespace Tasks { namespace detail
     void TaskExecutorTest_sequenceTest(ITaskExecutor2& executor)
     {
         struct Fake : public ICallBack {
-            int taskId;
-            int * nextTaskId;
+            char symbol;
+            char ** textWriteItr;
 
-            void Setup(int & NextTaskId) {
-                taskId = NextTaskId;
-                ++NextTaskId;
-                nextTaskId = &NextTaskId;
+            void Setup(char Symbol, char ** TextWriteItr) {
+                symbol = Symbol;
+                textWriteItr = TextWriteItr;
             }
 
             void Execute(TaskExecutor_Args& args) {
-                EXPECT_TRUE(taskId == (*nextTaskId));
-                ++(*nextTaskId);
+                **textWriteItr = symbol;
+                ++(*textWriteItr);
             }
         };
 
-        int taskId = 0;
-        TaskTarget target;
-        Fake marks[20];
+        const char text[] = "ABCDEFGHIKLMN0123456789";
+        char text2[CountOf(text)] = {'\0'};
+        char * textWriteItr = text2;
 
-        for (int i = 0; i < 20; ++i) {
+        TaskTarget target;
+
+        MSTime execTime = 14000;
+        for (int i = 0; i < CountOf(text); ++i) {
             Fake * mark = new Fake();
-            mark->Setup(taskId);
-            executor.AddTask(mark, 14000, target);
+            mark->Setup(text[i], &textWriteItr);
+            executor.AddTask(mark, execTime, target);
+            execTime += rand() % 3;
         }
 
-        taskId = 0;
-        executor.Update(15000);
-        executor.CancelTasks(target);
+        executor.Execute(execTime);
+        EXPECT_TRUE(memcmp(text, text2, CountOf(text)) == 0);
     }
 
     TEST(TaskExecutorTest, sequenceTest)
@@ -497,7 +499,7 @@ namespace Tasks { namespace detail
         executor.AddTask(new Task, 0, target);
 
         for (uint32 updateCount = 0; updateCount < 4; ++updateCount)
-            executor.Update(updateCount);
+            executor.Execute(updateCount);
 
         executor.CancelTasks(target);
     }

@@ -476,7 +476,7 @@ namespace Tasks { namespace detail
             }*/
         }
 
-        void Update(TaskExecutor_Args& args)
+        void Execute(TaskExecutor_Args& args)
         {
             ensureSorted();
             Node * firstNode = NULL;

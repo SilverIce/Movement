@@ -119,10 +119,10 @@ namespace Tasks
         impl.CancelTasks(obj);
     }
 
-    void TaskExecutor::Update(MSTime time)
+    void TaskExecutor::Execute(MSTime time)
     {
         TaskExecutor_Args tt(*this, time, m_updateCounter.time);
-        impl.Update(tt);
+        impl.Execute(tt);
         m_updateCounter += 1;
     }
 

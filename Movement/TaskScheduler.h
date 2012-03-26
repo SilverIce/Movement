@@ -73,7 +73,7 @@ namespace Tasks
     public:
         virtual void AddTask(ICallBack * task, MSTime exec_time, TaskTarget& ownerId) = 0;
         virtual void CancelTasks(TaskTarget& ownerId) = 0;
-        virtual void Update(MSTime time) = 0;
+        virtual void Execute(MSTime time) = 0;
     protected:
         ~ITaskExecutor() {}
     };
@@ -101,7 +101,7 @@ namespace Tasks
         void CancelTasks(TaskTarget& ownerId) override;
         void CancelAllTasks();
 
-        void Update(MSTime time) override;
+        void Execute(MSTime time) override;
     };
 
     class TaskTarget
