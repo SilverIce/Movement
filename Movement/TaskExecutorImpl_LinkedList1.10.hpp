@@ -449,8 +449,8 @@ namespace Tasks { namespace detail
                 if (!firstNode->isMarkNode())
                     firstNode->callback->release();
                 else {
-                    MarkInfo info = {firstNode->execution_time, firstNode};
-                    marks.erase(info);
+                    assert_state(firstNode == marks.back().node);
+                    marks.pop_back();
                 }
                 unusedNodes.push(firstNode);
             }
@@ -492,8 +492,9 @@ namespace Tasks { namespace detail
                 }
                 else
                 {
-                    MarkInfo info = {firstNode->execution_time, firstNode};
-                    marks.erase(info);
+                    // It's possible that during task execution some new mark will be appended to mark array end?
+                    assert_state(firstNode == marks.back().node);
+                    marks.pop_back();
                 }
                 unusedNodes.push(firstNode);
             }
