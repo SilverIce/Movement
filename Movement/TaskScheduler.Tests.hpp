@@ -66,11 +66,11 @@ namespace Tasks { namespace detail
             if (timerUpdate.InProgress()) {
                 RdtscInterrupt in(timerUpdate);
                 RdtscCall c(timerAddTask);
-                impl.AddTask(task, exec_time, ownerId) ;
+                impl.AddTask(task, exec_time, ownerId);
             }
             else {
                 RdtscCall c(timerAddTask);
-                impl.AddTask(task, exec_time, ownerId) ;
+                impl.AddTask(task, exec_time, ownerId);
             }
         }
 
@@ -497,6 +497,16 @@ namespace Tasks { namespace detail
     }
     TEST(TaskExecutorTest, UpdateCounter) {
         testExecutors(&TaskExecutorTest_UpdateCounter);
+    }
+
+    void TaskExecutorTest_TaskTargetNull(ITaskExecutor2& executor) {
+        EXPECT_TRUE( !TaskTarget::Null.hasTaskAttached() );
+        executor.AddTask(new DoNothingTask, 0, TaskTarget::Null);
+        EXPECT_TRUE( !TaskTarget::Null.hasTaskAttached() );
+        executor.Execute(1);
+    }
+    TEST(TaskExecutorTest, TaskTargetNull) {
+        testExecutors(&TaskExecutorTest_TaskTargetNull);
     }
 }
 }

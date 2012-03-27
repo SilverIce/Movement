@@ -113,6 +113,8 @@ namespace Tasks
         bool hasTaskAttached() const;
         explicit TaskTarget();
         ~TaskTarget();
+
+        static TaskTarget Null;
     };
 
     struct TaskExecutor_Args

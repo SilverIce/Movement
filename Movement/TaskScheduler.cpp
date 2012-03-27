@@ -52,23 +52,27 @@ namespace Tasks { namespace detail
     typedef ICallBack CallBack;
 
     class TaskHandle {};
-    class TaskTargetImpl
+
+    struct TaskTargetImpl : private Movement::LinkedList<TaskHandle*>
     {
-    public:
-        Movement::LinkedList<TaskHandle*> list;
+        typedef Movement::LinkedList<TaskHandle*> base;
+        using base::empty;
+        using base::first;
+        using base::element_type;
 
-        ~TaskTargetImpl() { assert_state(list.empty()); }
-        explicit TaskTargetImpl() {}
+        void link(element_type& node) {
+            if (this != (TaskTargetImpl*)&TaskTarget::Null)
+                link_last(node);
+        }
+
+        static inline TaskTargetImpl& cast(TaskTarget& target) {
+            return (TaskTargetImpl&)target;
+        }
+        static inline const TaskTargetImpl& cast(const TaskTarget& target) {
+            return (TaskTargetImpl&)target;
+        }
     };
-
     static_assert(sizeof(TaskTargetImpl) <= sizeof(TaskTarget), "");
-
-    inline TaskTargetImpl& getImpl(TaskTarget& target) {
-        return (TaskTargetImpl&)target;
-    }
-    inline const TaskTargetImpl& getImpl(const TaskTarget& target) {
-        return (TaskTargetImpl&)target;
-    }
 }
 }
 
@@ -133,16 +137,18 @@ namespace Tasks
     //////////////////////////////////////////////////////////////////////////
 
     TaskTarget::TaskTarget() {
-        getImpl(*this).TaskTargetImpl::TaskTargetImpl();
+        TaskTargetImpl::cast(*this).TaskTargetImpl::TaskTargetImpl();
     }
 
     TaskTarget::~TaskTarget() {
-        getImpl(*this).~TaskTargetImpl();
+        TaskTargetImpl::cast(*this).~TaskTargetImpl();
     }
 
     bool TaskTarget::hasTaskAttached() const {
-        return !getImpl(*this).list.empty();
+        return !TaskTargetImpl::cast(*this).empty();
     }
+
+    TaskTarget TaskTarget::Null;
 
     void TaskTarget_DEV::SetExecutor(ITaskExecutor& executor)
     {

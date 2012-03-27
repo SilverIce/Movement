@@ -252,15 +252,7 @@ namespace Tasks { namespace detail
         struct TimeComparator;
         struct ObjectIdComparator;
 
-        typedef Movement::LinkedList<TaskHandle*> TaskTargetList;
-        typedef TaskTargetList::element_type TaskTargetNode;
-
-        //typedef stdext::hash_map<ObjectId, TaskList* /*,ObjectId_hash_compare*/ > NodeTable;
-        /*struct NodeTableEntry {
-            ObjectId objectId;
-            TaskList* list;
-        };
-        typedef SortedList<NodeTableEntry, ObjectIdComparator> NodeTable;*/
+        typedef TaskTargetImpl::element_type TaskTargetNode;
 
         typedef Movement::LinkedList<NullValue> SortedTaskList;
 
@@ -296,16 +288,15 @@ namespace Tasks { namespace detail
                 execution_time = 0;
                 callback = 0;
                 taskTarget = 0;
-                if (tasknode.linked())
-                    tasknode.List().delink(tasknode);
+                tasknode.delink();
             }
 
             bool cleaned() const {
                 return !callback && !tasknode.linked() && !linked() && !taskTarget;
             }
 
-            bool isMarkNode() {
-                return callback == 0;
+            bool isMarkNode() const {
+                return callback == nullptr;
             }
         };
 
@@ -417,19 +408,14 @@ namespace Tasks { namespace detail
             //newNode->objectId = target.objectId;
             newNode->taskTarget = &target;
 
+            TaskTargetImpl::cast(target).link(newNode->tasknode);
             PushIntoList(newNode);
-            PushIntoTable(newNode, target);
             ensureSorted();
-        }
-
-        void PushIntoTable(Node * newNode, TaskTarget& target)
-        {
-            getImpl(target).list.link_last(newNode->tasknode);
         }
 
         void CancelTasks(TaskTarget& target)
         {
-            TaskTargetList& list = getImpl(target).list;
+            TaskTargetImpl& list = TaskTargetImpl::cast(target);
             if (list.empty())
                 return;
 
