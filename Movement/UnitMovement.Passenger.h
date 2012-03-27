@@ -1,6 +1,7 @@
 namespace Movement
 {
     class Unit_Passenger;
+    /** Notifies transport that object-passenger will be deleted soon. */
     struct OnPassengerDestroy
     {
         virtual void onDestroy(Unit_Passenger & psg) = 0;

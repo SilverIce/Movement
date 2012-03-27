@@ -31,6 +31,7 @@
 #include "UpdatableSpline.h"
 #include "ClientImpl.h"
 #include "UnitMovement.Passenger.h"
+#include "UnitMovement.Vehicle.h"
 
 #include "UnitMovement.Effects.hpp"
 #include "MoveSplineInit.hpp"
@@ -210,5 +211,15 @@ namespace Movement
     void UnitMovement::SetListener(class IListener * listener)
     {
         m.getAspect<MoveSplineUpdatable>()->SetListener(listener);
+    }
+
+    Vehicle UnitMovement::asVehicle()
+    {
+        return Vehicle(m.getAspect<VehicleImpl>());
+    }
+
+    UnitPassenger UnitMovement::asPassenger()
+    {
+        return UnitPassenger(m.getAspect<Unit_Passenger>());
     }
 }

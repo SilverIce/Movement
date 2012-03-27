@@ -49,6 +49,9 @@ namespace Movement
     class UnitMovementImpl;
     struct Location;
 
+    class UnitPassenger;
+    class Transporter;
+    class Vehicle;
     class EXPORT UnitMovement
     {
         friend struct UnitMovementStruct;
@@ -69,6 +72,8 @@ namespace Movement
 
         std::string ToString();
 
+        class Vehicle asVehicle();
+        class UnitPassenger asPassenger();
 
         /* Needed for monster movement only*/
         void BindOrientationTo(UnitMovement& target);
@@ -110,9 +115,39 @@ namespace Movement
         float GetSpeed(SpeedType speed);
         float GetCurrentSpeed();
 
-        uint32 dbg_flags;
-
         void WriteCreate(ByteBuffer& buf);
+
+        /** For testing */
+        uint32 dbg_flags;
+    };
+
+    class EXPORT UnitPassenger
+    {
+        class Unit_Passenger * m;
+    public:
+        operator bool() const { return m != 0;}
+        explicit UnitPassenger(Unit_Passenger* impl) : m(impl) {}
+
+        int8 SeatId();
+        /** Have no idea what else should i make public visible */
+    };
+
+    class VehicleImpl;
+    class EXPORT Vehicle
+    {
+    private:
+        VehicleImpl* m;
+    public:
+        operator bool() const { return m != 0;}
+
+        explicit Vehicle(VehicleImpl* impl) : m(impl) {}
+        static void Install(UnitMovement& transportOwner);
+
+        void Board(int8 seatId, UnitMovement& passenger);
+        UnitMovement* Passenger(int8 seatId);
+        void UnBoard(int8 seatId);
+        void UnboardAll();
+
+        uint32 VehicleId();
     };
 }
-
