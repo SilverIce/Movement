@@ -269,7 +269,7 @@ namespace Tasks { namespace detail
         {
             uint32 execution_time;
             CallBack* callback;
-            TaskTarget* taskTarget; 
+            TaskTarget* taskTarget;     // can be null
             TaskTargetNode tasknode;
 
             Node() {
@@ -397,7 +397,7 @@ namespace Tasks { namespace detail
             top.link_before(node, newNode);
         }
 
-        void AddTask(CallBack* obj, MSTime exec_time, TaskTarget& target)
+        void AddTask(CallBack* obj, MSTime exec_time, TaskTarget* target)
         {
             obj->addref();
 
@@ -406,9 +406,10 @@ namespace Tasks { namespace detail
             newNode->callback = obj;
             newNode->execution_time = exec_time.time;
             //newNode->objectId = target.objectId;
-            newNode->taskTarget = &target;
+            newNode->taskTarget = target;
 
-            TaskTargetImpl::cast(target).link(newNode->tasknode);
+            if (target)
+                TaskTargetImpl::cast(*target).link_last(newNode->tasknode);
             PushIntoList(newNode);
             ensureSorted();
         }

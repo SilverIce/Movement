@@ -5,14 +5,10 @@
 
 namespace Tasks
 {
-    using Movement::int32;
-    using Movement::uint32;
-    using Movement::MSTime;
-
     class ReferenceCountable
     {
     private:
-        int32 refCount;
+        Movement::int32 refCount;
     public:
         explicit ReferenceCountable() : refCount(0) {}
         virtual ~ReferenceCountable() {}
@@ -71,9 +67,9 @@ namespace Tasks
     class ITaskExecutor
     {
     public:
-        virtual void AddTask(ICallBack * task, MSTime exec_time, TaskTarget& ownerId) = 0;
-        virtual void CancelTasks(TaskTarget& ownerId) = 0;
-        virtual void Execute(MSTime time) = 0;
+        virtual void AddTask(ICallBack * task, Movement::MSTime exec_time, TaskTarget* target) = 0;
+        virtual void CancelTasks(TaskTarget& target) = 0;
+        virtual void Execute(Movement::MSTime time) = 0;
     protected:
         ~ITaskExecutor() {}
     };
@@ -89,7 +85,7 @@ namespace Tasks
     class EXPORT TaskExecutor : public ITaskExecutor
     {
         class TaskExecutorImpl& impl;
-        MSTime m_updateCounter;
+        Movement::MSTime m_updateCounter;
 
         NON_COPYABLE(TaskExecutor);
     public:
@@ -97,14 +93,14 @@ namespace Tasks
         explicit TaskExecutor();
         ~TaskExecutor();
 
-        void AddTask(ICallBack * task, MSTime exec_time, TaskTarget& ownerId) override;
-        void CancelTasks(TaskTarget& ownerId) override;
+        void AddTask(ICallBack * task, Movement::MSTime exec_time, TaskTarget* target) override;
+        void CancelTasks(TaskTarget& target) override;
         void CancelAllTasks();
 
-        void Execute(MSTime time) override;
+        void Execute(Movement::MSTime time) override;
     };
 
-    class TaskTarget
+    class EXPORT TaskTarget
     {
     private:
         char m_fields[8+8];
@@ -113,13 +109,11 @@ namespace Tasks
         bool hasTaskAttached() const;
         explicit TaskTarget();
         ~TaskTarget();
-
-        static TaskTarget Null;
     };
 
     struct TaskExecutor_Args
     {
-        explicit TaskExecutor_Args(ITaskExecutor& Executor, MSTime timeNow, uint32 updCount) :
+        explicit TaskExecutor_Args(ITaskExecutor& Executor, Movement::MSTime timeNow, Movement::uint32 updCount) :
             executor(Executor),
             callback(0),
             objectId(0),
@@ -131,16 +125,16 @@ namespace Tasks
         ITaskExecutor& executor;
         ICallBack* callback;
         TaskTarget* objectId;
-        const MSTime now;
-        const uint32 updateCount;
+        const Movement::MSTime now;
+        const Movement::uint32 updateCount;
     };
 
-    inline void RescheduleTaskWithDelay(TaskExecutor_Args& args, int32 delay) {
-        args.executor.AddTask(args.callback, args.now + delay, *args.objectId);
+    inline void RescheduleTaskWithDelay(TaskExecutor_Args& args, Movement::int32 delay) {
+        args.executor.AddTask(args.callback, args.now + delay, args.objectId);
     }
 
-    inline void RescheduleTask(TaskExecutor_Args& args, MSTime executionTime) {
-        args.executor.AddTask(args.callback, executionTime, *args.objectId);
+    inline void RescheduleTask(TaskExecutor_Args& args, Movement::MSTime executionTime) {
+        args.executor.AddTask(args.callback, executionTime, args.objectId);
     }
 
     class TaskTarget_DEV
@@ -158,7 +152,7 @@ namespace Tasks
         void SetExecutor(ITaskExecutor& executor);
         void Unregister();
         void CancelTasks();
-        void AddTask(ICallBack * callback, MSTime exec_time);
+        void AddTask(ICallBack * callback, Movement::MSTime exec_time);
     };
 
     /** Tools:

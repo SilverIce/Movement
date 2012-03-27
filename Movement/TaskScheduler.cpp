@@ -5,6 +5,13 @@
 
 namespace Tasks
 {
+    using Movement::log_write;
+    using Movement::log_console;
+    using Movement::uint64;
+    using Movement::int32;
+    using Movement::uint32;
+    using Movement::MSTime;
+
     namespace detail {}
     using namespace ::Tasks::detail;
 
@@ -19,10 +26,6 @@ namespace Tasks
 
 namespace Tasks { namespace detail
 {
-    using Movement::log_write;
-    using Movement::log_console;
-    using Movement::uint64;
-
 #ifdef TASKSCHEDULER_DEBUGGING
     const char* myAdressDeleted = "yep!";
     class myAdress
@@ -53,18 +56,8 @@ namespace Tasks { namespace detail
 
     class TaskHandle {};
 
-    struct TaskTargetImpl : private Movement::LinkedList<TaskHandle*>
+    struct TaskTargetImpl : public Movement::LinkedList<TaskHandle*>
     {
-        typedef Movement::LinkedList<TaskHandle*> base;
-        using base::empty;
-        using base::first;
-        using base::element_type;
-
-        void link(element_type& node) {
-            if (this != (TaskTargetImpl*)&TaskTarget::Null)
-                link_last(node);
-        }
-
         static inline TaskTargetImpl& cast(TaskTarget& target) {
             return (TaskTargetImpl&)target;
         }
@@ -111,10 +104,10 @@ namespace Tasks
     TaskExecutor::TaskExecutor() : impl(*new TaskExecutorImpl()) {}
     TaskExecutor::~TaskExecutor() { delete &impl;}
 
-    void TaskExecutor::AddTask(ICallBack * task, MSTime exec_time, TaskTarget& ownerId)
+    void TaskExecutor::AddTask(ICallBack * task, MSTime exec_time, TaskTarget* target)
     {
         assert_state(task);
-        impl.AddTask(task, exec_time, ownerId);
+        impl.AddTask(task, exec_time, target);
     }
 
     void TaskExecutor::CancelTasks(TaskTarget& obj)
@@ -148,8 +141,6 @@ namespace Tasks
         return !TaskTargetImpl::cast(*this).empty();
     }
 
-    TaskTarget TaskTarget::Null;
-
     void TaskTarget_DEV::SetExecutor(ITaskExecutor& executor)
     {
         mov_assert(!m_executor);
@@ -174,6 +165,6 @@ namespace Tasks
     void TaskTarget_DEV::AddTask(ICallBack * task, MSTime exec_time)
     {
         mov_assert(m_executor);
-        m_executor->AddTask(task, exec_time, m_objectId);
+        m_executor->AddTask(task, exec_time, &m_objectId);
     }
 }

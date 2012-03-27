@@ -58,10 +58,10 @@ namespace Tasks { namespace detail
             delete &impl;
         }
 
-        void AddTask(ICallBack * task, MSTime exec_time, TaskTarget& ownerId) override
+        void AddTask(ICallBack * task, MSTime exec_time, TaskTarget* ownerId) override
         {
-            if (!ownerId.hasTaskAttached())
-                Register(ownerId);
+            if (ownerId && !ownerId->hasTaskAttached())
+                Register(*ownerId);
 
             if (timerUpdate.InProgress()) {
                 RdtscInterrupt in(timerUpdate);
@@ -201,7 +201,7 @@ namespace Tasks { namespace detail
                     TaskTarget* target = new TaskTarget();
                     uint32 taskCount = TasksPerOwner;
                     while(taskCount-- > 0)
-                        ex->AddTask(new DoNothingTask(t.period), lastUpdate + t.period, *target );
+                        ex->AddTask(new DoNothingTask(t.period), lastUpdate + t.period, target );
                 });
             }
         }
@@ -289,18 +289,11 @@ namespace Tasks { namespace detail
         TaskTarget target;
         EXPECT_TRUE( !target.hasTaskAttached() );
 
-        executor.AddTask(new DoNothingTask, 0, target);
+        executor.AddTask(new DoNothingTask, 0, &target);
         EXPECT_TRUE( target.hasTaskAttached() );
 
         executor.CancelTasks(target);
         EXPECT_TRUE( !target.hasTaskAttached() );
-
-        {
-            TaskTarget target2;
-            executor.AddTask(new DoNothingTask, 0, target2);
-            EXPECT_TRUE( target2.hasTaskAttached() );
-            executor.CancelTasks(target2);
-        }
     }
 
     TEST(TaskExecutorTest, basicTest)
@@ -342,7 +335,7 @@ namespace Tasks { namespace detail
         {
             CallsInfo info;
             TaskTarget target;
-            executor.AddTask(new Fake(info), 10, target);
+            executor.AddTask(new Fake(info), 10, &target);
 
             executor.Execute(9);
             EXPECT_TRUE( !info.executed && info.callsCount == 0 );
@@ -357,7 +350,7 @@ namespace Tasks { namespace detail
         {
             CallsInfo info;
             TaskTarget target;
-            executor.AddTask(new Fake(info), 10, target);
+            executor.AddTask(new Fake(info), 10, &target);
 
             executor.CancelTasks(target);
             EXPECT_TRUE( !info.executed && info.callsCount == 1 && info.deleteCalled );
@@ -403,13 +396,13 @@ namespace Tasks { namespace detail
 
         for (int i = 0; i < CountOf(marks); ++i) {
             marks[i] = new Fake(allowTaskDelete);
-            executor.AddTask(marks[i].pointer(), 0, target);
+            executor.AddTask(marks[i].pointer(), 0, &target);
         }
 
         int callbacksToSpawn = 1000;
         while (callbacksToSpawn-- > 0) {
             DoNothingTask * task = new DoNothingTask;
-            executor.AddTask(task, 0, target);
+            executor.AddTask(task, 0, &target);
         }
 
         MSTime time = 0;
@@ -463,7 +456,7 @@ namespace Tasks { namespace detail
         for (int i = 0; i < CountOf(text); ++i) {
             Fake * mark = new Fake();
             mark->Setup(text[i], &textWriteItr);
-            executor.AddTask(mark, execTime, target);
+            executor.AddTask(mark, execTime, &target);
             execTime += rand() % 3;
         }
 
@@ -488,7 +481,7 @@ namespace Tasks { namespace detail
             }
         };
         TaskTarget target;
-        executor.AddTask(new Task, 0, target);
+        executor.AddTask(new Task, 0, &target);
 
         for (uint32 updateCount = 0; updateCount < 4; ++updateCount)
             executor.Execute(updateCount);
@@ -497,16 +490,6 @@ namespace Tasks { namespace detail
     }
     TEST(TaskExecutorTest, UpdateCounter) {
         testExecutors(&TaskExecutorTest_UpdateCounter);
-    }
-
-    void TaskExecutorTest_TaskTargetNull(ITaskExecutor2& executor) {
-        EXPECT_TRUE( !TaskTarget::Null.hasTaskAttached() );
-        executor.AddTask(new DoNothingTask, 0, TaskTarget::Null);
-        EXPECT_TRUE( !TaskTarget::Null.hasTaskAttached() );
-        executor.Execute(1);
-    }
-    TEST(TaskExecutorTest, TaskTargetNull) {
-        testExecutors(&TaskExecutorTest_TaskTargetNull);
     }
 }
 }
