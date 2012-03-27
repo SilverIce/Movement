@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <vector>
 #include "framework/typedefs_p.h"
-#include "framework/gtest.h"
 
 namespace Tasks { namespace detail
 {

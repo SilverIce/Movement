@@ -111,14 +111,19 @@ namespace Movement
             return _instance;
         }
 
+        static Handler getHandler(ClientOpcode opcode) {
+            HandlerMap::const_iterator it = instance().handlers.find(opcode);
+            return it != instance().handlers.end() ? it->second : nullptr;
+        }
+
     public:
 
         static void InvokeHander(ClientImpl& client, WorldPacket& msg)
         {
             ClientOpcode opcode = (ClientOpcode)msg.GetOpcode();
-            HandlerMap::const_iterator it = instance().handlers.find(opcode);
-            assert_state_msg(it != instance().handlers.end(), "no handlers for %s", OpcodeName(opcode));
-            (it->second) (client, msg);
+            Handler hdl = getHandler(opcode);
+            assert_state_msg(hdl != nullptr, "no handlers for %s", OpcodeName(opcode));
+            (*hdl) (client, msg);
             ensureParsed(msg);
         }
 
@@ -141,10 +146,10 @@ namespace Movement
         static void assignHandler(Handler hdl, ClientOpcode opcode) {
             if (opcode == MSG_NULL_ACTION)
                 return;
-            HandlerMap::const_iterator it = instance().handlers.find(opcode);
+            Handler handler = getHandler(opcode);
             // two normal cases here: handler wasn't assigned yet or same handler for same opcode
-            assert_state(it == instance().handlers.end() || it->second == hdl);
-            instance().handlers.insert(HandlerMap::value_type(opcode,hdl));
+            assert_state(handler == nullptr || handler == hdl);
+            instance().handlers.insert(HandlerMap::value_type(opcode, hdl));
         }
 
         static void assignHandler(Handler hdl, const ClientOpcode * opcodes, uint32 count) {

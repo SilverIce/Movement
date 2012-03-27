@@ -2,6 +2,8 @@
 
 namespace delayInit
 {
+    /** This structure should not be used directly by user.
+        Also it should be allocated in global scope only. */
     struct node
     {
         typedef void (*CTor)();

@@ -42,7 +42,7 @@ namespace Movement
                 if (!checkRequestId(client_req_id))
                     return false;
                 MSTime latency = (Imports.getMSTime() - m_requestSendTime.time) / 2;
-                client->SetClientTime(client->timeRandomModifier + client_ticks + latency);
+                client->SetClientTime(client_ticks + latency);
                 return true;
             }
         };

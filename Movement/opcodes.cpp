@@ -4,9 +4,9 @@ namespace Movement
 {
 #   define STR(x) #x
 
-    const char* opcodeNames[NUM_MSG_TYPES] =
+    static const char* opcodeNames[NUM_MSG_TYPES] =
     {
-		STR(MSG_NULL_ACTION),
+        STR(MSG_NULL_ACTION),
         STR(CMSG_BOOTME),
         STR(CMSG_DBLOOKUP),
         STR(SMSG_DBLOOKUP),

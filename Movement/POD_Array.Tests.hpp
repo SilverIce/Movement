@@ -1,3 +1,4 @@
+#include "framework/gtest.h"
 namespace Tasks { namespace detail
 {
     TEST(POD_ArrayTest, vec_test_1)

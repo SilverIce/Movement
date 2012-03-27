@@ -3,26 +3,25 @@
 
 namespace delayInit
 {
-    void register_node(node * n);
+    static void register_node(node * n);
 
     node::node(CTor creator) {
-        this->next = 0;
+        this->next = nullptr;
         this->ctor = creator;
         register_node(this);
     }
 
-    static node * first = 0;
-    static node * last = 0;
-    static unsigned int listSize = 0;
+    static node * first = nullptr;
+    static node * last = nullptr;
     static bool delayInit_called = false;
 
     void register_node(node * n) {
+        assert_state_msg(delayInit_called == false, "attemp construct and register node is not allowed");
         if (!first)
             first = n;
         if (last)
             last->next = n;
         last = n;
-        ++listSize;
     }
 
     void callCtors() {
@@ -30,10 +29,12 @@ namespace delayInit
         assert_state(delayInit_called == false);
         delayInit_called = true;
 
-        node * n = first;
+        node * n = first, *n2 = nullptr;
         while(n) {
             n->ctor();
+            n2 = n;
             n = n->next;
+            n2->next = nullptr; // disconnect node
         }
     }
 }

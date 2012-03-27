@@ -73,11 +73,11 @@ namespace Tasks { namespace detail
 }
 
 #define ForEach(element, _array, action) { \
-        size_t CONCAT(ForEach_iter, __LINE__) = 0; \
-        size_t CONCAT(ForEach_end, __LINE__) = (_array).size(); \
-        while (CONCAT(ForEach_iter, __LINE__) < CONCAT(ForEach_end, __LINE__)) { \
-            element = (_array)[CONCAT(ForEach_iter, __LINE__)]; \
-            ++CONCAT(ForEach_iter, __LINE__); \
+        size_t ForEach_iter = 0; \
+        size_t ForEach_end = (_array).size(); \
+        while (ForEach_iter < ForEach_end) { \
+            element = (_array)[ForEach_iter]; \
+            ++ForEach_iter; \
             action; \
         } \
     }
@@ -93,6 +93,7 @@ namespace Tasks { namespace detail
 /*
 #include "TaskExecutorImpl_LinkedList1.11.hpp"
 #include "TaskExecutorImpl_LinkedList1.13.hpp"*/
+#include "POD_Array.Tests.hpp"
 #include "TaskScheduler.Tests.hpp"
 
 namespace Tasks
@@ -101,8 +102,6 @@ namespace Tasks
         //TaskExecutorImpl_VectorPOD110
         TaskExecutorImpl_LinkedList110
     {
-        friend class TaskExecutor;
-    public:
     };
 
     TaskExecutor::TaskExecutor() : impl(*new TaskExecutorImpl()) {}

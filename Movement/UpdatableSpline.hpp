@@ -186,7 +186,7 @@ namespace Movement
                     const Vector3& targetPos = target->GetPosition3();
                     const Vector3& myPos = controlled.GlobalPosition();
                     float orientation = atan2f(targetPos.y - myPos.y, targetPos.x - myPos.x);
-                    controlled.SetOrientation(orientation);
+                    controlled.YawAngle(orientation);
                 } 
             }
         };

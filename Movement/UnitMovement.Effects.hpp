@@ -108,7 +108,7 @@ namespace Movement
         ClientOpcode smsg_spline_apply[2];   // 0 is apply, 1 - unapply
     };
 
-    const ModeInfo modeInfo[MoveMode_End]=
+    static const ModeInfo modeInfo[MoveMode_End]=
     {
         {
             UnitMoveFlag::Walk_Mode, MSG_NULL_ACTION, MSG_NULL_ACTION,

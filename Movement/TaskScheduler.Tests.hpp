@@ -4,8 +4,6 @@
 #include <map>
 #include <set>
 
-#include "POD_Array.Tests.hpp"
-
 namespace Tasks { namespace detail
 {
     #pragma region performance test
@@ -130,7 +128,6 @@ namespace Tasks { namespace detail
 
     void produceExecutors(std::vector<ITaskExecutor2*>& executors) {
         ITaskExecutor2* exec[] = {
-            //new taskExecutor<TaskExecutorImpl_VectorPendingPODWrong111>,
             new taskExecutor<TaskExecutorImpl_LinkedList110>,
             //new taskExecutor<TaskExecutorImpl_LinkedList111>,
         };
@@ -268,19 +265,14 @@ namespace Tasks { namespace detail
 
     void testExecutors(void (*testExecutorFn)(ITaskExecutor2&))
     {
-        ITaskExecutor2* exec[] = {
-            //new taskExecutor<TaskExecutorImpl_VectorPOD110>,
-            new taskExecutor<TaskExecutorImpl_LinkedList110>,
-            //new taskExecutor<TaskExecutorImpl_LinkedList111>,
-            //new taskExecutor<TaskExecutorImpl_VectorPendingPODWrong111>,
-            //new taskExecutor<TaskExecutorImpl_LinkedList112>,
-        };
+        std::vector<ITaskExecutor2*> exec;
+        produceExecutors(exec);
 
-        EXPECT_TRUE( CountOf(exec) > 0 );
+        EXPECT_TRUE( !exec.empty() );
 
-        for(int i = 0; i < CountOf(exec); ++i)
+        for(uint32 i = 0; i < exec.size(); ++i)
             testExecutorFn(*exec[i]);
-        for(int i = 0; i < CountOf(exec); ++i)
+        for(uint32 i = 0; i < exec.size(); ++i)
             delete exec[i];
     }
 
@@ -349,9 +341,8 @@ namespace Tasks { namespace detail
 
         {
             CallsInfo info;
-            Fake * task = new Fake(info);
             TaskTarget target;
-            executor.AddTask(task, 10, target);
+            executor.AddTask(new Fake(info), 10, target);
 
             executor.Execute(9);
             EXPECT_TRUE( !info.executed && info.callsCount == 0 );
@@ -365,9 +356,8 @@ namespace Tasks { namespace detail
 
         {
             CallsInfo info;
-            Fake * task = new Fake(info);
             TaskTarget target;
-            executor.AddTask(task, 10, target);
+            executor.AddTask(new Fake(info), 10, target);
 
             executor.CancelTasks(target);
             EXPECT_TRUE( !info.executed && info.callsCount == 1 && info.deleteCalled );
@@ -408,12 +398,12 @@ namespace Tasks { namespace detail
         };
 
         TaskTarget target;
-        Fake* marks[MarksAmount];
+        Reference<Fake> marks[MarksAmount];
         bool allowTaskDelete = false;
 
         for (int i = 0; i < CountOf(marks); ++i) {
             marks[i] = new Fake(allowTaskDelete);
-            executor.AddTask(marks[i], 0, target);
+            executor.AddTask(marks[i].pointer(), 0, target);
         }
 
         int callbacksToSpawn = 1000;
@@ -430,7 +420,7 @@ namespace Tasks { namespace detail
             executor.Execute(time);
             for (int i = 0; i < CountOf(marks); ++i)
             {
-                Fake& mark = *marks[i];
+                Fake& mark = *marks[i].pointer();
                 EXPECT_TRUE( mark.lastUpdate <= time );
                 EXPECT_TRUE( (time - mark.lastUpdate) <= MarkTaskPeriod );      // ensures that task-mark updates regularly
             }
@@ -465,6 +455,8 @@ namespace Tasks { namespace detail
         char text2[CountOf(text)] = {'\0'};
         char * textWriteItr = text2;
 
+        EXPECT_TRUE(memcmp(text, text2, sizeof(text)) != 0);
+
         TaskTarget target;
 
         MSTime execTime = 14000;
@@ -476,7 +468,7 @@ namespace Tasks { namespace detail
         }
 
         executor.Execute(execTime);
-        EXPECT_TRUE(memcmp(text, text2, CountOf(text)) == 0);
+        EXPECT_TRUE(memcmp(text, text2, sizeof(text)) == 0);
     }
 
     TEST(TaskExecutorTest, sequenceTest)

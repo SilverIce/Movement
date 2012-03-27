@@ -35,10 +35,10 @@ namespace Tasks
             m_pointer = ptr;
         }
     public:
-        explicit Reference() : m_pointer(NULL) {}
-        explicit Reference(T * ptr) : m_pointer(NULL) { setPointer(ptr);}
-        Reference(const Reference& other) : m_pointer(NULL) { setPointer(other.pointer());}
-        ~Reference() { setPointer(NULL);}
+        explicit Reference() : m_pointer(0) {}
+        explicit Reference(T * ptr) : m_pointer(0) { setPointer(ptr);}
+        Reference(const Reference& other) : m_pointer(0) { setPointer(other.pointer());}
+        ~Reference() { setPointer(0);}
 
         T* operator ->() const { return m_pointer;}
         T* pointer() const { return m_pointer;}
