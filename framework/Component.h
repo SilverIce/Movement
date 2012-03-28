@@ -44,27 +44,10 @@ namespace Movement
         public: void ComponentDetach();
     };
 
-    template<class MyType>
-    struct EXPORT HasTypeId
-    {
-        static AspectTypeId getTypeId() {
-            /* uncomment this in case compiler over-optimizes code and
-            getTypeId returns same Ids for different object types: */
-            //static char dummy;
-            //return (size_t)&dummy;
-            return (size_t)&HasTypeId<MyType>::getTypeId;
-        }
-    };
-
-    template<class MyType>
-    struct EXPORT ComponentT : Component
-    {
-        static AspectTypeId getTypeId() {
-            /* uncomment this in case compiler over-optimizes code and
-            getTypeId returns same Ids for different object types: */
-            //static char dummy;
-            //return (size_t)&dummy;
-            return (size_t)&ComponentT<MyType>::getTypeId;
-        }
-    };
+#define COMPONENT_TYPEID \
+    friend struct Component; \
+    static AspectTypeId getTypeId() { \
+        static char dummy; \
+        return (size_t)&dummy; \
+    }
 }

@@ -18,17 +18,19 @@ class WorldObject;
 
 namespace Movement
 {
-    struct WowObject : ComponentT<WowObject>
+    struct WowObject : Component
     {
+        COMPONENT_TYPEID;
         ObjectGuid guid;
         WorldObject* object;
 
         explicit WowObject() : object(nullptr) {}
     };
 
-    struct MovingEntity_WOW : MovingEntity_Revolvable2, HasTypeId<MovingEntity_WOW>
+    struct MovingEntity_WOW : MovingEntity_Revolvable2
     {
     private:
+        COMPONENT_TYPEID;
         typedef MovingEntity_Revolvable2 base;
 
     public:

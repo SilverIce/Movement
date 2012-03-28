@@ -4,9 +4,10 @@ namespace Movement
 
     class UnitMovementImpl;
 
-    class MoveSplineUpdatable : public ComponentT<MoveSplineUpdatable>
+    class MoveSplineUpdatable : public Component
     {
     private:
+        COMPONENT_TYPEID;
         MSTime m_lastQuery;
         MoveSpline m_base;
         UnitMovementImpl * m_owner;

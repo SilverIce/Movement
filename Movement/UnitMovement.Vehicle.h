@@ -1,7 +1,8 @@
 namespace Movement
 {
-    class VehicleImpl : public ComponentT<VehicleImpl>, public OnPassengerDestroy
+    class VehicleImpl : public Component, public OnPassengerDestroy
     {
+        COMPONENT_TYPEID;
         enum{
             SeatCount = 8,
         };

@@ -7,8 +7,9 @@ namespace Movement
         virtual void onDestroy(Unit_Passenger & psg) = 0;
     };
 
-    class Unit_Passenger : public ComponentT<Unit_Passenger>
+    class Unit_Passenger : public Component
     {
+        COMPONENT_TYPEID;
         UnitMovementImpl * m_unit;
         OnPassengerDestroy * m_onDestroy;
         Tasks::TaskTarget_DEV m_updatePosTask;

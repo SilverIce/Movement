@@ -314,7 +314,7 @@ namespace Movement
         }
     };
 
-    struct MovingEntity_Revolvable3 : ComponentT<MovingEntity_Revolvable3>
+    struct MovingEntity_Revolvable3 : Component
     {
         Vector3 m_RelativePosition;
         LazyRotation m_rotation;

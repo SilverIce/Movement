@@ -116,16 +116,20 @@ namespace Movement
 
 namespace Movement
 {
-    struct TypeA : ComponentT<TypeA> {
+    struct TypeA : Component {
+        COMPONENT_TYPEID;
         int a;
     };
-    struct TypeB : ComponentT<TypeB> {
+    struct TypeB : Component {
+        COMPONENT_TYPEID;
         int b;
     };
-    struct TypeC : ComponentT<TypeC> {
+    struct TypeC : Component {
+        COMPONENT_TYPEID;
         int c;
     };
-    struct TypeD : ComponentT<TypeD> {
+    struct TypeD : Component {
+        COMPONENT_TYPEID;
         int d;
     };
 
