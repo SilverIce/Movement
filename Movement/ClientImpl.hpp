@@ -306,28 +306,29 @@ namespace Movement
 
     //////////////////////////////////////////////////////////////////////////
 
+    struct ClientMemoryLayout : public Client {
+        explicit ClientMemoryLayout(void* socket) : impl(socket) {}
+        ClientImpl impl;
+    };
+
     void Client::SendMoveMessage( MovementMessage& msg ) const
     {
-        m.SendMoveMessage(msg);
+        static_cast<const ClientMemoryLayout*>(this)->impl.SendMoveMessage(msg);
     }
 
     void Client::OnMovementMessage(WorldPacket& message)
     {
-        HandlersHolder::InvokeHander(m, message);
+        HandlersHolder::InvokeHander(static_cast<ClientMemoryLayout*>(this)->impl, message);
     }
 
     Client* Client::create(void * socket)
     {
-        char * data = (char*)operator new(sizeof(Client) + sizeof(ClientImpl));
-        ClientImpl * impl = new(data+sizeof(Client))ClientImpl(socket);
-        Client * client = new(data)Client(*impl);
-        return client;
+        return new ClientMemoryLayout(socket);
     }
 
     void Client::dealloc()
     {
-        m.~ClientImpl();
-        delete this;
+        delete static_cast<ClientMemoryLayout*>(this);
     }
 
     void Client::FillSubscribeList(std::vector<uint16>& opcodes)

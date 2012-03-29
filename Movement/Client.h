@@ -18,19 +18,23 @@ namespace Movement
     class UnitMovement;
     class ClientImpl;
 
+    /** Represents an object that controls UnitMovement objects.
+        The main purpose - handle incoming movement packets
+        (packets, that change controlled object state, for example, position).
+    */
     class EXPORT Client
     {
-        ClientImpl& m;
-        Client(ClientImpl& client) : m(client) {}
+        friend struct ClientMemoryLayout;
         Client(const Client&);
         Client& operator = (const Client&);
+        Client() {}
         ~Client() {}
     public:
 
         static Client* create(void * socket);
         void dealloc();
 
-        /** Receives movemet messages from all visible clients */
+        /** Receives movement messages from all visible clients */
         void SendMoveMessage(MovementMessage& message) const;
         /** Handles messages from this client */
         void OnMovementMessage(WorldPacket& message);
