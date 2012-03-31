@@ -4,7 +4,7 @@
 
 namespace Movement
 {
-    typedef size_t AspectTypeId;
+    typedef void* AspectTypeId;
     class ComponentTree;
 
     struct EXPORT Component
@@ -12,6 +12,9 @@ namespace Movement
         private: ComponentTree* m_tree;
         private: void* m_this;
         private: AspectTypeId m_typeId;
+
+        private: Component(const Component &);
+        private: Component& operator = (const Component &);
 
         private: void* _getAspect(AspectTypeId objectTypeId) const;
         private: void _ComponentInit(void * me, AspectTypeId objectTypeId, ComponentTree * tree);
@@ -45,9 +48,9 @@ namespace Movement
     };
 
 #define COMPONENT_TYPEID \
-    friend struct Component; \
-    static AspectTypeId getTypeId() { \
+    friend struct ::Movement::Component; \
+    static ::Movement::AspectTypeId getTypeId() { \
         static char dummy; \
-        return (size_t)&dummy; \
+        return &dummy; \
     }
 }
