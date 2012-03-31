@@ -12,12 +12,14 @@ namespace Movement
 
     public:
 
-        uint32 VehicleId() const { return m_vehicleId; }
+        uint32 VehicleId() const {
+            return m_vehicleId;
+        }
 
-        explicit VehicleImpl(UnitMovementImpl& transportOwner)
+        explicit VehicleImpl(UnitMovementImpl& transportOwner, uint32 vehicleId)
         {
             memset(m_passengers, 0, sizeof m_passengers);
-            m_vehicleId = 121;
+            m_vehicleId = vehicleId;
 
             transportOwner.ComponentAttach(this);
 
@@ -85,16 +87,15 @@ namespace Movement
                 return;
             }
 
-            delete passenger.getAspect<Unit_Passenger>();
-            delete m_passengers[seatId];
-
-            m_passengers[seatId] = new Unit_Passenger(passenger, *getAspect<MovingEntity_WOW>(), this, seatId);
+            Unit_Passenger::dealloc(passenger.getAspect<Unit_Passenger>());
+            Unit_Passenger::dealloc(m_passengers[seatId]);
+            m_passengers[seatId] = Unit_Passenger::create(passenger, *getAspect<MovingEntity_WOW>(), this, seatId);
             Onboarded(*m_passengers[seatId]);
         }
 
         void UnBoard(uint8 seatId) {
             mov_assert(seatId < SeatCount);
-            delete m_passengers[seatId];
+            Unit_Passenger::dealloc(m_passengers[seatId]);
         }
 
         UnitMovementImpl* getPassenger(uint8 seatId) const {
@@ -126,8 +127,8 @@ namespace Movement
         return m->SeatId();
     }
 
-    void Vehicle::Install(UnitMovement& transportOwner) {
-        new VehicleImpl(transportOwner.Impl());
+    void Vehicle::Install(UnitMovement& transportOwner, uint32 vehicleId) {
+        new VehicleImpl(transportOwner.Impl(), vehicleId);
     }
 
     void Vehicle::Board(int8 seatId, UnitMovement& passenger) {

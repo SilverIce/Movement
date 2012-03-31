@@ -42,6 +42,18 @@ namespace Movement
             return m_transportGuid;
         }
 
+        static Unit_Passenger* create(UnitMovementImpl& unitPassenger, MovingEntity_WOW& transport,
+            OnPassengerDestroy* onDestr, int8 seatId)
+        {
+            return new Unit_Passenger(unitPassenger,transport,onDestr,seatId);
+        }
+
+        static void dealloc(Unit_Passenger* unitPassenger) {
+            delete unitPassenger;
+        }
+
+    private:
+
         explicit Unit_Passenger(UnitMovementImpl& unitPassenger, MovingEntity_WOW& transport,
             OnPassengerDestroy* onDestr, int8 seatId)
         {

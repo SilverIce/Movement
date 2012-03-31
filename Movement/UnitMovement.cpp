@@ -66,7 +66,7 @@ namespace Movement
 
         ~UnitMovementStruct()
         {
-            delete unit.getAspect<Unit_Passenger>();
+            Unit_Passenger::dealloc( unit.getAspect<Unit_Passenger>() );
             monsterController.CleanReferences();
             unit.CleanReferences();
         }
