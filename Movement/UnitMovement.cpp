@@ -22,6 +22,7 @@
 #include "MoveSpline.h"
 #include "MoveEnv.h"
 #include "MovementBase.h"
+#include "MovementCommandMgr.h"
 
 #include "UnitMoveFlags.h"
 #include "ClientMoveStatus.h"
@@ -42,6 +43,7 @@
 #include "FallFormulas.hpp"
 
 #include "UnitMovement.Tests.hpp"
+#include "UnitMovement.Commands.hpp"
 
 namespace Movement
 {
@@ -54,8 +56,8 @@ namespace Movement
 
         UnitMovementStruct(WorldObject& owner, uint64 ownerGuid, Tasks::ITaskExecutor& updater) : pubface(unit)
         {
-            assert_state(this);
             unit.ComponentInit(&unit);
+            unit.ComponentAttach(&pubface);
 
             unit.Guid.SetRawValue(ownerGuid);
             unit.Owner = &owner;

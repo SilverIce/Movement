@@ -1,6 +1,7 @@
 #pragma once
 
 #include "framework/typedefs.h"
+#include "framework/Component.h"
 #include "Movement/MoveSplineInit.h"
 
 class WorldObject;
@@ -52,8 +53,10 @@ namespace Movement
     class UnitPassenger;
     class Transporter;
     class Vehicle;
-    class EXPORT UnitMovement
+
+    class EXPORT UnitMovement : public Component
     {
+        COMPONENT_TYPEID;
         friend struct UnitMovementStruct;
         UnitMovementImpl& m;
         UnitMovement(UnitMovementImpl& impl) : m(impl), dbg_flags(0) {}
