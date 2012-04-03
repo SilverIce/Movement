@@ -6,6 +6,50 @@
 
 namespace Tasks { namespace detail
 {
+    TEST(ReferenceCountable, basic)
+    {
+        struct Obj : public ReferenceCountable {
+            bool& deleted;
+            Obj(bool& Deleted) : deleted(Deleted) { deleted = false;}
+            ~Obj() { deleted = true;}
+        };
+
+        {
+            Reference<ReferenceCountable> ref;
+            EXPECT_TRUE(!ref.pointer());
+        }
+
+        typedef Reference<Obj> ObjRef;
+
+        {
+            bool deleted;
+            ObjRef * ref = new ObjRef(new Obj(deleted));
+            EXPECT_TRUE(ref->pointer());
+            EXPECT_TRUE(!deleted);
+
+            delete ref;
+            EXPECT_TRUE(deleted);
+        }
+        {
+            bool deleted;
+            ObjRef * ref = new ObjRef(new Obj(deleted));
+            EXPECT_TRUE(ref->pointer());
+            EXPECT_TRUE(!deleted);
+
+            ObjRef * ref2 = new ObjRef(*ref);
+            EXPECT_TRUE(ref2->pointer());
+            EXPECT_TRUE(!deleted);
+            EXPECT_TRUE(ref2->pointer() == ref->pointer());
+
+            delete ref;
+            EXPECT_TRUE(!deleted);
+            EXPECT_TRUE(ref2->pointer());
+
+            delete ref2;
+            EXPECT_TRUE(deleted);
+        }
+    }
+
     #pragma region performance test
     enum{
         exec_delay_min = 100,   //ms
@@ -156,37 +200,29 @@ namespace Tasks { namespace detail
     {
         uint32 m_ticksCount;
         MSTime lastUpdate;
-        std::vector<ITaskExecutor2*> executors;
+        ITaskExecutor2* executor;
         uint32 owners_spawned;
         bool pushed;
 
-        TT() : m_ticksCount(0), owners_spawned(0)
+        explicit TT(ITaskExecutor2& Executor) : m_ticksCount(0), owners_spawned(0)
         {
-            produceExecutors(executors);
+            executor = &Executor;
             PushTaskOwners(TaskOwnerInitial);
         }
 
         ~TT()
         {
-            std::multimap<uint64, const char*> stats;
-            ForEach(ITaskExecutor2* elem, executors, {
-                stats.insert(std::multimap<uint64, const char*>::value_type(elem->summaryTicks(),elem->name));
-                elem->reportTest();
-            });
-            log_console(" ======= summary statistics ======= ");
+            executor->reportTest();
+            /*log_console(" ======= summary statistics ======= ");
             uint32 ii = 0;
             for (std::multimap<uint64,const  char*>::iterator it = stats.begin(); it!=stats.end(); ++it, ++ii)
-                log_console("%u. %I64d %s", ii, it->first, it->second);
+                log_console("%u. %I64d %s", ii, it->first, it->second);*/
 
-            ForEach(ITaskExecutor2* elem, executors, {
-                while (!elem->taskList.empty()) {
-                    TaskTarget * targ = *elem->taskList.begin();
-                    elem->CancelTasks(*targ);
-                    delete targ;
-                }
-            });
-
-            ForEach(ITaskExecutor2* elem, executors, delete elem);
+            while (!executor->taskList.empty()) {
+                TaskTarget * targ = *executor->taskList.begin();
+                executor->CancelTasks(*targ);
+                delete targ;
+            }
         }
 
         void PushTaskOwners(uint32 amount)
@@ -196,33 +232,28 @@ namespace Tasks { namespace detail
                 ++owners_spawned;
 
                 DoNothingTask t;
-
-                ForEach(ITaskExecutor2 * ex, executors, {
-                    TaskTarget* target = new TaskTarget();
-                    uint32 taskCount = TasksPerOwner;
-                    while(taskCount-- > 0)
-                        ex->AddTask(new DoNothingTask(t.period), lastUpdate + t.period, target );
-                });
+                TaskTarget* target = new TaskTarget();
+                uint32 taskCount = TasksPerOwner;
+                while(taskCount-- > 0)
+                    executor->AddTask(new DoNothingTask(t.period), lastUpdate + t.period, target );
             }
         }
 
         void CancelTaskOwners(uint32 amount)
         {
             while((amount-- > 0) /*&& !owners.empty()*/) {
-                ForEach(ITaskExecutor2 * ex, executors, {
-                    std::set<TaskTarget*>& owners = ex->taskList;
-                    if (owners.empty())
-                        continue;
+                std::set<TaskTarget*>& owners = executor->taskList;
+                if (owners.empty())
+                    continue;
 
-                    uint32 randomIdx = rand() % owners.size();
-                    std::set<TaskTarget*>::iterator it = owners.begin();
-                    while(randomIdx-- > 0)
-                        ++it;
+                uint32 randomIdx = rand() % owners.size();
+                std::set<TaskTarget*>::iterator it = owners.begin();
+                while(randomIdx-- > 0)
+                    ++it;
 
-                    TaskTarget& target = **it;
-                    ex->CancelTasks(target);
-                    delete &target;
-                });
+                TaskTarget& target = **it;
+                executor->CancelTasks(target);
+                delete &target;
                 --owners_spawned;
             }
         }
@@ -230,9 +261,7 @@ namespace Tasks { namespace detail
         bool Execute(MSTime timeNow)
         {
             lastUpdate = timeNow;
-            ForEach(ITaskExecutor2 * ex, executors, {
-                ex->Execute(timeNow);
-            });
+            executor->Execute(timeNow);
             ++m_ticksCount;
 
             //if (!(m_ticksCount % 2))
@@ -250,16 +279,6 @@ namespace Tasks { namespace detail
             return (m_ticksCount < UpdateTicksAmount);
         }
     };
-
-    TEST(TaskExecutorTest, performance)
-    {
-        TT tester;
-        MSTime time;
-        do {
-            time += PseudoSleepTime;
-        }
-        while(tester.Execute(time));
-    }
 
     #pragma endregion
 
@@ -490,6 +509,19 @@ namespace Tasks { namespace detail
     }
     TEST(TaskExecutorTest, UpdateCounter) {
         testExecutors(&TaskExecutorTest_UpdateCounter);
+    }
+
+    void TaskExecutorTest_performance(ITaskExecutor2& ex) {
+        TT tester(ex);
+        MSTime time;
+        do {
+            time += PseudoSleepTime;
+        }
+        while(tester.Execute(time));
+    }
+
+    TEST(TaskExecutorTest, performance) {
+        testExecutors(TaskExecutorTest_performance);
     }
 }
 }
