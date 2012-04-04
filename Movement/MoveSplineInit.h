@@ -51,14 +51,14 @@ namespace Movement
 
         /* Adds final facing animation
          * sets unit's facing to specified point/angle after all path done
-         * you can have only one final facing: previous will be overriden
+         * you can have only one final facing animation: previous will be overridden
          */
         void SetFacing(float angle);
         void SetFacing(Vector3 const& point);
 
         /* Initializes movement by path
          * @param path - array of points, shouldn't be empty
-         * @param pointId - Id of fisrt point of the path. Example: when third path point will be done it will notify that pointId + 3 done
+         * @param pointId - Id of first point of the path.
          */
         void MovebyPath(const PointsArray& path, int32 pointId = 0);
 
@@ -66,13 +66,12 @@ namespace Movement
          */
         void MoveTo(const Vector3& destination);
 
-        /* Sets Id of fisrt point of the path. When N-th path point will be done ILisener will notify that pointId + N done
-         * Needed for waypoint movement where path splitten into parts
+        /* Sets Id of first point of the path.
          */
         void SetFirstPointId(int32 pointId);
 
         /* Enables CatmullRom spline interpolation mode(makes path smooth)
-         * if not enabled linear spline mode will be choosen
+         * if not enabled linear spline mode will be chosen
          */
         void SetSmooth();
         /* Enables CatmullRom spline interpolation mode, enables flying animation

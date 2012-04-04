@@ -342,7 +342,7 @@ namespace Movement
             }
 
             // need allow Can_Fly flag change: client disables it
-            // all these checks make my code a bit difficult and the worst thing, make it dependant on client code
+            // all these checks make my code a bit difficult and the worst thing, make it dependent on client code
             state.allowFlagChange = UnitMoveFlag::Can_Fly;
             state.allowFlagApply = false;
 

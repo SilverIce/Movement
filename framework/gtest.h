@@ -36,7 +36,7 @@ namespace testing
         expression; \
         ::testing::_check(false, __FUNCTION__, "expression '" #expression " does not throws '" #exception "' exception"); \
     } \
-    catch( const exception& ) {}
+    catch( const exception& ) {;}
 
 #define EXPECT_NOTHROW(expression) \
     try { \

@@ -22,8 +22,9 @@ namespace Movement
         private: void _ComponentInit(void * me, AspectTypeId objectTypeId, ComponentTree * tree);
         private: void _ComponentAttach(void * object, AspectTypeId objectTypeId, Component * com);
 
-        public: ComponentTree* Tree() const {
-            return m_tree;
+        /** Returns true to show that both components belongs to same entity. */
+        public: bool sameTree(const Component& another) const {
+            return m_tree == another.m_tree;
         }
 
         public: virtual std::string toString() const;
@@ -31,10 +32,12 @@ namespace Movement
         /** Describes all components that attached to the tree  */
         public: std::string toStringAll() const;
 
+        /** Performs a cast to given type. Returns a null in case cast failed.*/
         public: template<class T> inline T* getAspect() const {
             return (T*)_getAspect(T::getTypeId());
         }
 
+        /** Performs a cast to given type. Asserts that cast never fails.*/
         public: template<class T> inline T& as() const {
             return *(T*)_as(T::getTypeId());
         }

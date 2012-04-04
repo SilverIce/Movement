@@ -336,6 +336,15 @@ namespace Tasks { namespace detail
             log_console("marks amount: %u", marks.size());
         }
 
+        /*
+            <-- the oldest tasks&marks                the youngest tasks&marks  -->
+            O~   o    o     o     o     O~   o    o   o     O~  o   o   o
+
+            "Legend":
+            O~  node-mark, that helps insert tasks in fast way
+            o   node-task 
+        */
+
         void PushIntoList(Node * newNode)
         {
             MarkInfo mark = {(newNode->execution_time / roundConst + 1) * roundConst, 0};

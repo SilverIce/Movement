@@ -38,20 +38,3 @@ namespace delayInit
         }
     }
 }
-
-/* Example:
-void doSomething() {
-    // user code
-    // for ex. it can be used to register some new type
-}
-static node node_doSomething(&doSomething);
-
-struct SomeObj
-{
-
-} obj;
-void InitSomeObj() {
-    // user code
-    // for ex. it can be used to register some new type
-}
-static node node_doSomething(&InitSomeObj);*/
