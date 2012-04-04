@@ -43,7 +43,12 @@ namespace Movement
         void ResetLisener() { m_listener = NULL; }
 
         void Launch(MoveSplineInitArgs& args);
-        std::string ToString() const { return m_base.ToString();}
+
+        std::string toString() const override {
+            if (IsMoving())
+                return m_base.ToString();
+            return Component::toString();
+        }
 
         explicit MoveSplineUpdatable() :
             m_owner(nullptr),

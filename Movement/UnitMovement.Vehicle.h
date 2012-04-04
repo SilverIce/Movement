@@ -46,6 +46,15 @@ namespace Movement
                 UnBoard(seat);
         }
 
+        std::string toString() const override {
+            std::ostringstream st;
+            using std::endl;
+            st << endl << "vehicle Id " << m_vehicleId;
+            st << endl << "passenger count " << (SeatCount - std::count_if(
+                m_passengers,m_passengers+SeatCount,(Unit_Passenger*)0));
+            return st.str();
+        }
+
     #pragma region  event handlers
     private:
 

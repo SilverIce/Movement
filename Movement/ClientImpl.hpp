@@ -156,12 +156,12 @@ namespace Movement
     std::string ClientImpl::ToString() const
     {
         std::stringstream str;
-        str << "Server-side time: " << ServerTime().time << " Client-side time: " << ClientTime().time << std::endl;
-        str << "Request  counter: " << m_requestCounter.getCurrent() << std::endl;
+        str << std::endl << "Server-side time: " << ServerTime().time << " Client-side time: " << ClientTime().time;
+        str << std::endl << "Request  counter: " << m_requestCounter.getCurrent();
         if (!m_resp_handlers.empty()) {
-            str << "Response handlers queue:" << std::endl;
+            str << std::endl << "Response handlers queue:";
             for (RespHdlContainer::const_iterator it = m_resp_handlers.begin();it != m_resp_handlers.end(); ++it)
-                str << typeid(*it->pointer()).name() << std::endl;
+                str << std::endl << typeid(*it->pointer()).name();
         }
         return str.str();
     }

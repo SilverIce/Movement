@@ -238,20 +238,20 @@ MoveSpline::UpdateResult MoveSpline::_updateState(int32& ms_time_diff)
 std::string MoveSpline::ToString() const
 {
     std::stringstream str;
-    str << "MoveSpline" << std::endl;
-    str << "spline Id: " << GetId() << std::endl;
-    str << "flags: " << splineflags.ToString() << std::endl;
+    str << std::endl << "MoveSpline";
+    str << std::endl << "spline Id: " << GetId();
+    str << std::endl << "flags: " << splineflags.ToString();
+    str << std::endl;
     if (splineflags.final_angle)
         str << "facing  angle: " << facing.angle;
     else if (splineflags.final_target)
         str << "facing target: " << facing.target;
     else if(splineflags.final_point)
         str << "facing  point: " << facing.x << " " << facing.y << " " << facing.z;
-    str << std::endl;
-    str << "time passed: " << time_passed << std::endl;
-    str << "total  time: " << timeTotal() << std::endl;
-    str << "spline point Id: " << point_Idx << std::endl;
-    str << "path  point  Id: " << currentPathPointIdx() << std::endl;
+    str << std::endl << "time passed: " << time_passed;
+    str << std::endl << "total  time: " << timeTotal();
+    str << std::endl << "spline point Id: " << point_Idx;
+    str << std::endl << "path  point  Id: " << currentPathPointIdx();
     str << spline.ToString();
     return str.str();
 }

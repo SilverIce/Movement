@@ -1,6 +1,7 @@
 #pragma once
 
 #include "framework/typedefs.h"
+#include <string>
 
 namespace Movement
 {
@@ -23,6 +24,11 @@ namespace Movement
         public: ComponentTree* Tree() const {
             return m_tree;
         }
+
+        public: virtual std::string toString() const;
+
+        /** Describes all components that attached to the tree  */
+        public: std::string toStringAll() const;
 
         public: template<class T> T* getAspect() const {
             return (T*)_getAspect(T::getTypeId());

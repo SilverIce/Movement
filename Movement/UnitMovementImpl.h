@@ -26,7 +26,7 @@ namespace Movement
 
         void CleanReferences();
 
-        std::string ToString() const;
+        std::string toString() const override;
 
         Vector3 direction() const;
 

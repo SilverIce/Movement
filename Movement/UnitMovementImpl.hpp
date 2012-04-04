@@ -125,14 +125,15 @@ namespace Movement
     }
 
 
-    std::string UnitMovementImpl::ToString() const
+    std::string UnitMovementImpl::toString() const
     {
-        std::stringstream st;
-        st << PacketBuilder::CreateMoveState(*this).ToString();
+        std::ostringstream st;
+        using std::endl;
+        st << MovingEntity_WOW::toString();
+
         if (m_client)
             st << m_client->ToString();
-        if (SplineEnabled())
-            st << getAspect<MoveSplineUpdatable>()->ToString();
+
         return st.str();
     }
 

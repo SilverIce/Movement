@@ -5,6 +5,8 @@
 #include "typedefs_p.h"
 #include <algorithm>
 #include <vector>
+#include <typeinfo>
+#include <sstream>
 
 namespace Movement
 {
@@ -41,6 +43,10 @@ namespace Movement
 
         int32 Count() const {
             return m_types.size();
+        }
+
+        const Component& operator[] (int32 idx) const {
+            return *m_types[idx].pointer;
         }
 
         void addAspect(AspectTypeId objectTypeId, Component & object)
@@ -111,6 +117,31 @@ namespace Movement
         if (Component * com = m_tree->getAspect(objectTypeId))
             return com->m_this;
         return nullptr;
+    }
+
+    std::string Component::toString() const
+    {
+        return "\n<no description>";
+    }
+
+    std::string Component::toStringAll() const
+    {
+        using std::endl;
+        std::ostringstream str;
+        if (!m_tree) {
+            str << endl << "Not attached component";
+            str << endl << typeid(*this).name();
+            str << toString();
+        }
+        else {
+            str << endl << "Component amount " << m_tree->Count();
+            for (int32 idx = 0; idx < m_tree->Count(); ++idx) {
+                str << endl << typeid((*m_tree)[idx]).name() << " {";
+                str << (*m_tree)[idx].toString();
+                str << endl << "}";
+            }
+        }
+        return str.str();
     }
 }
 

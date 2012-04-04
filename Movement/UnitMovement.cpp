@@ -69,6 +69,8 @@ namespace Movement
         ~UnitMovementStruct()
         {
             Unit_Passenger::dealloc( unit.getAspect<Unit_Passenger>() );
+            delete unit.getAspect<VehicleImpl>();
+
             monsterController.CleanReferences();
             unit.CleanReferences();
         }
@@ -152,7 +154,7 @@ namespace Movement
 
     std::string UnitMovement::ToString()
     {
-        return m.ToString();
+        return m.toStringAll();
     }
 
     void UnitMovement::BindOrientationTo(UnitMovement& target)

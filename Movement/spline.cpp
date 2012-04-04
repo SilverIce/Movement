@@ -209,14 +209,14 @@ void SplineBase::InitCatmullRom(const Vector3* controls, index_type count, bool 
 
 std::string SplineBase::ToString() const
 {
-    std::stringstream str;
+    std::ostringstream str;
     const char * mode_str[ModeEnd] = {"Linear", "CatmullRom"};
 
     index_type count = this->points.size();
-    str << "mode: " << mode_str[mode()] << std::endl;
-    str << "points count: " << count << std::endl;
+    str << std::endl << "mode: " << mode_str[mode()];
+    str << std::endl << "points count: " << count;
     for (index_type i = 0; i < count; ++i)
-        str << "point " << i << " : " << points[i].toString() << std::endl;
+        str << std::endl << "point " << i << " : " << points[i].toString();
 
     return str.str();
 }
