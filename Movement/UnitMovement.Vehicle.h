@@ -50,7 +50,7 @@ namespace Movement
             std::ostringstream st;
             using std::endl;
             st << endl << "vehicle Id " << m_vehicleId;
-            st << endl << "passenger count " << (SeatCount - std::count_if(
+            st << endl << "passenger count " << (SeatCount - std::count(
                 m_passengers,m_passengers+SeatCount,(Unit_Passenger*)0));
             return st.str();
         }
@@ -134,8 +134,8 @@ namespace Movement
         {
             UnitMovementImpl& unit = client.firstControlled();
             // TODO: too much 'as' casts here..
-            Unit_Passenger& psg = *unit.as<Unit_Passenger>();
-            VehicleImpl& veh = *psg.Transport().as<VehicleImpl>();
+            Unit_Passenger& psg = unit.as<Unit_Passenger>();
+            VehicleImpl& veh = psg.Transport().as<VehicleImpl>();
 
             switch (data.GetOpcode())
             {

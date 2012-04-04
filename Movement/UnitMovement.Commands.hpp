@@ -14,7 +14,7 @@ namespace Movement { namespace
         }
         void Invoke(StringReader& command, CommandInvoker& invoker) override {
             bool apply = cmp(command.readArg(), "on");
-            invoker.com.as<UnitMovement>()->ApplyMoveMode(m_mode, apply);
+            invoker.com.as<UnitMovement>().ApplyMoveMode(m_mode, apply);
             invoker.output << endl << "Movement mode " << m_modeName << (apply ? " enabled" : " disabled");
         }
     };
@@ -42,7 +42,7 @@ namespace Movement { namespace
 
         void Invoke(StringReader& command, CommandInvoker& invoker) override {
             float value = command.readFloat();
-            invoker.com.as<UnitMovement>()->SetCollisionHeight(value);
+            invoker.com.as<UnitMovement>().SetCollisionHeight(value);
             invoker.output << endl << "Collision box height is " << value;
         }
     };
@@ -56,7 +56,7 @@ namespace Movement { namespace
         }
 
         void Invoke(StringReader& command, CommandInvoker& invoker) override {
-            UnitMovementImpl& target = invoker.com.as<UnitMovement>()->Impl();
+            UnitMovementImpl& target = invoker.com.as<UnitMovement>().Impl();
             target.ApplyMoveFlag(UnitMoveFlag::Falling|UnitMoveFlag::Hover, true);
             PacketBuilder::Send_HeartBeat(target);
         }

@@ -18,6 +18,7 @@ namespace Movement
         private: Component& operator = (const Component &);
 
         private: void* _getAspect(AspectTypeId objectTypeId) const;
+        private: void* _as(AspectTypeId objectTypeId) const;
         private: void _ComponentInit(void * me, AspectTypeId objectTypeId, ComponentTree * tree);
         private: void _ComponentAttach(void * object, AspectTypeId objectTypeId, Component * com);
 
@@ -30,23 +31,23 @@ namespace Movement
         /** Describes all components that attached to the tree  */
         public: std::string toStringAll() const;
 
-        public: template<class T> T* getAspect() const {
+        public: template<class T> inline T* getAspect() const {
             return (T*)_getAspect(T::getTypeId());
         }
 
-        public: template<class T> T* as() const {
-            return (T*)_getAspect(T::getTypeId());
+        public: template<class T> inline T& as() const {
+            return *(T*)_as(T::getTypeId());
         }
 
         public: explicit Component() : m_tree(0), m_this(0), m_typeId(0) {}
 
         public: virtual ~Component();
 
-        public: template<class MyType> void ComponentInit(MyType * me) {
+        public: template<class MyType> inline void ComponentInit(MyType * me) {
             _ComponentInit(me, MyType::getTypeId(), 0);
         }
 
-        public: template<class T> void ComponentAttach(T * object) {
+        public: template<class T> inline void ComponentAttach(T * object) {
             _ComponentAttach(object, T::getTypeId(), object);
         }
 
