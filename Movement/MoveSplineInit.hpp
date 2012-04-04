@@ -49,8 +49,8 @@ namespace Movement
 
     void MoveSplineInit::Launch()
     {
-        MoveSplineUpdatable * movespline = state.getAspect<MoveSplineUpdatable>();
-        movespline->Launch(args);
+        MoveSplineUpdatable& movespline = state.as<MoveSplineUpdatable>();
+        movespline.Launch(args);
     }
 
     void MoveSplineInit::SetParabolic(float amplitude, float time_shift)

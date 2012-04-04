@@ -159,12 +159,12 @@ namespace Movement
 
     void UnitMovement::BindOrientationTo(UnitMovement& target)
     {
-        m.getAspect<MoveSplineUpdatable>()->BindOrientationTo(target.Impl());
+        m.as<MoveSplineUpdatable>().BindOrientationTo(target.Impl());
     }
 
     void UnitMovement::UnbindOrientation()
     {
-        m.getAspect<MoveSplineUpdatable>()->UnbindOrientation();
+        m.as<MoveSplineUpdatable>().UnbindOrientation();
     }
 
     Vector3 UnitMovement::direction()
@@ -174,7 +174,7 @@ namespace Movement
 
     uint32 UnitMovement::MoveSplineId()
     {
-        return m.getAspect<MoveSplineUpdatable>()->getCurrentMoveId();
+        return m.as<MoveSplineUpdatable>().getCurrentMoveId();
     }
 
     bool UnitMovement::HasMode(MoveMode mode)
@@ -214,7 +214,7 @@ namespace Movement
 
     void UnitMovement::SetListener(class IListener * listener)
     {
-        m.getAspect<MoveSplineUpdatable>()->SetListener(listener);
+        m.as<MoveSplineUpdatable>().SetListener(listener);
     }
 
     Vehicle UnitMovement::asVehicle()

@@ -268,7 +268,7 @@ namespace Movement
 
         client.QueueState(state, guid);
 
-        MoveSplineUpdatable * move_spline = client.controlled()->getAspect<MoveSplineUpdatable>();
+        MoveSplineUpdatable& move_spline = client.controlled()->as<MoveSplineUpdatable>();
         /*move_spline->updateState(1);
         if (splineId != move_spline->getLastMoveId())
             log_function("incorrect splineId: %u, expected %u", splineId, move_spline->getLastMoveId());*/

@@ -13,7 +13,7 @@ namespace Movement
 
     void PacketBuilder::WriteCommonMonsterMovePart(const UnitMovementImpl& mov, WorldPacket& data)
     {
-        const MoveSpline& move_spline = mov.getAspect<MoveSplineUpdatable>()->moveSpline();
+        const MoveSpline& move_spline = mov.as<MoveSplineUpdatable>().moveSpline();
         MoveSplineFlag splineflags = move_spline.splineflags;
 
         if (Unit_Passenger * passenger = mov.getAspect<Unit_Passenger>())
@@ -144,7 +144,7 @@ namespace Movement
         WorldPacket data(MSG_NULL_ACTION, 64);
         WriteCommonMonsterMovePart(mov, data);
 
-        const MoveSpline& move_spline = mov.getAspect<MoveSplineUpdatable>()->moveSpline();
+        const MoveSpline& move_spline = mov.as<MoveSplineUpdatable>().moveSpline();
         const Spline<int32>& spline = move_spline.spline;
         MoveSplineFlag splineflags = move_spline.splineflags;
         if (splineflags & MoveSplineFlag::Mask_CatmullRom)
@@ -170,7 +170,7 @@ namespace Movement
 
         if (state.moveFlags.spline_enabled)
         {
-            const MoveSpline& move_spline = mov.getAspect<MoveSplineUpdatable>()->moveSpline();
+            const MoveSpline& move_spline = mov.as<MoveSplineUpdatable>().moveSpline();
             MoveSplineFlag splineFlags = move_spline.splineflags;
 
             data << splineFlags.raw;
@@ -318,7 +318,7 @@ namespace Movement
     void PacketBuilder::SplineSyncSend(const UnitMovementImpl& mov)
     {
         mov_assert(mov.SplineEnabled());
-        const MoveSpline& move_spline = mov.getAspect<MoveSplineUpdatable>()->moveSpline();
+        const MoveSpline& move_spline = mov.as<MoveSplineUpdatable>().moveSpline();
 
         WorldPacket data(SMSG_FLIGHT_SPLINE_SYNC, 13);
         data << (float)(move_spline.timePassed() / (float)move_spline.timeTotal());

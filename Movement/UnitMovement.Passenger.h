@@ -24,7 +24,7 @@ namespace Movement
         /*struct PassengerImpl : IPassenger
         {
             void Unboard() override {
-                Unit_Passenger::dealloc(getAspect<Unit_Passenger>());
+                Unit_Passenger::dealloc(&as<Unit_Passenger>());
             }
         };
 

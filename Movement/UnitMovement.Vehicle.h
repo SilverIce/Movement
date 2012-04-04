@@ -99,7 +99,7 @@ namespace Movement
 
             Unit_Passenger::dealloc(passenger.getAspect<Unit_Passenger>());
             Unit_Passenger::dealloc(m_passengers[seatId]);
-            m_passengers[seatId] = Unit_Passenger::create(passenger, *getAspect<MovingEntity_WOW>(), this, seatId);
+            m_passengers[seatId] = Unit_Passenger::create(passenger, as<MovingEntity_WOW>(), this, seatId);
             Onboarded(*m_passengers[seatId]);
         }
 
