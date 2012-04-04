@@ -42,6 +42,12 @@ namespace Movement
             return m_transportGuid;
         }
 
+        MovingEntity_Revolvable2& Transport() const {
+            MovingEntity_Revolvable2 * env = m_unit->Environment();
+            assert_state(env);
+            return *env;
+        }
+
         static Unit_Passenger* create(UnitMovementImpl& unitPassenger, MovingEntity_WOW& transport,
             OnPassengerDestroy* onDestr, int8 seatId)
         {

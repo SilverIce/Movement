@@ -3,10 +3,11 @@ namespace Movement
     class VehicleImpl : public Component, public OnPassengerDestroy
     {
         COMPONENT_TYPEID;
+    public:
         enum{
             SeatCount = 8,
         };
-
+    private:
         Unit_Passenger * m_passengers[SeatCount];
         uint32 m_vehicleId;
 
@@ -107,21 +108,90 @@ namespace Movement
         }
     };
 
-    void registerVehicleHandlers()
+    namespace VehicleHandler
     {
-        ClientOpcode opcodes[] = {
-            CMSG_SET_VEHICLE_REC_ID_ACK,
-            CMSG_DISMISS_CONTROLLED_VEHICLE,
-            CMSG_REQUEST_VEHICLE_EXIT,
-            CMSG_REQUEST_VEHICLE_PREV_SEAT,
-            CMSG_REQUEST_VEHICLE_NEXT_SEAT,
-            CMSG_REQUEST_VEHICLE_SWITCH_SEAT,
-            CMSG_CHANGE_SEATS_ON_CONTROLLED_VEHICLE,
-            CMSG_RIDE_VEHICLE_INTERACT,
-        };
-        HandlersHolder::assignHandler(&ClientImpl::OnNotImplementedMessage, opcodes, CountOf(opcodes));
+        static void Dismiss(ClientImpl& client, WorldPacket& data)
+        {
+            ObjectGuid guid;
+            ClientMoveStateChange state;
+
+            data >> guid.ReadAsPacked();
+            data >> state;
+
+            client.QueueState(state, guid);
+        }
+
+        static void ChangeSeats(ClientImpl& client, WorldPacket& data)
+        {
+            UnitMovementImpl& unit = client.firstControlled();
+            // TODO: too much 'as' casts here..
+            Unit_Passenger& psg = *unit.as<Unit_Passenger>();
+            VehicleImpl& veh = *psg.Transport().as<VehicleImpl>();
+
+            switch (data.GetOpcode())
+            {
+            case CMSG_REQUEST_VEHICLE_PREV_SEAT: {
+                // TODO: vehicle have enough info about his passenger.
+                // need implement a 'move' operation that moves passenger to next or previous seat
+                int8 prev = (psg.SeatId() + VehicleImpl::SeatCount - 1) % VehicleImpl::SeatCount;
+                veh.Board(prev, unit);
+                break;
+            }
+            case CMSG_REQUEST_VEHICLE_NEXT_SEAT: {
+                // TODO: vehicle have enough info about his passenger.
+                // need implement a 'move' operation that moves passenger to next or previous seat
+                int8 next = (psg.SeatId() + 1) % VehicleImpl::SeatCount;
+                veh.Board(next, unit);
+                break;
+            }
+            case CMSG_CHANGE_SEATS_ON_CONTROLLED_VEHICLE:
+                {
+                    ObjectGuid guid;        // current vehicle guid
+                    ClientMoveStateChange state;
+                    ObjectGuid accessory;        //  accessory guid
+                    int8 seatId;
+                    data >> guid.ReadAsPacked();
+                    data >> state;
+                    data >> accessory.ReadAsPacked();
+                    data >> seatId;
+
+                    veh.Board(seatId, unit);
+                    break;
+                }
+            case CMSG_REQUEST_VEHICLE_SWITCH_SEAT:
+                {
+                    ObjectGuid guid;        // current vehicle guid
+                    data >> guid.ReadAsPacked();
+
+                    int8 seatId;
+                    data >> seatId;
+
+                    veh.Board(seatId, unit);
+                    break;
+                }
+            default:
+                assert_state(false);
+                break;
+            }
+        }
+
+        static void Register()
+        {
+            ASSIGN_HANDLER(&ChangeSeats,
+                CMSG_CHANGE_SEATS_ON_CONTROLLED_VEHICLE,
+                CMSG_REQUEST_VEHICLE_PREV_SEAT,
+                CMSG_REQUEST_VEHICLE_NEXT_SEAT,
+                CMSG_REQUEST_VEHICLE_SWITCH_SEAT);
+
+            ASSIGN_HANDLER(&Dismiss, CMSG_DISMISS_CONTROLLED_VEHICLE);
+
+            ASSIGN_HANDLER(&ClientImpl::OnNotImplementedMessage,
+                CMSG_SET_VEHICLE_REC_ID_ACK,
+                CMSG_REQUEST_VEHICLE_EXIT,
+                CMSG_RIDE_VEHICLE_INTERACT);
+        }
+        DELAYED_CALL(Register);
     }
-    DELAYED_CALL(registerVehicleHandlers);
 
     int8 UnitPassenger::SeatId() {
         return m->SeatId();

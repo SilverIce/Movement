@@ -112,8 +112,11 @@ namespace Movement
             return;
         }
         if (!commonTasks.hasExecutor()) {
+            // TODO: probably, would be better push executor, controlled object guid info to client constructor,
+            // than pull it from controlled unit
             commonTasks.SetExecutor(newly_controlled.Updater());
             new TimeSyncRequestScheduler(this);
+            m_firstControlled = newly_controlled.Guid;
         }
         m_controlled = &newly_controlled;
         m_controlled->client(this);

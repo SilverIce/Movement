@@ -407,11 +407,6 @@ namespace Movement
 
     void registerGenericMovementHandlers()
     {
-
-#define ASSIGN_HANDLER(MessageHanger, ... ) { \
-        ClientOpcode opcodes[] = {__VA_ARGS__}; \
-        HandlersHolder::assignHandler(MessageHanger, opcodes, CountOf(opcodes)); \
-    }
         HandlersHolder::assignHandler(&ClientImpl::OnMoveTimeSkipped, CMSG_MOVE_TIME_SKIPPED);
 
         for (uint32 i = 0; i < CountOf(ValueChange2Opc_table); ++i)
@@ -459,8 +454,6 @@ namespace Movement
         HandlersHolder::assignHandler(&ClientImpl::OnSplineDone, CMSG_MOVE_SPLINE_DONE);
         HandlersHolder::assignHandler(&ClientImpl::OnNotActiveMover, CMSG_MOVE_NOT_ACTIVE_MOVER);
         HandlersHolder::assignHandler(&ClientImpl::OnActiveMover, CMSG_SET_ACTIVE_MOVER);
-
-#undef ASSIGN_HANDLER
     }
     DELAYED_CALL(registerGenericMovementHandlers);
 }

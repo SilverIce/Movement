@@ -56,7 +56,7 @@ namespace Tasks
 
 #define NON_COPYABLE_NO_DEFAULT(Class) \
     NON_COPYABLE(Class) \
-    explicit Class(); \
+    explicit Class();
 
     struct TaskExecutor_Args;
     class TaskExecutor;

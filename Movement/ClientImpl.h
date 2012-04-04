@@ -27,6 +27,7 @@ namespace Movement
         //int32 time_skipped;
         typedef std::list<Reference<RespHandler> > RespHdlContainer;
         RespHdlContainer m_resp_handlers;
+        ObjectGuid m_firstControlled; // it's always a 
 
     public:
         static MSTime ServerTime() { return MSTime(Imports.getMSTime());}
@@ -46,7 +47,16 @@ namespace Movement
         TaskTarget_DEV commonTasks;
 
         UnitMovementImpl* controlled() const { return m_controlled;}
-        void SetClientTime(const MSTime& client_time) { m_time_diff = client_time - ServerTime();}
+
+        UnitMovementImpl& firstControlled() const {
+            UnitMovement* result = Imports.GetUnit(m_socket, m_firstControlled.GetRawValue());
+            assert_state(result);
+            return result->Impl();
+        }
+
+        void SetClientTime(const MSTime& client_time) {
+            m_time_diff = client_time - ServerTime();
+        }
 
         /** The main 'gate' for movement states that incomes from client. */
         void QueueState(ClientMoveStateChange& client_state, const ObjectGuid& source);
@@ -157,6 +167,11 @@ namespace Movement
                 assignHandler(hdl, opcodes[i]);
         }
     };
+
+#define ASSIGN_HANDLER(MessageHanger, ... ) { \
+        ::Movement::ClientOpcode opcodes[] = {__VA_ARGS__}; \
+        ::Movement::HandlersHolder::assignHandler(MessageHanger, opcodes, CountOf(opcodes)); \
+    }
 
     class RespHandler : public ICallBack
     {
