@@ -2,6 +2,8 @@
 
 namespace delayInit
 {
+    void callCtors();
+
     /** This structure should not be used directly by user.
         Also it should be allocated in global scope only. */
     struct node
@@ -13,27 +15,29 @@ namespace delayInit
         explicit node(CTor creator);
     };
 
-    void callCtors();
+    template<class T> struct Obj {
+        T * _objPtr;
+        char _data[sizeof(T)];
+        inline Obj() : _objPtr(0) {}
+        inline ~Obj() { if (_objPtr) _objPtr->~T();}
+    };
 
 #define DELAYED_INIT2(Type, name, ...) \
-    void FuncCtor_##name() { \
-        name = new Type(__VA_ARGS__); \
-        struct DTor { ~DTor() { delete name;} }; \
-        static DTor _dtor; \
+    static void FuncCtor_##name() { \
+        static ::delayInit::Obj<Type > s_instance; \
+        name = s_instance._objPtr = new (s_instance._data) Type(__VA_ARGS__); \
     } \
     DELAYED_CALL(FuncCtor_##name);
 
 #define DELAYED_INIT(Type, name, ...) \
-    void FuncCtor_##name() { \
-        static Type * s_instance = 0; \
-        s_instance = new Type(__VA_ARGS__); \
-        struct DTor { ~DTor() { delete s_instance;} }; \
-        static DTor _dtor; \
+    static void FuncCtor_##name() { \
+        static ::delayInit::Obj<Type > s_instance; \
+        s_instance._objPtr = new (s_instance._data) Type(__VA_ARGS__); \
     } \
     DELAYED_CALL(FuncCtor_##name);
 
 #define DELAYED_CALL_ARGS(Function, shortname, ...) \
-    void FuncCaller_##shortname() { \
+    static void FuncCaller_##shortname() { \
         Function(__VA_ARGS__); \
     } \
     static const ::delayInit::node caller_##shortname(&FuncCaller_##shortname);
