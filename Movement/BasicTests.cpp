@@ -1,11 +1,12 @@
 #include "framework/typedefs_p.h"
+#include "framework/gtest.h"
+#include "framework/RdtscTimer.h"
 #include "MSTime.h"
 #include "LinkedList.h"
 #include "ObjectGuid.h"
-#include "framework/gtest.h"
-#include "framework/RdtscTimer.h"
 
 #include "MoveEnv.UnitTest.hpp"
+
 namespace Movement
 {
     static_assert(true, "");
@@ -117,9 +118,14 @@ namespace Movement
             EXPECT_EQ(guidIn, guidOut);
         }
         {
-            PackedGuid packed(guidIn);
+            const PackedGuid packed(guidIn);
             ObjectGuid guidOut(packed.Get());
             EXPECT_EQ(guidIn, guidOut);
+
+            const uint8 maskPart = 3 | (3 << 4);
+            EXPECT_TRUE( maskPart == packed.mask() );
+            const uint32 packedPart = 0xc0cac01a;
+            EXPECT_TRUE( memcmp(&packedPart, packed.packed(), 4) == 0 );
         }
         {
             ByteBuffer buffer;

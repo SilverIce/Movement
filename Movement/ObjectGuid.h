@@ -92,6 +92,10 @@ namespace Movement
             return ObjectGuid(guid);
         }
 
+        // for testing
+        uint8 mask() const { return _mask;}
+        const uint8* packed() const { return _packed;}
+
     private:
         uint8 _mask;
         uint8 _packed[8];
