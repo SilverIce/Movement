@@ -29,7 +29,7 @@ namespace Movement
         std::string toString() const override;
 
         Vector3 direction() const;
-
+        Vector3 direction2d() const;
         float directionAngle() const;
 
     public:

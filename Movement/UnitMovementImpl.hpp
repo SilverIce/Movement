@@ -89,13 +89,26 @@ namespace Movement
         Owner = nullptr;
     }
 
-    Vector3 UnitMovementImpl::direction() const
+    Vector3 UnitMovementImpl::direction2d() const
     {
         if (!moveFlags.hasDirection())
             return Vector3();
 
         float dir = directionAngle();
         return Vector3(cos(dir), sin(dir), 0);
+    }
+
+    Vector3 UnitMovementImpl::direction() const
+    {
+        if (!moveFlags.hasDirection())
+            return Vector3();
+
+        if (!moveFlags.hasFlag(UnitMoveFlag::Mask_Pitching))
+            return direction2d();
+
+        float cosPitch = cos(PitchAngle());
+        float yaw = directionAngle();
+        return Vector3( cosPitch*cos(yaw), cosPitch*sin(yaw), sin(PitchAngle()) );
     }
 
     float UnitMovementImpl::directionAngle() const
