@@ -92,7 +92,7 @@ namespace Movement
         {
             mov_assert(seatId < SeatCount);
 
-            if (passenger.sameTree(passenger)) {
+            if (sameTree(passenger)) {
                 log_function("attempt to board self");
                 return;
             }

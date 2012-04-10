@@ -132,18 +132,19 @@ namespace Movement
         explicit UnitPassenger(Unit_Passenger* impl) : m(impl) {}
 
         int8 SeatId();
-        /** Have no idea what else should i make public visible */
+        /** Have no idea what else should i make publicly visible */
     };
 
     class VehicleImpl;
     class EXPORT Vehicle
     {
     private:
+        friend class UnitMovement;
         VehicleImpl* m;
+        explicit Vehicle(VehicleImpl* impl) : m(impl) {}
     public:
         operator bool() const { return m != 0;}
 
-        explicit Vehicle(VehicleImpl* impl) : m(impl) {}
         static void Install(UnitMovement& transportOwner, uint32 vehicleId);
 
         void Board(int8 seatId, UnitMovement& passenger);

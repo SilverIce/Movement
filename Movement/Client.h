@@ -15,8 +15,6 @@ class WorldPacket;
 namespace Movement
 {
     class MovementMessage;
-    class UnitMovement;
-    class ClientImpl;
 
     /** Represents an object that controls UnitMovement objects.
         The main purpose - handle incoming movement packets

@@ -71,14 +71,6 @@ namespace Movement
         }
     }
 
-    inline int32 packValue(float value, int32 mask)
-    {
-        int32 result = (int32)(value / 0.25f);
-        //if (result & ~mask)
-            //log_function("too big value, it can not be packed properly");
-        return (int32)result & mask;
-    }
-
     void PacketBuilder::WriteLinearPath(const Spline<int32>& spline, ByteBuffer& data)
     {
         uint32 last_idx = spline.getPointCount() - 3;
@@ -96,9 +88,9 @@ namespace Movement
                 offset = middle - real_path[i];
 
                 uint32 packed = 0;
-                packed |= packValue(offset.x, 0x7FF);
-                packed |= packValue(offset.y, 0x7FF) << 11;
-                packed |= packValue(offset.z, 0x3FF) << 22;
+                packed |= (int32(offset.x / 0.25f) & 0x7FF);
+                packed |= (int32(offset.y / 0.25f) & 0x7FF) << 11;
+                packed |= (int32(offset.z / 0.25f) & 0x3FF) << 22;
                 data << packed;
             }
         }
@@ -139,8 +131,6 @@ namespace Movement
 
     void PacketBuilder::SplinePathSend(const UnitMovementImpl& mov)
     {
-        mov_assert(mov.SplineEnabled());
-
         WorldPacket data(MSG_NULL_ACTION, 64);
         WriteCommonMonsterMovePart(mov, data);
 
@@ -198,12 +188,12 @@ namespace Movement
             data << move_spline.vertical_acceleration;
             data << move_spline.effect_start_time;
 
-            uint32 nodes = move_spline.getPath().size();
-            assert_state(nodes >= 3);
-            data << nodes;
-            data.append<Vector3>(&move_spline.getPath()[0], nodes);
+            uint32 pointCount = move_spline.spline.getPointCount();
+            assert_state(pointCount >= 3);
+            data << pointCount;
+            data.append<Vector3>(&move_spline.getPath()[0], pointCount);
             data << uint8(move_spline.spline.mode());
-            data << (move_spline.isCyclic() ? Vector3::zero() : move_spline.FinalDestination());
+            data << (move_spline.isCyclic() ? Vector3() : move_spline.FinalDestination());
         }
     }
 
@@ -317,9 +307,7 @@ namespace Movement
 
     void PacketBuilder::SplineSyncSend(const UnitMovementImpl& mov)
     {
-        mov_assert(mov.SplineEnabled());
         const MoveSpline& move_spline = mov.as<MoveSplineUpdatable>().moveSpline();
-
         WorldPacket data(SMSG_FLIGHT_SPLINE_SYNC, 13);
         data << (float)(move_spline.timePassed() / (float)move_spline.timeTotal());
         data << mov.Guid.WriteAsPacked();
