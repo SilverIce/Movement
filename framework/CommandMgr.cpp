@@ -14,7 +14,7 @@
 
 namespace Movement
 {
-    using std::endl;
+    using namespace std;
 
     struct CommandMgrException {
         const char* msg;
@@ -23,17 +23,17 @@ namespace Movement
 
     class CommandMgrImpl : private ICommandHandler
     {
-        typedef stdext::hash_map<std::string, ICommandHandler* > base;
+        typedef stdext::hash_map<string, ICommandHandler* > base;
         base m_commands;
 
         void Invoke(StringReader& command, CommandInvoker& invoker) override
         {
-            stdext::hash_map<ICommandHandler*, std::vector<std::string> > com2name;
+            stdext::hash_map<ICommandHandler*, vector<const string*> > com2name;
             for (base::const_iterator it = m_commands.begin(); it!= m_commands.end(); ++it)
-                com2name[it->second].push_back(it->first);
+                com2name[it->second].push_back(&it->first);
             if (command.atEnd()) {
                 invoker.output << endl << "Command list:";
-                for (stdext::hash_map<ICommandHandler*, std::vector<std::string> >::const_iterator it = com2name.begin();
+                for (stdext::hash_map<ICommandHandler*, vector<const string*> >::const_iterator it = com2name.begin();
                     it != com2name.end(); ++it)
                     describeCommand(*it->first, it->second, invoker.output);
             }
@@ -46,16 +46,16 @@ namespace Movement
             }
         }
 
-        static void describeCommand(const ICommandHandler& hdl, const std::vector<std::string>& aliases, std::ostringstream& output)
+        static void describeCommand(const ICommandHandler& hdl, const vector<const string*>& aliases, ostringstream& output)
         {
-            output << endl << "'" << aliases.at(0) << "' description - " << hdl.Description;
+            output << endl << "'" << *aliases.at(0) << "' description - " << hdl.Description;
             //output.setFieldWidth(output.fieldAlignment() + 5);
             //output.setFieldAlignment(QTextStream::AlignLeft);
             output << endl << "    Handler - " << typeid(hdl).name() << '.';
             if (aliases.size() > 1) {
                 output << endl << "    Aliases: ";
                 for (uint32 idx = 0; idx < aliases.size(); ++idx)
-                    output << aliases.at(idx) << ((idx < aliases.size()-1) ? ", " : ".");
+                    output << *aliases.at(idx) << ((idx < aliases.size()-1) ? ", " : ".");
             }
             //output.setFieldWidth(output.fieldAlignment() - 5);
         }
@@ -90,7 +90,7 @@ namespace Movement
                     m_commands.insert(base::value_type(command, &handler));
                 }
             }
-            catch (CommandMgrException exc) {
+            catch (const CommandMgrException& exc) {
                 log_function("can't initialize '%s' command handler - initialization failed with exception: %s",
                     typeid(handler).name(), exc.msg);
             }
@@ -137,6 +137,7 @@ namespace Movement
         }
         catch (const CommandMgrException& exc) {
             log_function("can't parse '%s' command - parsing failed with exception: %s", invoker.command, exc.msg);
+            invoker.output << endl << "can't parse '" << invoker.command << "' command - parsing failed with exception: " << exc.msg;
         }
     }
 

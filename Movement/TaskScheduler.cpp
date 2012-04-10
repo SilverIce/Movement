@@ -95,10 +95,28 @@ namespace Tasks { namespace detail
 
 namespace Tasks
 {
-    class TaskExecutorImpl : public
-        //TaskExecutorImpl_VectorPOD110
+    typedef
         TaskExecutorImpl_LinkedList110
+        // some another implementation placeholder
+    ImplBase;
+
+    class TaskExecutorImpl : public ImplBase
     {
+        MSTime m_updateCounter;
+        //MSTime m_updateTimeOffset; // shifts all incoming time values
+
+    public:
+
+        void AddTask(ICallBack * task, MSTime exec_time, TaskTarget* target) {
+            assert_state(task);
+            ImplBase::AddTask(task, exec_time, target);
+        }
+
+        void Execute(ITaskExecutor& exec, MSTime time) {
+            TaskExecutor_Args args(exec, time, m_updateCounter.time);
+            ImplBase::Execute(args);
+            m_updateCounter += 1;
+        }
     };
 
     TaskExecutor::TaskExecutor() : impl(*new TaskExecutorImpl()) {}
@@ -106,7 +124,6 @@ namespace Tasks
 
     void TaskExecutor::AddTask(ICallBack * task, MSTime exec_time, TaskTarget* target)
     {
-        assert_state(task);
         impl.AddTask(task, exec_time, target);
     }
 
@@ -117,9 +134,7 @@ namespace Tasks
 
     void TaskExecutor::Execute(MSTime time)
     {
-        TaskExecutor_Args tt(*this, time, m_updateCounter.time);
-        impl.Execute(tt);
-        m_updateCounter += 1;
+        impl.Execute(*this, time);
     }
 
     void TaskExecutor::CancelAllTasks()
