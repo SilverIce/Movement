@@ -62,5 +62,21 @@ namespace Movement { namespace
         }
     };
     DELAYED_INIT(TestCommand, TestCommand);
+
+    struct PrintTransportInfoCommand : public MovementCommand
+    {
+        explicit PrintTransportInfoCommand() {
+            Init("transport");
+            Description = "Prints transport info.";
+        }
+
+        void Invoke(StringReader& command, CommandInvoker& invoker) override {
+            if (MovingEntity_Revolvable2* target = invoker.com.as<MovingEntity_WOW>().Environment())
+                invoker.output << endl << "Transport info: " << target->toStringAll();
+            else
+                invoker.output << endl << "Invoker is not boarded";
+        }
+    };
+    DELAYED_INIT(PrintTransportInfoCommand, PrintTransportInfoCommand);
 }
 }

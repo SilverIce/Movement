@@ -1,3 +1,5 @@
+#include "Transport.h"
+
 namespace Movement
 {
     class Unit_Passenger;
@@ -21,14 +23,14 @@ namespace Movement
             Imports.OnPositionChanged(m_unit->Owner, m_unit->GetGlobalLocation());
         }
 
-        /*struct PassengerImpl : IPassenger
+        struct PassengerImpl : IPassenger
         {
             void Unboard() override {
                 Unit_Passenger::dealloc(&as<Unit_Passenger>());
             }
         };
 
-        PassengerImpl m_PassengerImpl;*/
+        PassengerImpl m_PassengerImpl;
 
     public:
 
@@ -70,7 +72,7 @@ namespace Movement
             OnPassengerDestroy* onDestr, int8 seatId)
         {
             unitPassenger.ComponentAttach(this);
-            //unitPassenger.ComponentAttach<IPassenger>(&m_PassengerImpl);
+            unitPassenger.ComponentAttach<IPassenger>(&m_PassengerImpl);
 
             m_transportGuid = transport.Guid;
             m_unit = &unitPassenger;

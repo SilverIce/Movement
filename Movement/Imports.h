@@ -37,6 +37,9 @@ namespace Movement
         T_GeneratePath            GeneratePath;
         T_GetUnit                 GetUnit;
         T_GetUnit2                GetUnit2;
+        void (CDECL* SpawnMark)     (WorldObject* obj, const Vector3& position);
+        void (CDECL* SetUIntValue)  (WorldObject* obj, uint16 fieldIdx, uint32 value);
+        uint32 (CDECL* GetUIntValue)  (WorldObject* obj, uint16 fieldIdx);
     };
 
     extern _Imports Imports;

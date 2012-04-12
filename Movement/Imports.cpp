@@ -35,6 +35,10 @@ namespace Movement
         {
             return NULL;
         }
+
+        void FSpawnMark(WorldObject* obj, const Vector3& ) {}
+        void FSetUIntValue(WorldObject* obj, uint16 fieldIdx, uint32) {}
+        uint32 FGetUIntValue(WorldObject* obj, uint16 fieldIdx) { return 0;}
     }
 
     _Imports Imports = {
@@ -46,6 +50,9 @@ namespace Movement
         &FGeneratePath,
         &FGetUnit,
         &FGetUnit2,
+        &FSpawnMark,
+        &FSetUIntValue,
+        &FGetUIntValue,
     };
 
     void SetupImports(const _Imports& ftable) {
