@@ -18,9 +18,8 @@ Location MoveSpline::ComputePosition() const
     int32 seg_time = spline.length(point_Idx,point_Idx+1);
     if (seg_time > 0)
         u = (time_passed - spline.length(point_Idx)) / (float)seg_time;
-    Location c;
-    c.orientation = initialOrientation;
-    spline.evaluatePosition(point_Idx, u, c);
+
+    Location c(spline.evaluatePosition(point_Idx,u), initialOrientation);
 
     if (splineflags.animation)
         ;// MoveSplineFlag::Animation disables falling or parabolic movement
@@ -41,8 +40,7 @@ Location MoveSpline::ComputePosition() const
     {
         if (!splineflags.hasFlag(MoveSplineFlag::RotationFixed|MoveSplineFlag::Falling))
         {
-            Vector3 direction;
-            spline.evaluateDerivative(point_Idx,u,direction);
+            Vector3 direction = spline.evaluateDerivative(point_Idx,u);
             c.orientation = atan2f(direction.y, direction.x);
         }
 
