@@ -74,7 +74,7 @@ namespace Movement
     void MoveSplineUpdatable::OnUpdateCallback(TaskExecutor_Args& args)
     {
         updateState(1);
-        if (IsMoving())    // ensure that moving, it migh became stopped after state update
+        if (IsMoving())    // ensure that moving, it might became stopped after state update
             RescheduleTask(args, NextUpdateTime());
         if (uint32 size = events.size()) {
             uint32 itr = 0;

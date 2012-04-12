@@ -29,7 +29,7 @@ namespace testing
         DELAYED_CALL_ARGS(::testing::RegisterTest,RegTest_##function, function, #function, "");
 
 #define EXPECT_TRUE(expression) ::testing::_check(expression, __FUNCTION__, #expression);
-#define EXPECT_EQ(a, b) EXPECT_TRUE( (a) == (b) );
+#define EXPECT_EQ(a, b) ::testing::_check((a) == (b), __FUNCTION__, #a " == " #b);
 
 #define EXPECT_THROW(expression, exception) \
     try { \

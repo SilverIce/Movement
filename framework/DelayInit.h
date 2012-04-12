@@ -2,8 +2,6 @@
 
 namespace delayInit
 {
-    void callCtors();
-
     /** This structure should not be used directly by user.
         Also it should be allocated in global scope only. */
     struct node
@@ -21,6 +19,11 @@ namespace delayInit
         inline Obj() : _objPtr(0) {}
         inline ~Obj() { if (_objPtr) _objPtr->~T();}
     };
+
+    // --- BEGIN public API ---
+
+    /** Launches delayed initialization. Function asserts that it was not called before. */
+    void callCtors();
 
 #define DELAYED_INIT2(Type, name, ...) \
     static void FuncCtor_##name() { \
@@ -44,4 +47,6 @@ namespace delayInit
 
 #define DELAYED_CALL(Function) \
     static const ::delayInit::node caller_##Function(&Function);
+
+    // --- END public API ---
 }

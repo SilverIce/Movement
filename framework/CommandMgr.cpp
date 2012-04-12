@@ -155,7 +155,7 @@ namespace Movement
 
     const char * StringReader::readArg(int separator /*= defaultSeparator*/)
     {
-        // move pointer to last occurence of 'separator'
+        // move pointer to last occurrence of 'separator'
         while(*_string && *_string == separator) {
             //*_string = '\0';
             ++_string;
@@ -166,7 +166,7 @@ namespace Movement
 
         const char * arg = _string;
 
-        // move pointer to next first occurence of 'separator'
+        // move pointer to next first occurrence of 'separator'
         while(*_string) {
             if (*_string == separator) {
                 *_string = '\0'; // cut string

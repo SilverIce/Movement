@@ -309,13 +309,5 @@ namespace Tasks { namespace detail
             assert_state(at < begin() || at > end() || at == 0);
         }
     };
-
-
-    template<class T>
-    struct POD_Deque
-    {
-
-
-    };
 }
 }
