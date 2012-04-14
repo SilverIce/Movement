@@ -200,7 +200,7 @@ public:
     }
 
     /** Returns length between two points. */
-    length_type length(index_type first, index_type last) const { return lengths[last]-lengths[first];}
+    length_type lengthBetween(index_type first, index_type last) const { return lengths[last]-lengths[first];}
     /** Returns length between [first; Idx] points. */
     length_type length(index_type Idx) const { return lengths[Idx];}
 

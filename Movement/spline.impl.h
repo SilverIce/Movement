@@ -33,7 +33,7 @@ template<typename length_type> void Spline<length_type>::computeIndex(float t, i
     length_type length_ = t * lengthTotal();
     index = computeIndexFromLength(length_);
     mov_assert(index < index_hi);
-    u = (length_ - length(index)) / (float)length(index, index+1);
+    u = (length_ - length(index)) / (float)lengthBetween(index, index+1);
 }
 
 template<typename length_type> SplineBase::index_type Spline<length_type>::computeIndexInBounds( float t ) const

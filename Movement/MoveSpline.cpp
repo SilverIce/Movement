@@ -15,7 +15,7 @@ inline float MSToSec(uint32 ms) {
 Location MoveSpline::ComputePosition() const
 {
     float u = 1.f;
-    int32 seg_time = spline.length(point_Idx,point_Idx+1);
+    int32 seg_time = spline.lengthBetween(point_Idx,point_Idx+1);
     if (seg_time > 0)
         u = (time_passed - spline.length(point_Idx)) / (float)seg_time;
 
