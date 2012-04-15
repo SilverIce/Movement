@@ -83,10 +83,12 @@ struct TaxiPathNodeEntry
 
 namespace Movement
 {
+    /** Object-function that calculates distance passed by transport. */
     struct LengthPassedDescr
     {
         uint32 enterStamp;
         uint32 departureStamp;
+        uint32 timeTotal;
 
         float accel;
         float velMax;
@@ -98,7 +100,10 @@ namespace Movement
 
         float timeEndAccel;
         float timeBeginDecel;
-        float timeTotal;
+
+        public: LengthPassedDescr() {
+            memset(this, 0, sizeof(*this));
+        }
 
         public: void Init(float velocity, float Accel, float segmLength, float InitLength, bool BeginAccel, bool EndDecel)
         {
@@ -110,101 +115,102 @@ namespace Movement
             beginAccel = BeginAccel;
             endDecel = EndDecel;
 
-            timeEndAccel = 0.f;
-            timeBeginDecel = 0.f;
-            timeTotal = 0.f;
-
             InitMoveTime();
         }
 
         private: void InitMoveTime()
         {
+            float ftimeTotal = 0;
+
             if (!beginAccel && !endDecel)
             {
-                timeTotal = segmentLength / velMax;
-                return;
-            }
-
-            // Length of the path that needed to accelerate from zero to maximum velocity
-            float accelS = velMax*velMax / (2*accel);
-            // Is true in case in current path segment transport able to accelerate to his maximum velocity
-            bool enoughToAccelerate = (segmentLength >= ((int32)beginAccel+(int32)endDecel)*accelS);
-            if (enoughToAccelerate)
-            {
-                /** Graphic shows velocity changes. In current example 
-                    ship accelerates in begin and decelerates in end
-                  V  | velocity
-                 ____|_______________ velocity maximum
-                     |  /          \
-                     | /            \
-                 ____|/______________\______time___ t
-                */
-                // Time that needed to accelerate from zero to maximum velocity
-                float accelT = velMax / accel;
-
-                if (beginAccel) {
-                    timeTotal += accelT;
-                    timeEndAccel = timeTotal;
-                } 
-                else
-                    timeTotal += accelS / velMax;
-
-                timeTotal += (segmentLength - 2*accelS) / velMax;
-
-                if (endDecel) {
-                    timeBeginDecel = timeTotal;
-                    timeTotal += accelT;
-                } else {
-                    timeTotal += accelS / velMax;
-                    timeBeginDecel = timeTotal;
-                }
+                ftimeTotal = segmentLength / velMax;
+                timeEndAccel = 0;
+                timeBeginDecel = ftimeTotal;
             }
             else {
-                /** Graphic shows velocity changes. In current example 
-                    ship accelerates in begin and decelerates in end.
-                    Ship have no enough time to reach velocity maximum.
-                  V  | velocity
-                 ____|_____________  velocity maximum
-                     |  
-                     | /\
-                 ____|/__\______________time___ t
-                */ 
-
-                // unsure that this part of code works properly
-                //assert_state(false);
-
-                if (beginAccel && endDecel)
+                // Length of the path that needed to accelerate from zero to maximum velocity
+                float accelS = velMax*velMax / (2*accel);
+                // Is true in case in current path segment transport able to accelerate to his maximum velocity
+                bool enoughToAccelerate = (segmentLength >= ((int32)beginAccel+(int32)endDecel)*accelS);
+                if (enoughToAccelerate)
                 {
-                    // Time that needed to accelerate velocity from zero to maximum velocity
-                    // deceleration and acceleration takes equal time
-                    //sqrtf(2 * (spline.lengthTotal()/2) / accel);
-                    float accelT = sqrtf(segmentLength / accel);
-                    // recalculate maximum velocity
-                    velMax = accelT * accel;
+                    /** Graphic shows velocity changes. In current example 
+                        ship accelerates in begin and decelerates in end
+                      V  | velocity
+                     ____|_______________ velocity maximum
+                         |  /          \
+                         | /            \
+                     ____|/______________\______time___ t
+                    */
+                    // Time that needed to accelerate from zero to maximum velocity
+                    float accelT = velMax / accel;
 
-                    timeEndAccel = timeBeginDecel = accelT;
-                    timeTotal = 2 * accelT;
+                    if (beginAccel) {
+                        ftimeTotal += accelT;
+                        timeEndAccel = ftimeTotal;
+                    } 
+                    else
+                        ftimeTotal += accelS / velMax;
+
+                    ftimeTotal += (segmentLength - 2*accelS) / velMax;
+
+                    if (endDecel) {
+                        timeBeginDecel = ftimeTotal;
+                        ftimeTotal += accelT;
+                    } else {
+                        ftimeTotal += accelS / velMax;
+                        timeBeginDecel = ftimeTotal;
+                    }
                 }
-                else if (beginAccel) {
-                    //assert_state(segmentLength >= accelS); //for test
-                    timeEndAccel = timeTotal = timeBeginDecel = sqrtf(2 * segmentLength / accel);
-                    velMax = timeTotal * accel;
-                }
-                else if (endDecel) {
-                    //assert_state(segmentLength >= accelS); //for test
-                    timeEndAccel = timeBeginDecel = 0.f;
-                    timeTotal = sqrtf(2 * segmentLength / accel);
-                    velMax = timeTotal * accel;
+                else {
+                    /** Graphic shows velocity changes. In current example 
+                        ship accelerates in begin and decelerates in end.
+                        Ship have no enough time to reach velocity maximum.
+                      V  | velocity
+                     ____|_____________  velocity maximum
+                         |  
+                         | /\
+                     ____|/__\______________time___ t
+                    */ 
+
+                    // unsure that this part of code works properly
+                    //assert_state(false);
+
+                    if (beginAccel && endDecel)
+                    {
+                        // Time that needed to accelerate velocity from zero to maximum velocity
+                        // deceleration and acceleration takes equal time
+                        //sqrtf(2 * (spline.lengthTotal()/2) / accel);
+                        float accelT = sqrtf(segmentLength / accel);
+                        // recalculate maximum velocity
+                        velMax = accelT * accel;
+
+                        timeEndAccel = timeBeginDecel = accelT;
+                        ftimeTotal = 2 * accelT;
+                    }
+                    else if (beginAccel) {
+                        //assert_state(segmentLength >= accelS); //for test
+                        ftimeTotal = sqrtf(2 * segmentLength / accel);
+                        timeEndAccel = timeBeginDecel = ftimeTotal;
+                        velMax = ftimeTotal * accel;
+                    }
+                    else if (endDecel) {
+                        //assert_state(segmentLength >= accelS); //for test
+                        ftimeTotal = sqrtf(2 * segmentLength / accel);
+                        timeEndAccel = timeBeginDecel = 0.f;
+                        velMax = ftimeTotal * accel;
+                    }
                 }
             }
+            timeTotal = ftimeTotal * 1000;
         }
 
         public: float pathPassedLen(uint32 mstime) const
         {
-            float time = (mstime > departureStamp ? mstime - departureStamp : 0) * 0.001f;
+            assert_state(mstime <= (departureStamp + timeTotal));
 
-            assert_state(time <= timeTotal);
-            time = std::min(time, timeTotal);
+            float time = (mstime > departureStamp ? mstime - departureStamp : 0) * 0.001f;
             
             float len = 0.f;
             if (time < timeEndAccel)
@@ -239,7 +245,12 @@ namespace Movement
             return initialLength + len;
         }
 
-        public: float moveTimeTotal() const { return timeTotal;}
+        public: bool isMoving(uint32 mstime) const {
+            assert_state(mstime <= (departureStamp + timeTotal));
+            return mstime > departureStamp;
+        }
+
+        public: uint32 moveTimeTotal() const { return timeTotal;}
     };
 
     struct TransportState
@@ -247,6 +258,8 @@ namespace Movement
         Vector3 position;
         Vector3 der;
         uint32 nodeIdx;
+        uint32 timePassed;
+        bool isMoving;
     };
 
     class PathSegment
@@ -281,7 +294,7 @@ namespace Movement
                     if (nodeItr == info.nodesSize || nodes[nodeItr].mapid != node.mapid)
                         break;
                 }
-                // now firstIdx is invalid or points to node that on different map
+                // now nodeItr is invalid or points to node that on different map
 
                 cyclic = (points.size() == info.nodesSize/* && !beginAccel && !endDeccel*/);
                 assert_state(points.size() > 1);
@@ -290,54 +303,63 @@ namespace Movement
                     spline.initSpline(&points[0], points.size(), SplineBase::ModeCatmullrom);
                 else
                     spline.initCyclicSpline(&points[0], points.size(), SplineBase::ModeCatmullrom, 0);
+
+                struct LengthInit {
+                    const Transport::MotionInfo& info;
+                    int32 firstDbcIdx;
+                    float lengthSumm;
+
+                    float operator()(Spline<float>& s, int32 splineIdx) {
+                        if (info.nodes[splineIdx - s.first() + firstDbcIdx].actionTeleport())
+                            return lengthSumm;
+                        else
+                            return (lengthSumm += s.segmentLength(splineIdx, SplineBase::LengthPrecisionWoWClient));
+                    }
+                };
+                LengthInit init = {info, first, 0};
+                spline.initLengths(init);
             }
 
             {
-                double time = 0;
-                float pathLength = 0.f;
+                uint32 time = 0;
                 int32 endIdx = nodeItr + (int32)cyclic;
-                int32 nodesCount = nodeItr - first;
                 for (int32 nodeIdx = first; (nodeIdx+1) < endIdx; )
                 {
-                    const TaxiPathNodeEntry& node = nodes[(nodeIdx) % nodesCount];
+                    const TaxiPathNodeEntry& node = nodes[(nodeIdx) % info.nodesSize];
 
                     if (node.actionTeleport()) {
-                        // pathLength does not increases here
-                        spline.set_length(spline.first()+nodeIdx-first+1, pathLength);
+                        // pathLengthTotal, time variables are not grown here
                         ++nodeIdx;
                     }
                     else {
+                        int32 splineIdxBegin = spline.first() + nodeIdx - first;
                         bool beginAccel = node.actionStop();
                         bool endDeccel;
-                        float segmLength = 0.f;
-                        const float initialLength = pathLength;
+                        const float initialLength = spline.length(splineIdxBegin);
 
                         while(true) {
-                            const TaxiPathNodeEntry& nodeNext = nodes[(nodeIdx+1) % nodesCount];
-
-                            float splineSegLength = spline.segmentLength(spline.first() + nodeIdx-first, 3);
-                            segmLength += splineSegLength;
-                            pathLength += splineSegLength;
-                            spline.set_length(spline.first() + nodeIdx-first+1, pathLength);
-
                             ++nodeIdx;
+                            const TaxiPathNodeEntry& nodeNext = nodes[nodeIdx % info.nodesSize];
                             if (!((nodeIdx+1) < endIdx) || !nodeNext.noAction()) {
                                 endDeccel = nodeNext.actionStop();
                                 break;
                             }
                         }
+                        int32 splineIdxEnd = spline.first() + nodeIdx - first;
+
+                        float segmLength = spline.lengthBetween(splineIdxBegin,splineIdxEnd);
 
                         LengthPassedDescr taxiNode;
-                        taxiNode.enterStamp = time * 1000.f;
-                        time += (node.actionStop() ? node.delay : 0);
-                        taxiNode.departureStamp = time * 1000.f;
+                        taxiNode.enterStamp = time;
+                        time += (node.actionStop() ? node.delay : 0) * 1000;
+                        taxiNode.departureStamp = time;
                         taxiNode.Init(info.velocity, info.acceleration, segmLength, initialLength, beginAccel, endDeccel);
                         time += taxiNode.moveTimeTotal();
 
                         m_nodes.push_back(taxiNode);
                     }
                 }
-                m_timeTotal = time * 1000.f;
+                m_timeTotal = time;
             }
 
             const LengthPassedDescr& lastDescr = m_nodes.back();
@@ -351,6 +373,13 @@ namespace Movement
 
         private: float timeToLengthCoeff(uint32 time) const
         {
+            const LengthPassedDescr& descr = getDescr(time);
+            float dist = descr.pathPassedLen(time);
+            assert_state(dist <= spline.lengthTotal());
+            return dist / spline.lengthTotal();
+        }
+
+        private: const LengthPassedDescr& getDescr(uint32 time) const {
             assert_state(time <= moveTimeTotal());
             int32 idx = 0;
             while(true) {
@@ -360,9 +389,7 @@ namespace Movement
                 ++idx;
             }
             assert_state(m_nodes[idx].enterStamp <= time);
-            float dist = m_nodes[idx].pathPassedLen(time);
-            assert_state(dist <= spline.lengthTotal());
-            return dist / spline.lengthTotal();
+            return m_nodes[idx];
         }
 
         public: Vector3 evaluatePosition(uint32 time) const {
@@ -370,7 +397,7 @@ namespace Movement
         }
 
         public: Vector3 evaluateDerivative(uint32 time) const {
-            Vector3 dir = -spline.evaluateDerivative(timeToLengthCoeff(time)).direction();
+            Vector3 dir = -spline.evaluateDerivative(timeToLengthCoeff(time));
             // TODO: ensure that Spline::evaluateDerivative works properly.
             // something wrong: currently we have to inverse direction vector to fix it.
             return dir;
@@ -384,14 +411,17 @@ namespace Movement
         {
             assert_state(time < m_timeTotal);
 
+            const LengthPassedDescr& desc = getDescr(time);
             int32 splineIdx;
             float u;
-            spline.computeIndex(timeToLengthCoeff(time), splineIdx, u);
+            spline.computeIndex(desc.pathPassedLen(time) / spline.lengthTotal(), splineIdx, u);
 
             TransportState state;
             state.position = spline.evaluatePosition(splineIdx, u);
-            state.der = -spline.evaluateDerivative(splineIdx, u).direction();
+            state.der = -spline.evaluateDerivative(splineIdx, u);
             state.nodeIdx = splineIdx - spline.first();
+            state.timePassed = time;
+            state.isMoving = desc.isMoving(time);
             return state;
         }
     };
@@ -401,10 +431,10 @@ namespace Movement
     {
         COMPONENT_TYPEID;
         TransportImpl* m_controlled;
-        PathSegment * m_segment;
+        std::auto_ptr<PathSegment> m_segment;
         uint32 m_pathId;
-        uint32 m_nodeIdx;
-        uint32 m_timePassed;
+
+        TransportState m_state;
     public:
 
         int32 timeMod;
@@ -413,11 +443,9 @@ namespace Movement
         {
             m_controlled = &controlled;
             m_pathId = info.nodes->path;
-            m_nodeIdx = 0;
             timeMod = 0;
-            m_timePassed = 0;
             int32 firstIdx = 0;
-            m_segment = new PathSegment(info, firstIdx);
+            m_segment.reset(new PathSegment(info, firstIdx));
             controlled.ComponentAttach(this);
             float oldPeriod = (float)Imports.GetUIntValue(m_controlled->Owner,GAMEOBJECT_LEVEL) * 0.001f;
             Imports.SetUIntValue(m_controlled->Owner, GAMEOBJECT_LEVEL, m_segment->moveTimeTotal());
@@ -428,8 +456,6 @@ namespace Movement
         }
 
         ~MOTransportMover() {
-            delete m_segment;
-            m_segment = nullptr;
             m_controlled = nullptr;
         }
 
@@ -441,11 +467,11 @@ namespace Movement
         {
             Tasks::RescheduleTaskWithDelay(args, 500);
 
-            m_timePassed = (timeMod + (int32)args.now.time) % m_segment->moveTimeTotal();
-            TransportState& st = m_segment->computeState(m_timePassed);
-            m_nodeIdx = st.nodeIdx;
-            m_controlled->RelativePosition(st.position);
-            m_controlled->SetRotationFromTangentLine(st.der);
+            uint32 time = (timeMod + args.now.time) % m_segment->moveTimeTotal();
+
+            m_state = m_segment->computeState(time);
+            m_controlled->RelativePosition(m_state.position);
+            m_controlled->SetRotationFromTangentLine(m_state.der);
 
             // spawn mark each 2.5 sec to show ship server-side location
             if (args.execTickCount % (2500/100) && spawnMarks)
@@ -456,10 +482,11 @@ namespace Movement
         {
             std::ostringstream st;
             st << endl << "path Id " << m_pathId;
-            st << endl << "node Id " << m_nodeIdx;
+            st << endl << "node Id " << m_state.nodeIdx;
             st << endl << "period (sec) " << m_segment->moveTimeTotal()*0.001f;
-            st << endl << "passed (sec) " << m_timePassed*0.001f;
+            st << endl << "passed (sec) " << m_state.timePassed*0.001f;
             st << endl << "movetime mod (sec) " << timeMod*0.001f;
+            st << endl << "isMoving = " << m_state.isMoving;
             return st.str();
         }
     };
