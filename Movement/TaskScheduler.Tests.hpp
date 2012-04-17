@@ -495,7 +495,7 @@ namespace Tasks { namespace detail
             explicit Task() : updateCount(0) {}
             void Execute(TaskExecutor_Args& args) {
                 RescheduleTask(args, args.now+1);
-                EXPECT_TRUE(updateCount == args.updateCount);
+                EXPECT_TRUE(updateCount == args.execTickCount);
                 ++updateCount;
             }
         };
@@ -520,7 +520,7 @@ namespace Tasks { namespace detail
         while(tester.Execute(time));
     }
 
-    TEST(TaskExecutorTest, performance) {
+    TEST_DISABLED(TaskExecutorTest, performance) {
         testExecutors(TaskExecutorTest_performance);
     }
 }
