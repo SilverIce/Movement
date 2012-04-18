@@ -4,6 +4,8 @@ namespace Movement
 
     class UnitMovementImpl;
 
+    Q_DECLARE_TYPEINFO(OnEventArgs, Q_PRIMITIVE_TYPE|Q_MOVABLE_TYPE);
+
     class MoveSplineUpdatable : public Component
     {
     private:
@@ -17,7 +19,7 @@ namespace Movement
         TaskTarget m_updateMovementTask;
         TaskTarget m_updateRotationTask;
         ObjectGuid m_targetGuid;
-        std::vector<OnEventArgs> events;
+        QVector<OnEventArgs> events;
 
     private:
 
@@ -44,10 +46,11 @@ namespace Movement
 
         void Launch(MoveSplineInitArgs& args);
 
-        std::string toString() const override {
-            if (IsMoving())
-                return m_base.ToString();
-            return Component::toString();
+        void toString(QTextStream& st) const override {
+            if (IsMoving()) {
+                m_base.toString(st);
+            }else
+                st << endl << "stopped";
         }
 
         explicit MoveSplineUpdatable() :

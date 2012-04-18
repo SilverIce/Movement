@@ -3,10 +3,11 @@
 #include "RdtscTimer.h"
 
 #include "typedefs_p.h"
-#include <algorithm>
-#include <vector>
+#include <QtCore/QVector>
+#include <QtCore/QTextStream>
+#include <QtCore/QAtomicInt>
 #include <typeinfo>
-#include <sstream>
+#include <stdexcept>
 
 namespace Movement
 {
@@ -18,23 +19,34 @@ namespace Movement
         bool operator < (const Type& other) const {
             return typeId < other.typeId;
         }
+        bool operator == (const Type& other) const {
+            return typeId == other.typeId;
+        }
+        bool operator != (const Type& other) const {
+            return typeId != other.typeId;
+        }
     };
+    Q_DECLARE_TYPEINFO(Type, Q_PRIMITIVE_TYPE|Q_MOVABLE_TYPE);
 
     class ComponentTree
     {
     private:
-        std::vector<Type> m_types;
-        int32 m_refCount;
+        QVector<Type> m_types;
+        QAtomicInt m_refCount;
+
+        inline QVector<Type>::iterator find(const Type& type) {
+            return qLowerBound(m_types.begin(), m_types.end(), type);
+        }
+
     public:
 
-        explicit ComponentTree() : m_refCount(0) {}
+        explicit ComponentTree() {}
         ~ComponentTree() { assert_state(m_refCount <= 0);}
 
-        void addRef() { ++m_refCount;}
+        void addRef() { m_refCount.ref();}
 
         bool release() {
-            --m_refCount;
-            return m_refCount <= 0;
+            return !m_refCount.deref();
         }
 
         int32 refCount() const {
@@ -52,7 +64,7 @@ namespace Movement
         void addAspect(AspectTypeId objectTypeId, Component & object)
         {
             Type type = {objectTypeId, &object};
-            std::vector<Type>::const_iterator itr = std::lower_bound(m_types.begin(),m_types.end(),type);
+            QVector<Type>::iterator itr = find(type);
             if (itr != m_types.end() && itr->typeId == type.typeId)
                 throw std::runtime_error("aspect of same type added already");
             m_types.insert(itr, type);
@@ -61,7 +73,7 @@ namespace Movement
         void removeAspect(AspectTypeId objectTypeId)
         {
             Type fake = {objectTypeId, NULL};
-            std::vector<Type>::const_iterator itr = std::lower_bound(m_types.begin(),m_types.end(),fake);
+            QVector<Type>::iterator itr = find(fake);
             if (itr != m_types.end() && itr->typeId == fake.typeId)
                 m_types.erase(itr);
         }
@@ -69,7 +81,7 @@ namespace Movement
         Component* getAspect(AspectTypeId objectTypeId) const
         {
             Type fake = {objectTypeId, NULL};
-            std::vector<Type>::const_iterator itr = std::lower_bound(m_types.begin(),m_types.end(),fake);
+            QVector<Type>::const_iterator itr = qLowerBound(m_types, fake);
             if (itr != m_types.end() && itr->typeId == fake.typeId)
                 return itr->pointer;
             else
@@ -114,9 +126,12 @@ namespace Movement
 
     void* Component::_getAspect(AspectTypeId objectTypeId) const {
         assert_state(m_tree);
-        if (Component * com = m_tree->getAspect(objectTypeId))
+        if (m_typeId == objectTypeId)
+            return m_this;
+        else if (Component * com = m_tree->getAspect(objectTypeId))
             return com->m_this;
-        return nullptr;
+        else
+            return nullptr;
     }
 
     void* Component::_as(AspectTypeId objectTypeId) const {
@@ -125,29 +140,29 @@ namespace Movement
         return object;
     }
 
-    std::string Component::toString() const
+    void Component::toString(QTextStream& st) const
     {
-        return "\n<no description>";
+        st << endl << "<no description>";
     }
 
-    std::string Component::toStringAll() const
+    QString Component::toStringAll() const
     {
-        using std::endl;
-        std::ostringstream str;
+        QString string;
+        QTextStream str(&string, QIODevice::WriteOnly);
         if (!m_tree) {
             str << endl << "Not attached component";
             str << endl << typeid(*this).name();
-            str << toString();
+            toString(str);
         }
         else {
             str << endl << "Component amount " << m_tree->Count();
             for (int32 idx = 0; idx < m_tree->Count(); ++idx) {
                 str << endl << typeid((*m_tree)[idx]).name() << " {";
-                str << (*m_tree)[idx].toString();
+                (*m_tree)[idx].toString(str);
                 str << endl << "}";
             }
         }
-        return str.str();
+        return *str.string();
     }
 }
 

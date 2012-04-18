@@ -153,17 +153,15 @@ namespace Movement
         BroadcastMessage(data);*/
     }
 
-    std::string ClientImpl::ToString() const
+    void ClientImpl::ToString(QTextStream& str) const
     {
-        std::stringstream str;
-        str << std::endl << "Server-side time: " << ServerTime().time << " Client-side time: " << ClientTime().time;
-        str << std::endl << "Request  counter: " << m_requestCounter.getCurrent();
+        str << endl << "Server-side time: " << ServerTime().time << " Client-side time: " << ClientTime().time;
+        str << endl << "Request  counter: " << m_requestCounter.getCurrent();
         if (!m_resp_handlers.empty()) {
-            str << std::endl << "Response handlers queue:";
-            for (RespHdlContainer::const_iterator it = m_resp_handlers.begin();it != m_resp_handlers.end(); ++it)
-                str << std::endl << typeid(*it->pointer()).name();
+            str << endl << "Response handlers queue:";
+            foreach(const Reference<RespHandler>& hdl, m_resp_handlers)
+                str << endl << typeid(*hdl.pointer()).name();
         }
-        return str.str();
     }
 
     uint32 ClientImpl::RegisterRespHandler(Reference<RespHandler> handler)
@@ -205,9 +203,9 @@ namespace Movement
             else {
                 log_function("invalid state change - client %s '%s' flag, but %s of '%s' flag was expected",
                     state.moveFlags.hasFlag(bitChanged) ? "enabled" : "disabled",
-                    bitChanged.ToString().c_str(),
+                    qPrintable(bitChanged.toString()),
                     state.allowFlagApply ? "enabling" : "disabling",
-                    state.allowFlagChange.ToString().c_str());
+                    qPrintable(state.allowFlagChange.toString()));
                 return false;
             }
         }
@@ -334,7 +332,7 @@ namespace Movement
         delete static_cast<ClientMemoryLayout*>(this);
     }
 
-    void Client::FillSubscribeList(std::vector<uint16>& opcodes)
+    void Client::FillSubscribeList(QVector<uint16>& opcodes)
     {
         HandlersHolder::FillSubscribeList(opcodes);
     }

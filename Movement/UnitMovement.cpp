@@ -10,9 +10,9 @@
 #include "framework/DelayInit.h"
 #include "framework/typedefs_p.h"
 
-#include <sstream>
-#include <list>
-#include <hash_map>
+#include <QtCore/QTextStream>
+#include <QtCore/QHash>
+#include <QtCore/QVector>
 #include <typeinfo>
 
 //#include "Object.h"
@@ -152,7 +152,7 @@ namespace Movement
         return m.GetCurrentSpeed();
     }
 
-    std::string UnitMovement::ToString()
+    QString UnitMovement::ToString()
     {
         return m.toStringAll();
     }

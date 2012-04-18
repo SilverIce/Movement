@@ -12,17 +12,13 @@
 #include "MoveSplineInitArgs.h"
 #include "Location.h"
 
-namespace Movement {
+class QTextStream;
 
-
-    // MoveSpline - кривая гладкая или ломаная линия и точка на ней, движущаяся из начала в конец кривой
-    // точка может иметь вертикальную составляющую движения
-    // кривая может быть замкнута - в этом случае точка никогда не остановится
-    // состояние MoveSpline необратимо: точка может двигаться только вперед
-
+namespace Movement 
+{
     // MoveSpline represents smooth catmullrom or linear curve and point that moves belong it
     // curve can be cyclic - in this case movement will be cyclic
-    // point can have vertical acceleration motion componemt(used in fall, parabolic movement)
+    // point can have vertical acceleration motion component(used in fall, parabolic movement)
     class MoveSpline
     {
     public:
@@ -96,7 +92,7 @@ namespace Movement {
         const Vector3& CurrentDestination() const { return spline.getPoint(point_Idx+1);}
         int32 currentPathPointIdx() const;
 
-        std::string ToString() const;
+        void toString(QTextStream& st) const;
     };
 }
 

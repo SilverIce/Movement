@@ -79,8 +79,9 @@ namespace Tasks { namespace detail
         } \
     }
 
-#include <vector>
 #include <algorithm>
+#include <QtCore/QMap>
+#include <QtCore/QVector>
 //#include <hash_map>
 //#include <hash_set>
 #include "POD_Arrays.h"

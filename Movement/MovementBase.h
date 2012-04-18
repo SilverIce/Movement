@@ -12,7 +12,7 @@
 #include "ObjectGuid.h"
 #include "Location.h"
 #include "Imports.h"
-#include <strstream>
+#include <QtCore/QTextStream>
 #include "MoveEnv.h"
 
 class WorldObject;
@@ -74,19 +74,16 @@ namespace Movement
             return Location(base::RelativePosition(),base::YawAngle());
         }
 
-        std::string toString() const override
+        void toString(QTextStream& st) const override
         {
-            std::ostringstream st;
-            using std::endl;
-            st << endl << "guid 0x" << std::hex << Guid.GetRawValue();
-            st << endl << "global   position " << GlobalPosition().toString();
+            st << endl << "guid 0x" << hex << Guid.GetRawValue();
+            st << endl << "global   position " << GlobalPosition().toString().c_str();
             if (Environment()) {
-                st << endl << "relative position " << RelativePosition().toString();
+                st << endl << "relative position " << RelativePosition().toString().c_str();
                 st << endl << "attached to another moving entity";
             }
             if (uint32 count = BindedEntities().size())
                 st << endl << "moving entities attached count " << count;
-            return st.str();// << ;
         }
     };
 }

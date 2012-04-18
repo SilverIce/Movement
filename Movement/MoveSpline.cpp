@@ -1,6 +1,6 @@
 
 #include "MoveSpline.h"
-#include <sstream>
+#include <QtCore/QTextStream>
 
 namespace Movement{
 
@@ -233,25 +233,23 @@ MoveSpline::UpdateResult MoveSpline::_updateState(int32& ms_time_diff)
     return result;
 }
 
-std::string MoveSpline::ToString() const
+void MoveSpline::toString(QTextStream& str) const
 {
-    std::stringstream str;
-    str << std::endl << "MoveSpline";
-    str << std::endl << "spline Id: " << GetId();
-    str << std::endl << "flags: " << splineflags.ToString();
-    str << std::endl;
+    str << endl << "MoveSpline";
+    str << endl << "spline Id: " << GetId();
+    str << endl << "flags: " << splineflags.toString();
+    str << endl;
     if (splineflags.final_angle)
         str << "facing  angle: " << facing.angle;
     else if (splineflags.final_target)
         str << "facing target: " << facing.target;
     else if(splineflags.final_point)
         str << "facing  point: " << facing.x << " " << facing.y << " " << facing.z;
-    str << std::endl << "time passed: " << time_passed;
-    str << std::endl << "total  time: " << timeTotal();
-    str << std::endl << "spline point Id: " << point_Idx;
-    str << std::endl << "path  point  Id: " << currentPathPointIdx();
-    str << spline.ToString();
-    return str.str();
+    str << endl << "time passed: " << time_passed;
+    str << endl << "total  time: " << timeTotal();
+    str << endl << "spline point Id: " << point_Idx;
+    str << endl << "path  point  Id: " << currentPathPointIdx();
+    str << spline.ToString().c_str();
 }
 
 void MoveSpline::Finalize()

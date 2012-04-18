@@ -50,10 +50,8 @@ namespace Movement
             return *env;
         }
 
-        std::string toString() const override {
-            std::ostringstream st;
-            st << std::endl << "seat Id " << (int32)SeatId();
-            return st.str();
+        void toString(QTextStream& st) const override {
+            st << endl << "seat Id " << (int32)SeatId();
         }
 
         static Unit_Passenger* create(UnitMovementImpl& unitPassenger, MovingEntity_WOW& transport,

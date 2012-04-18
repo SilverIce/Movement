@@ -91,7 +91,7 @@ namespace Movement
 
         uint64 operator & (uint64 f) const { return (raw & f);}
         uint64 operator | (uint64 f) const { return (raw | f);}
-        std::string ToString() const;
+        QString toString() const;
 
         bool operator == (const UnitMoveFlag& flag) const { return raw == flag.raw;}
         bool operator != (const UnitMoveFlag& flag) const { return raw != flag.raw;}

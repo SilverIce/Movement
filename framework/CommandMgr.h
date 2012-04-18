@@ -1,7 +1,7 @@
 #pragma once
 
-#include <sstream>
 #include "typedefs.h"
+#include <QtCore/QTextStream>
 
 namespace Movement
 {
@@ -14,7 +14,7 @@ namespace Movement
     {
         virtual void Invoke(StringReader& command, CommandInvoker& invoker) = 0;
 
-        std::string Description;
+        QString Description;
 
         explicit ICommandHandler();
 
@@ -39,13 +39,13 @@ namespace Movement
 
     struct CommandInvoker
     {
-        public: Component& com;
-        public: const char * command;
-        public: std::ostringstream output;
+        Component& com;
+        QString string;
+        QTextStream output;
+        const char* command;
 
-        public: CommandInvoker(Component& invoker, const char * _command)
-            : com(invoker), command(_command)
-        {
+        explicit CommandInvoker(Component& invoker, const char* cmd) : com(invoker), command(cmd) {
+            output.setString(&string, QIODevice::WriteOnly);
         }
     };
 

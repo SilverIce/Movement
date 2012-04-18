@@ -29,7 +29,7 @@ namespace Movement
         struct ResHandler
         {
             MoveSplineUpdatable& m_owner;
-            std::vector<OnEventArgs>& events;
+            QVector<OnEventArgs>& events;
             bool needSync;
 
             void operator()(MoveSpline::UpdateResult result)

@@ -69,7 +69,7 @@ namespace Movement
         bool hasFlag(uint32 f) const { return (raw & f) != 0;}
         uint32 operator & (uint32 f) const { return (raw & f);}
         uint32 operator | (uint32 f) const { return (raw | f);}
-        std::string ToString() const;
+        QString toString() const;
 
         // Not constant interface
 

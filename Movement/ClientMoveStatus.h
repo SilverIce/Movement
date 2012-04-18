@@ -57,7 +57,7 @@ namespace Movement
         float pitchAngle;
         int8 transport_seat;
 
-        std::string ToString() const;
+        QString ToString() const;
     };
 
     struct ClientMoveStateChange : public ClientMoveState
@@ -70,32 +70,32 @@ namespace Movement
         bool allowFlagApply;
     };
 
-    inline std::string ClientMoveState::ToString() const
+    inline QString ClientMoveState::ToString() const
     {
-        std::stringstream st;
-        st << "Movement  flags: " << moveFlags.ToString() << std::endl;
-        st << "Global position: " << globalPosition.ToString() << std::endl;
+        QString string;
+        QTextStream st(&string);
+        st << "Movement  flags: " << moveFlags.toString() << endl;
+        st << "Global position: " << globalPosition.toString() << endl;
 
         if (moveFlags.ontransport)
         {
-            st << "Local  position: " << relativePosition.ToString() << std::endl;
-            st << "seat         Id: " << (int32)transport_seat << std::endl;
+            st << "Local  position: " << relativePosition.toString() << endl;
+            st << "seat         Id: " << (int32)transport_seat << endl;
         }
 
         if (moveFlags & UnitMoveFlag::Mask_Pitching)
         {
-            st << "pitch angle " << pitchAngle << std::endl;
+            st << "pitch angle " << pitchAngle << endl;
         }
 
         if (moveFlags.falling)
         {
-            st << "jump vertical   vel " << jump_verticalVelocity << std::endl;
-            st << "jump direction2d  x " << jump_directionX << std::endl;
-            st << "jump direction2d  y " << jump_directionY << std::endl;
-            st << "jump horizontal vel " << jump_horizontalVelocity << std::endl;
-
-            st << "fall           time " << fallTime << std::endl;
+            st << "jump vertical   vel " << jump_verticalVelocity << endl;
+            st << "jump direction2d  x " << jump_directionX << endl;
+            st << "jump direction2d  y " << jump_directionY << endl;
+            st << "jump horizontal vel " << jump_horizontalVelocity << endl;
+            st << "fall           time " << fallTime << endl;
         }
-        return st.str();
+        return *st.string();
     }
 }

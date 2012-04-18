@@ -1,7 +1,7 @@
 namespace Tasks { namespace detail
 {
-//#define SELECTED_CONT std::vector
- #define SELECTED_CONT POD_Array
+#define SELECTED_CONT QVector
+//#define SELECTED_CONT POD_Array
 
     template<class T>
     class Recycler
@@ -43,7 +43,7 @@ namespace Tasks { namespace detail
         }
 
         void clear() {
-            ForEach(T* obj, _data, delete obj);
+            qDeleteAll(_data);
             _data.clear();
             _allocated = 0;
         }
@@ -326,7 +326,7 @@ namespace Tasks { namespace detail
         ~TaskExecutorImpl_LinkedList110() { CancelAllTasks();}
 
         bool hasCallbacks() const {
-            return top.size() > marks.size();
+            return top.size() > (uint32)marks.size();
         }
 
         void printStats()

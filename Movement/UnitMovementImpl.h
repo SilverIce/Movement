@@ -26,7 +26,7 @@ namespace Movement
 
         void CleanReferences();
 
-        std::string toString() const override;
+        void toString(QTextStream& st) const override;
 
         Vector3 direction() const;
         Vector3 direction2d() const;

@@ -7,10 +7,10 @@
 */
 
 #pragma once
-#include <vector>
 #include "framework/typedefs.h"
 
 class WorldPacket;
+template<typename> class QVector;
 
 namespace Movement
 {
@@ -37,6 +37,6 @@ namespace Movement
         /** Handles messages from this client */
         void OnMovementMessage(WorldPacket& message);
 
-        static void FillSubscribeList(std::vector<uint16>& opcodes);
+        static void FillSubscribeList(QVector<uint16>& opcodes);
     };
 }

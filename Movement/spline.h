@@ -10,6 +10,7 @@
 
 #include "framework/typedefs_p.h"
 #include <G3D/Vector3.h>
+#include <QtCore/QVector>
 
 namespace Movement {
 
@@ -17,7 +18,7 @@ class SplineBase
 {
 public:
     typedef int32 index_type;
-    typedef std::vector<Vector3> ControlArray;
+    typedef QVector<Vector3> ControlArray;
 
     enum EvaluationMode
     {
@@ -131,7 +132,7 @@ template<typename length_type>
 class Spline : public SplineBase
 {
 public:
-    typedef std::vector<length_type> LengthArray;
+    typedef QVector<length_type> LengthArray;
     typedef length_type LenghtType;
     #pragma region fields
 protected:

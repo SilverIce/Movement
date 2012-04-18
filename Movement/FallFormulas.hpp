@@ -124,7 +124,7 @@ namespace Movement
 #define STR(x) #x
 
     template<class Flags, int N>
-    void print_flags(Flags flag, const char * (&names)[N], std::string& str)
+    void print_flags(Flags flag, const char * (&names)[N], QString& str)
     {
         if (flag == 0)
         {
@@ -138,14 +138,14 @@ namespace Movement
         {
             if ((flag & (Flags(1) << i)) && names[i] != NULL) {
                 if (flagsAppended > 0)
-                    str += ' ';
+                    str += " ";
                 str += names[i];
                 ++flagsAppended;
             }
         }
     }
 
-    std::string UnitMoveFlag::ToString() const
+    QString UnitMoveFlag::toString() const
     {
         const char * g_MovementFlag_names[]=
         {
@@ -200,12 +200,12 @@ namespace Movement
             STR(Unk10             ),
         };
 
-        std::string str;
+        QString str;
         print_flags(raw,g_MovementFlag_names,str);
         return str;
     }
 
-    std::string MoveSplineFlag::ToString() const
+    QString MoveSplineFlag::toString() const
     {
         const char * g_SplineFlag_names[32]=
         {
@@ -243,7 +243,7 @@ namespace Movement
             STR(Unknown13    ),// 0x80000000,
         };
 
-        std::string str;
+        QString str;
         print_flags(raw,g_SplineFlag_names,str);
         return str;
     }

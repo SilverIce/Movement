@@ -8,9 +8,9 @@
 #include "typedefs_p.h"
 
 #include <typeinfo>
-#include <hash_map>
-#include <string>
-#include <vector>
+#include <QtCore/QHash>
+#include <QtCore/QByteArray>
+#include <stdlib.h>
 
 namespace Movement
 {
@@ -23,41 +23,38 @@ namespace Movement
 
     class CommandMgrImpl : private ICommandHandler
     {
-        typedef stdext::hash_map<string, ICommandHandler* > base;
+        typedef QHash<QByteArray, ICommandHandler* > base;
         base m_commands;
 
         void Invoke(StringReader& command, CommandInvoker& invoker) override
         {
-            stdext::hash_map<ICommandHandler*, vector<const string*> > com2name;
+            QHash<ICommandHandler*, QList<QByteArray> > com2name;
             for (base::const_iterator it = m_commands.begin(); it!= m_commands.end(); ++it)
-                com2name[it->second].push_back(&it->first);
+                com2name[it.value()] << it.key();
             if (command.atEnd()) {
                 invoker.output << endl << "Command list:";
-                for (stdext::hash_map<ICommandHandler*, vector<const string*> >::const_iterator it = com2name.begin();
-                    it != com2name.end(); ++it)
-                    describeCommand(*it->first, it->second, invoker.output);
+                foreach(const QList<QByteArray>& str, com2name.values())
+                    invoker.output << endl << str[0].constData();
             }
             else {
                 const char * com = command.readArg();
-                if (ICommandHandler* hdl = getHandler(com))
+                if (ICommandHandler* hdl = getHandler(com)) {
                     describeCommand(*hdl, com2name[hdl], invoker.output);
+                }
                 else
                     invoker.output << endl << "Command '" << com << "' is not registered.";
             }
         }
 
-        static void describeCommand(const ICommandHandler& hdl, const vector<const string*>& aliases, ostringstream& output)
+        static void describeCommand(const ICommandHandler& hdl, const QList<QByteArray>& aliases, QTextStream& output)
         {
-            output << endl << "'" << *aliases.at(0) << "' description - " << hdl.Description;
-            //output.setFieldWidth(output.fieldAlignment() + 5);
-            //output.setFieldAlignment(QTextStream::AlignLeft);
-            output << endl << "    Handler - " << typeid(hdl).name() << '.';
+            output << endl << "'" << aliases[0].constData() << "' description - " << hdl.Description;
+            output << endl << "    Handler - " << typeid(hdl).name() << ".";
             if (aliases.size() > 1) {
                 output << endl << "    Aliases: ";
-                for (uint32 idx = 0; idx < aliases.size(); ++idx)
-                    output << *aliases.at(idx) << ((idx < aliases.size()-1) ? ", " : ".");
+                for (int idx = 0; idx < aliases.size(); ++idx)
+                    output << aliases[idx].constData() << ((idx < aliases.size()-1) ? ", " : ".");
             }
-            //output.setFieldWidth(output.fieldAlignment() - 5);
         }
 
     public:
@@ -69,8 +66,7 @@ namespace Movement
 
         ICommandHandler* getHandler(const char * command) const {
             assert_state(command);
-            base::const_iterator it = m_commands.find(command);
-            return it == m_commands.end() ? nullptr : it->second;
+            return m_commands.value(command);
         }
 
         void Register(ICommandHandler& handler, const char * aliases)
@@ -87,7 +83,7 @@ namespace Movement
                     const char * command = reader.readArg('|');
                     if (getHandler(command))
                         throw CommandMgrException("command handler with such name already registered");
-                    m_commands.insert(base::value_type(command, &handler));
+                    m_commands.insert(command, &handler);
                 }
             }
             catch (const CommandMgrException& exc) {
@@ -218,6 +214,6 @@ namespace Movement
 
         CommandMgr mgr;
         mgr.Invoke(invoker);
-        log_console("output is = %s", invoker.output.str().c_str());
+        log_console("output is = %s", qPrintable(*invoker.output.string()));
     }
 }

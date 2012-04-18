@@ -25,7 +25,7 @@ namespace Movement
         MSTime m_time_diff;             // difference between client and server time: diff = client_ticks - server_ticks
         UInt32Counter m_requestCounter;
         //int32 time_skipped;
-        typedef std::list<Reference<RespHandler> > RespHdlContainer;
+        typedef QVector<Reference<RespHandler> > RespHdlContainer;
         RespHdlContainer m_resp_handlers;
         ObjectGuid m_firstControlled; // it's always a 
 
@@ -88,7 +88,7 @@ namespace Movement
         explicit ClientImpl(void * socket);
         ~ClientImpl();
 
-        std::string ToString() const;
+        void ToString(QTextStream& st) const;
 
         void LostControl();
         void SetControl(UnitMovementImpl& mov);
@@ -109,7 +109,7 @@ namespace Movement
     {
     public:
         typedef void (*Handler)(ClientImpl&, WorldPacket& msg);
-        typedef stdext::hash_map<ClientOpcode, Handler> HandlerMap;
+        typedef QHash<ClientOpcode, Handler> HandlerMap;
 
     private:
         HandlerMap handlers;
@@ -122,8 +122,7 @@ namespace Movement
         }
 
         static Handler getHandler(ClientOpcode opcode) {
-            HandlerMap::const_iterator it = instance().handlers.find(opcode);
-            return it != instance().handlers.end() ? it->second : nullptr;
+            return instance().handlers.value(opcode, nullptr);
         }
 
     public:
@@ -137,11 +136,11 @@ namespace Movement
             ensureParsed(msg);
         }
 
-        static void FillSubscribeList(std::vector<uint16>& opcodes)
+        static void FillSubscribeList(QVector<uint16>& opcodes)
         {
             assert_state_msg(!instance().handlers.empty(), "bad news, no handlers binded");
-            for (HandlerMap::const_iterator it = instance().handlers.begin(); it != instance().handlers.end(); ++it)
-                opcodes.push_back(it->first);
+            foreach(ClientOpcode opcode, instance().handlers.keys())
+                opcodes += (uint16)opcode;
         }
 
         static void ensureParsed(const WorldPacket& msg)
@@ -159,7 +158,7 @@ namespace Movement
             Handler handler = getHandler(opcode);
             // two normal cases here: handler wasn't assigned yet or same handler for same opcode
             assert_state(handler == nullptr || handler == hdl);
-            instance().handlers.insert(HandlerMap::value_type(opcode, hdl));
+            instance().handlers.insert(opcode, hdl);
         }
 
         static void assignHandler(Handler hdl, const ClientOpcode * opcodes, uint32 count) {

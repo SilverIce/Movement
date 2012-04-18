@@ -7,6 +7,8 @@
 
 namespace Movement{
 
+Q_DECLARE_TYPEINFO(G3D::Vector3, Q_MOVABLE_TYPE|Q_PRIMITIVE_TYPE);
+
 SplineBase::EvaluationMethtod SplineBase::evaluators[SplineBase::ModeEnd] =
 {
     &SplineBase::EvaluateLinear,

@@ -46,7 +46,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="../dep/g3dlite/include/;../Movement/fake/;../"
+				AdditionalIncludeDirectories="../dep/g3dlite/include/;../Movement/fake/;../;&quot;$(QTDIR)/include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_WARNINGS;_CONSOLE;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0"
 				StringPooling="true"
 				BasicRuntimeChecks="0"
@@ -72,7 +72,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="QtCore4.lib qtmain.lib"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="&quot;$(QTDIR)/lib&quot;"
 				GenerateDebugInformation="true"
 				LinkTimeCodeGeneration="1"
 				Profile="true"
@@ -127,7 +129,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				WholeProgramOptimization="false"
-				AdditionalIncludeDirectories="../dep/g3dlite/include/;../Movement/fake/;../"
+				AdditionalIncludeDirectories="../dep/g3dlite/include/;../Movement/fake/;../;&quot;$(QTDIR)/include&quot;"
 				PreprocessorDefinitions="WIN32;_CONSOLE"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
@@ -153,6 +155,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="QtCore4.lib qtmain.lib"
+				AdditionalLibraryDirectories="&quot;$(QTDIR)/lib&quot;"
 				GenerateDebugInformation="true"
 				LinkTimeCodeGeneration="0"
 				Profile="true"

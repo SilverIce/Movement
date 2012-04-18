@@ -1,5 +1,5 @@
 #include "gtest.h"
-#include <vector>
+#include <QtCore/QVector>
 #include <algorithm>
 #include <stdio.h>
 #include <intrin.h>
@@ -37,13 +37,13 @@ namespace testing
 
     struct TestRegistry
     {
-        std::vector<TestInfo*> tests;
+        QVector<TestInfo*> tests;
 
         ~TestRegistry() {
             Clear();
         }
 
-        size_t totalAmount() {
+        int totalAmount() {
             return tests.size();
         }
 
@@ -52,7 +52,7 @@ namespace testing
         }
 
         void Clear() {
-            std::for_each(tests.begin(),tests.end(),TestInfo::Delete);
+            qDeleteAll(tests);
             tests.clear();
         }
 
@@ -106,15 +106,15 @@ namespace testing
             currentTest = NULL;
         }
 
-        bool RunAllTests(const std::vector<TestInfo*>& tests)
+        bool RunAllTests(const QVector<TestInfo*>& tests)
         {
             // No need sort tests: their natural order is important. Tests from the same compile unit will be grouped together
             //std::sort(tests.begin(),tests.end(),TestInfo::Compare);
             statistics.countDisabledTests = std::count_if(tests.begin(),tests.end(),TestInfo::Disabled);
             statistics.countTotalTests = tests.size();
 
-            for(std::vector<TestInfo*>::const_iterator it = tests.begin(); it!=tests.end(); ++it)
-                InvokeTest(*it);
+            foreach(TestInfo* test, tests)
+                InvokeTest(test);
 
             statistics.OnTestsComplete();
 

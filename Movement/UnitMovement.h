@@ -7,6 +7,8 @@
 class WorldObject;
 class ByteBuffer;
 
+class QString;
+
 namespace Tasks {
     class ITaskExecutor;
 }
@@ -73,7 +75,7 @@ namespace Movement
 
         void CleanReferences();
 
-        std::string ToString();
+        QString ToString();
 
         class Vehicle asVehicle();
         class UnitPassenger asPassenger();

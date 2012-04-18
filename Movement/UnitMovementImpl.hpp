@@ -138,16 +138,13 @@ namespace Movement
     }
 
 
-    std::string UnitMovementImpl::toString() const
+    void UnitMovementImpl::toString(QTextStream& st) const
     {
-        std::ostringstream st;
-        using std::endl;
-        st << MovingEntity_WOW::toString();
+        MovingEntity_WOW::toString(st);
 
         if (m_client)
-            st << m_client->ToString();
+            m_client->ToString(st);
 
-        return st.str();
     }
 
     bool UnitMovementImpl::SplineEnabled() const {

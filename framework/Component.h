@@ -1,7 +1,9 @@
 #pragma once
 
 #include "framework/typedefs.h"
-#include <string>
+
+class QString;
+class QTextStream;
 
 namespace Movement
 {
@@ -27,10 +29,10 @@ namespace Movement
             return m_tree == another.m_tree;
         }
 
-        public: virtual std::string toString() const;
+        public: virtual void toString(QTextStream& st) const;
 
         /** Describes all components that attached to the tree  */
-        public: std::string toStringAll() const;
+        public: QString toStringAll() const;
 
         /** Performs a cast to given type. Returns a null in case cast failed.*/
         public: template<class T> inline T* getAspect() const {

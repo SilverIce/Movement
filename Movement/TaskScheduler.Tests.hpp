@@ -1,8 +1,7 @@
 #include "framework/RdtscTimer.h"
 #include "framework/gtest.h"
 #include <typeinfo>
-#include <map>
-#include <set>
+#include <QtCore/QSet>
 
 namespace Tasks { namespace detail
 {
@@ -79,7 +78,7 @@ namespace Tasks { namespace detail
         RdtscTimer timerCancelTask;
         RdtscTimer timerUpdate;
 
-        std::set<TaskTarget*> taskList;
+        QSet<TaskTarget*> taskList;
     };
 
     template<class Impl>
@@ -133,7 +132,7 @@ namespace Tasks { namespace detail
 
         void CancelTasks(TaskTarget& obj) override
         {
-            taskList.erase(&obj);
+            taskList.remove(&obj);
             RdtscCall c(timerCancelTask);
             impl.CancelTasks(obj);
         }
@@ -161,21 +160,10 @@ namespace Tasks { namespace detail
         }
     };
 
-    template<class T, class Y>
-    void compare(const taskExecutor<T>& a, const taskExecutor<Y>& b)
-    {
-        log_console(" ======= %s VS %s ======= ", typeid(T).name(), typeid(Y).name());
-        log_console("timerAddTask    %I64d", timerAddTask.passed() );
-        log_console("timerUpdate     %I64d", timerUpdate.passed() );
-        log_console("timerCancelTask %I64d", timerCancelTask.passed() );
-    }
-
-    void produceExecutors(std::vector<ITaskExecutor2*>& executors) {
-        ITaskExecutor2* exec[] = {
-            new taskExecutor<TaskExecutorImpl_LinkedList110>,
-            //new taskExecutor<TaskExecutorImpl_LinkedList111>,
-        };
-        executors.assign(exec, exec + CountOf(exec));
+    void produceExecutors(QVector<ITaskExecutor2*>& executors) {
+        executors
+            << new taskExecutor<TaskExecutorImpl_LinkedList110>
+        ;
     }
 
     struct DoNothingTask : public ICallBack {
@@ -242,12 +230,12 @@ namespace Tasks { namespace detail
         void CancelTaskOwners(uint32 amount)
         {
             while((amount-- > 0) /*&& !owners.empty()*/) {
-                std::set<TaskTarget*>& owners = executor->taskList;
+                QSet<TaskTarget*>& owners = executor->taskList;
                 if (owners.empty())
                     continue;
 
                 uint32 randomIdx = rand() % owners.size();
-                std::set<TaskTarget*>::iterator it = owners.begin();
+                QSet<TaskTarget*>::iterator it = owners.begin();
                 while(randomIdx-- > 0)
                     ++it;
 
@@ -284,15 +272,14 @@ namespace Tasks { namespace detail
 
     void testExecutors(void (*testExecutorFn)(ITaskExecutor2&))
     {
-        std::vector<ITaskExecutor2*> exec;
+        QVector<ITaskExecutor2*> exec;
         produceExecutors(exec);
 
         EXPECT_TRUE( !exec.empty() );
 
-        for(uint32 i = 0; i < exec.size(); ++i)
+        for(int i = 0; i < exec.size(); ++i)
             testExecutorFn(*exec[i]);
-        for(uint32 i = 0; i < exec.size(); ++i)
-            delete exec[i];
+        qDeleteAll(exec);
     }
 
     void printExecutorName(ITaskExecutor2& ex){

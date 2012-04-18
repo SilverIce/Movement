@@ -4,17 +4,17 @@
 #include "Imports.h"
 #include "TaskScheduler.h"
 
+#include <memory>
+#include <QtCore/QVector>
+#include <QtCore/QTextStream>
 #include "MovementCommandMgr.h"
 #include "framework/typedefs_p.h"
 #include "UpdateFields.h"
 #include "spline.h"
-#include <memory>
 #include "MovementBase.h"
 
 namespace Movement
 {
-    using std::endl;
-
     class TransportImpl : public MovingEntity_WOW
     {
         using MovingEntity_WOW::Environment;
@@ -266,7 +266,7 @@ namespace Movement
     {
         Spline<float> spline;
 
-        std::vector<LengthPassedDescr> m_nodes;
+        QVector<LengthPassedDescr> m_nodes;
 
         uint32 m_timeTotal;
         bool m_cyclic;
@@ -364,11 +364,6 @@ namespace Movement
 
             const LengthPassedDescr& lastDescr = m_nodes.back();
             assert_state( G3D::fuzzyEq(spline.lengthTotal(), lastDescr.initialLength+lastDescr.segmentLength) );
-        }
-
-        static bool fuzzyInRange(float value, float lo, float hi) {
-            const float eps = 0.01f;
-            return (value > lo - eps) && (value < hi + eps);
         }
 
         private: float timeToLengthCoeff(uint32 time) const
@@ -478,16 +473,14 @@ namespace Movement
                 Imports.SpawnMark(m_controlled->Owner, m_controlled->GlobalPosition());
         }
 
-        std::string toString() const override
+        void toString(QTextStream& st) const override
         {
-            std::ostringstream st;
             st << endl << "path Id " << m_pathId;
             st << endl << "node Id " << m_state.nodeIdx;
             st << endl << "period (sec) " << m_segment->moveTimeTotal()*0.001f;
             st << endl << "passed (sec) " << m_state.timePassed*0.001f;
             st << endl << "movetime mod (sec) " << timeMod*0.001f;
             st << endl << "isMoving = " << m_state.isMoving;
-            return st.str();
         }
     };
 

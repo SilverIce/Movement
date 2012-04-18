@@ -1,7 +1,5 @@
-namespace Movement { namespace
+namespace Movement
 {
-    using std::endl;
-
     struct ApplyModeCommand : public MovementCommand {
         const char* m_name;
         const char* m_modeName;
@@ -78,5 +76,4 @@ namespace Movement { namespace
         }
     };
     DELAYED_INIT(PrintTransportInfoCommand, PrintTransportInfoCommand);
-}
 }

@@ -1,6 +1,6 @@
 #pragma once
 #include <G3D/Vector3.h>
-#include <sstream>
+#include <QtCore/QString>
 
 namespace Movement
 {
@@ -23,10 +23,8 @@ namespace Movement
             Vector3::operator = (vector);
         }
 
-        std::string ToString() const {
-            std::stringstream str;
-            str << '(' << x << ' ' << y << ' '<< z << ' ' << orientation << ')';
-            return str.str();
+        QString toString() const {
+            return QString().sprintf("(%f %f %f %f)", x,y,z,orientation);
         }
 
         float orientation;
