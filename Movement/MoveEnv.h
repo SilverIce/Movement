@@ -316,25 +316,27 @@ namespace Movement
 
     struct MovingEntity_Revolvable3 : Component
     {
+        MovingEntity_Revolvable3 * m_Environment;
         Vector3 m_RelativePosition;
         LazyRotation m_rotation;
 
-        MovingEntity_Revolvable3 * m_Environment;
-        mutable Vector3 m_globalPosition;
-        mutable bool m_globalPositionOutdated;
-
-        mutable G3D::Matrix3 m_globalRotation;
-        mutable bool m_globalRotationOutdated;
-
         LinkedList<MovingEntity_Revolvable3*> m_binded;
         LinkedListElement<MovingEntity_Revolvable3*> m_me;
+        mutable bool m_globalRotationOutdated;
+        mutable bool m_globalPositionOutdated;
+        mutable Vector3 m_globalPosition;
+        mutable G3D::Matrix3 m_globalRotation;
 
         /** Current entity position change outdates global position of all attached entities and
             current global position. */
         void OnPositionChanged() {
-            m_globalPositionOutdated = true;
+            if (Environment())
+                m_globalPositionOutdated = true;
             struct {
-                void operator()(MovingEntity_Revolvable3* entity) { entity->OnPositionChanged();}
+                void operator()(MovingEntity_Revolvable3* entity) const {
+                    entity->m_globalPositionOutdated = true;
+                    entity->m_binded.Visit(*this);
+                }
             } notifier;
             m_binded.Visit(notifier);
         }
@@ -342,24 +344,23 @@ namespace Movement
         /** Current entity rotation change outdates global positions and rotations of all attached entities,
             but does not outdates current global position. */
         void OnRotationChanged() {
-            m_globalRotationOutdated = true;
+            if (Environment())
+                m_globalRotationOutdated = true;
             struct {
-                void operator()(MovingEntity_Revolvable3* entity) { entity->OutdateRotationAndPosition();}
-            } notifier;
-            m_binded.Visit(notifier);
-        }
-
-        void OutdateRotationAndPosition() {
-            m_globalRotationOutdated = true;
-            m_globalPositionOutdated = true;
-            struct {
-                void operator()(MovingEntity_Revolvable3* entity) { entity->OutdateRotationAndPosition();}
+                void operator()(MovingEntity_Revolvable3* entity) const {
+                    entity->m_globalRotationOutdated = true;
+                    entity->m_globalPositionOutdated = true;
+                    entity->m_binded.Visit(*this);
+                }
             } notifier;
             m_binded.Visit(notifier);
         }
 
         const G3D::Matrix3& GlobalRotation() const
         {
+            if (!Environment())
+                return m_rotation.relativeRotation();
+
             if (m_globalRotationOutdated) {
                 m_globalRotationOutdated = false;
                 if (MovingEntity_Revolvable3 * env = Environment())
@@ -382,6 +383,8 @@ namespace Movement
         }
 
         const Vector3& GlobalPosition() const {
+            if (!Environment())
+                return RelativePosition();
             if (m_globalPositionOutdated) {
                 m_globalPositionOutdated = false;
                 if (MovingEntity_Revolvable3 * env = Environment())
