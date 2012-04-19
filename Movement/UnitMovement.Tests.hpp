@@ -108,6 +108,11 @@ namespace Movement
         EXPECT_TRUE(!ar.Validate());
     }
 
+    template<class T, size_t N> void assign(QVector<T>& vec, const T (&values)[N]) {
+        vec.resize(N);
+        memcpy(&vec[0], &values, N * sizeof(T));
+    }
+
     TEST(MoveSpline, basic1)
     {
         Vector3 path[] = {
@@ -117,7 +122,7 @@ namespace Movement
 
         MoveSpline mov;
         MoveSplineInitArgs ar;
-        ar.path.assign(path, path + CountOf(path));
+        assign(ar.path, path);
         ar.velocity = 10.f;
         EXPECT_TRUE(ar.Validate());
 
@@ -152,7 +157,7 @@ namespace Movement
                 Vector3(-3982.866f,    950.2649f,    58.96975f),
             };
 
-            path.assign(nodes, nodes + CountOf(nodes));
+            assign(path, nodes);
             velocity = 14.f;
             EXPECT_TRUE( Validate() );
         }

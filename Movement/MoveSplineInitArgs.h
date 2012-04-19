@@ -9,10 +9,11 @@
 
 #include "MoveSplineFlag.h"
 #include <G3D/Vector3.h>
+#include <QtCore/QVector>
 
 namespace Movement
 {
-    typedef std::vector<Vector3> PointsArray;
+    typedef QVector<Vector3> PointsArray;
 
     union FacingInfo
     {
@@ -29,10 +30,9 @@ namespace Movement
 
     struct MoveSplineInitArgs
     {
-        explicit MoveSplineInitArgs(size_t path_capacity = 16) : path_Idx_offset(0),
+        explicit MoveSplineInitArgs() : path_Idx_offset(0),
             velocity(0.f), parabolic_amplitude(0.f), time_perc(0.f), initialOrientation(0.f), splineId(0)
         {
-            path.reserve(path_capacity);
         }
 
         PointsArray path;

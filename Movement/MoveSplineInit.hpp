@@ -5,7 +5,7 @@ namespace Movement
     void MoveSplineInit::MovebyPath(const PointsArray& controls, int32 path_offset)
     {
         args.path_Idx_offset = path_offset;
-        args.path.assign(controls.begin(),controls.end());
+        args.path = controls;
     }
 
     void MoveSplineInit::MoveTo(const Vector3& dest)

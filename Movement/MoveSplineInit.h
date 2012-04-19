@@ -9,12 +9,14 @@
 
 #include "framework/typedefs.h"
 
+template<typename> class QVector;
+
 namespace Movement
 {
     class UnitMovement;
     class UnitMovementImpl;
 
-    typedef std::vector<Vector3> PointsArray;
+    typedef QVector<Vector3> PointsArray;
 
     enum AnimType
     {
