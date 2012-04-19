@@ -87,7 +87,7 @@ namespace Movement
                 }
             }
             catch (const CommandMgrException& exc) {
-                log_function("can't initialize '%s' command handler - initialization failed with exception: %s",
+                assert_state_msg(false, "can't initialize '%s' command handler - initialization failed with exception: %s",
                     typeid(handler).name(), exc.msg);
             }
         }
@@ -112,15 +112,15 @@ namespace Movement
         impl->Register(handler, aliases);
     }
 
-    void CommandMgr::Invoke(CommandInvoker& invoker)
+    void CommandMgr::Invoke(CommandInvoker& invoker, const char * command)
     {
-        assert_state(invoker.command);
+        assert_state(command);
         try {
-            char text[4096]; {
-                int commandLen = strlen(invoker.command);
+            char text[2048]; {
+                int commandLen = strlen(command);
                 if (commandLen >= CountOf(text))
-                    throw CommandMgrException("command string length is more than 4095 symbols");
-                strcpy(text, invoker.command);
+                    throw CommandMgrException("command string length is more than 2048 symbols");
+                strcpy(text, command);
             }
 
             StringReader rd(text);
@@ -132,8 +132,8 @@ namespace Movement
                 throw CommandMgrException("unknown command");
         }
         catch (const CommandMgrException& exc) {
-            log_function("can't parse '%s' command - parsing failed with exception: %s", invoker.command, exc.msg);
-            invoker.output << endl << "can't parse '" << invoker.command << "' command - parsing failed with exception: " << exc.msg;
+            log_function("can't parse '%s' command - parsing failed with exception: %s", command, exc.msg);
+            invoker.output << endl << "can't parse '" << command << "' command - parsing failed with exception: " << exc.msg;
         }
     }
 
@@ -181,6 +181,11 @@ namespace Movement
         assert_state(str);
         _string = str;
     }
+
+    CommandInvoker::CommandInvoker(Component& invoker) : com(invoker)
+    {
+        output.setString(&string, QIODevice::WriteOnly);
+    }
 }
 
 namespace Movement
@@ -210,10 +215,10 @@ namespace Movement
     TEST(CommandMgr, help_command)
     {
         Component com;
-        CommandInvoker invoker(com, "help");
+        CommandInvoker invoker(com);
 
         CommandMgr mgr;
-        mgr.Invoke(invoker);
+        mgr.Invoke(invoker, "help");
         log_console("output is = %s", qPrintable(*invoker.output.string()));
     }
 }

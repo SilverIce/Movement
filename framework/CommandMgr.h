@@ -32,21 +32,18 @@ namespace Movement
         explicit CommandMgr();
         ~CommandMgr();
 
-        void Invoke(CommandInvoker& invoker);
+        void Invoke(CommandInvoker& invoker, const char * command);
 
         void Register(ICommandHandler& handler, const char * aliases);
     };
 
-    struct CommandInvoker
+    struct EXPORT CommandInvoker
     {
-        Component& com;
-        QString string;
-        QTextStream output;
-        const char* command;
+        public: Component& com;
+        public: QTextStream output;
+        private: QString string;
 
-        explicit CommandInvoker(Component& invoker, const char* cmd) : com(invoker), command(cmd) {
-            output.setString(&string, QIODevice::WriteOnly);
-        }
+        public: explicit CommandInvoker(Component& invoker);
     };
 
     /** Parses the string.
@@ -65,6 +62,10 @@ namespace Movement
             return *_string == '\0';
         }
 
+        const char * constData() const {
+            return _string;
+        }
+
         float readFloat(int separator = defaultSeparator);
 
         int32 readInt(int separator = defaultSeparator);
@@ -73,4 +74,32 @@ namespace Movement
     };
 
     bool cmp(const char * str1, const char* str2);
+
+    template<class ParentNode, const char* (*CommandNodeName)() > class CommandNode : public ICommandHandler
+    {
+        private: struct Redirector : public ParentNode
+        {
+            explicit Redirector() {
+                ParentNode::Init(CommandNodeName());
+            }
+
+            void Invoke(StringReader& command, CommandInvoker& invoker) override {
+                CommandNode::CommandMgrInstance().Invoke(invoker, command.constData());
+            }
+        };
+
+        protected: void Init(const char * aliases) {
+            CommandMgrInstance().Register(*this, aliases);
+        }
+
+        private: static CommandMgr& CommandMgrInstance() {
+             static CommandMgr inst;
+             static Redirector red;
+             return inst;
+        }
+    };
+
+#define DECLARE_COMMAND_NODE(CommandNodeName, CmdNameString, ParentNodeType) \
+    inline const char * CommandNodeName##String() { return CmdNameString;} \
+    typedef CommandNode<ParentNodeType, &CommandNodeName##String > CommandNodeName;
 }
