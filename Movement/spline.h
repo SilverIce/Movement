@@ -134,14 +134,12 @@ class Spline : public SplineBase
 public:
     typedef QVector<length_type> LengthArray;
     typedef length_type LenghtType;
-    #pragma region fields
 protected:
 
     LengthArray lengths;
 
     index_type computeIndexFromLength(length_type length) const;
 
-    #pragma endregion
 public:
 
     explicit Spline(){}
@@ -202,10 +200,9 @@ public:
 
     /** Returns length between two points. */
     length_type lengthBetween(index_type first, index_type last) const { return lengths[last]-lengths[first];}
-    /** Returns length between [first; Idx] points. */
-    length_type length(index_type Idx) const { return lengths[Idx];}
 
-    /** Sets length between [first; i] points. */
+    /** Gets or sets length. Length is distance between first and @i spline points. */
+    length_type length(index_type i) const { return lengths[i];}
     void set_length(index_type i, length_type length) {
         assert_state(i > index_lo && i < (int32)lengths.size());
         assert_state(i == 0 || lengths[i-1] <= length);

@@ -281,89 +281,87 @@ namespace Movement
             assert_state(nodeItr < (int32)info.nodesSize);
 
             const int32 first = nodeItr;
-            bool cyclic;
-            const TaxiPathNodeEntry * const nodes = info.nodes;
-            {
-                SplineBase::ControlArray points;
-                while (true) {
-                    const TaxiPathNodeEntry& node = nodes[nodeItr];
-                    points.push_back( (Vector3&)node.x );
-
-                    ++nodeItr;
-
-                    if (nodeItr == info.nodesSize || nodes[nodeItr].mapid != node.mapid)
-                        break;
-                }
-                // now nodeItr is invalid or points to node that on different map
-
-                cyclic = (points.size() == info.nodesSize/* && !beginAccel && !endDeccel*/);
-                assert_state(points.size() > 1);
-                m_cyclic = cyclic;
-                if (!cyclic)
-                    spline.initSpline(&points[0], points.size(), SplineBase::ModeCatmullrom);
-                else
-                    spline.initCyclicSpline(&points[0], points.size(), SplineBase::ModeCatmullrom, 0);
-
-                struct LengthInit {
-                    const Transport::MotionInfo& info;
-                    int32 firstDbcIdx;
-                    float lengthSumm;
-
-                    float operator()(Spline<float>& s, int32 splineIdx) {
-                        if (info.nodes[splineIdx - s.first() + firstDbcIdx].actionTeleport())
-                            return lengthSumm;
-                        else
-                            return (lengthSumm += s.segmentLength(splineIdx, SplineBase::LengthPrecisionWoWClient));
-                    }
-                };
-                LengthInit init = {info, first, 0};
-                spline.initLengths(init);
-            }
-
-            {
-                uint32 time = 0;
-                int32 endIdx = nodeItr + (int32)cyclic;
-                for (int32 nodeIdx = first; (nodeIdx+1) < endIdx; )
-                {
-                    const TaxiPathNodeEntry& node = nodes[(nodeIdx) % info.nodesSize];
-
-                    if (node.actionTeleport()) {
-                        // pathLengthTotal, time variables are not grown here
-                        ++nodeIdx;
-                    }
-                    else {
-                        int32 splineIdxBegin = spline.first() + nodeIdx - first;
-                        bool beginAccel = node.actionStop();
-                        bool endDeccel;
-                        const float initialLength = spline.length(splineIdxBegin);
-
-                        while(true) {
-                            ++nodeIdx;
-                            const TaxiPathNodeEntry& nodeNext = nodes[nodeIdx % info.nodesSize];
-                            if (!((nodeIdx+1) < endIdx) || !nodeNext.noAction()) {
-                                endDeccel = nodeNext.actionStop();
-                                break;
-                            }
-                        }
-                        int32 splineIdxEnd = spline.first() + nodeIdx - first;
-
-                        float segmLength = spline.lengthBetween(splineIdxBegin,splineIdxEnd);
-
-                        LengthPassedDescr taxiNode;
-                        taxiNode.enterStamp = time;
-                        time += (node.actionStop() ? node.delay : 0) * 1000;
-                        taxiNode.departureStamp = time;
-                        taxiNode.Init(info.velocity, info.acceleration, segmLength, initialLength, beginAccel, endDeccel);
-                        time += taxiNode.moveTimeTotal();
-
-                        m_nodes.push_back(taxiNode);
-                    }
-                }
-                m_timeTotal = time;
-            }
+            initSpline(info, first, nodeItr);
+            initLengthDescriptors(info, first, nodeItr);
 
             const LengthPassedDescr& lastDescr = m_nodes.back();
             assert_state( G3D::fuzzyEq(spline.lengthTotal(), lastDescr.initialLength+lastDescr.segmentLength) );
+        }
+
+        private: void initSpline(const Transport::MotionInfo &info, int32 first, int32 &nodeItr) 
+        {
+            const TaxiPathNodeEntry * const nodes = info.nodes;
+            SplineBase::ControlArray points;
+            while (true) {
+                const TaxiPathNodeEntry& node = nodes[nodeItr];
+                points.push_back( (Vector3&)node.x );
+
+                ++nodeItr;
+
+                if (nodeItr == info.nodesSize || nodes[nodeItr].mapid != node.mapid)
+                    break;
+            }
+            // now nodeItr is invalid or points to node that on different map
+
+            m_cyclic = (points.size() == info.nodesSize/* && !beginAccel && !endDeccel*/);
+            assert_state(points.size() > 1);
+            if (!m_cyclic)
+                spline.initSpline(&points[0], points.size(), SplineBase::ModeCatmullrom);
+            else
+                spline.initCyclicSpline(&points[0], points.size(), SplineBase::ModeCatmullrom, 0);
+
+            struct LengthInit {
+                const Transport::MotionInfo& info;
+                int32 firstDbcIdx;
+                float lengthSumm;
+
+                float operator()(Spline<float>& s, int32 splineIdx) {
+                    if (info.nodes[splineIdx - s.first() + firstDbcIdx].actionTeleport())
+                        return lengthSumm;
+                    else
+                        return (lengthSumm += s.segmentLength(splineIdx, SplineBase::LengthPrecisionWoWClient));
+                }
+            };
+            LengthInit init = {info, first, 0};
+            spline.initLengths(init);
+        }
+
+        private: void initLengthDescriptors(const Transport::MotionInfo &info, int32 first, int32 nodeEndIdx) 
+        {
+            const TaxiPathNodeEntry * const nodes = info.nodes;
+            int32 endIdx = nodeEndIdx + (int32)m_cyclic;
+            for (int32 nodeIdx = first; (nodeIdx+1) < endIdx; )
+            {
+                const TaxiPathNodeEntry& node = nodes[(nodeIdx) % info.nodesSize];
+
+                if (node.actionTeleport())
+                    ++nodeIdx;
+                else {
+                    int32 splineIdxBegin = spline.first() + nodeIdx - first;
+                    bool beginAccel = node.actionStop();
+                    bool endDeccel;
+                    const float initialLength = spline.length(splineIdxBegin);
+                    while(true) {
+                        ++nodeIdx;
+                        const TaxiPathNodeEntry& nodeNext = nodes[nodeIdx % info.nodesSize];
+                        if (!((nodeIdx+1) < endIdx) || !nodeNext.noAction()) {
+                            endDeccel = nodeNext.actionStop();
+                            break;
+                        }
+                    }
+                    int32 splineIdxEnd = spline.first() + nodeIdx - first;
+                    float segmLength = spline.lengthBetween(splineIdxBegin,splineIdxEnd);
+                    LengthPassedDescr taxiNode;
+                    taxiNode.enterStamp = m_timeTotal;
+                    m_timeTotal += (node.actionStop() ? node.delay : 0) * 1000;
+                    taxiNode.departureStamp = m_timeTotal;
+                    taxiNode.Init(info.velocity, info.acceleration, segmLength, initialLength, beginAccel, endDeccel);
+                    m_timeTotal += taxiNode.moveTimeTotal();
+                    timeWithOutStop += taxiNode.moveTimeTotal();
+
+                    m_nodes.push_back(taxiNode);
+                }
+            }
         }
 
         private: float timeToLengthCoeff(uint32 time) const
@@ -499,10 +497,26 @@ namespace Movement
 
 namespace Movement
 {
-    struct ToggleTransportPathPoints : public MovementCommand
+#   define STR(x) #x
+
+    DECLARE_COMMAND_NODE(TransportCommandNode, "transport", MovementCommand);
+
+    static MOTransportMover* extractMover(CommandInvoker& invoker)
+    {
+        MOTransportMover * mover = nullptr;
+        if (MovingEntity_Revolvable2 * transp = invoker.com.as<MovingEntity_WOW>().Environment()) {
+            mover = transp->getAspect<MOTransportMover>();
+            if (!mover)
+                invoker.output << endl << "Transport-target has no " STR(MOTransportMover) " component";
+        } else
+            invoker.output << endl << "Invoker is not boarded";
+        return mover;
+    }
+
+    struct ToggleTransportPathPoints : TransportCommandNode // public MovementCommand
     {
         explicit ToggleTransportPathPoints() {
-            Init("TransportVisualize|TranspVis");
+            Init("visualize|vis");
             Description = "Enables or disables transport position visualization. Command affects all transports.";
         }
 
@@ -512,26 +526,34 @@ namespace Movement
     };
     DELAYED_INIT(ToggleTransportPathPoints, ToggleTransportPathPoints);
 
-#   define STR(x) #x
-
-    struct SetTransportTimeMod : public MovementCommand
+    struct SetTransportTimeMod : public TransportCommandNode
     {
         explicit SetTransportTimeMod() {
-            Init("TransportTimeMod|TranspMod");
-            Description = "Modifies transport movement progress. Command argument is time in milliseconds. "
+            Init("movetimemod|timemod");
+            Description = "Modifies transport movement m_timePassedess. Command argument is time in seconds. "
                 "Negative time value moves it back, positive - forward.";
         }
 
         void Invoke(StringReader& command, CommandInvoker& inv) override {
-            if (MovingEntity_Revolvable2 * transp = inv.com.as<MovingEntity_WOW>().Environment()) {
-                if (MOTransportMover * mover = transp->getAspect<MOTransportMover>())
-                    mover->timeMod = command.readInt();
-                else
-                    inv.output << endl << "Transport-target has no " STR(MOTransportMover) " component";
-            }
-            else
-                inv.output << endl << "Invoker is not boarded";
+            if (MOTransportMover * mover = extractMover(inv))
+                mover->timeMod = command.readFloat() * 1000;
         }
     };
     DELAYED_INIT(SetTransportTimeMod, SetTransportTimeMod);
+
+    struct PrintTransportInfoCommand : public TransportCommandNode
+    {
+        explicit PrintTransportInfoCommand() {
+            Init("info");
+            Description = "Prints transport info.";
+        }
+
+        void Invoke(StringReader& command, CommandInvoker& invoker) override {
+            if (MovingEntity_Revolvable2* target = invoker.com.as<MovingEntity_WOW>().Environment())
+                invoker.output << endl << "Transport info: " << target->toStringAll();
+            else
+                invoker.output << endl << "Invoker is not boarded";
+        }
+    };
+    DELAYED_INIT(PrintTransportInfoCommand, PrintTransportInfoCommand);
 }
