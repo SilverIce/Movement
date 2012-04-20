@@ -129,8 +129,9 @@ namespace Movement
                 timeBeginDecel = ftimeTotal;
             }
             else {
-                // Length of the path that needed to accelerate from zero to maximum velocity
+                // Length of the path that required to accelerate from zero to maximum velocity
                 float accelS = velMax*velMax / (2*accel);
+                static_assert((1 == (int32)true) && (0 == (int32)false), "");
                 // Is true in case in current path segment transport able to accelerate to his maximum velocity
                 bool enoughToAccelerate = (segmentLength >= ((int32)beginAccel+(int32)endDecel)*accelS);
                 if (enoughToAccelerate)
@@ -173,9 +174,6 @@ namespace Movement
                          | /\
                      ____|/__\______________time___ t
                     */ 
-
-                    // unsure that this part of code works properly
-                    //assert_state(false);
 
                     if (beginAccel && endDecel)
                     {

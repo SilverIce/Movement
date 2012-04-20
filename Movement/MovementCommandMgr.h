@@ -6,8 +6,8 @@ namespace Movement
 {
     class MovementCommand : public ICommandHandler
     {
-        public: static void ExecCommand(CommandInvoker& invoker) {
-            CommandMgrInstance().Invoke(invoker);
+        public: static void ExecCommand(CommandInvoker& invoker, const char * cmd) {
+            CommandMgrInstance().Invoke(invoker, cmd);
         }
 
         private: static CommandMgr& CommandMgrInstance() {
@@ -20,7 +20,7 @@ namespace Movement
         }
     };
 
-    EXPORT inline void ExecCommand(CommandInvoker& invoker) {
-        MovementCommand::ExecCommand(invoker);
+    EXPORT inline void ExecCommand(CommandInvoker& invoker, const char * cmd) {
+        MovementCommand::ExecCommand(invoker, cmd);
     }
 }

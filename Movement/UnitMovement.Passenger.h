@@ -85,7 +85,7 @@ namespace Movement
         }
 
         ~Unit_Passenger() {
-            m_updatePosTask.CancelTasks();
+            m_updatePosTask.Unregister();
             // TODO: need force stop spline movement effect before any coordinate system switch, otherwise
             // such effect will move us into wrong place
             ToUnit().SetEnvironment(nullptr);
