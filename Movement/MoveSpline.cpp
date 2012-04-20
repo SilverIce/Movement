@@ -68,7 +68,7 @@ extern double computeFallTime(float elevation);
 
 void MoveSpline::computeFallElevation(float& el) const
 {
-    el = spline.getPoint(spline.first()).z - Movement::computeFallElevation(MSToSec(time_passed));
+    el = spline.getPoint(0).z - Movement::computeFallElevation(MSToSec(time_passed));
 }
 
 enum{
@@ -107,7 +107,7 @@ void MoveSpline::init_spline(const MoveSplineInitArgs& args)
                 FallInitializer(float _start_elevation) : start_elevation(_start_elevation) {}
                 float start_elevation;
                 int32 operator()(Spline<int32>& s, int32 i) {
-                    return Movement::computeFallTime(start_elevation - s.getPoint(i+1).z) * 1000.f;
+                    return Movement::computeFallTime(start_elevation - s.getPoint(i).z) * 1000.f;
                 }
             };
             spline.initLengths( FallInitializer(args.path[0].z) );
@@ -118,7 +118,7 @@ void MoveSpline::init_spline(const MoveSplineInitArgs& args)
                 float velocityInv;
                 int32 time;
                 int32 operator()(Spline<int32>& s, int32 i) {
-                    time += (s.segmentLength(i) * velocityInv);
+                    time += (s.segmentLength(i-1) * velocityInv);
                     return time;
                 }
             };
@@ -133,7 +133,7 @@ void MoveSpline::init_spline(const MoveSplineInitArgs& args)
         log_write("MoveSpline::init_spline: Zero length spline");
         spline.lengthTotal(1000);
     }
-    point_Idx = spline.first();
+    point_Idx = 0;
 }
 
 void MoveSpline::Initialize(const MoveSplineInitArgs& args)
@@ -217,7 +217,7 @@ MoveSpline::UpdateResult MoveSpline::_updateState(int32& ms_time_diff)
         {
             if (isCyclic())
             {
-                point_Idx = spline.first();
+                point_Idx = 0;
                 time_passed = time_passed % timeTotal();
                 result = Result_NextSegment;
             }
@@ -261,9 +261,9 @@ void MoveSpline::Finalize()
 
 int32 MoveSpline::currentPathPointIdx() const
 {
-    int32 point = point_Idx_offset + point_Idx - spline.first() + (int32)Arrived();
+    int32 point = point_Idx_offset + point_Idx + (int32)Arrived();
     if (isCyclic())
-        point = point % (spline.last()-spline.first());
+        point = point % (spline.last()/*-spline.first()*/);
     return point;
 }
 }

@@ -73,8 +73,8 @@ namespace Movement
 
     void PacketBuilder::WriteLinearPath(const Spline<int32>& spline, ByteBuffer& data)
     {
-        uint32 last_idx = spline.getPointCount() - 3;
-        const Vector3 * real_path = &spline.getPoint(1);
+        uint32 last_idx = spline.rawPoints().size() - 2 - 1;
+        const Vector3 * real_path = &spline.rawPoints()[1];
 
         data << last_idx;
         data << real_path[last_idx];   // destination
@@ -98,9 +98,10 @@ namespace Movement
 
     void PacketBuilder::WriteCatmullRomPath(const Spline<int32>& spline, ByteBuffer& data)
     {
-        uint32 count = spline.getPointCount() - 3;
+        // first point(index 1) already appended, zero and last fake points are never appended at all
+        uint32 count = spline.rawPoints().size() - 3;
         data << count;
-        data.append<Vector3>(&spline.getPoint(2), count);
+        data.append<Vector3>(&spline.rawPoints()[2], count);
     }
 
     /*
@@ -123,10 +124,11 @@ namespace Movement
 
     void PacketBuilder::WriteCatmullRomCyclicPath(const Spline<int32>& spline, ByteBuffer& data)
     {
-        uint32 count = spline.getPointCount() - 3;
+        // first point(index 1) already appended, zero and last two fake points are never appended at all
+        uint32 count = spline.rawPoints().size() - 3;
         data << uint32(count + 1);
-        data << spline.getPoint(1); // fake point, client will erase it from the spline after first cycle done
-        data.append<Vector3>(&spline.getPoint(1), count);
+        data << spline.rawPoints()[1]; // fake point, client will erase it from the spline after first cycle done
+        data.append<Vector3>(&spline.rawPoints()[1], count);
     }
 
     void PacketBuilder::SplinePathSend(const UnitMovementImpl& mov)
@@ -188,10 +190,10 @@ namespace Movement
             data << move_spline.vertical_acceleration;
             data << move_spline.effect_start_time;
 
-            uint32 pointCount = move_spline.spline.getPointCount();
+            int32 pointCount = move_spline.spline.rawPoints().size();
             assert_state(pointCount >= 3);
             data << pointCount;
-            data.append<Vector3>(&move_spline.getPath()[0], pointCount);
+            data.append<Vector3>(move_spline.spline.rawPoints().constData(), pointCount);
             data << uint8(move_spline.spline.mode());
             data << (move_spline.isCyclic() ? Vector3() : move_spline.FinalDestination());
         }

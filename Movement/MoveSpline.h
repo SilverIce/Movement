@@ -50,7 +50,7 @@ namespace Movement
         void init_spline(const MoveSplineInitArgs& args);
     protected:
 
-        const MySpline::ControlArray& getPath() const { return spline.getPoints();}
+        const MySpline::ControlArray& getPath() const { return spline.rawPoints();}
         void computeParabolicElevation(float& el) const;
         void computeFallElevation(float& el) const;
 

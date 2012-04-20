@@ -2,9 +2,10 @@
 
 namespace Movement
 {
+    using G3D::fuzzyEq;
+
     void testforNaN(const Spline<float>& spline)
     {
-        float maxEr = 0;
         enum { cycles = 1000 };
 
         for (uint32 I = 0; I < (cycles-1); ++I)
@@ -48,7 +49,7 @@ namespace Movement
         splines[3].initCyclicSpline(nodes, CountOf(nodes), SplineBase::ModeCatmullrom, 0);
 
         for (int i = 0; i < CountOf(splines); ++i)
-            splines[i].initLengths(3);
+            splines[i].initLengths();
 
         const float properLengths[4] = {
             253.202179f,
@@ -57,10 +58,25 @@ namespace Movement
             298.148926f,
         };
 
-        for (int i = 0; i < CountOf(splines); ++i) {
+        for (int i = 0; i < CountOf(splines); ++i)
+        {
             Spline<float>& spline = splines[i];
             EXPECT_TRUE( G3D::fuzzyEq(spline.lengthTotal(),properLengths[i]) );
+
             testforNaN(spline);
+
+            for (int idx = 1; idx < spline.last(); idx++)
+                EXPECT_TRUE( fuzzyEq(spline.lengthBetween(idx-1,idx), spline.segmentLength(idx-1)) );
+
+            for (int pointIdx = 0; pointIdx < (CountOf(nodes)-1); ++pointIdx)
+                EXPECT_TRUE( nodes[pointIdx].fuzzyEq(spline.evaluatePosition(pointIdx,0)) );
+
+            for (float t = 0; t <= 1; t += 0.1f)
+            {
+                int32 splineIdx = spline.computeIndexInBounds(t);
+                EXPECT_TRUE( spline.length(splineIdx) <= t*spline.lengthTotal() );
+                EXPECT_TRUE( t*spline.lengthTotal() < spline.length(splineIdx+1) );
+            }
         }
     }
 }

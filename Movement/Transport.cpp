@@ -316,10 +316,10 @@ namespace Movement
                 float lengthSumm;
 
                 float operator()(Spline<float>& s, int32 splineIdx) {
-                    if (info.nodes[splineIdx - s.first() + firstDbcIdx].actionTeleport())
+                    if (info.nodes[splineIdx + firstDbcIdx].actionTeleport())
                         return lengthSumm;
                     else
-                        return (lengthSumm += s.segmentLength(splineIdx, SplineBase::LengthPrecisionWoWClient));
+                        return (lengthSumm += s.segmentLength(splineIdx-1, SplineBase::LengthPrecisionWoWClient));
                 }
             };
             LengthInit init = {info, first, 0};
@@ -337,7 +337,7 @@ namespace Movement
                 if (node.actionTeleport())
                     ++nodeIdx;
                 else {
-                    int32 splineIdxBegin = spline.first() + nodeIdx - first;
+                    int32 splineIdxBegin = nodeIdx - first;
                     bool beginAccel = node.actionStop();
                     bool endDeccel;
                     const float initialLength = spline.length(splineIdxBegin);
@@ -349,7 +349,7 @@ namespace Movement
                             break;
                         }
                     }
-                    int32 splineIdxEnd = spline.first() + nodeIdx - first;
+                    int32 splineIdxEnd = nodeIdx - first;
                     float segmLength = spline.lengthBetween(splineIdxBegin,splineIdxEnd);
                     LengthPassedDescr taxiNode;
                     taxiNode.enterStamp = m_timeTotal;
@@ -412,7 +412,7 @@ namespace Movement
             TransportState state;
             state.position = spline.evaluatePosition(splineIdx, u);
             state.der = -spline.evaluateDerivative(splineIdx, u);
-            state.nodeIdx = splineIdx - spline.first();
+            state.nodeIdx = splineIdx;
             state.timePassed = time;
             state.isMoving = desc.isMoving(time);
             return state;

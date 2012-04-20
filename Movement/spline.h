@@ -28,7 +28,7 @@ public:
     };
 
     #pragma region fields
-protected:
+private:
     ControlArray points;
 
     index_type index_lo;
@@ -39,7 +39,6 @@ protected:
         assert_state(m_mode != ModeEnd);
     }
 
-protected:
     void EvaluateLinear(index_type, float, Vector3&) const;
     void EvaluateCatmullRom(index_type, float, Vector3&) const;
     typedef void (SplineBase::*EvaluationMethtod)(index_type,float,Vector3&) const;
@@ -64,43 +63,44 @@ public:
 
     explicit SplineBase() : index_lo(0), index_hi(0), m_mode(ModeEnd) {}
 
-    /** Calculates position for given segment Idx and percent of segment length u
-        @param Idx - spline segment index, should be in range [first, last)
+    /** Calculates position for given segment segmentIdx and percent of segment length u
+        @param segmentIdx - spline segment index, should be in range [0, last)
         @param u - percent of segment length, assumes that u in range [0, 1]
      */
-    Vector3 evaluatePosition(index_type Idx, float u) const {
+    Vector3 evaluatePosition(index_type segmentIdx, float u) const {
         assertInitialized();
         Vector3 pos;
-        (this->*evaluators[m_mode])(Idx,u,pos);
+        (this->*evaluators[m_mode])(index_lo + segmentIdx, u, pos);
         return pos;
     }
 
-    /** Calculates derivation in index Idx and percent of segment length u.
+    /** Calculates derivation for given segment index segmentIdx and percent of segment length u.
         Function does not returns a unit vector!
-        @param Idx - spline segment index, should be in range [first, last)
+        @param segmentIdx - spline segment index, should be in range [0, last)
         @param u - percent of spline segment length, assumes that u in range [0, 1]
      */
-    Vector3 evaluateDerivative(index_type Idx, float u) const {
+    Vector3 evaluateDerivative(index_type segmentIdx, float u) const {
         assertInitialized();
         Vector3 der;
-        (this->*derivative_evaluators[m_mode])(Idx,u,der);
+        (this->*derivative_evaluators[m_mode])(index_lo + segmentIdx, u, der);
         return der;
     }
 
-    /**  Bounds for spline indexes. All indexes should be in range [first, last). */
-    index_type first() const { return index_lo;}
-    index_type last()  const { return index_hi;}
+    /** Bounds for spline indexes.
+        Point indexes are limited with [0, last] range.
+        Segment indexes bounds are limited with [0, last) range.
+    */
+    index_type last()  const { return index_hi - index_lo;}
 
     bool empty() const { return index_lo == index_hi;}
     EvaluationMode mode() const { return m_mode;}
 
-    const ControlArray& getPoints() const { return points;}
-    index_type getPointCount() const { return points.size();}
-    const Vector3& getPoint(index_type i) const { return points[i];}
+    const ControlArray& rawPoints() const { return points;}
+    const Vector3& getPoint(index_type pointIdx) const { return points[index_lo + pointIdx];}
 
     /**	Initializes spline. Don't call other methods while spline not initialized. */
-    void initSpline(const Vector3 * controls, index_type count, EvaluationMode m);
-    void initCyclicSpline(const Vector3 * controls, index_type count, EvaluationMode m, index_type cyclic_point);
+    void initSpline(const Vector3 * controls, index_type count, EvaluationMode mode);
+    void initCyclicSpline(const Vector3 * controls, index_type count, EvaluationMode mode, index_type cyclic_point);
 
     /** As i can see there are a lot of ways how spline can be initialized
         would be no harm to have some custom initializers. */
@@ -119,10 +119,10 @@ public:
         LengthPrecisionWoWClient = 20,
     };
 
-    /** Calculates distance between [i; i+1] points, assumes that index i is in bounds. */
-    float segmentLength(index_type i, uint32 precision = LengthPrecisionDefault) const {
+    /** Calculates distance between [pointIdx; pointIdx+1] points, assumes that i and next i+1 indexes are in bounds. */
+    float segmentLength(index_type pointIdx, uint32 precision = LengthPrecisionDefault) const {
         assertInitialized();
-        return (this->*seglengths[m_mode])(i, precision);
+        return (this->*seglengths[m_mode])(index_lo + pointIdx, precision);
     }
 
     std::string ToString() const;
@@ -159,23 +159,24 @@ public:
         @param t - percent of spline's length, assumes that t in range [0, 1]. */
     index_type computeIndexInBounds(float t) const;
 
-    /** Computes a such spline segment @index that 'lenghts[index] < t * lengthTotal < lenghts[index+1]'
+    /** Computes a such spline segment @out_segmentIdx that 'lenghts[index] < t * lengthTotal < lenghts[index+1]'
+        @param out_segmentIdx - spline segment index
         @param out_u - percent of spline segment length, out_u in range [0, 1].
         @param t - percent of spline's length, t in range [0, 1]. */
-    void computeIndex(float t, index_type& out_idx, float& out_u) const;
+    void computeIndex(float t, index_type& out_segmentIdx, float& out_u) const;
 
     /**	Initializes spline. Don't call other methods while spline not initialized. */
-    void initSpline(const Vector3 * controls, index_type count, EvaluationMode m) {
-        SplineBase::initSpline(controls,count,m);
-        lengths.resize(index_hi+1);
+    void initSpline(const Vector3 * controls, index_type count, EvaluationMode mode) {
+        SplineBase::initSpline(controls,count,mode);
+        lengths.resize(last() + 1);
     }
 
     /**	Initializes cyclic spline. Don't call other methods while spline not initialized.
         @param cyclic_point - a such index of the path where path tail will smoothly transite to that index
     */
-    void initCyclicSpline(const Vector3 * controls, index_type count, EvaluationMode m, index_type cyclic_point) {
-        SplineBase::initCyclicSpline(controls,count,m,cyclic_point);
-        lengths.resize(index_hi+1);
+    void initCyclicSpline(const Vector3 * controls, index_type count, EvaluationMode mode, index_type cyclic_point) {
+        SplineBase::initCyclicSpline(controls,count,mode,cyclic_point);
+        lengths.resize(last() + 1);
     }
 
     /**  Initializes lengths with SplineBase::segmentLength method. */    
@@ -185,28 +186,29 @@ public:
         Note that value returned by cacher must be greater or equal to previous value. */
     template<class T> inline void initLengths(T& cacher)
     {
-        index_type i = index_lo;
-        while (i < index_hi) {
-            set_length(i+1, cacher(*this, i));
+        index_type i = 1, N = lengths.size();
+        while (i < N) {
+            setLength(i, cacher(*this, i));
             ++i;
         }
     }
 
     /** Gets or sets length of the whole spline. */
-    length_type lengthTotal() const { return lengths[index_hi];}
+    length_type lengthTotal() const { return lengths.last();}
     void lengthTotal(length_type value) {
-        set_length(index_hi, value);
+        setLength(lengths.size()-1, value);
     }
 
-    /** Returns length between two points. */
-    length_type lengthBetween(index_type first, index_type last) const { return lengths[last]-lengths[first];}
+    /** Returns length difference between @pointIdx and @pointIdxNext. */
+    length_type lengthBetween(index_type pointIdx, index_type pointIdxNext) const {
+        return lengths[pointIdxNext]-lengths[pointIdx];
+    }
 
-    /** Gets or sets length. Length is distance between first and @i spline points. */
-    length_type length(index_type i) const { return lengths[i];}
-    void set_length(index_type i, length_type length) {
-        assert_state(i > index_lo && i < (int32)lengths.size());
-        assert_state(i == 0 || lengths[i-1] <= length);
-        lengths[i] = length;
+    /** Gets or sets length. Length is distance between 0 and @pointIdx spline points. */
+    length_type length(index_type pointIdx) const { return lengths[pointIdx];}
+    void setLength(index_type pointIdx, length_type length) {
+        assert_state(pointIdx == 0 || lengths[pointIdx-1] <= length);
+        lengths[pointIdx] = length;
     }
 };
 
