@@ -12,8 +12,6 @@
 class WorldPacket;
 template<typename> class QVector;
 
-template<class> class QVector;
-
 namespace Movement
 {
     class MovementMessage;

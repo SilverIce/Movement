@@ -1,7 +1,7 @@
 #include "Imports.h"
 #include "framework/DelayInit.h"
 
-#include "G3D/Vector3.h"
+//#include "G3D/Vector3.h"
 #include "framework/typedefs_p.h"
 #include <windows.h>
 
@@ -20,10 +20,10 @@ namespace Movement
         uint32 FgetMSTime() { return GetTickCount();}
 
         void FGeneratePath(WorldObject const* obj, const G3D::Vector3& fromVec,
-            const G3D::Vector3& toVec, bool flightPath, std::vector<G3D::Vector3>& path)
+            const G3D::Vector3& toVec, bool flightPath, QVector<G3D::Vector3>& path)
         {
-            path.push_back(fromVec);
-            path.push_back(toVec);
+            //path.push_back(fromVec);
+            //path.push_back(toVec);
         }
 
         UnitMovement* FGetUnit(void* context, uint64 guid)
