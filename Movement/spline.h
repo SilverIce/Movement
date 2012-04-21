@@ -12,6 +12,8 @@
 #include <G3D/Vector3.h>
 #include <QtCore/QVector>
 
+class QString;
+
 namespace Movement {
 
 class SplineBase
@@ -125,7 +127,7 @@ public:
         return (this->*seglengths[m_mode])(index_lo + pointIdx, precision);
     }
 
-    std::string ToString() const;
+    QString ToString() const;
 };
 
 template<typename length_type>

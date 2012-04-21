@@ -100,7 +100,7 @@ namespace Movement
         m_moving = true;
 
         m_updater->CancelTasks(m_updateMovementTask);
-        m_updater->AddTask(NewITaskP0(this,&MoveSplineUpdatable::OnUpdateCallback), NextUpdateTime(), &m_updateMovementTask);
+        m_updater->AddTask(newTask(this,&MoveSplineUpdatable::OnUpdateCallback), NextUpdateTime(), &m_updateMovementTask);
 
         m_owner->SetMoveFlag(moveFlag_new);
         m_owner->SetParameter(Parameter_SpeedCustom, args.velocity);

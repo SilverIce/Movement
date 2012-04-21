@@ -81,7 +81,7 @@ namespace Movement
             // TODO: need force stop spline movement effect before any coordinate system switch, otherwise
             // such effect will move us into wrong place
             ToUnit().SetEnvironment(&transport);
-            m_updatePosTask.AddTask(NewITaskP0(this,&Unit_Passenger::OnUpdatePositionCallback), 0);
+            m_updatePosTask.AddTask(newTask(this,&Unit_Passenger::OnUpdatePositionCallback), 0);
         }
 
         ~Unit_Passenger() {

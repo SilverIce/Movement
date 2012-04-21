@@ -168,7 +168,7 @@ namespace Tasks
         Method  _func;
     };
 
-    template<class Class> inline ICallBack * NewITaskP0(Class* _class_instance, void (Class::*_method)(TaskExecutor_Args&)) {
+    template<class Class> inline ICallBack * newTask(Class* _class_instance, void (Class::*_method)(TaskExecutor_Args&)) {
         return new ITaskP0<Class>(_class_instance, _method);
     }
 }

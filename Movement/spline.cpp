@@ -1,6 +1,6 @@
 
 #include "spline.h"
-#include <sstream>
+#include <QtCore/QTextStream>
 #include <G3D/Matrix4.h>
 
 #include "spline_tests.hpp"
@@ -188,7 +188,7 @@ void SplineBase::InitCatmullRom(const Vector3* controls, index_type count, bool 
     memcpy(&points[lo_index],controls, sizeof(Vector3) * count);
 
     // first and last two indexes are space for special 'virtual points'
-    // these points are required for proper C_Evaluate and C_Evaluate_Derivative methtod work
+    // these points are required for proper C_Evaluate and C_Evaluate_Derivative method work
     if (cyclic)
     {
         if (cyclic_point == 0)
@@ -209,18 +209,19 @@ void SplineBase::InitCatmullRom(const Vector3* controls, index_type count, bool 
     index_hi = high_index + (cyclic ? 1 : 0);
 }
 
-std::string SplineBase::ToString() const
+QString SplineBase::ToString() const
 {
-    std::ostringstream str;
+    QString string;
+    QTextStream str(&string);
     const char * mode_str[ModeEnd] = {"Linear", "CatmullRom"};
 
     index_type count = this->points.size();
-    str << std::endl << "mode: " << mode_str[mode()];
-    str << std::endl << "points count: " << count;
+    str << endl << "mode: " << mode_str[mode()];
+    str << endl << "points count: " << count;
     for (index_type i = 0; i < count; ++i)
-        str << std::endl << "point " << i << " : " << points[i].toString();
+        str << endl << "point " << (i - index_lo) << " : " << points[i].toString().c_str();
 
-    return str.str();
+    return *str.string();
 }
 
 }

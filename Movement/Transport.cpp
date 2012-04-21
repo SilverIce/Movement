@@ -206,7 +206,7 @@ namespace Movement
 
         public: float pathPassedLen(uint32 mstime) const
         {
-            assert_state(mstime <= (departureStamp + timeTotal));
+            assert_state(mstime <= arriveTime());
 
             float time = (mstime > departureStamp ? mstime - departureStamp : 0) * 0.001f;
             
@@ -243,8 +243,12 @@ namespace Movement
             return initialLength + len;
         }
 
+        public: uint32 arriveTime() const {
+            return (departureStamp + timeTotal);
+        }
+
         public: bool isMoving(uint32 mstime) const {
-            assert_state(mstime <= (departureStamp + timeTotal));
+            assert_state(mstime <= arriveTime());
             return mstime > departureStamp;
         }
 
@@ -256,8 +260,6 @@ namespace Movement
         Vector3 position;
         Vector3 der;
         uint32 nodeIdx;
-        uint32 timePassed;
-        bool isMoving;
     };
 
     class PathSegment
@@ -347,27 +349,18 @@ namespace Movement
                             break;
                         }
                     }
-                    int32 splineIdxEnd = nodeIdx - first;
-                    float segmLength = spline.lengthBetween(splineIdxBegin,splineIdxEnd);
+                    float segmLength = spline.lengthBetween(splineIdxBegin,nodeIdx - first);
+
                     LengthPassedDescr taxiNode;
                     taxiNode.enterStamp = m_timeTotal;
                     m_timeTotal += (node.actionStop() ? node.delay : 0) * 1000;
                     taxiNode.departureStamp = m_timeTotal;
                     taxiNode.Init(info.velocity, info.acceleration, segmLength, initialLength, beginAccel, endDeccel);
                     m_timeTotal += taxiNode.moveTimeTotal();
-                    timeWithOutStop += taxiNode.moveTimeTotal();
 
                     m_nodes.push_back(taxiNode);
                 }
             }
-        }
-
-        private: float timeToLengthCoeff(uint32 time) const
-        {
-            const LengthPassedDescr& descr = getDescr(time);
-            float dist = descr.pathPassedLen(time);
-            assert_state(dist <= spline.lengthTotal());
-            return dist / spline.lengthTotal();
         }
 
         private: const LengthPassedDescr& getDescr(uint32 time) const {
@@ -378,20 +371,6 @@ namespace Movement
                 if (idx == (m_nodes.size()-1) || m_nodes[idx+1].enterStamp > time)
                     break;
                 ++idx;
-            }
-            assert_state(m_nodes[idx].enterStamp <= time);
-            return m_nodes[idx];
-        }
-
-        public: Vector3 evaluatePosition(uint32 time) const {
-            return spline.evaluatePosition(timeToLengthCoeff(time));
-        }
-
-        public: Vector3 evaluateDerivative(uint32 time) const {
-            Vector3 dir = -spline.evaluateDerivative(timeToLengthCoeff(time));
-            // TODO: ensure that Spline::evaluateDerivative works properly.
-            // something wrong: currently we have to inverse direction vector to fix it.
-            return dir;
         }
 
         public: uint32 moveTimeTotal() const { return m_timeTotal;}
@@ -411,10 +390,21 @@ namespace Movement
             state.position = spline.evaluatePosition(splineIdx, u);
             state.der = -spline.evaluateDerivative(splineIdx, u);
             state.nodeIdx = splineIdx;
-            state.timePassed = time;
-            state.isMoving = desc.isMoving(time);
             return state;
         }
+
+        public: void movingState(QTextStream& st, uint32 time) const
+        {
+            TransportState state = computeState(time);
+            st << endl << "nodeId " << state.nodeIdx;
+            st << endl << "period " << moveTimeTotal()*0.001f;
+            st << endl << "passed " << time*0.001f;
+
+            const LengthPassedDescr& desc = getDescr(time);
+            st << endl << "beginStop " << desc.beginAccel << " endStop " << desc.endDecel;
+            st << endl << "timeToNextDesc " << 0.001f*(desc.arriveTime() - time);
+            st << endl << "isMoving = " << desc.isMoving(time);
+         }
     };
 
     /** Controls transport motion */
@@ -429,12 +419,14 @@ namespace Movement
     public:
 
         int32 timeMod;
+        uint32 time;
 
         explicit MOTransportMover(TransportImpl& controlled, const Transport::MotionInfo& info)
         {
             m_controlled = &controlled;
             m_pathId = info.nodes->path;
             timeMod = 0;
+            time = 0;
             int32 firstIdx = 0;
             m_segment.reset(new PathSegment(info, firstIdx));
             controlled.ComponentAttach(this);
@@ -458,7 +450,7 @@ namespace Movement
         {
             Tasks::RescheduleTaskWithDelay(args, 500);
 
-            uint32 time = (timeMod + args.now.time) % m_segment->moveTimeTotal();
+            time = (timeMod + args.now.time) % m_segment->moveTimeTotal();
 
             m_state = m_segment->computeState(time);
             m_controlled->RelativePosition(m_state.position);
@@ -472,11 +464,8 @@ namespace Movement
         void toString(QTextStream& st) const override
         {
             st << endl << "path Id " << m_pathId;
-            st << endl << "node Id " << m_state.nodeIdx;
-            st << endl << "period (sec) " << m_segment->moveTimeTotal()*0.001f;
-            st << endl << "passed (sec) " << m_state.timePassed*0.001f;
             st << endl << "movetime mod (sec) " << timeMod*0.001f;
-            st << endl << "isMoving = " << m_state.isMoving;
+            m_segment->movingState(st, time);
         }
     };
 

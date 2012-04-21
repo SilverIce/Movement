@@ -1,9 +1,9 @@
 #pragma once
 
-#include "G3D/Matrix3.h"
-#include "framework/typedefs_p.h"
 #include "framework/Component.h"
+#include "framework/typedefs_p.h"
 #include "framework/RdtscTimer.h"
+#include "G3D/Matrix3.h"
 #include "LinkedList.h"
 
 namespace Movement

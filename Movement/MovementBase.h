@@ -76,7 +76,7 @@ namespace Movement
 
         void toString(QTextStream& st) const override
         {
-            st << endl << "guid 0x" << hex << Guid.GetRawValue();
+            st << endl << "guid 0x" << hex << Guid.GetRawValue() << dec;
             st << endl << "global   position " << GlobalPosition().toString().c_str();
             if (Environment()) {
                 st << endl << "relative position " << RelativePosition().toString().c_str();

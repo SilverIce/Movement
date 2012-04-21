@@ -249,7 +249,7 @@ void MoveSpline::toString(QTextStream& str) const
     str << endl << "total  time: " << timeTotal();
     str << endl << "spline point Id: " << point_Idx;
     str << endl << "path  point  Id: " << currentPathPointIdx();
-    str << spline.ToString().c_str();
+    str << spline.ToString();
 }
 
 void MoveSpline::Finalize()
