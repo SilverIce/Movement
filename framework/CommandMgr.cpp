@@ -9,7 +9,7 @@
 
 #include <typeinfo>
 #include <QtCore/QHash>
-#include <QtCore/QByteArray>
+#include <QtCore/QTextStream>
 #include <stdlib.h>
 
 namespace Movement
@@ -23,21 +23,21 @@ namespace Movement
 
     class CommandMgrImpl : private ICommandHandler
     {
-        typedef QHash<QByteArray, ICommandHandler* > base;
+        typedef QHash<QString, ICommandHandler* > base;
         base m_commands;
 
         void Invoke(StringReader& command, CommandInvoker& invoker) override
         {
-            QHash<ICommandHandler*, QList<QByteArray> > com2name;
+            QHash<ICommandHandler*, QList<QString> > com2name;
             for (base::const_iterator it = m_commands.begin(); it!= m_commands.end(); ++it)
                 com2name[it.value()] << it.key();
             if (command.atEnd()) {
                 invoker.output << endl << "Command list:";
-                foreach(const QList<QByteArray>& str, com2name.values())
+                foreach(const QList<QString>& str, com2name.values())
                     invoker.output << endl << str[0].constData();
             }
             else {
-                const char * com = command.readArg();
+                const QString com = command.readArg();
                 if (ICommandHandler* hdl = getHandler(com)) {
                     describeCommand(*hdl, com2name[hdl], invoker.output);
                 }
@@ -46,9 +46,10 @@ namespace Movement
             }
         }
 
-        static void describeCommand(const ICommandHandler& hdl, const QList<QByteArray>& aliases, QTextStream& output)
+        static void describeCommand(const ICommandHandler& hdl, const QList<QString>& aliases, QTextStream& output)
         {
-            output << endl << "'" << aliases[0].constData() << "' description - " << hdl.Description;
+            output << endl << "'" << aliases[0].constData() << "' description - "
+                << (hdl.Description.isEmpty() ? "No description specified." : hdl.Description);
             output << endl << "    Handler - " << typeid(hdl).name() << ".";
             if (aliases.size() > 1) {
                 output << endl << "    Aliases: ";
@@ -64,9 +65,8 @@ namespace Movement
             Register(*this, "help|?");
         }
 
-        ICommandHandler* getHandler(const char * command) const {
-            assert_state(command);
-            return m_commands.value(command);
+        ICommandHandler* getHandler(const QString& command) const {
+            return m_commands.value(command.toLower());
         }
 
         void Register(ICommandHandler& handler, const char * aliases)
@@ -80,8 +80,10 @@ namespace Movement
                 strcpy(text, aliases);
                 StringReader reader(text);
                 while(!reader.atEnd()) {
-                    const char * command = reader.readArg('|');
-                    if (getHandler(command))
+                    QString command = reader.readArg('|').toLower();
+                    if (command.indexOf(QChar(' ')) != -1)
+                        throw CommandMgrException("'aliases' should not contain any space character");
+                    if (m_commands.contains(command))
                         throw CommandMgrException("command handler with such name already registered");
                     m_commands.insert(command, &handler);
                 }
@@ -91,65 +93,60 @@ namespace Movement
                     typeid(handler).name(), exc.msg);
             }
         }
+
+        void Invoke(CommandInvoker& invoker, const char * command)
+        {
+            assert_state(command);
+            try {
+                char text[2048]; {
+                    int commandLen = strlen(command);
+                    if (commandLen >= CountOf(text))
+                        throw CommandMgrException("command string length is more than 2048 symbols");
+                    strcpy(text, command);
+                }
+
+                StringReader rd(text);
+                if (ICommandHandler* hdl = getHandler(rd.readArg()))
+                    hdl->Invoke(rd, invoker);
+                else
+                    throw CommandMgrException("unknown command");
+            }
+            catch (const CommandMgrException& exc) {
+                log_function("can't parse '%s' command - parsing failed with exception: %s", command, exc.msg);
+                invoker.output << endl << "can't parse '" << command << "' command - parsing failed with exception: " << exc.msg;
+            }
+        }
     };
 
-    CommandMgr::CommandMgr() : impl(nullptr) {
-        impl = new CommandMgrImpl();
-    }
+    CommandMgr::CommandMgr() : impl(new CommandMgrImpl()) {}
 
-    CommandMgr::~CommandMgr() {
-        delete impl;
-        impl = nullptr;
-    }
+    CommandMgr::~CommandMgr() {}
 
-    ICommandHandler::ICommandHandler()
-    {
-        Description = "No description specified.";
-    }
-
-    void CommandMgr::Register(ICommandHandler& handler, const char * aliases)
-    {
+    void CommandMgr::Register(ICommandHandler& handler, const char * aliases) {
         impl->Register(handler, aliases);
     }
 
-    void CommandMgr::Invoke(CommandInvoker& invoker, const char * command)
-    {
-        assert_state(command);
-        try {
-            char text[2048]; {
-                int commandLen = strlen(command);
-                if (commandLen >= CountOf(text))
-                    throw CommandMgrException("command string length is more than 2048 symbols");
-                strcpy(text, command);
-            }
-
-            StringReader rd(text);
-            const char * sub0 = rd.readArg();
-
-            if (ICommandHandler* hdl = impl->getHandler(sub0))
-                hdl->Invoke(rd, invoker);
-            else
-                throw CommandMgrException("unknown command");
-        }
-        catch (const CommandMgrException& exc) {
-            log_function("can't parse '%s' command - parsing failed with exception: %s", command, exc.msg);
-            invoker.output << endl << "can't parse '" << command << "' command - parsing failed with exception: " << exc.msg;
-        }
-    }
-
-    bool cmp(const char * str1, const char* str2) {
-        return str1 && str2 && (strcmp(str1,str2) == 0);
+    void CommandMgr::Invoke(CommandInvoker& invoker, const char * command) {
+        impl->Invoke(invoker, command);
     }
 
     float StringReader::readFloat(int separator /*= defaultSeparator*/) {
-        return (float)atof(readArg(separator));
+        bool succeeded = true;
+        float value = readArg(separator).toFloat(&succeeded);
+        if (!succeeded)
+            throw CommandMgrException(__FUNCTION__ " can't read float value");
+        return value;
     }
 
-    int32 StringReader::readInt(int separator /*= defaultSeparator*/) {
-        return atoi(readArg(separator));
+    int32 StringReader::readInt(int separator /*= defaultSeparator*/, int base /*= 10*/) {
+        bool succeeded = true;
+        int32 value = readArg(separator).toInt(&succeeded, base);
+        if (!succeeded)
+            throw CommandMgrException(__FUNCTION__ " can't read integer value");
+        return value;
     }
 
-    const char * StringReader::readArg(int separator /*= defaultSeparator*/)
+    QString StringReader::readArg(int separator /*= defaultSeparator*/)
     {
         // move pointer to last occurrence of 'separator'
         while(*_string && *_string == separator) {
@@ -173,7 +170,7 @@ namespace Movement
             ++_string;
         }
 
-        return arg;
+        return QString(arg);
     }
 
     StringReader::StringReader(char * str)
@@ -195,19 +192,31 @@ namespace Movement
         {
             char text[] = "  eat  me ! ";
             StringReader rd(text);
-            const char * arg = rd.readArg();
-            EXPECT_TRUE( cmp(arg, "eat") );
+            QString arg = rd.readArg();
+            EXPECT_TRUE( arg == "eat" );
             arg = rd.readArg();
-            EXPECT_TRUE( cmp(arg, "me") );
+            EXPECT_TRUE( arg == "me" );
             arg = rd.readArg();
-            EXPECT_TRUE( cmp(arg, "!") );
+            EXPECT_TRUE( arg == "!" );
             EXPECT_TRUE( rd.atEnd() );
             EXPECT_THROW( rd.readArg(), CommandMgrException );
         }
         {
             char text[] = "canfly|";
             StringReader rd(text);
-            EXPECT_TRUE( cmp(rd.readArg('|'), "canfly") );
+            EXPECT_TRUE( rd.readArg('|') == "canfly" );
+            EXPECT_TRUE( rd.atEnd() );
+        }
+        {
+            char text[] = "3.14156";
+            StringReader rd(text);
+            EXPECT_TRUE( qFuzzyCompare(rd.readFloat(), 3.14156f) );
+            EXPECT_TRUE( rd.atEnd() );
+        }
+        {
+            char text[4] = {(char)0xfe,(char)0xfe,(char)0xfe,(char)0x00};
+            StringReader rd(text);
+            EXPECT_THROW( rd.readFloat(), CommandMgrException );
             EXPECT_TRUE( rd.atEnd() );
         }
     }

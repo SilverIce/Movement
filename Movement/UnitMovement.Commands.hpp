@@ -11,7 +11,7 @@ namespace Movement
             MovementCommand::Init(aliases);
         }
         void Invoke(StringReader& command, CommandInvoker& invoker) override {
-            bool apply = cmp(command.readArg(), "on");
+            bool apply = command.readArg() == "on";
             invoker.com.as<UnitMovement>().ApplyMoveMode(m_mode, apply);
             invoker.output << endl << "Movement mode " << m_modeName << (apply ? " enabled" : " disabled");
         }

@@ -16,24 +16,24 @@ namespace Movement
 
         QString Description;
 
-        explicit ICommandHandler();
-
+        explicit ICommandHandler() {}
     protected:
-
         ~ICommandHandler() {}
+    private:
+        Q_DISABLE_COPY(ICommandHandler);
     };
 
     class CommandMgr
     {
-        friend struct ICommandHandler;
-        class CommandMgrImpl* impl;
+    private:
+        Q_DISABLE_COPY(CommandMgr);
+        QScopedPointer<class CommandMgrImpl> impl;
     public:
 
         explicit CommandMgr();
         ~CommandMgr();
 
         void Invoke(CommandInvoker& invoker, const char * command);
-
         void Register(ICommandHandler& handler, const char * aliases);
     };
 
@@ -50,6 +50,7 @@ namespace Movement
         Note that StringReader turns string into unusable state!  */
     class StringReader
     {
+        Q_DISABLE_COPY(StringReader);
         char * _string;
     public:
         enum {
@@ -67,13 +68,9 @@ namespace Movement
         }
 
         float readFloat(int separator = defaultSeparator);
-
-        int32 readInt(int separator = defaultSeparator);
-
-        const char * readArg(int separator = defaultSeparator);
+        int32 readInt(int separator = defaultSeparator, int base = 10);
+        QString readArg(int separator = defaultSeparator);
     };
-
-    bool cmp(const char * str1, const char* str2);
 
     template<class ParentNode, const char* (*CommandNodeName)() > class CommandNode : public ICommandHandler
     {
