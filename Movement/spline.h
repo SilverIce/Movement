@@ -90,9 +90,9 @@ public:
 
     /** Bounds for spline indexes.
         Point indexes are limited with [0, last] range.
-        Segment indexes bounds are limited with [0, last) range.
+        Segment indexes are limited with [0, last) range.
     */
-    index_type last()  const { return index_hi - index_lo;}
+    index_type last() const { return index_hi - index_lo;}
 
     bool empty() const { return index_lo == index_hi;}
     EvaluationMode mode() const { return m_mode;}
@@ -127,7 +127,7 @@ public:
         return (this->*seglengths[m_mode])(index_lo + pointIdx, precision);
     }
 
-    QString ToString() const;
+    QString toString() const;
 };
 
 template<typename length_type>

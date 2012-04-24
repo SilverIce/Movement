@@ -209,7 +209,7 @@ void SplineBase::InitCatmullRom(const Vector3* controls, index_type count, bool 
     index_hi = high_index + (cyclic ? 1 : 0);
 }
 
-QString SplineBase::ToString() const
+QString SplineBase::toString() const
 {
     QString string;
     QTextStream str(&string);
