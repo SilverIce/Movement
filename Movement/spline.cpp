@@ -74,19 +74,33 @@ inline void C_Evaluate(const Vector3 *vertice, float t, const float (&matrix)[4]
     position.z = z;
 }*/
 
-inline void C_Evaluate(const Vector3 *vertice, float t, const Matrix4& matr, Vector3 &result)
+static inline void Evaluate(const Vector3 *vertice, float t, const Matrix4& matr, Vector3 &result)
 {
-    Vector4 tvec(t*t*t, t*t, t, 1.f);
-    Vector4 weights(tvec * matr);
+    //Vector4 tvec(t*t*t, t*t, t, 1.f);
+    //Vector4 weights(tvec * matr);
+    float tvec[] = {t*t*t, t*t, t/*, 1.f*/};
+    Vector4 weights(
+        matr[0][0]*tvec[0] + matr[1][0]*tvec[1] + matr[2][0]*tvec[2] + matr[3][0],
+        matr[0][1]*tvec[0] + matr[1][1]*tvec[1] + matr[2][1]*tvec[2] + matr[3][1],
+        matr[0][2]*tvec[0] + matr[1][2]*tvec[1] + matr[2][2]*tvec[2] + matr[3][2],
+        matr[0][3]*tvec[0] + matr[1][3]*tvec[1] + matr[2][3]*tvec[2] + matr[3][3]
+    );
 
     result = vertice[0] * weights[0] + vertice[1] * weights[1]
            + vertice[2] * weights[2] + vertice[3] * weights[3];
 }
 
-inline void C_Evaluate_Derivative(const Vector3 *vertice, float t, const Matrix4& matr, Vector3 &result)
+static inline void Evaluate_Derivative(const Vector3 *vertice, float t, const Matrix4& matr, Vector3 &result)
 {
-    Vector4 tvec(3.f*t*t, 2.f*t, 1.f, 0.f);
-    Vector4 weights(tvec * matr);
+    //Vector4 tvec(3.f*t*t, 2.f*t, 1.f, 0.f);
+    //Vector4 weights(tvec * matr);
+    float tvec[] = {3.f*t*t, 2.f*t/*, 1.f, 0.f*/};
+    Vector4 weights(
+        matr[0][0]*tvec[0] + matr[1][0]*tvec[1] + matr[2][0],
+        matr[0][1]*tvec[0] + matr[1][1]*tvec[1] + matr[2][1],
+        matr[0][2]*tvec[0] + matr[1][2]*tvec[1] + matr[2][2],
+        matr[0][3]*tvec[0] + matr[1][3]*tvec[1] + matr[2][3]
+    );
 
     result = vertice[0] * weights[0] + vertice[1] * weights[1]
            + vertice[2] * weights[2] + vertice[3] * weights[3];
@@ -101,7 +115,7 @@ void SplineBase::EvaluateLinear(index_type index, float u, Vector3& result) cons
 void SplineBase::EvaluateCatmullRom( index_type index, float t, Vector3& result) const
 {
     mov_assert(index >= index_lo && index < index_hi);
-    C_Evaluate(&points[index - 1], t, s_catmullRomCoeffs, result);
+    Evaluate(&points[index - 1], t, s_catmullRomCoeffs, result);
 }
 
 void SplineBase::EvaluateDerivativeLinear(index_type index, float, Vector3& result) const
@@ -113,7 +127,7 @@ void SplineBase::EvaluateDerivativeLinear(index_type index, float, Vector3& resu
 void SplineBase::EvaluateDerivativeCatmullRom(index_type index, float t, Vector3& result) const
 {
     mov_assert(index >= index_lo && index < index_hi);
-    C_Evaluate_Derivative(&points[index - 1], t, s_catmullRomCoeffs, result);
+    Evaluate_Derivative(&points[index - 1], t, s_catmullRomCoeffs, result);
 }
 
 float SplineBase::SegLengthLinear(index_type index, uint32) const
@@ -136,7 +150,7 @@ float SplineBase::SegLengthCatmullRom(index_type index, uint32 iterationCount) c
     float iterationCountInv = 1.f / (float)iterationCount;
     while (i <= iterationCount)
     {
-        C_Evaluate(p, float(i) * iterationCountInv, s_catmullRomCoeffs, nextPos);
+        Evaluate(p, float(i) * iterationCountInv, s_catmullRomCoeffs, nextPos);
         length += (nextPos - curPos).length();
         curPos = nextPos;
         ++i;
