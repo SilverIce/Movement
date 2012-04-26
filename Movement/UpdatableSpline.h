@@ -9,7 +9,7 @@ namespace Movement
     class MoveSplineUpdatable : public Component
     {
     private:
-        COMPONENT_TYPEID;
+        COMPONENT_TYPEID(MoveSplineUpdatable);
         MSTime m_lastQuery;
         MoveSpline m_base;
         UnitMovementImpl * m_owner;
@@ -61,7 +61,7 @@ namespace Movement
         {
         }
 
-        void Init(Component& tree);
+        void Init(UnitMovementImpl& unit);
 
         void CleanReferences() {
             OnArrived();

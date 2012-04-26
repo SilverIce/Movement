@@ -58,7 +58,7 @@ namespace Movement
 
     class EXPORT UnitMovement : public Component
     {
-        COMPONENT_TYPEID;
+        COMPONENT_TYPEID(UnitMovement);
         friend struct UnitMovementStruct;
         UnitMovementImpl& m;
         UnitMovement(UnitMovementImpl& impl) : m(impl), dbg_flags(0) {}

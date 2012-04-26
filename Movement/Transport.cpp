@@ -410,7 +410,7 @@ namespace Movement
     /** Controls transport motion */
     class MOTransportMover : public Tasks::ICallBack, private Component
     {
-        COMPONENT_TYPEID;
+        COMPONENT_TYPEID(MOTransportMover);
         TransportImpl* m_controlled;
         std::auto_ptr<PathSegment> m_segment;
         uint32 m_pathId;

@@ -11,7 +11,7 @@ namespace Movement
 
     class Unit_Passenger : public Component
     {
-        COMPONENT_TYPEID;
+        COMPONENT_TYPEID(Unit_Passenger);
         UnitMovementImpl * m_unit;
         OnPassengerDestroy * m_onDestroy;
         Tasks::TaskTarget_DEV m_updatePosTask;

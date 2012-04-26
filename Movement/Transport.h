@@ -16,7 +16,7 @@ namespace Movement
     struct IPassenger : Component
     {
         virtual void Unboard() = 0;
-        COMPONENT_TYPEID;
+        COMPONENT_TYPEID(IPassenger);
     };
 
     class EXPORT Transport

@@ -31,7 +31,7 @@ namespace Movement
     struct MovingEntity_WOW : MovingEntity_Revolvable2
     {
     private:
-        COMPONENT_TYPEID;
+        COMPONENT_TYPEID(MovingEntity_WOW);
         typedef MovingEntity_Revolvable2 base;
 
     public:

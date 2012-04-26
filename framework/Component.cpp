@@ -169,25 +169,29 @@ namespace Movement
 namespace Movement
 {
     struct TypeA : Component {
-        COMPONENT_TYPEID;
+        COMPONENT_TYPEID(TypeA);
+        static AspectTypeId getTypeId() { return HasTypeId::getTypeId();}
         int a;
     };
     struct TypeB : Component {
-        COMPONENT_TYPEID;
+        COMPONENT_TYPEID(TypeB);
+        static AspectTypeId getTypeId() { return HasTypeId::getTypeId();}
         int b;
     };
     struct TypeC : Component {
-        COMPONENT_TYPEID;
+        COMPONENT_TYPEID(TypeC);
+        static AspectTypeId getTypeId() { return HasTypeId::getTypeId();}
         int c;
     };
     struct TypeD : Component {
-        COMPONENT_TYPEID;
+        COMPONENT_TYPEID(TypeD);
+        static AspectTypeId getTypeId() { return HasTypeId::getTypeId();}
         int d;
     };
 
     TEST(TypeContainer, typeId)
     {
-        // expects that different object types has different ids
+        // expects that different object types have different ids
         EXPECT_TRUE( TypeA::getTypeId() != TypeB::getTypeId() );
     }
 

@@ -35,13 +35,13 @@ namespace Movement
         public: QString toStringAll() const;
 
         /** Performs a cast to given type. Returns a null in case cast failed.*/
-        public: template<class T> inline T* getAspect() const {
-            return (T*)_getAspect(T::getTypeId());
+        public: template<class T> inline typename T::HasTypeId::ComponentType* getAspect() const {
+            return (typename T::HasTypeId::ComponentType*)_getAspect(T::HasTypeId::getTypeId());
         }
 
         /** Performs a cast to given type. Asserts that cast never fails.*/
-        public: template<class T> inline T& as() const {
-            return *(T*)_as(T::getTypeId());
+        public: template<class T> inline typename T::HasTypeId::ComponentType& as() const {
+            return *(typename T::HasTypeId::ComponentType*)_as(T::HasTypeId::getTypeId());
         }
 
         public: explicit Component() : m_tree(0), m_this(0), m_typeId(0) {}
@@ -49,20 +49,23 @@ namespace Movement
         public: virtual ~Component();
 
         public: template<class MyType> inline void ComponentInit(MyType * me) {
-            _ComponentInit(me, MyType::getTypeId(), 0);
+            _ComponentInit(static_cast<typename MyType::HasTypeId::ComponentType*>(me), MyType::HasTypeId::getTypeId(), 0);
         }
 
         public: template<class T> inline void ComponentAttach(T * object) {
-            _ComponentAttach(object, T::getTypeId(), object);
+            _ComponentAttach(static_cast<typename T::HasTypeId::ComponentType*>(object), T::HasTypeId::getTypeId(), object);
         }
 
         public: void ComponentDetach();
     };
 
-#define COMPONENT_TYPEID \
+#define COMPONENT_TYPEID(TYPE) \
     friend struct ::Movement::Component; \
-    static ::Movement::AspectTypeId getTypeId() { \
-        static char dummy; \
-        return &dummy; \
-    }
+    struct HasTypeId { \
+        typedef TYPE ComponentType; \
+        EXPORT static ::Movement::AspectTypeId getTypeId() { \
+            static char dummy; \
+            return &dummy; \
+        } \
+    };
 }

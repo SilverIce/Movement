@@ -1,10 +1,9 @@
 namespace Movement
 {
-    void MoveSplineUpdatable::Init(Component& tree) 
+    void MoveSplineUpdatable::Init(UnitMovementImpl& unit) 
     {
-        tree.ComponentAttach(this);
-        m_owner = &as<UnitMovementImpl>();
-        assert_state(m_owner);
+        unit.ComponentAttach(this);
+        m_owner = &unit;
         m_updater = &m_owner->Updater();
     }
 

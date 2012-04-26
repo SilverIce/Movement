@@ -2,7 +2,7 @@ namespace Movement
 {
     class VehicleImpl : public Component, public OnPassengerDestroy
     {
-        COMPONENT_TYPEID;
+        COMPONENT_TYPEID(VehicleImpl);
     public:
         enum{
             SeatCount = 8,
