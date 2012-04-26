@@ -34,7 +34,7 @@ namespace Movement
             if (command.atEnd()) {
                 invoker.output << endl << "Command list:";
                 foreach(const QList<QString>& str, com2name.values())
-                    invoker.output << endl << str[0].constData();
+                    invoker.output << endl << str[0];
             }
             else {
                 const QString com = command.readArg();
@@ -48,13 +48,13 @@ namespace Movement
 
         static void describeCommand(const ICommandHandler& hdl, const QList<QString>& aliases, QTextStream& output)
         {
-            output << endl << "'" << aliases[0].constData() << "' description - "
+            output << endl << "'" << aliases[0] << "' description - "
                 << (hdl.Description.isEmpty() ? "No description specified." : hdl.Description);
             output << endl << "    Handler - " << typeid(hdl).name() << ".";
             if (aliases.size() > 1) {
                 output << endl << "    Aliases: ";
                 for (int idx = 0; idx < aliases.size(); ++idx)
-                    output << aliases[idx].constData() << ((idx < aliases.size()-1) ? ", " : ".");
+                    output << aliases[idx] << ((idx < aliases.size()-1) ? ", " : ".");
             }
         }
 
