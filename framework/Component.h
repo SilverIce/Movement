@@ -59,11 +59,15 @@ namespace Movement
         public: void ComponentDetach();
     };
 
+    template<class T, class D> struct class_equality;
+    template<class T> struct class_equality<T, T> {};
+
 #define COMPONENT_TYPEID(TYPE) \
     friend struct ::Movement::Component; \
     struct HasTypeId { \
         typedef TYPE ComponentType; \
         EXPORT static ::Movement::AspectTypeId getTypeId() { \
+            (void)sizeof(::Movement::class_equality<HasTypeId,typename ComponentType::HasTypeId>); \
             static char dummy; \
             return &dummy; \
         } \
