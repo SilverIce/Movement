@@ -1,5 +1,3 @@
-#pragma once
-
 namespace Movement
 {
     /** Sends to CMSG_TIME_SYNC_RESP each 10 seconds */
@@ -66,15 +64,12 @@ namespace Movement
         client.BroadcastMessage(msg);
     }
 
-    static MSTime timestamp_incr = 5000;
-    static MSTime timestamp_decr = 0;
-
     void ClientImpl::SendMoveMessage(MovementMessage& msg) const
     {
         if (msg.Source() == m_controlled)
             return;
 
-        msg.CorrectTimeStamp(msg.OrigTime() + timestamp_incr - timestamp_decr);
+        msg.CorrectTimeStamp(msg.OrigTime());
         SendPacket(msg.Packet());
     }
 

@@ -19,15 +19,6 @@ class WorldObject;
 
 namespace Movement
 {
-    struct WowObject : Component
-    {
-        COMPONENT_TYPEID;
-        ObjectGuid guid;
-        WorldObject* object;
-
-        explicit WowObject() : object(nullptr) {}
-    };
-
     struct MovingEntity_WOW : MovingEntity_Revolvable2
     {
     private:

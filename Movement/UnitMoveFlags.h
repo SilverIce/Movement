@@ -72,7 +72,7 @@ namespace Movement
             Mask_Interp     = Interp_Move | Interp_Turning | Interp_Pitching,
             Mask_Pitching   = Swimming | Flying | Allow_Pitching,
             Mask_Directions = Forward | Backward | Strafe_Left | Strafe_Right | Turn_Left | Turn_Right,
-            Mask_Moving     = Forward | Backward | Strafe_Left | Strafe_Right | Turn_Left | Turn_Right | Falling | Fallingfar | Ascending | Descending
+            Mask_Moving     = Mask_Directions | Pitch_Up | Pitch_Down | Falling | Ascending | Descending
         ;
 
         enum {

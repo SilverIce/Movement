@@ -112,7 +112,7 @@ namespace Movement
     void MoveSplineUpdatable::PrepareMoveSplineArgs(MoveSplineInitArgs& args, UnitMoveFlag& moveFlag_new)
     {
         if (IsMoving())
-            updateState(1);
+            updateState();
 
         if (args.path.empty()) {
             args.path.resize(2);
@@ -128,7 +128,7 @@ namespace Movement
         moveFlag_new = m_owner->moveFlags;
         // logic from client here:
         {
-            moveFlag_new &= ~(UnitMoveFlag::Mask_Directions | UnitMoveFlag::Mask_Moving);
+            moveFlag_new &= ~UnitMoveFlag::Mask_Moving;
             moveFlag_new.forward = true;
             moveFlag_new.spline_enabled = true;
             moveFlag_new.walk_mode = !args.flags.runmode;

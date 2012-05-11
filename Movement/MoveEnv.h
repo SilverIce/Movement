@@ -21,6 +21,7 @@ namespace Movement
 
     struct MovingEntity
     {
+        Q_DISABLE_COPY(MovingEntity);
     private:
         IMoveEnvironment* m_Environment;
     public:
@@ -61,6 +62,7 @@ namespace Movement
         }
     };
 
+    /** Holds rotation info.*/
     struct LazyRotation
     {
     private:
@@ -198,6 +200,7 @@ namespace Movement
 
     struct MovingEntity_Revolvable2 : Component
     {
+    private:
         MovingEntity_Revolvable m_entity;
 
         MovingEntity_Revolvable2 * m_Environment;
@@ -316,6 +319,7 @@ namespace Movement
 
     struct MovingEntity_Revolvable3 : Component
     {
+    private:
         MovingEntity_Revolvable3 * m_Environment;
         Vector3 m_RelativePosition;
         LazyRotation m_rotation;
@@ -363,10 +367,7 @@ namespace Movement
 
             if (m_globalRotationOutdated) {
                 m_globalRotationOutdated = false;
-                if (MovingEntity_Revolvable3 * env = Environment())
-                    m_globalRotation = env->GlobalRotation() * m_rotation.relativeRotation();
-                else
-                    m_globalRotation = m_rotation.relativeRotation();
+                m_globalRotation = Environment()->GlobalRotation() * m_rotation.relativeRotation();
             }
             return m_globalRotation;
         }
@@ -387,10 +388,7 @@ namespace Movement
                 return RelativePosition();
             if (m_globalPositionOutdated) {
                 m_globalPositionOutdated = false;
-                if (MovingEntity_Revolvable3 * env = Environment())
-                    m_globalPosition = env->GlobalRotation() * RelativePosition() + env->GlobalPosition();
-                else
-                    m_globalPosition = RelativePosition();
+                m_globalPosition = Environment()->GlobalRotation() * RelativePosition() + Environment()->GlobalPosition();
             }
             return m_globalPosition;
         }
@@ -448,6 +446,11 @@ namespace Movement
 
         void RollAngle(float value) {
             m_rotation.RollAngle(value);
+            OnRotationChanged();
+        }
+
+        void SetRotationFromTangentLine(const Vector3& tangent) {
+            m_rotation.SetRotationFromTangentLine(tangent);
             OnRotationChanged();
         }
 

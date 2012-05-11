@@ -83,7 +83,7 @@ struct TaxiPathNodeEntry
 
 namespace Movement
 {
-    /** Object-function that calculates distance passed by transport. */
+    /** Object-function that describes how distance changes in respect to time. */
     struct LengthPassedDescr
     {
         uint32 enterStamp;
@@ -517,7 +517,7 @@ namespace Movement
     {
         explicit SetTransportTimeMod() {
             Init("movetimemod|timemod");
-            Description = "Modifies transport movement m_timePassedess. Command argument is time in seconds. "
+            Description = "Modifies transport movement progress. Command argument is time in seconds. "
                 "Negative time value moves it back, positive - forward.";
         }
 

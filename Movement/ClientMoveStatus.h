@@ -57,7 +57,7 @@ namespace Movement
         float pitchAngle;
         int8 transport_seat;
 
-        QString ToString() const;
+        QString toString() const;
     };
 
     struct ClientMoveStateChange : public ClientMoveState
@@ -70,31 +70,36 @@ namespace Movement
         bool allowFlagApply;
     };
 
-    inline QString ClientMoveState::ToString() const
+    inline QString ClientMoveState::toString() const
     {
         QString string;
         QTextStream st(&string);
-        st << "Movement  flags: " << moveFlags.toString() << endl;
-        st << "Global position: " << globalPosition.toString() << endl;
+        st << "Movement flags       " << moveFlags.toString() << endl;
+        st << "Global position      " << globalPosition.toString() << endl;
 
         if (moveFlags.ontransport)
         {
-            st << "Local  position: " << relativePosition.toString() << endl;
-            st << "seat         Id: " << (int32)transport_seat << endl;
+            st << "Local position       " << relativePosition.toString() << endl;
+            st << "seat Id              " << (int32)transport_seat << endl;
         }
 
         if (moveFlags & UnitMoveFlag::Mask_Pitching)
         {
-            st << "pitch angle " << pitchAngle << endl;
+            st << "pitch angle          " << pitchAngle << endl;
         }
 
         if (moveFlags.falling)
         {
-            st << "jump vertical   vel " << jump_verticalVelocity << endl;
-            st << "jump direction2d  x " << jump_directionX << endl;
-            st << "jump direction2d  y " << jump_directionY << endl;
-            st << "jump horizontal vel " << jump_horizontalVelocity << endl;
-            st << "fall           time " << fallTime << endl;
+            st << "jump vertical vel    " << jump_verticalVelocity << endl;
+            st << "jump direction2d x   " << jump_directionX << endl;
+            st << "jump direction2d y   " << jump_directionY << endl;
+            st << "jump horizontal vel  " << jump_horizontalVelocity << endl;
+            st << "fall time            " << fallTime << endl;
+        }
+
+        if (moveFlags.spline_elevation)
+        {
+            st << "spline elevation     " << spline_elevation << endl;
         }
         return *st.string();
     }
