@@ -6,6 +6,7 @@
 #include "ObjectGuid.h"
 
 #include "MoveEnv.UnitTest.hpp"
+#include "LinkedListSimple.h"
 
 namespace Movement
 {
@@ -105,6 +106,86 @@ namespace Movement
 
         EXPECT_TRUE( list.size() == 0 );
         EXPECT_TRUE( list.empty() );
+    }
+
+    template<class T, int N>
+    class StatArray
+    {
+        T _values[N];
+
+    public:
+        enum {
+            Count = N,
+        };
+        inline T& operator [] (int idx) {
+            assert_state(idx < N);
+            return _values[idx];
+        }
+        inline const T& operator [] (int idx) const {
+            assert_state(idx < N);
+            return _values[idx];
+        }
+    };
+
+    template<class T, int N>
+    inline static bool CompareSeq(const T(&values)[N], const LinkedListSimple<T>& list)
+    {
+        const LinkedListElementSimple<T> * node = list.first();
+        int i = 0;
+        while(node && (i < N) && node->Value == values[i]) {
+            ++i;
+            node = node->Next();
+        }
+        return (i == N);
+    }
+
+    TEST(LinkedListSimple, all)
+    {
+        {
+            LinkedListSimple<int> list;
+            EXPECT_TRUE( list.empty() );
+            EXPECT_TRUE( list.first() == nullptr );
+            EXPECT_TRUE( list.count() == 0 );
+        }
+
+        const int values[] = {0,1,2,20,4,5,6,7,8,12};
+        StatArray<LinkedListElementSimple<int>,CountOf(values)> nodes;
+        for (int i = 0; i < CountOf(nodes); ++i) {
+            EXPECT_TRUE( !nodes[i].linked() );
+            nodes[i].Value = values[i];
+        }
+
+        {
+            LinkedListSimple<int> list;
+            list.link_first(nodes[0]);
+            EXPECT_TRUE( !list.empty() );
+            EXPECT_TRUE( list.first() == &nodes[0] );
+            EXPECT_TRUE( list.count() == 1 );
+
+            list.link_first(nodes[1]);
+            int val[] = {1,0};
+            EXPECT_TRUE( CompareSeq(val,list) );
+            EXPECT_TRUE( list.first() == &nodes[1] );
+
+            list.link_after(*list.first(), nodes[2]);
+            int val2[] = {1,2,0};
+            EXPECT_TRUE( CompareSeq(val2,list) );
+
+            list.link_before(*list.first(), nodes[3]);
+            int val3[] = {20,1,2,0};
+            EXPECT_TRUE( CompareSeq(val3,list) );
+            EXPECT_TRUE( list.count() == CountOf(val3) );
+
+            list.delink_first();
+            int val4[] = {1,2,0};
+            EXPECT_TRUE( CompareSeq(val4,list) );
+            EXPECT_TRUE( list.count() == CountOf(val4) );
+
+            list.clear();
+            EXPECT_TRUE( list.empty() );
+            EXPECT_TRUE( list.first() == nullptr );
+            EXPECT_TRUE( list.count() == 0 );
+        }
     }
 
     TEST(ObjectGuid, basic)
