@@ -49,25 +49,26 @@ namespace Movement
 {
     struct UnitMovementStruct
     {
-        UnitMovement pubface;
-
         UnitMovementImpl unit;
         MoveSplineUpdatable monsterController;
 
-        UnitMovementStruct(WorldObject& owner, uint64 ownerGuid, Tasks::ITaskExecutor& updater) : pubface(unit)
+        UnitMovementStruct(const UnitMovement::CreateInfo& info, UnitMovement * publicFace)
         {
             unit.ComponentInit(&unit);
-            unit.ComponentAttach(&pubface);
+            unit.ComponentAttach(publicFace);
 
-            unit.Guid.SetRawValue(ownerGuid);
-            unit.Owner = &owner;
-            unit.Init(updater, &pubface);
+            unit.Guid.SetRawValue(info.guid);
+            unit.Owner = info.object;
+            unit.Init(info.executor, publicFace);
             monsterController.Init(unit);
 
         }
 
         ~UnitMovementStruct()
         {
+            /** Bad solution: UnitMovementStruct destructor have to care about dynamically allocated components.
+                How to solve? use ref counted pointers? or add a new wheel, 
+            */
             Unit_Passenger::dealloc( unit.getAspect<Unit_Passenger>() );
             delete unit.getAspect<VehicleImpl>();
 
@@ -76,154 +77,156 @@ namespace Movement
         }
     };
 
-    UnitMovement* UnitMovement::create(WorldObject& owner, uint64 ownerGuid, Tasks::ITaskExecutor& updater)
+    UnitMovement::UnitMovement(const CreateInfo& info)
+        : m(nullptr)
+        , dbg_flags(0)
     {
-        UnitMovementStruct* impl = new UnitMovementStruct(owner, ownerGuid, updater);
-        return &impl->pubface;
+        m = new UnitMovementStruct(info, this);
     }
 
-    void UnitMovement::dealloc()
+    UnitMovement::~UnitMovement()
     {
-        delete ((UnitMovementStruct*)this);
+        delete m;
+        m = nullptr;
     }
 
-    void UnitMovement::CleanReferences()
+    UnitMovementImpl& UnitMovement::Impl()
     {
-        m.CleanReferences();
+        return m->unit;
     }
 
     void UnitMovement::SetPosition(const Location& position)
     {
-        m.RelativeLocation(position);
+        m->unit.RelativeLocation(position);
     }
 
     Location UnitMovement::GetPosition()
     {
-        return m.GetGlobalLocation();
+        return m->unit.GetGlobalLocation();
     }
 
     const Vector3& UnitMovement::GetPosition3()
     {
-        return m.GlobalPosition();
+        return m->unit.GlobalPosition();
     }
 
     bool UnitMovement::IsWalking()
     {
-        return m.IsWalking();
+        return m->unit.IsWalking();
     }
 
     bool UnitMovement::IsMoving()
     {
-        return m.IsMoving();
+        return m->unit.IsMoving();
     }
 
     bool UnitMovement::IsTurning()
     {
-        return m.IsTurning();
+        return m->unit.IsTurning();
     }
 
     bool UnitMovement::IsFlying()
     {
-        return m.IsFlying();
+        return m->unit.IsFlying();
     }
 
     bool UnitMovement::IsFalling()
     {
-        return m.IsFalling();
+        return m->unit.IsFalling();
     }
 
     bool UnitMovement::IsFallingFar()
     {
-        return m.IsFallingFar();
+        return m->unit.IsFallingFar();
     }
 
     float UnitMovement::GetCollisionHeight()
     {
-        return m.GetParameter(Parameter_CollisionHeight);
+        return m->unit.GetParameter(Parameter_CollisionHeight);
     }
 
     float UnitMovement::GetSpeed(SpeedType type)
     {
-        return m.GetParameter((FloatParameter)(0 + type));
+        return m->unit.GetParameter((FloatParameter)(0 + type));
     }
 
     float UnitMovement::GetCurrentSpeed()
     {
-        return m.GetCurrentSpeed();
+        return m->unit.GetCurrentSpeed();
     }
 
     QString UnitMovement::ToString()
     {
-        return m.toStringAll();
+        return m->unit.toStringAll();
     }
 
     void UnitMovement::BindOrientationTo(UnitMovement& target)
     {
-        m.as<MoveSplineUpdatable>().BindOrientationTo(target.Impl());
+        m->monsterController.BindOrientationTo(target.Impl());
     }
 
     void UnitMovement::UnbindOrientation()
     {
-        m.as<MoveSplineUpdatable>().UnbindOrientation();
+        m->monsterController.UnbindOrientation();
     }
 
     Vector3 UnitMovement::direction()
     {
-        return m.direction();
+        return m->unit.direction();
     }
 
     uint32 UnitMovement::MoveSplineId()
     {
-        return m.as<MoveSplineUpdatable>().getCurrentMoveId();
+        return m->monsterController.getCurrentMoveId();
     }
 
     bool UnitMovement::HasMode(MoveMode mode)
     {
-        return m.HasMode(mode);
+        return m->unit.HasMode(mode);
     }
 
     void UnitMovement::Teleport(const Location& loc)
     {
-        TeleportEffect::Launch(&m, loc);
+        TeleportEffect::Launch(m->unit, loc);
     }
 
     void UnitMovement::Knockback(float directionAngle, float horizontalVelocity, float verticalVelocity)
     {
-        KnockbackEffect::Launch(m, directionAngle, horizontalVelocity, verticalVelocity);
+        KnockbackEffect::Launch(m->unit, directionAngle, horizontalVelocity, verticalVelocity);
     }
 
     void UnitMovement::SetCollisionHeight(float value)
     {
-        FloatValueChangeEffect::Launch(&m, Parameter_CollisionHeight, value);
+        FloatValueChangeEffect::Launch(m->unit, Parameter_CollisionHeight, value);
     }
 
     void UnitMovement::SetSpeed(SpeedType speed, float value)
     {
-        FloatValueChangeEffect::Launch(&m, (FloatParameter)speed, value);
+        FloatValueChangeEffect::Launch(m->unit, (FloatParameter)speed, value);
     }
 
     void UnitMovement::ApplyMoveMode(MoveMode mode, bool apply)
     {
-        ModeChangeEffect::Launch(&m, mode, apply);
+        ModeChangeEffect::Launch(m->unit, mode, apply);
     }
 
     void UnitMovement::WriteCreate(ByteBuffer& buf)
     {
-        PacketBuilder::FullUpdate(Impl(), buf);
+        PacketBuilder::FullUpdate(m->unit, buf);
     }
 
     void UnitMovement::SetListener(class IListener * listener)
     {
-        m.as<MoveSplineUpdatable>().SetListener(listener);
+        m->monsterController.SetListener(listener);
     }
 
     Vehicle UnitMovement::asVehicle()
     {
-        return Vehicle(m.getAspect<VehicleImpl>());
+        return Vehicle(getAspect<VehicleImpl>());
     }
 
     UnitPassenger UnitMovement::asPassenger()
     {
-        return UnitPassenger(m.getAspect<Unit_Passenger>());
+        return UnitPassenger(getAspect<Unit_Passenger>());
     }
 }

@@ -48,25 +48,25 @@ namespace Movement
 
     public:
 
-        static void Launch(UnitMovementImpl * mov, FloatParameter value_type, float value)
+        static void Launch(UnitMovementImpl& mov, FloatParameter value_type, float value)
         {
             assert_state(value_type != Parameter_SpeedCustom);
 
-            if (mov->IsClientControlled())
+            if (mov.IsClientControlled())
             {
                 if (ClientOpcode opcode = ValueChange2Opc_table[value_type].smsg_spline)
-                    new FloatValueChangeEffect(mov->client(), value_type, value);
+                    new FloatValueChangeEffect(mov.client(), value_type, value);
             }
             else if (ClientOpcode opcode = ValueChange2Opc_table[value_type].smsg_spline)
             {
-                mov->SetParameter(value_type, value);
+                mov.SetParameter(value_type, value);
                 // FIXME: currently there is no way to change speed of already moving server-side controlled unit (spline movement)
                 // there is only one hacky way - launch new spline movement.. that's how blizz doing this
 
                 WorldPacket data(opcode, 16);
-                data << mov->Guid.WriteAsPacked();
+                data << mov.Guid.WriteAsPacked();
                 data << value;
-                Imports.BroadcastMessage(mov->Owner, data);
+                Imports.BroadcastMessage(mov.Owner, data);
             }
         }
 
@@ -188,12 +188,12 @@ namespace Movement
 
     public:
 
-        static void Launch(UnitMovementImpl * mov, MoveMode mode, bool apply)
+        static void Launch(UnitMovementImpl& mov, MoveMode mode, bool apply)
         {
-            if (mov->IsClientControlled())
+            if (mov.IsClientControlled())
             {
                 if (modeInfo[mode].smsg_apply[!apply])
-                    new ModeChangeEffect(mov->client(), mode, apply);
+                    new ModeChangeEffect(mov.client(), mode, apply);
                 else
                     log_function("no opcode for mode %u", mode);
             }
@@ -204,13 +204,13 @@ namespace Movement
                     /** By some unknown reason client force moves unit to end of the path when receives
                         SMSG_SPLINE_MOVE_ROOT/SMSG_SPLINE_MOVE_UNROOT packet.
                         Need override current spine movement to avoid this. blizzs doing same hack. */
-                    if (mode == MoveModeRoot && mov->SplineEnabled())
-                        MoveSplineInit(*mov).Launch();
+                    if (mode == MoveModeRoot && mov.SplineEnabled())
+                        MoveSplineInit(mov).Launch();
 
-                    mov->ApplyMoveFlag(modeInfo[mode].moveFlag, apply);
+                    mov.ApplyMoveFlag(modeInfo[mode].moveFlag, apply);
                     WorldPacket data(opcode, 12);
-                    data << mov->Guid.WriteAsPacked();
-                    Imports.BroadcastMessage(mov->Owner, data);
+                    data << mov.Guid.WriteAsPacked();
+                    Imports.BroadcastMessage(mov.Owner, data);
                 }
                 else
                     log_function("no opcode for mode %u", mode);
@@ -273,15 +273,15 @@ namespace Movement
 
     public:
 
-        static void Launch(UnitMovementImpl * mov, const Location& loc)
+        static void Launch(UnitMovementImpl& mov, const Location& loc)
         {
-            if (mov->IsClientControlled())
+            if (mov.IsClientControlled())
             {
-                new TeleportEffect(mov->client(), loc);
+                new TeleportEffect(mov.client(), loc);
             }
             else
             {
-                MoveSplineInit init(*mov);
+                MoveSplineInit init(mov);
                 init.MoveTo(loc);
                 init.SetFacing(loc.orientation);
                 init.SetInstant();

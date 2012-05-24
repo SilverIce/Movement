@@ -60,20 +60,22 @@ namespace Movement
     {
         COMPONENT_TYPEID(UnitMovement);
         friend struct UnitMovementStruct;
-        UnitMovementImpl& m;
-        UnitMovement(UnitMovementImpl& impl) : m(impl), dbg_flags(0) {}
+        UnitMovementStruct* m;
         UnitMovement(const UnitMovement&);
         UnitMovement& operator = (const UnitMovement&);
-        ~UnitMovement() {}
     public:
 
-        static UnitMovement* create(WorldObject& owner, uint64 ownerGuid, Tasks::ITaskExecutor& updater);
-        void dealloc();
+        struct CreateInfo
+        {
+            WorldObject* object;
+            Tasks::ITaskExecutor& executor;
+            uint64 guid;
+        };
 
-        inline UnitMovementImpl& Impl() { return m;}
-        inline const UnitMovementImpl& Impl() const { return m;}
+        explicit UnitMovement(const CreateInfo&);
+        ~UnitMovement();
 
-        void CleanReferences();
+        UnitMovementImpl& Impl();
 
         QString ToString();
 
