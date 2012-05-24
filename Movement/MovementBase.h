@@ -73,8 +73,8 @@ namespace Movement
                 st << endl << "relative position " << RelativePosition().toString().c_str();
                 st << endl << "attached to another moving entity";
             }
-            if (uint32 count = BindedEntities().size())
-                st << endl << "moving entities attached count " << count;
+            if (uint32 attachedCount = BindedEntities().count())
+                st << endl << "moving entities attached count " << attachedCount;
         }
     };
 }

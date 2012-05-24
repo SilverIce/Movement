@@ -48,7 +48,7 @@ namespace Tasks
     class EXPORT TaskTarget
     {
     private:
-        char m_fields[8+4];
+        char m_fields[8];
         NON_COPYABLE(TaskTarget);
     public:
         bool hasTaskAttached() const;

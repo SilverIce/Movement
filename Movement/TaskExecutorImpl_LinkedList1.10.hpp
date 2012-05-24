@@ -418,7 +418,7 @@ namespace Tasks { namespace detail
             newNode->taskTarget = target;
 
             if (target)
-                TaskTargetImpl::cast(*target).link_last(newNode->tasknode);
+                TaskTargetImpl::cast(*target).link_first(newNode->tasknode);
             PushIntoList(newNode);
             ensureSorted();
         }

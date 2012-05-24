@@ -2,6 +2,7 @@
 #include "TaskScheduler.h"
 
 #include "LinkedList.h"
+#include "LinkedListSimple.h"
 
 namespace Tasks
 {
@@ -56,7 +57,7 @@ namespace Tasks { namespace detail
 
     class TaskHandle {};
 
-    struct TaskTargetImpl : public Movement::LinkedList<TaskHandle*>
+    struct TaskTargetImpl : public Movement::LinkedListSimple<TaskHandle*>
     {
         static inline TaskTargetImpl& cast(TaskTarget& target) {
             return (TaskTargetImpl&)target;

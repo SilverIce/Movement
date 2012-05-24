@@ -4,7 +4,7 @@
 #include "framework/typedefs_p.h"
 #include "framework/RdtscTimer.h"
 #include "G3D/Matrix3.h"
-#include "LinkedList.h"
+#include "LinkedListSimple.h"
 
 namespace Movement
 {
@@ -62,7 +62,7 @@ namespace Movement
         }
     };
 
-    /** Holds rotation info.*/
+    /** Holds rotation in Euler and 3x3 matrix format. */
     struct LazyRotation
     {
     private:
@@ -207,8 +207,8 @@ namespace Movement
         mutable Vector3 m_globalPosition;
         mutable bool m_globalPositionOutdated;
 
-        LinkedList<MovingEntity_Revolvable2*> m_binded;
-        LinkedListElement<MovingEntity_Revolvable2*> m_me;
+        LinkedListSimple<MovingEntity_Revolvable2*> m_binded;
+        LinkedListElementSimple<MovingEntity_Revolvable2*> m_me;
 
         void OnPositionChanged() {
             m_globalPositionOutdated = true;
@@ -253,19 +253,18 @@ namespace Movement
             assert_state(env != this);
             if (m_Environment == env)
                 return;
+            if (m_Environment)
+                m_Environment->m_binded.delink(m_me);
             if (env) {
-                m_me.delink();
-                env->m_binded.link_last(m_me);
+                env->m_binded.link_first(m_me);
                 m_entity.SetEnvironment(&env->m_entity);
             }
-            else {
-                m_me.delink();
+            else
                 m_entity.SetEnvironment(nullptr);
-            }
             m_Environment = env;
         }
 
-        typedef LinkedList<MovingEntity_Revolvable2*> Entities;
+        typedef LinkedListSimple<MovingEntity_Revolvable2*> Entities;
         const Entities& BindedEntities() const {
             return m_binded;
         }
@@ -324,8 +323,8 @@ namespace Movement
         Vector3 m_RelativePosition;
         LazyRotation m_rotation;
 
-        LinkedList<MovingEntity_Revolvable3*> m_binded;
-        LinkedListElement<MovingEntity_Revolvable3*> m_me;
+        LinkedListSimple<MovingEntity_Revolvable3*> m_binded;
+        LinkedListElementSimple<MovingEntity_Revolvable3*> m_me;
         mutable bool m_globalRotationOutdated;
         mutable bool m_globalPositionOutdated;
         mutable Vector3 m_globalPosition;
@@ -402,19 +401,18 @@ namespace Movement
             assert_state(env != this);
             if (m_Environment == env)
                 return;
+            if (m_Environment)
+                m_Environment->m_binded.delink(m_me);
             if (env) {
-                m_me.delink();
-                env->m_binded.link_last(m_me);
+                env->m_binded.link_first(m_me);
                 m_RelativePosition = (GlobalPosition() - env->GlobalPosition()) * env->GlobalRotation();
             }
-            else {
-                m_me.delink();
+            else
                 m_RelativePosition = GlobalPosition();
-            }
             m_Environment = env;
         }
 
-        typedef LinkedList<MovingEntity_Revolvable3*> Entities;
+        typedef LinkedListSimple<MovingEntity_Revolvable3*> Entities;
         const Entities& BindedEntities() const {
             return m_binded;
         }
