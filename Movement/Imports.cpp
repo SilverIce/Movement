@@ -1,13 +1,10 @@
 #include "Imports.h"
 #include "framework/DelayInit.h"
+#include "framework/gtest.h"
 
 //#include "G3D/Vector3.h"
 #include "framework/typedefs_p.h"
 #include <windows.h>
-
-namespace testing {
-    extern bool RunAllTests();
-}
 
 namespace Movement
 {
@@ -61,9 +58,10 @@ namespace Movement
 
     bool InitModule(const _Imports& ftable)
     {
-        SetupImports(ftable);
         ::delayInit::callCtors();
-        return testing::RunAllTests();
+        bool testRes = testing::runTests(meta<testing::TestInfo>::getListConst());
+        SetupImports(ftable);
+        return testRes;
     }
 }
 

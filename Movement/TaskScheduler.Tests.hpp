@@ -270,7 +270,7 @@ namespace Tasks { namespace detail
 
     #pragma endregion
 
-    void testExecutors(void (*testExecutorFn)(ITaskExecutor2&))
+    void testExecutors(testing::State& testState, void (*testExecutorFn)(testing::State&,ITaskExecutor2&))
     {
         QVector<ITaskExecutor2*> exec;
         produceExecutors(exec);
@@ -278,19 +278,19 @@ namespace Tasks { namespace detail
         EXPECT_TRUE( !exec.empty() );
 
         for(int i = 0; i < exec.size(); ++i)
-            testExecutorFn(*exec[i]);
+            testExecutorFn(testState, *exec[i]);
         qDeleteAll(exec);
     }
 
-    void printExecutorName(ITaskExecutor2& ex){
+    void printExecutorName(testing::State& testState, ITaskExecutor2& ex){
         log_console("%s", typeid(ex).name());
     }
     TEST(TaskExecutorTest, printExecutors) {
         log_console("going to test following executors:");
-        testExecutors(&printExecutorName);
+        testExecutors(testState, &printExecutorName);
     }
 
-    void TaskExecutorTest_basicTest(ITaskExecutor2& executor)
+    void TaskExecutorTest_basicTest(testing::State& testState, ITaskExecutor2& executor)
     {
         TaskTarget target;
         EXPECT_TRUE( !target.hasTaskAttached() );
@@ -301,13 +301,12 @@ namespace Tasks { namespace detail
         executor.CancelTasks(target);
         EXPECT_TRUE( !target.hasTaskAttached() );
     }
-
     TEST(TaskExecutorTest, basicTest)
     {
-        testExecutors(&TaskExecutorTest_basicTest);
+        testExecutors(testState, &TaskExecutorTest_basicTest);
     }
 
-    void TaskExecutorTest_basicTest4(ITaskExecutor2& executor)
+    void TaskExecutorTest_basicTest4(testing::State& testState, ITaskExecutor2& executor)
     {
         struct CallsInfo
         {
@@ -323,8 +322,9 @@ namespace Tasks { namespace detail
 
         struct Fake : public ICallBack {
             CallsInfo& inf;
+            testing::State& testState;
 
-            Fake(CallsInfo& info) : inf(info) {}
+            Fake(CallsInfo& info, testing::State& state) : inf(info), testState(state) {}
 
             ~Fake() {
                 inf.deleteCalled = true;
@@ -341,7 +341,7 @@ namespace Tasks { namespace detail
         {
             CallsInfo info;
             TaskTarget target;
-            executor.AddTask(new Fake(info), 10, &target);
+            executor.AddTask(new Fake(info,testState), 10, &target);
 
             executor.Execute(9);
             EXPECT_TRUE( !info.executed && info.callsCount == 0 );
@@ -356,7 +356,7 @@ namespace Tasks { namespace detail
         {
             CallsInfo info;
             TaskTarget target;
-            executor.AddTask(new Fake(info), 10, &target);
+            executor.AddTask(new Fake(info,testState), 10, &target);
 
             executor.CancelTasks(target);
             EXPECT_TRUE( !info.executed && info.callsCount == 1 && info.deleteCalled );
@@ -370,10 +370,10 @@ namespace Tasks { namespace detail
 
     TEST(TaskExecutorTest, basicTest4)
     {
-        testExecutors(&TaskExecutorTest_basicTest4);
+        testExecutors(testState, &TaskExecutorTest_basicTest4);
     }
 
-    void TaskExecutorTest_pulseTest(ITaskExecutor2& executor)
+    void TaskExecutorTest_pulseTest(testing::State& testState, ITaskExecutor2& executor)
     {
         enum {
             MarkTaskPeriod = 900,
@@ -383,8 +383,10 @@ namespace Tasks { namespace detail
         struct Fake : public ICallBack {
             MSTime lastUpdate;
             bool& allowDeleteCall;
+            testing::State& testState;
 
-            Fake(bool& allowTaskDelete) : allowDeleteCall(allowTaskDelete) {}
+            Fake(bool& allowTaskDelete, testing::State& state)
+                : allowDeleteCall(allowTaskDelete), testState(state) {}
 
             ~Fake() {
                 EXPECT_TRUE( allowDeleteCall == true );
@@ -401,7 +403,7 @@ namespace Tasks { namespace detail
         bool allowTaskDelete = false;
 
         for (int i = 0; i < CountOf(marks); ++i) {
-            marks[i] = new Fake(allowTaskDelete);
+            marks[i] = new Fake(allowTaskDelete, testState);
             executor.AddTask(marks[i].pointer(), 0, &target);
         }
 
@@ -430,10 +432,10 @@ namespace Tasks { namespace detail
 
     TEST(TaskExecutorTest, pulse)
     {
-        testExecutors(&TaskExecutorTest_pulseTest);
+        testExecutors(testState, &TaskExecutorTest_pulseTest);
     }
 
-    void TaskExecutorTest_sequenceTest(ITaskExecutor2& executor)
+    void TaskExecutorTest_sequenceTest(testing::State& testState, ITaskExecutor2& executor)
     {
         struct Fake : public ICallBack {
             char symbol;
@@ -472,14 +474,15 @@ namespace Tasks { namespace detail
 
     TEST(TaskExecutorTest, sequenceTest)
     {
-        testExecutors(&TaskExecutorTest_sequenceTest);
+        testExecutors(testState, &TaskExecutorTest_sequenceTest);
     }
 
-    void TaskExecutorTest_UpdateCounter(ITaskExecutor2& executor)
+    void TaskExecutorTest_UpdateCounter(testing::State& testState, ITaskExecutor2& executor)
     {
         struct Task : public ICallBack {
             uint32 updateCount;
-            explicit Task() : updateCount(0) {}
+            testing::State& testState;
+            explicit Task(testing::State& state) : updateCount(0), testState(state) {}
             void Execute(TaskExecutor_Args& args) {
                 RescheduleTask(args, args.now+1);
                 EXPECT_TRUE(updateCount == args.execTickCount);
@@ -487,7 +490,7 @@ namespace Tasks { namespace detail
             }
         };
         TaskTarget target;
-        executor.AddTask(new Task, 0, &target);
+        executor.AddTask(new Task(testState), 0, &target);
 
         for (uint32 updateCount = 0; updateCount < 4; ++updateCount)
             executor.Execute(updateCount);
@@ -495,10 +498,10 @@ namespace Tasks { namespace detail
         executor.CancelTasks(target);
     }
     TEST(TaskExecutorTest, UpdateCounter) {
-        testExecutors(&TaskExecutorTest_UpdateCounter);
+        testExecutors(testState, &TaskExecutorTest_UpdateCounter);
     }
 
-    void TaskExecutorTest_performance(ITaskExecutor2& ex) {
+    void TaskExecutorTest_performance(testing::State& testState, ITaskExecutor2& ex) {
         TT tester(ex);
         MSTime time;
         do {
@@ -506,9 +509,21 @@ namespace Tasks { namespace detail
         }
         while(tester.Execute(time));
     }
-
     TEST_DISABLED(TaskExecutorTest, performance) {
-        testExecutors(TaskExecutorTest_performance);
+        testExecutors(testState, TaskExecutorTest_performance);
+    }
+
+    void TaskExecutorTest_TickCount(testing::State& testState, ITaskExecutor2& ex) {
+        EXPECT_TRUE( ex.TickCount() == 0 );
+        const MSTime time = 14000;
+        ex.Execute(time);
+        EXPECT_TRUE( time == ex.TickCount() );
+        ex.Execute(time);
+        EXPECT_TRUE( time == ex.TickCount() );
+    }
+    TEST(TaskExecutorTest, TickCount) {
+        testExecutors(testState, TaskExecutorTest_TickCount);
     }
 }
 }
+#endif

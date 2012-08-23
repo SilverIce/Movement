@@ -1,6 +1,7 @@
 #include "Transport.h"
 
 #include "framework/gtest.h"
+#include "framework/DelayInit.h"
 #include "Imports.h"
 #include "TaskScheduler.h"
 

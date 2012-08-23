@@ -35,7 +35,7 @@ namespace Movement
         EXPECT_TRUE( sizeof(f.raw) == sizeof(MoveSplineFlag) );
     }
 
-    void testClientMoveStateSerialization(const ClientMoveState& stateIn)
+    void testClientMoveStateSerialization(testing::State& testState, const ClientMoveState& stateIn)
     {
         ByteBuffer buf;
         PacketBuilder::WriteClientStatus(stateIn, buf);
@@ -69,25 +69,25 @@ namespace Movement
         stateIn.globalPosition = Location(10, 20, 30, 1);
         stateIn.fallTime = 400;
         stateIn.ms_time = 20000;
-        testClientMoveStateSerialization(stateIn);
+        testClientMoveStateSerialization(testState,stateIn);
 
         stateIn.moveFlags.ontransport = true;
         stateIn.relativePosition = Location(1, 2, 3, 1);
         stateIn.transport_seat = 1;
-        testClientMoveStateSerialization(stateIn);
+        testClientMoveStateSerialization(testState,stateIn);
 
         stateIn.moveFlags.falling = true;
         stateIn.jump_horizontalVelocity = 9.f;
         stateIn.jump_verticalVelocity = 8.f;
-        testClientMoveStateSerialization(stateIn);
+        testClientMoveStateSerialization(testState,stateIn);
 
         stateIn.moveFlags.spline_elevation = true;
         stateIn.spline_elevation = 2.f;
-        testClientMoveStateSerialization(stateIn);
+        testClientMoveStateSerialization(testState,stateIn);
 
         stateIn.moveFlags.allow_pitching = true;
         stateIn.pitchAngle = 0.5f;
-        testClientMoveStateSerialization(stateIn);
+        testClientMoveStateSerialization(testState,stateIn);
     }
 
     TEST(MoveSpline, MoveSplineInitArgs)
@@ -144,7 +144,7 @@ namespace Movement
 
     struct MoveSplineInitArgs_Default : public MoveSplineInitArgs
     {
-        explicit MoveSplineInitArgs_Default()
+        explicit MoveSplineInitArgs_Default(testing::State& testState)
         {
             Vector3 nodes[] = {
                 Vector3(-4000.046f,    985.8019f,    61.02531f),
@@ -165,7 +165,7 @@ namespace Movement
 
     struct MoveSplineInitArgs_Cyclic : public MoveSplineInitArgs_Default
     {
-        explicit MoveSplineInitArgs_Cyclic()
+        explicit MoveSplineInitArgs_Cyclic(testing::State& testState) : MoveSplineInitArgs_Default(testState)
         {
             flags.cyclic = true;
             flags.catmullrom = true;
@@ -176,12 +176,12 @@ namespace Movement
     TEST(MoveSpline, basic2)
     {
         MoveSpline mov;
-        MoveSplineInitArgs_Default arg;
+        MoveSplineInitArgs_Default arg(testState);
         mov.Initialize(arg);
 
         struct UpdateResultHandler
         {
-            explicit UpdateResultHandler(MoveSpline& spl) : spline(spl) {
+            explicit UpdateResultHandler(MoveSpline& spl, testing::State& state) : spline(spl), testState(state) {
                 point = spline.currentPathPointIdx();
                 prevResult = MoveSpline::Result_None;
                 receiveCounter = 0;
@@ -191,6 +191,7 @@ namespace Movement
             int32 point;
             MoveSpline::UpdateResult prevResult;
             int32 receiveCounter;
+            testing::State& testState;
 
             void operator()(MoveSpline::UpdateResult res)
             {
@@ -214,7 +215,7 @@ namespace Movement
             }
         };
 
-        UpdateResultHandler hdl(mov);
+        UpdateResultHandler hdl(mov, testState);
 
         while (!mov.Arrived())
         {

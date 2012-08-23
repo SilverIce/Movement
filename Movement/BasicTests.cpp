@@ -88,12 +88,14 @@ namespace Movement
             struct Visitor1 {
                 int m_index;
                 const int * m_values;
-                Visitor1(const int * values) : m_index(0), m_values(values) {}
+                testing::State& testState;
+                Visitor1(const int * values, testing::State& state)
+                    : m_index(0), m_values(values), testState(state) {}
                 void operator()(const int & val) {
                     EXPECT_TRUE(val == m_values[m_index]);
                     ++m_index;
                 }
-            } visitor(values);
+            } visitor(values,testState);
             list.Visit(visitor);
             EXPECT_TRUE(visitor.m_index == CountOf(values) );
         }

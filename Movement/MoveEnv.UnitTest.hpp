@@ -3,7 +3,7 @@
 
 namespace Movement
 {
-    template<class T> void MoveEnv_basic()
+    template<class T> void MoveEnv_basic(testing::State& testState)
     {
         {
             T entity;
@@ -53,7 +53,7 @@ namespace Movement
         }
     };
 
-    template<class T> void MoveEnv_rotation()
+    template<class T> void MoveEnv_rotation(testing::State& testState)
     {
         int testCount = 2;
         while(testCount-- > 0)
@@ -71,7 +71,7 @@ namespace Movement
         }
     }
 
-    template<class T> void MoveEnv_global_returns_same()
+    template<class T> void MoveEnv_global_returns_same(testing::State& testState)
     {
         int testCount = 2;
         while(testCount-- > 0)
@@ -107,22 +107,22 @@ namespace Movement
         }
     }
 
-    template<class T> void MoveEnv_LaunchTests()
+    template<class T> void MoveEnv_LaunchTests(testing::State& testState)
     {
-        MoveEnv_basic<T>();
-        MoveEnv_rotation<T>();
-        MoveEnv_global_returns_same<T>();
+        MoveEnv_basic<T>(testState);
+        MoveEnv_rotation<T>(testState);
+        MoveEnv_global_returns_same<T>(testState);
     }
 
     TEST(MoveEnv, MovingEntity_Revolvable) {
-        MoveEnv_LaunchTests<MovingEntity_Revolvable>();
+        MoveEnv_LaunchTests<MovingEntity_Revolvable>(testState);
     }
 
     TEST(MoveEnv, MovingEntity_Revolvable2) {
-        MoveEnv_LaunchTests<MovingEntity_Revolvable2>();
+        MoveEnv_LaunchTests<MovingEntity_Revolvable2>(testState);
     }
 
     TEST(MoveEnv, MovingEntity_Revolvable3) {
-        MoveEnv_LaunchTests<MovingEntity_Revolvable3>();
+        MoveEnv_LaunchTests<MovingEntity_Revolvable3>(testState);
     }
 }

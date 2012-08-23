@@ -167,10 +167,6 @@
 			Name="delayInit"
 			>
 			<File
-				RelativePath=".\DelayInit.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\DelayInit.h"
 				>
 			</File>
