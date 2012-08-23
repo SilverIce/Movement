@@ -19,9 +19,12 @@ namespace Movement
         TaskTarget m_updateMovementTask;
         TaskTarget m_updateRotationTask;
         ObjectGuid m_targetGuid;
+        FloatParameter m_selectedVelocity;
         QVector<OnEventArgs> events;
 
     private:
+
+        struct OrientationUpdater;
 
         enum{
         /** Spline movement update frequency, milliseconds */
@@ -33,7 +36,7 @@ namespace Movement
         }*/
         MSTime NextUpdateTime() const;
 
-        void PrepareMoveSplineArgs(MoveSplineInitArgs& args, UnitMoveFlag& moveFlag_new);
+        void PrepareMoveSplineArgs(MoveSplineInitArgs& args, UnitMoveFlag& moveFlag_new, FloatParameter& selectedVelocity);
 
         void OnUpdateCallback(TaskExecutor_Args& args);
 
@@ -57,7 +60,8 @@ namespace Movement
             m_owner(nullptr),
             m_listener(nullptr),
             m_updater(nullptr),
-            m_moving(false)
+            m_moving(false),
+            m_selectedVelocity(Parameter_SpeedCustom)
         {
         }
 
@@ -112,5 +116,9 @@ namespace Movement
         UnitMovementImpl& controlled() const {
             return *m_owner;
         }
+
+        /** Relaunches spline movement in case speed was changed.
+            Nothing will happen in case current spline movement is an effect(jump, teleport and etc) */
+        void OnSpeedChanged(FloatParameter speed, float value);
     };
 }

@@ -60,8 +60,7 @@ namespace Movement
             else if (ClientOpcode opcode = ValueChange2Opc_table[value_type].smsg_spline)
             {
                 mov.SetParameter(value_type, value);
-                // FIXME: currently there is no way to change speed of already moving server-side controlled unit (spline movement)
-                // there is only one hacky way - launch new spline movement.. that's how blizz doing this
+                mov.as<MoveSplineUpdatable>().OnSpeedChanged(value_type, value);
 
                 WorldPacket data(opcode, 16);
                 data << mov.Guid.WriteAsPacked();

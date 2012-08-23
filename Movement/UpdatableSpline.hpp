@@ -10,7 +10,7 @@ namespace Movement
     void MoveSplineUpdatable::OnArrived()
     {
         m_moving = false;
-        m_owner->ApplyMoveFlag(UnitMoveFlag::Spline_Enabled, false);
+        m_owner->ApplyMoveFlag(UnitMoveFlag::Spline_Enabled|UnitMoveFlag::Forward, false);
     }
 
     void MoveSplineUpdatable::updateState(int32 recacheDelay)
@@ -89,8 +89,9 @@ namespace Movement
         if (m_owner->HasMode(MoveModeRoot))
             return;
 
+        FloatParameter selectedVelocity;
         UnitMoveFlag moveFlag_new;
-        PrepareMoveSplineArgs(args, moveFlag_new);
+        PrepareMoveSplineArgs(args, moveFlag_new, selectedVelocity);
         if (!args.Validate())
             return;
 
@@ -101,6 +102,7 @@ namespace Movement
         m_updater->CancelTasks(m_updateMovementTask);
         m_updater->AddTask(newTask(this,&MoveSplineUpdatable::OnUpdateCallback), NextUpdateTime(), &m_updateMovementTask);
 
+        m_selectedVelocity = selectedVelocity;
         m_owner->SetMoveFlag(moveFlag_new);
         m_owner->SetParameter(Parameter_SpeedCustom, args.velocity);
 
@@ -109,7 +111,7 @@ namespace Movement
 
     static UInt32Counter movesplineIdGenerator;
 
-    void MoveSplineUpdatable::PrepareMoveSplineArgs(MoveSplineInitArgs& args, UnitMoveFlag& moveFlag_new)
+    void MoveSplineUpdatable::PrepareMoveSplineArgs(MoveSplineInitArgs& args, UnitMoveFlag& moveFlag_new, FloatParameter& selectedVelocity)
     {
         if (IsMoving())
             updateState();
@@ -147,8 +149,12 @@ namespace Movement
         }
 
         // select velocity if was not selected
-        if (args.velocity == 0.f)
-            args.velocity = m_owner->GetParameter(UnitMovementImpl::SelectSpeedType(moveFlag_new & ~UnitMoveFlag::Spline_Enabled));
+        if (args.velocity == 0.f) {
+            selectedVelocity = UnitMovementImpl::SelectSpeedType(moveFlag_new & ~UnitMoveFlag::Spline_Enabled);
+            args.velocity = m_owner->GetParameter(selectedVelocity);
+        }
+        else
+            selectedVelocity = Parameter_SpeedCustom;
     }
 
     void MoveSplineUpdatable::BindOrientationTo(const UnitMovementImpl& target)
@@ -202,5 +208,28 @@ namespace Movement
         m_updater->CancelTasks(m_updateRotationTask);
         m_targetGuid = ObjectGuid();
         //Owner.SetGuidValue(UNIT_FIELD_TARGET, ObjectGuid());
+    }
+
+    void MoveSplineUpdatable::OnSpeedChanged(FloatParameter speed, float velocity)
+    {
+        if (speed != m_selectedVelocity)
+            return;
+
+        updateState();
+
+        if (!IsMoving())
+            return;
+
+        const SplineBase& spline = m_base.getSpline();
+
+        MoveSplineInitArgs args;
+        args.facing = m_base.getFacingInfo();
+        args.splineId = getCurrentMoveId();
+        args.path_Idx_offset = m_base.currentSplinePointIdx();
+        for (int32 idx = m_base.currentSplinePointIdx(); idx <= spline.last(); ++idx)
+            args.path.push_back( spline.getPoint(idx) );
+        Launch(args);
+
+        assert_state( args.path_Idx_offset == m_base.currentPathPointIdx() );
     }
 }

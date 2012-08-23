@@ -91,6 +91,10 @@ namespace Movement
         const Vector3& FinalDestination() const { return spline.getPoint(spline.last());}
         const Vector3& CurrentDestination() const { return spline.getPoint(point_Idx+1);}
         int32 currentPathPointIdx() const;
+        int32 currentSplinePointIdx() const { return point_Idx;}
+
+        const MySpline& getSpline() const { return spline;}
+        const FacingInfo& getFacingInfo() const { return facing;}
 
         void toString(QTextStream& st) const;
     };
