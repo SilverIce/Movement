@@ -1,12 +1,14 @@
 #pragma once
 
+#include "framework/meta.h"
+
 namespace delayInit
 {
     /** This structure should not be used directly by user.
         Also it should be allocated in global scope only. */
+    typedef void (*CTor)();
     struct node
     {
-        typedef void (*CTor)();
         CTor ctor;
         node * next;
 
@@ -23,7 +25,13 @@ namespace delayInit
     // --- BEGIN public API ---
 
     /** Launches delayed initialization. Function asserts that it was not called before. */
-    void callCtors();
+    inline void callCtors() {
+        meta<CTor> * first = meta<CTor>::getListConst().first;
+        while(first) {
+            (*first->info)();
+            first = first->next;
+        }
+    }
 
 #define DELAYED_INIT2(Type, name, ...) \
     static void FuncCtor_##name() { \
@@ -43,10 +51,10 @@ namespace delayInit
     static void FuncCaller_##shortname() { \
         Function(__VA_ARGS__); \
     } \
-    static const ::delayInit::node caller_##shortname(&FuncCaller_##shortname);
+    static const ::meta<::delayInit::CTor> caller_##shortname(&FuncCaller_##shortname);
 
 #define DELAYED_CALL(Function) \
-    static const ::delayInit::node caller_##Function(&Function);
+    static const ::meta<::delayInit::CTor> caller_##Function(&Function);
 
     // --- END public API ---
 }
