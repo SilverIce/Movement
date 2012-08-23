@@ -204,6 +204,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\meta.h"
+			>
+		</File>
+		<File
 			RelativePath=".\pch.cpp"
 			>
 			<FileConfiguration
