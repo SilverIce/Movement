@@ -1,180 +1,82 @@
 #include "gtest.h"
-#include <QtCore/QVector>
-#include <algorithm>
+#include "typedefs_p.h"
 #include <stdio.h>
 #include <intrin.h>
+#include <string>
 
 namespace testing
 {
-    struct TestInfo
-    {
-        TestFn testFn;
-        const char * Name;
-        const char * Name2;
-        bool isFailed;
-
-        static bool Disabled(const TestInfo* info) {
-            return strncmp(info->Name2, "DISABLED", 8) == 0;
-        }
-
-        static TestInfo* create(TestFn testFuntionPtr, const char* name, const char* name2) {
-            TestInfo* test = new TestInfo();
-            test->testFn = testFuntionPtr;
-            test->Name = name;
-            test->Name2 = name2;
-            test->isFailed = false;
-            return test;
-        }
-
-        static bool Compare(const TestInfo* left, const TestInfo* right) {
-            return strcmp(left->Name, right->Name) == -1;
-        }
-
-        static void Delete(TestInfo* test) {
-            delete test;
-        }
-    };
-
-    struct TestRegistry
-    {
-        QVector<TestInfo*> tests;
-
-        ~TestRegistry() {
-            Clear();
-        }
-
-        int totalAmount() {
-            return tests.size();
-        }
-
-        void AddTest(TestInfo* test){
-            tests.push_back(test);
-        }
-
-        void Clear() {
-            qDeleteAll(tests);
-            tests.clear();
-        }
-
-        static TestRegistry& instance() {
-            static TestRegistry reg;
-            return reg;
-        }
-    };
-
-    void RegisterTest(TestFn testFuntionPtr, const char* name, const char* name2)
-    {
-        TestRegistry::instance().AddTest( TestInfo::create(testFuntionPtr,name,name2) );
+    static bool IsDisabled(const TestInfo& info) {
+        const char * text = "DISABLED";
+        return strncmp(info.name2, text, strlen(text)) == 0;
     }
 
     struct Statistics
     {
         //int countTestsFailed;
-        size_t countChecksFailed;
-        size_t countDisabledTests;
-        size_t countFailedTests;
-        size_t countTotalTests;
+        int countChecksFailed;
+        int countDisabledTests;
+        int countFailedTests;
+        int countTotalTests;
 
         explicit Statistics() {
-            countChecksFailed = 0;
-            countDisabledTests = 0;
-            countFailedTests = 0;
-            countTotalTests = 0;
-        }
-
-        void OnCheckFailed() {
-            ++countChecksFailed;
-        }
-        void OnTestFailed() {
-            ++countFailedTests;
+            memset(this, 0, sizeof(*this));
         }
 
         void OnTestsComplete() {
             printf("\n");
-            printf("%u tests failed\n", countFailedTests);
-            printf("%u tests disabled\n", countDisabledTests);
-            printf("%u tests total amount\n", countTotalTests);
+            printf("%d tests failed\n", countFailedTests);
+            printf("%d tests disabled\n", countDisabledTests);
+            printf("%d tests total amount\n", countTotalTests);
         }
     };
 
-    struct TestRunner
+    struct State : public Statistics {
+        bool currentFailed;
+    };
+
+    bool runTests(const meta<TestInfo>::list& list)
     {
-        Statistics statistics;
-        TestInfo *currentTest;
+        State state;
+        const meta<TestInfo> * first = list.first;
+        while(first) {
+            const TestInfo& test = first->info;
+            first = first->next;
 
-        TestRunner() {
-            currentTest = NULL;
-        }
-
-        bool RunAllTests(const QVector<TestInfo*>& tests)
-        {
-            // No need sort tests: their natural order is important. Tests from the same compile unit will be grouped together
-            //std::sort(tests.begin(),tests.end(),TestInfo::Compare);
-            statistics.countDisabledTests = std::count_if(tests.begin(),tests.end(),TestInfo::Disabled);
-            statistics.countTotalTests = tests.size();
-
-            foreach(TestInfo* test, tests)
-                InvokeTest(test);
-
-            statistics.OnTestsComplete();
-
-            return statistics.countFailedTests == 0;
-        }
-
-        void InvokeTest(TestInfo * test)
-        {
-            if (TestInfo::Disabled(test)) {
-                printf("    %s::%s is disabled\n", test->Name, test->Name2);
-                return;
+            state.currentFailed = false;
+            ++state.countTotalTests;
+            if (IsDisabled(test)) {
+                printf("    %s::%s is disabled\n", test.name, test.name2);
+                ++state.countDisabledTests;
+                continue;
             }
 
-            currentTest = test;
-            printf("    %s::%s has been invoked\n", test->Name, test->Name2);
-            {
-                EXPECT_NOTHROW( test->testFn() );
+            printf("    %s::%s has been invoked\n", test.name, test.name2);
+            try {
+                test.function(state);
+            } catch(...) {
+                ::testing::check(state, false, __FUNCTION__, "test throws exception"); \
             }
-            currentTest = NULL;
 
-            if (test->isFailed)
-                printf("    %s::%s has been failed!\n", test->Name, test->Name2);
+            if (state.currentFailed)
+                printf("    %s::%s has been failed!\n", test.name, test.name2);
         }
+        return state.countFailedTests == 0;
+    }
 
-        void OnCheckFailed()
-        {
-            statistics.OnCheckFailed();
-            if (!currentTest->isFailed) {
-                currentTest->isFailed = true;
-                statistics.OnTestFailed();
-            }
-        }
-
-        static TestRunner& instance() {
-            static TestRunner reg;
-            return reg;
-        }
-    };
-
-    bool BREAK_ON_TEST_FAIL = true;
-    bool DETAILED_OUTPUT = true;
-
-    void _check(bool result, const char* source, const char* expression)
+    void check(State& teststate, bool result, const char* source, const char* expression)
     {
         if (result)
             return;
 
         printf("In '%s': expression '%s' failed!\n", source, expression);
 
-        TestRunner::instance().OnCheckFailed();
-        if (BREAK_ON_TEST_FAIL)
-            __debugbreak();
-    }
-
-    /** Returns true in case all tests succeed */
-    bool RunAllTests()
-    {
-        bool succeed = TestRunner::instance().RunAllTests(TestRegistry::instance().tests);
-        TestRegistry::instance().Clear();
-        return succeed;
+        ++teststate.countChecksFailed;
+        if (!teststate.currentFailed) {
+            teststate.currentFailed = true;
+            ++teststate.countFailedTests;
+        }
+        __debugbreak();
     }
 
     TEST(gtest, test_self)
