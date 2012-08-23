@@ -180,7 +180,7 @@ void SplineBase::InitLinear(const Vector3* controls, index_type count, bool cycl
     memcpy(&points[0],controls, sizeof(Vector3) * count);
 
     // first and last two indexes are space for special 'virtual points'
-    // these points are required for proper C_Evaluate and C_Evaluate_Derivative methtod work
+    // these points are required for proper C_Evaluate and C_Evaluate_Derivative method work
     if (cyclic)
         points[count] = controls[cyclic_point];
     else
@@ -192,6 +192,7 @@ void SplineBase::InitLinear(const Vector3* controls, index_type count, bool cycl
 
 void SplineBase::InitCatmullRom(const Vector3* controls, index_type count, bool cyclic, index_type cyclic_point)
 {
+    mov_assert(count >= 2);
     const int real_size = count + (cyclic ? (1+2) : (1+1));
 
     points.resize(real_size);

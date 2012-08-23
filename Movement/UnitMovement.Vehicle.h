@@ -1,5 +1,6 @@
 namespace Movement
 {
+    // Should movement system contain a vehicles?
     class VehicleImpl : public Component, public OnPassengerDestroy
     {
         COMPONENT_TYPEID(VehicleImpl);
@@ -181,6 +182,11 @@ namespace Movement
             }
         }
 
+        static void NotImplemented(ClientImpl& client, WorldPacket& data)
+        {
+            ;
+        }
+
         static void Register()
         {
             ASSIGN_HANDLER(&ChangeSeats,
@@ -191,7 +197,7 @@ namespace Movement
 
             ASSIGN_HANDLER(&Dismiss, CMSG_DISMISS_CONTROLLED_VEHICLE);
 
-            ASSIGN_HANDLER(&ClientImpl::OnNotImplementedMessage,
+            ASSIGN_HANDLER(&NotImplemented,
                 CMSG_SET_VEHICLE_REC_ID_ACK,
                 CMSG_REQUEST_VEHICLE_EXIT,
                 CMSG_RIDE_VEHICLE_INTERACT);

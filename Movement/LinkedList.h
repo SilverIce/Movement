@@ -22,29 +22,21 @@
 namespace Movement
 {
 
-template<typename AbstractNode>
+template<class DerivedType>
 class LinkedListNodeBase
 {
-    friend class LinkedListNodeBase;
 private:
     LinkedListNodeBase(const LinkedListNodeBase&);
     LinkedListNodeBase& operator = (const LinkedListNodeBase&);
 
 protected:
 
-    typedef typename AbstractNode* DerivedNode;
-
     LinkedListNodeBase() {
         next = prev = 0;
     }
 
-    LinkedListNodeBase(DerivedNode prevNode, DerivedNode nextNode) {
-        next = nextNode;
-        prev = prevNode;
-    }
-
-    DerivedNode next;
-    DerivedNode prev;
+    DerivedType* next;
+    DerivedType* prev;
 
     bool linked() const { return next && prev;}
 
@@ -54,40 +46,40 @@ protected:
         next = prev = 0;
     }
 
-    static void insert_between(DerivedNode prev, DerivedNode el, DerivedNode next)
+    static void insert_between(DerivedType* prev, DerivedType* el, DerivedType* next)
     {
         connect(prev, el);
         connect(el, next);
     }
 
-    static void connect(DerivedNode left, DerivedNode right)
+    static void connect(DerivedType* left, DerivedType* right)
     {
         left->next = right;
         right->prev = left;
     }
 
     // inserts element 'el' before 'me' element
-    static void insert_before(DerivedNode me, DerivedNode el)
+    static void insert_before(DerivedType* me, DerivedType* el)
     {
         connect(me->prev, el);
         connect(el, me);
     }
 
     // inserts element 'el' after 'me' element
-    static void insert_after(DerivedNode me, DerivedNode el)
+    static void insert_after(DerivedType* me, DerivedType* el)
     {
         connect(me, el);
         connect(el, me->next);
     }
 };
 
-template<class T> class LinkedList;
+template<class,class> class LinkedList;
 
 template<class T>
 class LinkedListElement : private LinkedListNodeBase<LinkedListElement<T> >
 {
     typedef LinkedListNodeBase<LinkedListElement<T> > BasicType;
-    typedef LinkedList<T> ListType;
+    typedef LinkedList<T, LinkedListElement<T> > ListType;
 public:
 
     typedef T value_type;
@@ -114,7 +106,7 @@ public:
         return (_container != 0 && this != _container->_first) ? prev : 0;
     }
 
-    LinkedList<T>& List() const { return *_container;}
+    ListType& List() const { return *_container;}
 
     void delink() {
         if (_container)
@@ -129,7 +121,7 @@ private:
     void InsertBetween(LinkedListElement* previousNode, LinkedListElement* nextNode, ListType* list)
     {
         ensureBlankNode();
-        BasicType::insert_between(previousNode, this, nextNode);
+        insert_between(previousNode, this, nextNode);
         _container = list;
     }
 
@@ -151,17 +143,21 @@ private:
         assert_state(!linked() && !_container);
     }
 
+    void ensureLinkedWith(ListType * list) {
+        assert_state(linked() && _container == list);
+    }
+
 private:
     ListType * _container;
 };
 
-template<class T >
+template<class T, class NodeType = LinkedListElement<T> >
 class LinkedList
 {
 public:
 
-    typedef LinkedListElement<T> element_type;
-    typedef T value_type;
+    typedef NodeType element_type;
+    typedef typename NodeType::value_type value_type;
 
     LinkedList() : _first(NULL), _count(0) {
     }
@@ -170,11 +166,11 @@ public:
         assert_state( empty() );
     }
 
-    element_type* first() {
+    element_type* first() const {
         return _first;
     }
 
-    element_type* last() {
+    element_type* last() const {
         return (_first != 0) ? _first->prev : 0;
     }
 
@@ -228,7 +224,7 @@ public:
 
     void delink(element_type & node)
     {
-        assert_state(node.linked() && node._container == this);
+        node.ensureLinkedWith(this);
         --_count;
         if (_count == 0)
             _first = NULL;
@@ -266,7 +262,7 @@ public:
 
 private:
 
-    friend class element_type;
+    friend typename NodeType;
 
     element_type * _first;
     uint32 _count;
@@ -274,5 +270,4 @@ private:
     LinkedList& operator = (const LinkedList&);
     LinkedList(const LinkedList&);
 };
-
 }
