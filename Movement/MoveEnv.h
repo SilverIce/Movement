@@ -84,7 +84,7 @@ namespace Movement
         {
         }
 
-        const G3D::Matrix3& relativeRotation() const {
+        const G3D::Matrix3& Matrix() const {
             if (!m_matrixUpdated) {
                 m_rotation = G3D::Matrix3::fromEulerAnglesZXY(m_Yaw, m_Pitch, m_Roll);
                 m_matrixUpdated = true;
@@ -142,10 +142,10 @@ namespace Movement
     private:
         MovingEntity m_entity;
 
-        using LazyRotation::relativeRotation;
+        using LazyRotation::Matrix;
 
         void ComputeGlobalPosition(Vector3& outGlobal) override {
-            outGlobal = relativeRotation() * outGlobal + m_entity.Position;
+            outGlobal = Matrix() * outGlobal + m_entity.Position;
 
             if (m_entity.Environment() != nullptr)
                 m_entity.Environment()->ComputeGlobalPosition(outGlobal);
@@ -154,10 +154,10 @@ namespace Movement
         void ComputeGlobalRotation(G3D::Matrix3& rotation) {
             if (MovingEntity_Revolvable * env = Environment()) {
                 env->ComputeGlobalRotation(rotation);
-                rotation *= relativeRotation();
+                rotation *= Matrix();
             }
             else
-                rotation = relativeRotation();
+                rotation = Matrix();
         }
 
         void ComputeLocalPosition(Vector3& outLocal) override {
@@ -362,11 +362,11 @@ namespace Movement
         const G3D::Matrix3& GlobalRotation() const
         {
             if (!Environment())
-                return m_rotation.relativeRotation();
+                return m_rotation.Matrix();
 
             if (m_globalRotationOutdated) {
                 m_globalRotationOutdated = false;
-                m_globalRotation = Environment()->GlobalRotation() * m_rotation.relativeRotation();
+                m_globalRotation = Environment()->GlobalRotation() * m_rotation.Matrix();
             }
             return m_globalRotation;
         }
