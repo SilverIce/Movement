@@ -61,6 +61,7 @@ namespace testing
             if (state.currentFailed)
                 printf("    %s::%s has been failed!\n", test.name, test.name2);
         }
+        state.OnTestsComplete();
         return state.countFailedTests == 0;
     }
 
