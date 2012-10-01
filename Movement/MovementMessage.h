@@ -18,7 +18,7 @@ namespace Movement
     public:
         typedef const UnitMovementImpl* MessageSource;
     private:
-        WorldPacket m_packet;
+        Packet m_packet;
         MessageSource m_source;
         MSTime original_time;
         uint32 time_position;
@@ -50,7 +50,7 @@ namespace Movement
 
         /* Message's source. It might be deleted: unsafe to call his functions, access to his fields */
         MessageSource Source() const { return m_source;}
-        const WorldPacket& Packet() const { return m_packet;}
+        const Packet& Packet() const { return m_packet;}
         MSTime OrigTime() const { return original_time;}
         void CorrectTimeStamp(MSTime ms_time)
         {

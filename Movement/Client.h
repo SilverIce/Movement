@@ -9,12 +9,12 @@
 #pragma once
 #include "framework/typedefs.h"
 
-class WorldPacket;
 template<typename> class QVector;
 
 namespace Movement
 {
     class MovementMessage;
+    struct PacketData;
 
     /** Represents an object that controls UnitMovement objects.
         The main purpose - handle incoming movement packets
@@ -35,8 +35,19 @@ namespace Movement
         /** Receives movement messages from all visible clients */
         void SendMoveMessage(MovementMessage& message) const;
         /** Handles messages from this client */
-        void OnMovementMessage(WorldPacket& message);
+        void OnMovementMessage(const PacketData& message);
 
         static void FillSubscribeList(QVector<uint16>& opcodes);
+    };
+
+    struct PacketData
+    {
+        const uint8 *bytes;
+        uint32 byteCount;
+        uint16 opcode;
+
+        PacketData(uint16 Opcode, const uint8* Bytes, uint32 ByteCount)
+            : bytes(Bytes), byteCount(ByteCount), opcode(Opcode)
+        {}
     };
 }

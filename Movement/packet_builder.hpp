@@ -11,7 +11,7 @@ namespace Movement
         MonsterMoveFacingAngle  = 4
     };
 
-    void PacketBuilder::WriteCommonMonsterMovePart(const UnitMovementImpl& mov, WorldPacket& data)
+    void PacketBuilder::WriteCommonMonsterMovePart(const UnitMovementImpl& mov, Packet& data)
     {
         const MoveSpline& move_spline = mov.as<MoveSplineUpdatable>().moveSpline();
         MoveSplineFlag splineflags = move_spline.splineflags;
@@ -21,7 +21,7 @@ namespace Movement
             data.SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
             data << mov.Guid.WriteAsPacked();
             data << passenger->TransportGuid().WriteAsPacked();
-            data << (int8)passenger->SeatId();
+            data.writeInt8(passenger->SeatId());
         }
         else
         {
@@ -29,45 +29,45 @@ namespace Movement
             data << mov.Guid.WriteAsPacked();
         }
 
-        data << uint8(0);       // boolean variable. toggles UnitMoveFlag::Unk4 flag
+        data.writeInt8(0);
         data << mov.RelativePosition();
-        data << move_spline.GetId();
+        data.writeUInt32(move_spline.GetId());
 
         switch(splineflags & MoveSplineFlag::Mask_Final_Facing)
         {
         default:
-            data << uint8(MonsterMoveNormal);
+            data.writeUInt8(MonsterMoveNormal);
             break;
         case MoveSplineFlag::Final_Target:
-            data << uint8(MonsterMoveFacingTarget);
-            data << move_spline.facing.target;
+            data.writeUInt8(MonsterMoveFacingTarget);
+            data.writeUInt64(move_spline.facing.target);
             break;
         case MoveSplineFlag::Final_Angle:
-            data << uint8(MonsterMoveFacingAngle);
-            data << move_spline.facing.angle;
+            data.writeUInt8(MonsterMoveFacingAngle);
+            data.writeSingle(move_spline.facing.angle);
             break;
         case MoveSplineFlag::Final_Point:
-            data << uint8(MonsterMoveFacingSpot);
+            data.writeUInt8(MonsterMoveFacingSpot);
             data << move_spline.facing.x << move_spline.facing.y << move_spline.facing.z;
             break;
         }
 
         // add fake Enter_Cycle flag - needed for client-side cyclic movement (client will erase first spline vertex after first cycle done)
         splineflags.enter_cycle = move_spline.isCyclic();
-        data << uint32(splineflags & ~MoveSplineFlag::Mask_No_Monster_Move);
+        data.writeUInt32(splineflags & ~MoveSplineFlag::Mask_No_Monster_Move);
 
         if (splineflags.animation)
         {
-            data << splineflags.getAnimationId();
-            data << move_spline.effect_start_time;
+            data.writeUInt8(splineflags.getAnimationId());
+            data.writeInt32(move_spline.effect_start_time);
         }
 
-        data << move_spline.timeTotal();
+        data.writeInt32(move_spline.timeTotal());
 
         if (splineflags.parabolic)
         {
-            data << move_spline.vertical_acceleration;
-            data << move_spline.effect_start_time;
+            data.writeSingle(move_spline.vertical_acceleration);
+            data.writeInt32(move_spline.effect_start_time);
         }
     }
 
@@ -91,7 +91,7 @@ namespace Movement
                 packed |= (int32(offset.x / 0.25f) & 0x7FF);
                 packed |= (int32(offset.y / 0.25f) & 0x7FF) << 11;
                 packed |= (int32(offset.z / 0.25f) & 0x3FF) << 22;
-                data << packed;
+                data.writeUInt32(packed);
             }
         }
     }
@@ -100,7 +100,7 @@ namespace Movement
     {
         // first point(index 1) already appended, zero and last fake points are never appended at all
         uint32 count = spline.rawPoints().size() - 3;
-        data << count;
+        data.writeUInt32(count);
         data.append<Vector3>(&spline.rawPoints()[2], count);
     }
 
@@ -133,7 +133,7 @@ namespace Movement
 
     void PacketBuilder::SplinePathSend(const UnitMovementImpl& mov)
     {
-        WorldPacket data(MSG_NULL_ACTION, 64);
+        Packet data(MSG_NULL_ACTION, 64);
         WriteCommonMonsterMovePart(mov, data);
 
         const MoveSpline& move_spline = mov.as<MoveSplineUpdatable>().moveSpline();
@@ -149,7 +149,7 @@ namespace Movement
         else
             WriteLinearPath(spline, data);
 
-        Imports.BroadcastMessage(mov.Owner, data);
+        Imports.BroadcastMessage(mov.Owner, data.toPacketData());
     }
 
     void PacketBuilder::FullUpdate(const UnitMovementImpl& mov, ByteBuffer& data)
@@ -165,36 +165,36 @@ namespace Movement
             const MoveSpline& move_spline = mov.as<MoveSplineUpdatable>().moveSpline();
             MoveSplineFlag splineFlags = move_spline.splineflags;
 
-            data << splineFlags.raw;
+            data.writeInt32(splineFlags.raw);
 
             if (splineFlags.final_angle)
             {
-                data << move_spline.facing.angle;
+                data.writeSingle(move_spline.facing.angle);
             }
             else if (splineFlags.final_target)
             {
-                data << move_spline.facing.target;
+                data.writeUInt64(move_spline.facing.target);
             }
             else if(splineFlags.final_point)
             {
                 data << move_spline.facing.x << move_spline.facing.y << move_spline.facing.z;
             }
 
-            data << move_spline.timePassed();
-            data << move_spline.timeTotal();
-            data << move_spline.GetId();
+            data.writeInt32(move_spline.timePassed());
+            data.writeInt32(move_spline.timeTotal());
+            data.writeUInt32(move_spline.GetId());
 
-            data << float(1.f);//splineInfo.duration_mod;
-            data << float(1.f);//splineInfo.duration_mod_next;
+            data.writeSingle(1.f);//splineInfo.duration_mod;
+            data.writeSingle(1.f);//splineInfo.duration_mod_next;
 
-            data << move_spline.vertical_acceleration;
-            data << move_spline.effect_start_time;
+            data.writeSingle(move_spline.vertical_acceleration);
+            data.writeInt32(move_spline.effect_start_time);
 
             int32 pointCount = move_spline.spline.rawPoints().size();
             assert_state(pointCount >= 3);
-            data << pointCount;
+            data.writeInt32(pointCount);
             data.append<Vector3>(move_spline.spline.rawPoints().constData(), pointCount);
-            data << uint8(move_spline.spline.mode());
+            data.writeUInt8(move_spline.spline.mode());
             data << (move_spline.isCyclic() ? Vector3() : move_spline.FinalDestination());
         }
     }
@@ -310,17 +310,17 @@ namespace Movement
     void PacketBuilder::SplineSyncSend(const UnitMovementImpl& mov)
     {
         const MoveSpline& move_spline = mov.as<MoveSplineUpdatable>().moveSpline();
-        WorldPacket data(SMSG_FLIGHT_SPLINE_SYNC, 13);
+        Packet data(SMSG_FLIGHT_SPLINE_SYNC, 13);
         data << (float)(move_spline.timePassed() / (float)move_spline.timeTotal());
         data << mov.Guid.WriteAsPacked();
-        Imports.BroadcastMessage(mov.Owner, data);
+        Imports.BroadcastMessage(mov.Owner, data.toPacketData());
     }
 
     void PacketBuilder::Send_HeartBeat(const UnitMovementImpl& mov)
     {
-        WorldPacket data(MSG_MOVE_HEARTBEAT, 64);
+        Packet data(MSG_MOVE_HEARTBEAT, 64);
         data << mov.Guid.WriteAsPacked();
         WriteClientStatus(CreateMoveState(mov), data);
-        Imports.BroadcastMessage(mov.Owner, data);
+        Imports.BroadcastMessage(mov.Owner, data.toPacketData());
     }
 }

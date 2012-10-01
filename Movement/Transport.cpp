@@ -57,6 +57,8 @@ namespace Movement
     };
 }
 
+using Movement::uint32;
+
 struct TaxiPathNodeEntry
 {
     enum eActionFlag {

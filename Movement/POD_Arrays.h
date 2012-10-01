@@ -26,6 +26,28 @@ namespace Tasks { namespace detail
             _capacity = 0;
         }
 
+        size_t size() const {
+            return _size;
+        }
+
+        bool empty() const {
+            return _size == 0;
+        }
+
+        size_t capacity() const {
+            return _capacity;
+        }
+
+        char& operator [] (size_t index) {
+            _assertInRange(index);
+            return *(_data + index);
+        }
+
+        const char& operator [] (size_t index) const {
+            _assertInRange(index);
+            return *(_data + index);
+        }
+
         void resize(size_t size) {
             reserve(size);
             _size = size;
@@ -38,7 +60,8 @@ namespace Tasks { namespace detail
         void reserve(size_t capacity) {
             if (capacity > _capacity) {
                 char * mem = (char*)operator new(capacity);
-                memcpy(mem, _data, _size);
+                if (_data != nullptr)
+                    memcpy(mem, _data, _size);
                 setElements(mem, capacity);
             }
         }

@@ -37,7 +37,7 @@ namespace Movement
             m_value_type(value_type),
             m_value(value)
         {
-            WorldPacket data(ValueChange2Opc_table[value_type].smsg_request, 32);
+            Packet data(ValueChange2Opc_table[value_type].smsg_request, 32);
             data << client->controlled()->Guid.WriteAsPacked();
             data << requestId();
             if (m_value_type == Parameter_SpeedRun)
@@ -62,15 +62,15 @@ namespace Movement
                 mov.SetParameter(value_type, value);
                 mov.as<MoveSplineUpdatable>().OnSpeedChanged(value_type, value);
 
-                WorldPacket data(opcode, 16);
+                Packet data(opcode, 16);
                 data << mov.Guid.WriteAsPacked();
                 data << value;
-                Imports.BroadcastMessage(mov.Owner, data);
+                Imports.BroadcastMessage(mov.Owner, data.toPacketData());
             }
         }
 
     private:
-        virtual bool OnReply(ClientImpl * client, WorldPacket& data) override
+        virtual bool OnReply(ClientImpl * client, Packet& data) override
         {
             ClientMoveStateChange client_state;
             ObjectGuid guid;
@@ -207,9 +207,9 @@ namespace Movement
                         MoveSplineInit(mov).Launch();
 
                     mov.ApplyMoveFlag(modeInfo[mode].moveFlag, apply);
-                    WorldPacket data(opcode, 12);
+                    Packet data(opcode, 12);
                     data << mov.Guid.WriteAsPacked();
-                    Imports.BroadcastMessage(mov.Owner, data);
+                    Imports.BroadcastMessage(mov.Owner, data.toPacketData());
                 }
                 else
                     log_function("no opcode for mode %u", mode);
@@ -217,7 +217,7 @@ namespace Movement
         }
 
     private:
-        virtual bool OnReply(ClientImpl * client, WorldPacket& data) override
+        virtual bool OnReply(ClientImpl * client, Packet& data) override
         {
             ClientMoveStateChange client_state;
             ObjectGuid guid;
@@ -289,7 +289,7 @@ namespace Movement
         }
 
     private:
-        virtual bool OnReply(ClientImpl * client, WorldPacket& data) override
+        virtual bool OnReply(ClientImpl * client, Packet& data) override
         {
             ObjectGuid guid;
             uint32 client_req_id;
@@ -317,7 +317,7 @@ namespace Movement
         float m_horizontalVelocity;
         float m_verticalVelocity;
 
-        bool OnReply(ClientImpl * client, WorldPacket& data) override
+        bool OnReply(ClientImpl * client, Packet& data) override
         {
             ObjectGuid guid;
             uint32 requestId;
@@ -368,7 +368,7 @@ namespace Movement
             // in WoW all landing forces has positive sign and all lift off forces - negative
             m_verticalVelocity = -verticalVelocity;
 
-            WorldPacket data(SMSG_MOVE_KNOCK_BACK, 32);
+            Packet data(SMSG_MOVE_KNOCK_BACK, 32);
             data << client.controlled()->Guid.WriteAsPacked();
             data << requestId();
             data << m_direction2d.x;
@@ -406,14 +406,13 @@ namespace Movement
 
     void registerGenericMovementHandlers()
     {
-        HandlersHolder::assignHandler(&ClientImpl::OnMoveTimeSkipped, CMSG_MOVE_TIME_SKIPPED);
+        ASSIGN_HANDLER(&ClientImpl::OnMoveTimeSkipped, CMSG_MOVE_TIME_SKIPPED);
 
         for (uint32 i = 0; i < CountOf(ValueChange2Opc_table); ++i)
-            HandlersHolder::assignHandler(&RespHandler::OnResponse, ValueChange2Opc_table[i].cmsg_response);
+            ASSIGN_HANDLER(&RespHandler::OnResponse, ValueChange2Opc_table[i].cmsg_response);
 
         for (uint32 i = 0; i < CountOf(modeInfo); ++i) {
-            HandlersHolder::assignHandler(&RespHandler::OnResponse, modeInfo[i].cmsg_ack[0]);
-            HandlersHolder::assignHandler(&RespHandler::OnResponse, modeInfo[i].cmsg_ack[1]);
+            ASSIGN_HANDLER(&RespHandler::OnResponse, modeInfo[i].cmsg_ack[0], modeInfo[i].cmsg_ack[1]);
         }
 
         ASSIGN_HANDLER(&RespHandler::OnResponse,
@@ -450,9 +449,9 @@ namespace Movement
             CMSG_MOVE_CHNG_TRANSPORT,
             MSG_MOVE_START_DESCEND);
 
-        HandlersHolder::assignHandler(&ClientImpl::OnSplineDone, CMSG_MOVE_SPLINE_DONE);
-        HandlersHolder::assignHandler(&ClientImpl::OnNotActiveMover, CMSG_MOVE_NOT_ACTIVE_MOVER);
-        HandlersHolder::assignHandler(&ClientImpl::OnActiveMover, CMSG_SET_ACTIVE_MOVER);
+        ASSIGN_HANDLER(&ClientImpl::OnSplineDone, CMSG_MOVE_SPLINE_DONE);
+        ASSIGN_HANDLER(&ClientImpl::OnNotActiveMover, CMSG_MOVE_NOT_ACTIVE_MOVER);
+        ASSIGN_HANDLER(&ClientImpl::OnActiveMover, CMSG_SET_ACTIVE_MOVER);
     }
     DELAYED_CALL(registerGenericMovementHandlers);
 }

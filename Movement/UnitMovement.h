@@ -5,8 +5,8 @@
 #include "Movement/MoveSplineInit.h"
 
 class WorldObject;
-class ByteBuffer;
 
+class QByteArray;
 class QString;
 
 namespace Tasks {
@@ -122,7 +122,7 @@ namespace Movement
         float GetSpeed(SpeedType speed);
         float GetCurrentSpeed();
 
-        void WriteCreate(ByteBuffer& buf);
+        QByteArray WriteCreate();
 
         /** For testing */
         uint32 dbg_flags;

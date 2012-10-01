@@ -212,6 +212,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Movement\LinkedListSimple.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Movement\MoveEnv.h"
 				>
 			</File>
@@ -486,6 +490,10 @@
 		</File>
 		<File
 			RelativePath="..\Movement\MoveSplineInit.h"
+			>
+		</File>
+		<File
+			RelativePath="..\Movement\Transport.h"
 			>
 		</File>
 		<File

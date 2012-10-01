@@ -16,7 +16,7 @@
 #include <typeinfo>
 
 //#include "Object.h"
-#include "WorldPacket.h"
+#include "Packet.h"
 #include "opcodes.h"
 
 #include "MoveSpline.h"
@@ -210,9 +210,11 @@ namespace Movement
         ModeChangeEffect::Launch(m->unit, mode, apply);
     }
 
-    void UnitMovement::WriteCreate(ByteBuffer& buf)
+    QByteArray UnitMovement::WriteCreate()
     {
+        ByteBuffer buf(128);
         PacketBuilder::FullUpdate(m->unit, buf);
+        return QByteArray(buf.contents(), buf.size());
     }
 
     void UnitMovement::SetListener(class IListener * listener)

@@ -7,18 +7,18 @@
 
 #pragma once
 
-class ByteBuffer;
-class WorldPacket;
 
 namespace Movement
 {
+    class ByteBuffer;
+    class Packet;
     class UnitMovementImpl;
     struct ClientMoveState;
     template<class T> class Spline;
 
     class PacketBuilder
     {
-        static void WriteCommonMonsterMovePart(const UnitMovementImpl& mov, WorldPacket& data);
+        static void WriteCommonMonsterMovePart(const UnitMovementImpl& mov, Packet& data);
         static void WriteLinearPath(const Spline<int32>& spline, ByteBuffer& data);
         static void WriteCatmullRomPath(const Spline<int32>& spline, ByteBuffer& data);
         static void WriteCatmullRomCyclicPath(const Spline<int32>& spline, ByteBuffer& data);

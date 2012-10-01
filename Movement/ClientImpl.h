@@ -8,11 +8,11 @@
 
 #pragma once
 
-class ByteBuffer;
-class WorldPacket;
 
 namespace Movement
 {
+    class ByteBuffer;
+    class Packet;
     class MovementMessage;
     class UnitMovementImpl;
     class RespHandler;
@@ -71,14 +71,15 @@ namespace Movement
             Imports.BroadcastMoveMessage(m_controlled->Owner, msg);
         }
 
-        void BroadcastMessage(WorldPacket& data) const {
+        void BroadcastMessage(const Packet& data) const {
             assert_state(data.GetOpcode() != MSG_NULL_ACTION);
-            Imports.BroadcastMessage(m_controlled->Owner, data);
+            Imports.BroadcastMessage(m_controlled->Owner, data.toPacketData());
         }
 
-        void SendPacket(const WorldPacket& data) const {
+        void SendPacket(const Packet& data) const {
+            log_debug("server sends: %s", OpcodeName((ClientOpcode)data.GetOpcode()));
             assert_state(data.GetOpcode() != MSG_NULL_ACTION);
-            Imports.SendPacket(m_socket, data);
+            Imports.SendPacket(m_socket, data.toPacketData());
         }
 
         void CleanReferences();
@@ -97,29 +98,22 @@ namespace Movement
 
     public:
 
-        static void OnCommonMoveMessage(ClientImpl& client, WorldPacket& recv_data);
-        static void OnMoveTimeSkipped(ClientImpl& client, WorldPacket & recv_data);
-        static void OnNotImplementedMessage(ClientImpl& client, WorldPacket& data);
-        static void OnSplineDone(ClientImpl& client, WorldPacket& data);
-        static void OnNotActiveMover(ClientImpl& client, WorldPacket& data);
-        static void OnActiveMover(ClientImpl& client, WorldPacket& data);
+        static void OnCommonMoveMessage(ClientImpl& client, Packet& recv_data);
+        static void OnMoveTimeSkipped(ClientImpl& client, Packet & recv_data);
+        static void OnNotImplementedMessage(ClientImpl& client, Packet& data);
+        static void OnSplineDone(ClientImpl& client, Packet& data);
+        static void OnNotActiveMover(ClientImpl& client, Packet& data);
+        static void OnActiveMover(ClientImpl& client, Packet& data);
     };
 
     class HandlersHolder
     {
     public:
-        typedef void (*Handler)(ClientImpl&, WorldPacket& msg);
+        typedef void (*Handler)(ClientImpl&, Packet& msg);
         typedef QHash<ClientOpcode, Handler> HandlerMap;
 
     private:
         HandlerMap handlers;
-
-        explicit HandlersHolder() {}
-
-        static HandlersHolder& instance() {
-            static HandlersHolder _instance;
-            return _instance;
-        }
 
         static Handler getHandler(ClientOpcode opcode) {
             return instance().handlers.value(opcode, nullptr);
@@ -127,7 +121,12 @@ namespace Movement
 
     public:
 
-        static void InvokeHander(ClientImpl& client, WorldPacket& msg)
+        static HandlersHolder& instance() {
+            static HandlersHolder _instance;
+            return _instance;
+        }
+
+        void InvokeHander(ClientImpl& client, Packet& msg)
         {
             ClientOpcode opcode = (ClientOpcode)msg.GetOpcode();
             Handler hdl = getHandler(opcode);
@@ -136,14 +135,14 @@ namespace Movement
             ensureParsed(msg);
         }
 
-        static void FillSubscribeList(QVector<uint16>& opcodes)
+        void FillSubscribeList(QVector<uint16>& opcodes)
         {
             assert_state_msg(!instance().handlers.empty(), "bad news, no handlers binded");
             foreach(ClientOpcode opcode, instance().handlers.keys())
                 opcodes += (uint16)opcode;
         }
 
-        static void ensureParsed(const WorldPacket& msg)
+        void ensureParsed(const Packet& msg)
         {
             if (msg.size() != msg.rpos())
             {
@@ -152,7 +151,7 @@ namespace Movement
             }
         }
 
-        static void assignHandler(Handler hdl, ClientOpcode opcode) {
+        void assignHandler(Handler hdl, ClientOpcode opcode) {
             if (opcode == MSG_NULL_ACTION)
                 return;
             Handler handler = getHandler(opcode);
@@ -161,7 +160,7 @@ namespace Movement
             instance().handlers.insert(opcode, hdl);
         }
 
-        static void assignHandler(Handler hdl, const ClientOpcode * opcodes, uint32 count) {
+        void assignHandler(Handler hdl, const ClientOpcode * opcodes, uint32 count) {
             for (uint32 i = 0; i < count; ++i)
                 assignHandler(hdl, opcodes[i]);
         }
@@ -169,7 +168,7 @@ namespace Movement
 
 #define ASSIGN_HANDLER(MessageHanger, ... ) { \
         ::Movement::ClientOpcode opcodes[] = {__VA_ARGS__}; \
-        ::Movement::HandlersHolder::assignHandler(MessageHanger, opcodes, CountOf(opcodes)); \
+        ::Movement::HandlersHolder::instance().assignHandler(MessageHanger, opcodes, CountOf(opcodes)); \
     }
 
     class RespHandler : public ICallBack
@@ -201,13 +200,13 @@ namespace Movement
         }
 
     protected:
-        virtual bool OnReply(ClientImpl * client, WorldPacket& data) = 0;
+        virtual bool OnReply(ClientImpl * client, Packet& data) = 0;
 
         bool checkRequestId(uint32 RequestId) const {
             if (requestId() != RequestId) {
                 /** Currently this problem is caused by some unaccounted wow-client's code technical details:
                     wow-client ignores request packets while in busy state(for ex. during teleporting).
-                    When client is not busy and able send responses, servers sends some new request and client send a reply, 
+                    When client is not busy and able send responses, server sends some new request and client sends a reply, 
                     but since there is still old unreplyed response handler queued*/
                 log_function("can not handle response %s - wrong request Id %u, expected request %u",
                     OpcodeName(m_targetOpcode), RequestId, m_requestId);
@@ -236,7 +235,7 @@ namespace Movement
 
     public:
 
-        static void OnResponse(ClientImpl& client, WorldPacket& data)
+        static void OnResponse(ClientImpl& client, Packet& data)
         {
             Reference<RespHandler> handler = client.PopRespHandler();
             if (!handler.pointer()) {

@@ -5,18 +5,19 @@
 //#include "G3D/Vector3.h"
 #include "framework/typedefs_p.h"
 #include <windows.h>
+#include <conio.h>
 
 namespace Movement
 {
     namespace
     {
-        void FOnPositionChanged(WorldObject*, const Movement::Location&) {}
-        void FBroadcastMessage(WorldObject const* obj, Movement::MovementMessage& msg) {}
-        void FBroadcastMessage(WorldObject const* obj, WorldPacket& msg) {}
-        void FSendPacket(void * socket, const WorldPacket& data) {}
-        uint32 FgetMSTime() { return GetTickCount();}
+        void FOnPositionChanged(WorldObject* obj, const Movement::Location&) {}
+        void FBroadcastMessage(WorldObject* obj, Movement::MovementMessage& msg) {}
+        void FBroadcastMessage(WorldObject* obj, const PacketData& msg) {}
+        void FSendPacket(void * socket, const PacketData& msg) {}
+        int32 FgetMSTime() { return (int32)GetTickCount();}
 
-        void FGeneratePath(WorldObject const* obj, const G3D::Vector3& fromVec,
+        void FGeneratePath(WorldObject *obj, const G3D::Vector3& fromVec,
             const G3D::Vector3& toVec, bool flightPath, QVector<G3D::Vector3>& path)
         {
             //path.push_back(fromVec);
@@ -28,14 +29,15 @@ namespace Movement
             return NULL;
         }
 
-        UnitMovement* FGetUnit2(WorldObject const* obj, uint64 guid)
+        UnitMovement* FGetUnit2(WorldObject *obj, uint64 guid)
         {
             return NULL;
         }
 
-        void FSpawnMark(WorldObject* obj, const Vector3& ) {}
-        void FSetUIntValue(WorldObject* obj, uint16 fieldIdx, uint32) {}
+        void FSpawnMark(WorldObject* obj, const Vector3& pos) {}
+        void FSetUIntValue(WorldObject* obj, uint16 fieldIdx, uint32 value) {}
         uint32 FGetUIntValue(WorldObject* obj, uint16 fieldIdx) { return 0;}
+        void FSetFloatValue(WorldObject* obj, uint16 fieldIdx, float value) {}
     }
 
     _Imports Imports = {

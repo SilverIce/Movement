@@ -25,10 +25,10 @@ namespace Movement
 
             transportOwner.ComponentAttach(this);
 
-            WorldPacket data(SMSG_SET_VEHICLE_REC_ID, 16);
+            Packet data(SMSG_SET_VEHICLE_REC_ID, 16);
             data << transportOwner.Guid.WriteAsPacked();
             data << (uint32)m_vehicleId;
-            Imports.BroadcastMessage(transportOwner.Owner, data);
+            Imports.BroadcastMessage(transportOwner.Owner, data.toPacketData());
         }
 
         ~VehicleImpl() {

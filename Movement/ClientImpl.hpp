@@ -25,13 +25,13 @@ namespace Movement
 
             explicit TimeSyncRequest(ClientImpl * client) : RespHandler(CMSG_TIME_SYNC_RESP, client)
             {
-                WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
+                Packet data(SMSG_TIME_SYNC_REQ, 4);
                 data << requestId();
                 client->SendPacket(data);
                 m_requestSendTime = Imports.getMSTime();
             }
 
-            virtual bool OnReply(ClientImpl * client, WorldPacket& data) override
+            bool OnReply(ClientImpl * client, Packet& data) override
             {
                 uint32 client_req_id;
                 MSTime client_ticks;
@@ -46,7 +46,7 @@ namespace Movement
         };
     };
 
-    void ClientImpl::OnCommonMoveMessage(ClientImpl& client, WorldPacket& recv_data)
+    void ClientImpl::OnCommonMoveMessage(ClientImpl& client, Packet& recv_data)
     {
         client.assertControlled();
 
@@ -130,22 +130,6 @@ namespace Movement
         m_socket(socket),
         m_controlled(NULL)
     {
-    }
-
-    void ClientImpl::OnMoveTimeSkipped(ClientImpl& client, WorldPacket & recv_data)
-    {
-        client.assertControlled();
-
-        ObjectGuid guid;
-        int32 time;
-        recv_data >> guid.ReadAsPacked();
-        recv_data >> time;
-        //time_skipped = time;
-
-        /*MovementMessage data(m_controlled, MSG_MOVE_TIME_SKIPPED, 16);
-        data << guid.WriteAsPacked();
-        data << time;
-        BroadcastMessage(data);*/
     }
 
     void ClientImpl::ToString(QTextStream& str) const
@@ -249,7 +233,22 @@ namespace Movement
         m_controlled->commonTasks.AddTask(new ApplyStateTask(*m_controlled,client_state), client_state.ms_time);
     }
 
-    void ClientImpl::OnSplineDone(ClientImpl& client, WorldPacket& data)
+    void ClientImpl::OnMoveTimeSkipped(ClientImpl& client, Packet & recv_data)
+    {
+        client.assertControlled();
+
+        ObjectGuid guid;
+        int32 skipped;
+        recv_data >> guid.ReadAsPacked();
+        recv_data >> skipped;
+
+        MovementMessage data(client.controlled(), MSG_MOVE_TIME_SKIPPED, 16);
+        data << guid.WriteAsPacked();
+        data << skipped;
+        client.BroadcastMessage(data);
+    }
+
+    void ClientImpl::OnSplineDone(ClientImpl& client, Packet& data)
     {
         ObjectGuid guid;
         ClientMoveStateChange state;
@@ -267,7 +266,7 @@ namespace Movement
             log_function("incorrect splineId: %u, expected %u", splineId, move_spline->getLastMoveId());*/
     }
 
-    void ClientImpl::OnNotActiveMover(ClientImpl& client, WorldPacket& data)
+    void ClientImpl::OnNotActiveMover(ClientImpl& client, Packet& data)
     {
         ObjectGuid guid;
         ClientMoveStateChange state;
@@ -282,7 +281,7 @@ namespace Movement
         client.LostControl();
     }
 
-    void ClientImpl::OnActiveMover(ClientImpl& client, WorldPacket& data)
+    void ClientImpl::OnActiveMover(ClientImpl& client, Packet& data)
     {
         ObjectGuid guid;
         data >> guid;
@@ -295,7 +294,7 @@ namespace Movement
             log_function("can't find mover");
     }
 
-    void ClientImpl::OnNotImplementedMessage(ClientImpl&, WorldPacket& data)
+    void ClientImpl::OnNotImplementedMessage(ClientImpl&, Packet& data)
     {
         log_function("Unimplemented message handler called: %s", OpcodeName((ClientOpcode)data.GetOpcode()));
     }
@@ -307,14 +306,14 @@ namespace Movement
         ClientImpl impl;
     };
 
-    void Client::SendMoveMessage( MovementMessage& msg ) const
+    void Client::SendMoveMessage(MovementMessage& msg) const
     {
         static_cast<const ClientMemoryLayout*>(this)->impl.SendMoveMessage(msg);
     }
 
-    void Client::OnMovementMessage(WorldPacket& message)
+    void Client::OnMovementMessage(const PacketData& message)
     {
-        HandlersHolder::InvokeHander(static_cast<ClientMemoryLayout*>(this)->impl, message);
+        HandlersHolder::instance().InvokeHander(static_cast<ClientMemoryLayout*>(this)->impl, Packet(message));
     }
 
     Client* Client::create(void * socket)
@@ -329,6 +328,6 @@ namespace Movement
 
     void Client::FillSubscribeList(QVector<uint16>& opcodes)
     {
-        HandlersHolder::FillSubscribeList(opcodes);
+        HandlersHolder::instance().FillSubscribeList(opcodes);
     }
 }
