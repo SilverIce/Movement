@@ -19,12 +19,12 @@ namespace Movement
         }
 
         PacketData toPacketData() const {
-            PacketData data(GetOpcode(),(const uint8*)contents(),size());
+            PacketData data(getOpcode(),contents(),size());
             return data;
         }
 
-        void SetOpcode(uint16 opcode) { m_opcode = opcode;}
+        void setOpcode(uint16 opcode) { m_opcode = opcode;}
 
-        uint16 GetOpcode() const { return m_opcode;}
+        uint16 getOpcode() const { return m_opcode;}
     };
 }

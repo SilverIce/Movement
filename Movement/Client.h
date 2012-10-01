@@ -42,11 +42,11 @@ namespace Movement
 
     struct PacketData
     {
-        const uint8 *bytes;
+        const char *bytes;
         uint32 byteCount;
         uint16 opcode;
 
-        PacketData(uint16 Opcode, const uint8* Bytes, uint32 ByteCount)
+        PacketData(uint16 Opcode, const char* Bytes, uint32 ByteCount)
             : bytes(Bytes), byteCount(ByteCount), opcode(Opcode)
         {}
     };

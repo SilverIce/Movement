@@ -70,6 +70,12 @@ namespace Tasks { namespace detail
             push(lowBound - _data, size);
         }
 
+        void copy(size_t lowBound, const char* data, size_t size) {
+            _assertInRange(lowBound);
+            _assertInRange(lowBound + size);
+            memcpy(_data + lowBound, data, size);
+        }
+
         void push(size_t lowBound, size_t size) {
             _assertInRange(lowBound);
             if ((_size + size) > _capacity)

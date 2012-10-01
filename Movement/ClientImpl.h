@@ -67,18 +67,18 @@ namespace Movement
         void Kick() {}  // not implemented
 
         void BroadcastMessage(MovementMessage& msg) const {
-            assert_state(msg.Packet().GetOpcode() != MSG_NULL_ACTION);
+            assert_state(msg.Packet().getOpcode() != MSG_NULL_ACTION);
             Imports.BroadcastMoveMessage(m_controlled->Owner, msg);
         }
 
         void BroadcastMessage(const Packet& data) const {
-            assert_state(data.GetOpcode() != MSG_NULL_ACTION);
+            assert_state(data.getOpcode() != MSG_NULL_ACTION);
             Imports.BroadcastMessage(m_controlled->Owner, data.toPacketData());
         }
 
         void SendPacket(const Packet& data) const {
-            log_debug("server sends: %s", OpcodeName((ClientOpcode)data.GetOpcode()));
-            assert_state(data.GetOpcode() != MSG_NULL_ACTION);
+            log_debug("server sends: %s", OpcodeName((ClientOpcode)data.getOpcode()));
+            assert_state(data.getOpcode() != MSG_NULL_ACTION);
             Imports.SendPacket(m_socket, data.toPacketData());
         }
 
@@ -128,7 +128,7 @@ namespace Movement
 
         void InvokeHander(ClientImpl& client, Packet& msg)
         {
-            ClientOpcode opcode = (ClientOpcode)msg.GetOpcode();
+            ClientOpcode opcode = (ClientOpcode)msg.getOpcode();
             Handler hdl = getHandler(opcode);
             assert_state_msg(hdl != nullptr, "no handlers for %s", OpcodeName(opcode));
             (*hdl) (client, msg);
@@ -147,7 +147,7 @@ namespace Movement
             if (msg.size() != msg.rpos())
             {
                 log_write("message %s seems wasn't parsed properly, %u bytes weren't parsed",
-                    OpcodeName(ClientOpcode(msg.GetOpcode())), uint32(msg.size() - msg.rpos()));
+                    OpcodeName(ClientOpcode(msg.getOpcode())), uint32(msg.size() - msg.rpos()));
             }
         }
 
@@ -239,7 +239,7 @@ namespace Movement
         {
             Reference<RespHandler> handler = client.PopRespHandler();
             if (!handler.pointer()) {
-                log_function("can not handle response %s - no response handlers queued", OpcodeName((ClientOpcode)data.GetOpcode()));
+                log_function("can not handle response %s - no response handlers queued", OpcodeName((ClientOpcode)data.getOpcode()));
                 return;
             }
 
@@ -247,9 +247,9 @@ namespace Movement
             assert_state(handler->m_client == &client);
 
             handler->m_replyReceived = true;
-            if (handler->m_targetOpcode != data.GetOpcode()) {
+            if (handler->m_targetOpcode != data.getOpcode()) {
                 log_function("can not handle response %s - expected response is %s",
-                    OpcodeName((ClientOpcode)data.GetOpcode()), OpcodeName(handler->m_targetOpcode));
+                    OpcodeName((ClientOpcode)data.getOpcode()), OpcodeName(handler->m_targetOpcode));
                 return;
             }
 

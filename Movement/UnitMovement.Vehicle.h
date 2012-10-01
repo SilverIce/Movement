@@ -117,7 +117,7 @@ namespace Movement
 
     namespace VehicleHandler
     {
-        static void Dismiss(ClientImpl& client, WorldPacket& data)
+        static void Dismiss(ClientImpl& client, Packet& data)
         {
             ObjectGuid guid;
             ClientMoveStateChange state;
@@ -128,14 +128,14 @@ namespace Movement
             client.QueueState(state, guid);
         }
 
-        static void ChangeSeats(ClientImpl& client, WorldPacket& data)
+        static void ChangeSeats(ClientImpl& client, Packet& data)
         {
             UnitMovementImpl& unit = client.firstControlled();
             // TODO: too much 'as' casts here..
             Unit_Passenger& psg = unit.as<Unit_Passenger>();
             VehicleImpl& veh = psg.Transport().as<VehicleImpl>();
 
-            switch (data.GetOpcode())
+            switch (data.getOpcode())
             {
             case CMSG_REQUEST_VEHICLE_PREV_SEAT: {
                 // TODO: vehicle have enough info about his passenger.
@@ -182,7 +182,7 @@ namespace Movement
             }
         }
 
-        static void NotImplemented(ClientImpl& client, WorldPacket& data)
+        static void NotImplemented(ClientImpl& client, Packet& data)
         {
             ;
         }

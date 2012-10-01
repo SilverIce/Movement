@@ -58,7 +58,7 @@ namespace Movement
 
         client.QueueState(state, guid);
 
-        MovementMessage msg(client.controlled(), recv_data.GetOpcode(), recv_data.size());
+        MovementMessage msg(client.controlled(), recv_data.getOpcode(), recv_data.size());
         msg << guid.WriteAsPacked();
         msg << state;
         client.BroadcastMessage(msg);
@@ -296,7 +296,7 @@ namespace Movement
 
     void ClientImpl::OnNotImplementedMessage(ClientImpl&, Packet& data)
     {
-        log_function("Unimplemented message handler called: %s", OpcodeName((ClientOpcode)data.GetOpcode()));
+        log_function("Unimplemented message handler called: %s", OpcodeName((ClientOpcode)data.getOpcode()));
     }
 
     //////////////////////////////////////////////////////////////////////////
