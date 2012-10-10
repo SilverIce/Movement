@@ -1,6 +1,7 @@
 #pragma once
 
 #include "typedefs.h"
+#include <stdexcept>
 
 namespace Movement
 {
@@ -22,6 +23,33 @@ namespace Movement
         __debugbreak(); \
     } }
 
+#   ifdef ASSERTION_NOT_THROWS
+#       define assert_or_throw(expr, exception_type) mov_assert(expr)
+#       define assert_or_throw_msg(expr, exception_type, message) assert_or_throw(expr, exception_type)
+#   else
+
+        template<class ExceptionSource>
+        class ExceptionBase : public std::runtime_error {
+        public:
+            explicit ExceptionBase(const char* Message) : std::runtime_error(Message) {}
+        };
+
+        template<class ExceptionSource, int Reason = -1>
+        class Exception : public ExceptionBase<ExceptionSource> {
+        public:
+            explicit Exception(const char* Message) : ExceptionBase<ExceptionSource>(Message) {}
+        };
+
+#       define assert_or_throw_msg(expr, exception_type, message) \
+            if (!(expr)) \
+                throw (exception_type)("In "__FUNCTION__": assertion '" #expr "' failed and exception of type '" #exception_type "' is thrown. " message);
+#       define assert_or_throw(expr, exception_type) \
+            if (!(expr)) \
+                throw (exception_type)("In "__FUNCTION__": assertion '" #expr "' failed and exception of type '" #exception_type "' is thrown");
+#   endif
+
+#   define ARGS(...) __VA_ARGS__
+
 /** Use it to validate object state */
 #define assert_state(expr) mov_assert(expr)
 
@@ -34,11 +62,6 @@ namespace Movement
     }
 
 #define log_function(msg, ...)  log_write(__FUNCTION__ ": " msg, __VA_ARGS__) \
-
-#define log_fatal(msg, ...) { \
-        log_function(msg, __VA_ARGS__); \
-        __debugbreak(); \
-    }
 
 #define log_debug log_console
 
