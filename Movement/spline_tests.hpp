@@ -17,15 +17,6 @@ namespace Movement
 
             Vector3 direction = spline.evaluateDerivative(t).direction();
             EXPECT_TRUE( direction.isFinite() );
-
-            // Linear spline is not smooth to pass this test successfully:
-            if (spline.mode() != SplineBase::ModeLinear) {
-                Vector3 point2 = spline.evaluatePosition(t + 1 / (float)cycles);
-                Vector3 direction2 = (point2-point).direction();
-                // angleDiff is angle between direction and direction2 unit vectors
-                float angleDiff = G3D::toDegrees(2*asin((direction-direction2).length()/2));
-                EXPECT_TRUE( angleDiff < 0.7f );
-            }
         }
     }
 
@@ -107,5 +98,24 @@ namespace Movement
                 EXPECT_TRUE( t*spline.lengthTotal() < spline.length(splineIdx+1) );
             }
         }
+    }
+
+    TEST(SplineTests, uninitialized)
+    {
+        SplineBase spline;
+
+        EXPECT_THROW(spline.getPoint(2), ARGS(Exception<SplineBase,SplineBase::Uninitialized>));
+        EXPECT_THROW(spline.segmentLength(2), ARGS(Exception<SplineBase,SplineBase::Uninitialized>));
+        EXPECT_THROW(spline.evaluatePosition(1,0), ARGS(Exception<SplineBase,SplineBase::Uninitialized>));
+        EXPECT_THROW(spline.evaluateDerivative(4, 0), ARGS(Exception<SplineBase,SplineBase::Uninitialized>));
+
+        typedef Exception<SplineBase,SplineBase::InitializationFailed> ExcSplineInitFailed;
+        SplineBase::ControlArray points;
+        EXPECT_THROW(spline.initSpline(points.constData(),points.count(),SplineBase::ModeLinear), ExcSplineInitFailed);
+        points.resize(2);
+        EXPECT_NOTHROW(spline.initSpline(points.constData(),points.count(),SplineBase::ModeLinear), ExcSplineInitFailed);
+        EXPECT_THROW(spline.initSpline(nullptr,points.count(),SplineBase::ModeLinear), ExcSplineInitFailed);
+        EXPECT_THROW(spline.initSpline(points.constData(),points.count(),SplineBase::ModeEnd), ExcSplineInitFailed);
+        EXPECT_THROW(spline.initCyclicSpline(points.constData(),points.count(),SplineBase::ModeCatmullrom,points.count()), ExcSplineInitFailed);
     }
 }

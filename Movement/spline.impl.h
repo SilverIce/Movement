@@ -29,7 +29,7 @@ template<typename length_type> SplineBase::index_type Spline<length_type>::compu
 
 template<typename length_type> void Spline<length_type>::computeIndex(float t, index_type& index, float& u) const
 {
-    mov_assert(t >= 0.f && t <= 1.f);
+    assertCoeffInRange(t);
     length_type length_ = t * lengthTotal();
     index = computeIndexFromLength(length_);
     mov_assert(index < last());
@@ -38,7 +38,7 @@ template<typename length_type> void Spline<length_type>::computeIndex(float t, i
 
 template<typename length_type> SplineBase::index_type Spline<length_type>::computeIndexInBounds( float t ) const
 {
-    mov_assert(t >= 0.f && t <= 1.f);
+    assertCoeffInRange(t);
     return computeIndexFromLength(t * lengthTotal());
 }
 
