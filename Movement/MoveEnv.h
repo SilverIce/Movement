@@ -166,6 +166,13 @@ namespace Movement
             outLocal = (outLocal - GlobalPosition()) * globalRotation;
         }
 
+        const MovingEntity_Revolvable* GetRoot() const {
+            const MovingEntity_Revolvable* root = this;
+            while (MovingEntity_Revolvable* tmproot = root->Environment())
+                root = tmproot;
+            return root;
+        }
+
     public:
 
         void RelativePosition(const Vector3& position) {
@@ -181,7 +188,12 @@ namespace Movement
         }
 
         void SetEnvironment(MovingEntity_Revolvable* Env) {
-            assert_state(Env != this);
+            // detect cyclic dependence:
+            //     -------------<-------------------
+            //    |                                 |
+            // enitity0 -> entity1 -> entity2 -> entity3
+            assert_or_throw_msg(!Env || Env->GetRoot() != this, Exception<MovingEntity>,
+                "circular dependence - trying to bind to entity which is dependant on current entity");
             m_entity.Environment(Env);
         }
 
@@ -225,6 +237,13 @@ namespace Movement
             m_binded.Visit(notifier);
         }
 
+        const MovingEntity_Revolvable2* GetRoot() const {
+            const MovingEntity_Revolvable2* root = this;
+            while (MovingEntity_Revolvable2* tmproot = root->Environment())
+                root = tmproot;
+            return root;
+        }
+
     public:
 
         void RelativePosition(const Vector3& position) {
@@ -250,7 +269,12 @@ namespace Movement
 
         void SetEnvironment(MovingEntity_Revolvable2* env)
         {
-            assert_state(env != this);
+            // detect cyclic dependence:
+            //     -------------<-------------------
+            //    |                                 |
+            // enitity0 -> entity1 -> entity2 -> entity3
+            assert_or_throw_msg(!env || env->GetRoot() != this, Exception<MovingEntity>,
+                "circular dependence - trying to bind to entity which is dependant on current entity");
             if (m_Environment == env)
                 return;
             if (m_Environment)
@@ -325,6 +349,7 @@ namespace Movement
 
         LinkedListSimple<MovingEntity_Revolvable3*> m_binded;
         LinkedListElementSimple<MovingEntity_Revolvable3*> m_me;
+        // cached data:
         mutable bool m_globalRotationOutdated;
         mutable bool m_globalPositionOutdated;
         mutable Vector3 m_globalPosition;
@@ -371,6 +396,13 @@ namespace Movement
             return m_globalRotation;
         }
 
+        const MovingEntity_Revolvable3* GetRoot() const {
+            const MovingEntity_Revolvable3* root = this;
+            while (MovingEntity_Revolvable3* tmproot = root->Environment())
+                root = tmproot;
+            return root;
+        }
+
     public:
 
         void RelativePosition(const Vector3& position) {
@@ -398,7 +430,12 @@ namespace Movement
 
         void SetEnvironment(MovingEntity_Revolvable3* env)
         {
-            assert_state(env != this);
+            // detect cyclic dependence:
+            //     -------------<-------------------
+            //    |                                 |
+            // enitity0 -> entity1 -> entity2 -> entity3
+            assert_or_throw_msg(!env || env->GetRoot() != this, Exception<MovingEntity>,
+                "circular dependence - trying to bind to entity which is dependant on current entity");
             if (m_Environment == env)
                 return;
             if (m_Environment)

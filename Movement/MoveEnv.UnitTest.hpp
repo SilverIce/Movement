@@ -107,11 +107,39 @@ namespace Movement
         }
     }
 
+    template<class T> void MoveEnv_cyclic_environments(testing::State& testState)
+    {
+        MovingEntity_RevolvableRandom<T> entity0;
+        MovingEntity_RevolvableRandom<T> entity1;
+        MovingEntity_RevolvableRandom<T> entity2;
+        MovingEntity_RevolvableRandom<T> top1;
+        MovingEntity_RevolvableRandom<T> top2;
+
+        // enitity0 -> entity1 -> entity2 -> obj
+        entity1.SetEnvironment(&entity0);
+        entity2.SetEnvironment(&entity1);
+        top1.SetEnvironment(&entity2);
+        top2.SetEnvironment(&entity2);
+
+        //     -------------<-----------------
+        //    |                               |
+        // enitity0 -> entity1 -> entity2 -> obj
+        EXPECT_THROW(entity0.SetEnvironment(&top1), Exception<MovingEntity>);
+        EXPECT_THROW(entity0.SetEnvironment(&top2), Exception<MovingEntity>);
+
+        entity0.SetEnvironment(nullptr);
+        entity1.SetEnvironment(nullptr);
+        entity2.SetEnvironment(nullptr);
+        top1.SetEnvironment(nullptr);
+        top2.SetEnvironment(nullptr);
+    }
+
     template<class T> void MoveEnv_LaunchTests(testing::State& testState)
     {
         MoveEnv_basic<T>(testState);
         MoveEnv_rotation<T>(testState);
         MoveEnv_global_returns_same<T>(testState);
+        MoveEnv_cyclic_environments<T>(testState);
     }
 
     TEST(MoveEnv, MovingEntity_Revolvable) {
