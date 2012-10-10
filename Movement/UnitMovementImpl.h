@@ -21,7 +21,7 @@ namespace Movement
 
         explicit UnitMovementImpl();
 
-        void Init(Tasks::ITaskExecutor& updater, UnitMovement* publicFace);
+        void Init(Tasks::ITaskExecutor& updater);
         virtual ~UnitMovementImpl();
 
         void CleanReferences();
@@ -84,7 +84,6 @@ namespace Movement
         UnitMoveFlag const moveFlags;
         FloatParameter m_currentSpeedType;
 
-        UnitMovement* PublicFace;
 
         /** Data that cames from client. It affects nothing here but might be used in future. */
         _ClientMoveState m_unused;

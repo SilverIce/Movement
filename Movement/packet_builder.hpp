@@ -18,14 +18,14 @@ namespace Movement
 
         if (Unit_Passenger * passenger = mov.getAspect<Unit_Passenger>())
         {
-            data.SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
+            data.setOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
             data << mov.Guid.WriteAsPacked();
             data << passenger->TransportGuid().WriteAsPacked();
             data.writeInt8(passenger->SeatId());
         }
         else
         {
-            data.SetOpcode(SMSG_MONSTER_MOVE);
+            data.setOpcode(SMSG_MONSTER_MOVE);
             data << mov.Guid.WriteAsPacked();
         }
 

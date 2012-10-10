@@ -219,7 +219,7 @@ namespace Movement
 
     UnitMovement* Vehicle::Passenger(int8 seatId) {
         if (UnitMovementImpl* unit = m->getPassenger(seatId))
-            return unit->PublicFace;
+            return &unit->as<UnitMovement>();
         else
             return nullptr;
     }

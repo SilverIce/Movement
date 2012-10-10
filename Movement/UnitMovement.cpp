@@ -59,7 +59,7 @@ namespace Movement
 
             unit.Guid.SetRawValue(info.guid);
             unit.Owner = info.object;
-            unit.Init(info.executor, publicFace);
+            unit.Init(info.executor);
             monsterController.Init(unit);
 
         }

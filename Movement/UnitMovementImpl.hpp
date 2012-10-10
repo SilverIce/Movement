@@ -39,7 +39,6 @@ namespace Movement
     }
 
     UnitMovementImpl::UnitMovementImpl() :
-        PublicFace(NULL),
         m_client(NULL)
     {
         const float BaseValues[Parameter_End] =
@@ -60,9 +59,8 @@ namespace Movement
         m_currentSpeedType = Parameter_SpeedRun;
     }
 
-    void UnitMovementImpl::Init(Tasks::ITaskExecutor& updater, UnitMovement* publicFace)
+    void UnitMovementImpl::Init(Tasks::ITaskExecutor& updater)
     {
-        PublicFace = publicFace;
         commonTasks.SetExecutor(updater);
     }
 
@@ -85,7 +83,6 @@ namespace Movement
         }
 
         commonTasks.Unregister();
-        PublicFace = nullptr;
         Owner = nullptr;
     }
 
