@@ -132,7 +132,7 @@ public:
     void initSpline(const Vector3 * controls, index_type count, EvaluationMode mode);
     /** Initializes spline. Don't call other methods while spline not initialized
         otherwise Exception<SplineBase,Uninitialized> will be thrown.
-        cyclic_point parameter is a point index where spline end connected to that point, cyclic_point is [0, count). */
+        cyclic_point parameter is a point index where spline end connects to that point, cyclic_point is [0, count). */
     void initCyclicSpline(const Vector3 * controls, index_type count, EvaluationMode mode, index_type cyclic_point);
 
     /** As i can see there are a lot of ways how spline can be initialized
