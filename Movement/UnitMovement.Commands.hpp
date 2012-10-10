@@ -46,6 +46,19 @@ namespace Movement
     };
     DELAYED_INIT(ModifyCollisionHeightCommand, ModifyCollisionHeightCommand);
 
+    struct TargetInfoCommand : public MovementCommand
+    {
+        explicit TargetInfoCommand() {
+            Init("TargetInfo|TInfo");
+            Description = "describes a target.";
+        }
+
+        void Invoke(StringReader& command, CommandInvoker& invoker) override {
+            invoker.output << endl << invoker.com.toStringAll();
+        }
+    };
+    DELAYED_INIT(TargetInfoCommand, TargetInfoCommand);
+
     struct TestCommand : public MovementCommand
     {
         explicit TestCommand() {
