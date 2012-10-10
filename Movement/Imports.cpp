@@ -6,6 +6,8 @@
 #include "framework/typedefs_p.h"
 #include <windows.h>
 #include <conio.h>
+#include <stdlib.h>
+#include <time.h>
 
 namespace Movement
 {
@@ -60,6 +62,7 @@ namespace Movement
 
     bool InitModule(const _Imports& ftable)
     {
+        srand((unsigned int)time(NULL));
         ::delayInit::callCtors();
         bool testRes = testing::runTests(meta<testing::TestInfo>::getListConst());
         SetupImports(ftable);
