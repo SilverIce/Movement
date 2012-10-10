@@ -19,7 +19,7 @@ namespace testing
     }
 
     bool EXPORT runTests(const meta<TestInfo>::list& list);
-    void EXPORT check(State& testState, bool, const char* source, const char* expression);
+    void EXPORT check(State& testState, bool, const char* source, const char* errorMessage);
 }
 
 #define TEST_MIXTURE(MixtureType) \
@@ -43,20 +43,24 @@ namespace testing
 #define TEST_REGISTER(function) \
     TEST(function, none) { function(); }
 
-#define EXPECT_TRUE(expression) ::testing::check(testState, expression, __FUNCTION__, #expression);
-#define EXPECT_EQ(a, b) ::testing::check(testState, (a) == (b), __FUNCTION__, #a " == " #b);
+#define EXPECT_TRUE(expression) ::testing::check(testState, expression, __FUNCTION__, #expression " is false");
+#define EXPECT_EQ(a, b) ::testing::check(testState, (a) == (b), __FUNCTION__, #a " != " #b);
 
 #define EXPECT_THROW(expression, exception) \
     try { \
         expression; \
-        ::testing::check(testState, false, __FUNCTION__, "expression '" #expression " does not throws '" #exception "' exception"); \
+        ::testing::check(testState, false, __FUNCTION__, "'" #expression "' does not throws nor '" #exception "' nor any other exception"); \
     } \
-    catch( const exception& ) {;}
+    catch( const exception& ) {;} \
+    catch(...) { \
+        ::testing::check(testState, false, __FUNCTION__,  "'" #expression "' does not throws '" #exception "' exception, but throws unknown exception"); \
+        throw; \
+    }
 
 #define EXPECT_NOTHROW(expression) \
     try { \
         expression; \
     } catch(...) { \
-        ::testing::check(testState, false, __FUNCTION__, "expression '" #expression "' throws exception"); \
+        ::testing::check(testState, false, __FUNCTION__, "'" #expression "' throws exception"); \
     }
 

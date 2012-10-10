@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <intrin.h>
 #include <string>
+#include <exception>
 
 namespace testing
 {
@@ -54,6 +55,9 @@ namespace testing
             printf("    %s::%s has been invoked\n", test.name, test.name2);
             try {
                 test.function(state);
+            } catch(const std::exception& exception) {
+                ::testing::check(state, false, __FUNCTION__, "test throws exception"); \
+                printf("   of type '%s' message '%s'\n", typeid(exception).name(), exception.what());
             } catch(...) {
                 ::testing::check(state, false, __FUNCTION__, "test throws exception"); \
             }
@@ -65,12 +69,12 @@ namespace testing
         return state.countFailedTests == 0;
     }
 
-    void check(State& teststate, bool result, const char* source, const char* expression)
+    void check(State& teststate, bool result, const char* source, const char* errorMessage)
     {
         if (result)
             return;
 
-        printf("In '%s': expression '%s' failed!\n", source, expression);
+        printf("In '%s': %s\n", source, errorMessage);
 
         ++teststate.countChecksFailed;
         if (!teststate.currentFailed) {
