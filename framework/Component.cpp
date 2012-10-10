@@ -41,7 +41,10 @@ namespace Movement
     public:
 
         explicit ComponentTree() {}
-        ~ComponentTree() { assert_state(m_refCount <= 0);}
+        ~ComponentTree() {
+            assert_state(m_refCount <= 0);
+            assert_state(m_types.empty());
+        }
 
         void addRef() { m_refCount.ref();}
 
@@ -65,8 +68,8 @@ namespace Movement
         {
             Type type = {objectTypeId, &object};
             QVector<Type>::iterator itr = find(type);
-            if (itr != m_types.end() && itr->typeId == type.typeId)
-                throw std::runtime_error("aspect of same type added already");
+            assert_or_throw_msg(itr == m_types.end() || itr->typeId != type.typeId,
+                Exception<Component>, "aspect of same type added already");
             m_types.insert(itr, type);
         }
 
@@ -136,7 +139,7 @@ namespace Movement
 
     void* Component::_as(AspectTypeId objectTypeId) const {
         void * object = _getAspect(objectTypeId);
-        assert_state(object);
+        assert_or_throw(object != nullptr, Exception<Component>);
         return object;
     }
 
@@ -231,7 +234,7 @@ namespace Movement
         EXPECT_TRUE( cnt.Count() == 2 );
 
         TypeA atypeAnother;
-        EXPECT_THROW( cnt.addAspect(atypeAnother.getTypeId(),atypeAnother), std::runtime_error );
+        EXPECT_THROW( cnt.addAspect(atypeAnother.getTypeId(),atypeAnother), Exception<Component> );
         EXPECT_TRUE( cnt.Count() == 2 );
 
         EXPECT_TRUE( cnt.getAspect(TypeC::getTypeId()) == NULL );
@@ -253,12 +256,14 @@ namespace Movement
 
         EXPECT_TRUE( atype.getAspect<TypeA>() == &atype );
         EXPECT_TRUE( atype.getAspect<TypeB>() == nullptr );
+        EXPECT_THROW( atype.as<TypeB>(), Exception<Component> );
    
         TypeB btype;
         atype.ComponentAttach(&btype);
 
         EXPECT_TRUE( atype.getAspect<TypeA>() == &atype );
         EXPECT_TRUE( btype.getAspect<TypeB>() == &btype );
+        EXPECT_TRUE( &atype.as<TypeB>() == &btype );
     }
 
     TEST(TypeContainer, as_cast_performance)
