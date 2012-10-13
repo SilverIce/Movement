@@ -318,11 +318,11 @@ namespace Movement
                 int32 firstDbcIdx;
                 float lengthSumm;
 
-                float operator()(Spline<float>& s, int32 splineIdx) {
-                    if (info.nodes[splineIdx + firstDbcIdx].actionTeleport())
+                float operator()(const Spline<float>& s, int32 pointIdx) {
+                    if (info.nodes[pointIdx + firstDbcIdx].actionTeleport())
                         return lengthSumm;
                     else
-                        return (lengthSumm += s.segmentLength(splineIdx-1, SplineBase::LengthPrecisionWoWClient));
+                        return (lengthSumm += s.segmentLength(pointIdx-1, SplineBase::LengthPrecisionWoWClient));
                 }
             };
             LengthInit init = {info, first, 0};

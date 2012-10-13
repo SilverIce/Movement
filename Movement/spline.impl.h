@@ -47,7 +47,7 @@ template<typename length_type> void Spline<length_type>::initLengths(uint32 prec
     struct LengthInitializer {
         float lengthSumm;
         uint32 precision;
-        float operator()(SplineBase& spline, index_type i) {
+        float operator()(const SplineBase& spline, index_type i) {
             lengthSumm += spline.segmentLength(i-1, precision);
             return lengthSumm;
         }

@@ -156,21 +156,21 @@ void SplineBase::initSpline(const Vector3 * controls, index_type count, Evaluati
 {
     assert_or_throw(controls && count >= 2, ARGS(Exception<SplineBase,InitializationFailed>));
     assert_or_throw(m < ModeEnd , ARGS(Exception<SplineBase,InitializationFailed>));
+    (this->*initializers[m])(controls, count, false, 0);
     m_mode = m;
-    (this->*initializers[m_mode])(controls, count, false, 0);
 }
 
 void SplineBase::initCyclicSpline(const Vector3 * controls, index_type count, EvaluationMode m, index_type cyclic_point)
 {
     assert_or_throw(controls && count >= 2, ARGS(Exception<SplineBase,InitializationFailed>));
     assert_or_throw(m < ModeEnd, ARGS(Exception<SplineBase,InitializationFailed>));
-    assert_or_throw(0 <= cyclic_point && cyclic_point < count, ARGS(Exception<SplineBase,InitializationFailed>));
+    (this->*initializers[m])(controls, count, true, cyclic_point);
     m_mode = m;
-    (this->*initializers[m_mode])(controls, count, true, cyclic_point);
 }
 
 void SplineBase::InitLinear(const Vector3* controls, index_type count, bool cyclic, index_type cyclic_point)
 {
+    assert_or_throw(0 <= cyclic_point && cyclic_point < count, ARGS(Exception<SplineBase,InitializationFailed>));
     const int real_size = count + 1;
 
     points.resize(real_size);
@@ -189,14 +189,14 @@ void SplineBase::InitLinear(const Vector3* controls, index_type count, bool cycl
 
 void SplineBase::InitCatmullRom(const Vector3* controls, index_type count, bool cyclic, index_type cyclic_point)
 {
+    assert_or_throw(0 <= cyclic_point && cyclic_point < (count-1), ARGS(Exception<SplineBase,InitializationFailed>));
+
     const int real_size = count + (cyclic ? (1+2) : (1+1));
-
-    points.resize(real_size);
-
     int lo_index = 1;
     int high_index = lo_index + count - 1;
 
-    memcpy(&points[lo_index],controls, sizeof(Vector3) * count);
+    points.resize(real_size);
+    memcpy(&points[lo_index], controls, sizeof(Vector3) * count);
 
     // first and last two indexes are space for special 'virtual points'
     // these points are required for proper C_Evaluate and C_Evaluate_Derivative method work
@@ -207,6 +207,7 @@ void SplineBase::InitCatmullRom(const Vector3* controls, index_type count, bool 
         else
             points[0] = controls[0].lerp(controls[1], -1);
 
+        // last two fake points
         points[high_index+1] = controls[cyclic_point];
         points[high_index+2] = controls[cyclic_point+1];
     }
@@ -217,7 +218,7 @@ void SplineBase::InitCatmullRom(const Vector3* controls, index_type count, bool 
     }
 
     index_lo = lo_index;
-    index_hi = high_index + (cyclic ? 1 : 0);
+    index_hi = points.size() - 1 - 1;
 }
 
 QString SplineBase::toString() const

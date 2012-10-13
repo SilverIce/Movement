@@ -152,11 +152,12 @@ public:
         LengthPrecisionWoWClient = 20,
     };
 
-    /** Calculates distance between [pointIdx; pointIdx+1] points, assumes that i and next i+1 indexes are in bounds. */
-    float segmentLength(index_type pointIdx, uint32 precision = LengthPrecisionDefault) const {
+    /** Calculates distance between [pointIdx; pointIdx+1] points, assumes that i and next i+1 indexes are in bounds.
+        precision - segment length evaluation precision. asserts that precision > 0. */
+    float segmentLength(index_type segmentIdx, uint32 precision = LengthPrecisionDefault) const {
         assertInitialized();
-        assertSegmentIndexInRange(pointIdx);
-        return (this->*seglengths[m_mode])(index_lo + pointIdx, precision);
+        assertSegmentIndexInRange(segmentIdx);
+        return (this->*seglengths[m_mode])(index_lo + segmentIdx, precision);
     }
 
     QString toString() const;
@@ -202,7 +203,6 @@ public:
     /** Initializes spline. Don't call other methods while spline not initialized. */
     void initSpline(const Vector3 * controls, index_type count, EvaluationMode mode) {
         SplineBase::initSpline(controls,count,mode);
-        lengths.resize(last() + 1);
     }
 
     /** Initializes cyclic spline. Don't call other methods while spline not initialized.
@@ -210,7 +210,6 @@ public:
     */
     void initCyclicSpline(const Vector3 * controls, index_type count, EvaluationMode mode, index_type cyclic_point) {
         SplineBase::initCyclicSpline(controls,count,mode,cyclic_point);
-        lengths.resize(last() + 1);
     }
 
     /**  Initializes lengths with SplineBase::segmentLength method. */    
@@ -220,9 +219,10 @@ public:
         Note that value returned by cacher must be greater or equal to previous value. */
     template<class T> inline void initLengths(T& cacher)
     {
+        lengths.resize(last() + 1);
         index_type i = 1, N = lengths.size();
         while (i < N) {
-            setLength(i, cacher(*this, i));
+            setLength(i, cacher(const_cast<const Spline&>(*this), i));
             ++i;
         }
     }

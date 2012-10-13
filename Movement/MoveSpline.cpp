@@ -95,7 +95,7 @@ void MoveSpline::init_spline(const MoveSplineInitArgs& args)
     if (args.flags.done)
     {
         struct InstantInitializer {
-            int32 operator()(Spline<int32>& s, int32 i) { return minimal_duration;}
+            int32 operator()(const Spline<int32>& s, int32 i) { return minimal_duration;}
         };
         // total movement duration is 1 millisecond for now
         spline.initLengths(InstantInitializer());
@@ -106,8 +106,8 @@ void MoveSpline::init_spline(const MoveSplineInitArgs& args)
             struct FallInitializer {
                 FallInitializer(float _start_elevation) : start_elevation(_start_elevation) {}
                 float start_elevation;
-                int32 operator()(Spline<int32>& s, int32 i) {
-                    return Movement::computeFallTime(start_elevation - s.getPoint(i).z) * 1000.f;
+                int32 operator()(const Spline<int32>& s, int32 pointIdx) {
+                    return Movement::computeFallTime(start_elevation - s.getPoint(pointIdx).z) * 1000.f;
                 }
             };
             spline.initLengths( FallInitializer(args.path[0].z) );
@@ -117,8 +117,8 @@ void MoveSpline::init_spline(const MoveSplineInitArgs& args)
                 CommonInitializer(float _velocity) : velocityInv(1000.f/_velocity), time(minimal_duration) {}
                 float velocityInv;
                 int32 time;
-                int32 operator()(Spline<int32>& s, int32 i) {
-                    time += (s.segmentLength(i-1) * velocityInv);
+                int32 operator()(const Spline<int32>& s, int32 pointIdx) {
+                    time += (s.segmentLength(pointIdx-1) * velocityInv);
                     return time;
                 }
             };

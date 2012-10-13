@@ -113,7 +113,7 @@ namespace Movement
         SplineBase::ControlArray points;
         EXPECT_THROW(spline.initSpline(points.constData(),points.count(),SplineBase::ModeLinear), ExcSplineInitFailed);
         points.resize(2);
-        EXPECT_NOTHROW((spline.initSpline(points.constData(),points.count(),SplineBase::ModeLinear)), ExcSplineInitFailed);
+        EXPECT_NOTHROW(spline.initSpline(points.constData(),points.count(),SplineBase::ModeLinear));
         EXPECT_THROW(spline.initSpline(nullptr,points.count(),SplineBase::ModeLinear), ExcSplineInitFailed);
         EXPECT_THROW(spline.initSpline(points.constData(),points.count(),SplineBase::ModeEnd), ExcSplineInitFailed);
         EXPECT_THROW(spline.initCyclicSpline(points.constData(),points.count(),SplineBase::ModeCatmullrom,points.count()), ExcSplineInitFailed);
