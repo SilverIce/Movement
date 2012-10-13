@@ -1,0 +1,144 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>G3D</ProjectName>
+    <ProjectGuid>{B304F5F9-1123-42C9-93E8-14E3B3F89B49}</ProjectGuid>
+    <RootNamespace>G3Dlib</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Y:\$(MSBuildProjectDirectoryNoRoot)\$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Y:\$(MSBuildProjectDirectoryNoRoot)\$(Configuration)\</IntDir>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>..\..\..\..\dep\g3dlite\include\;..\..\..\..\dep\zlib\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>G3D/g3d_pch.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ForcedIncludeFiles>G3D/g3d_pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <StringPooling>true</StringPooling>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>..\..\..\..\dep\g3dlite\include\;..\..\..\..\dep\zlib\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>G3D/g3d_pch.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <ForcedIncludeFiles>G3D/g3d_pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <StringPooling>true</StringPooling>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\G3D\AABox.h" />
+    <ClInclude Include="..\..\include\G3D\Array.h" />
+    <ClInclude Include="..\..\include\G3D\Box.h" />
+    <ClInclude Include="..\..\include\G3D\CollisionDetection.h" />
+    <ClInclude Include="..\..\include\G3D\CoordinateFrame.h" />
+    <ClInclude Include="..\..\include\G3D\Crypto.h" />
+    <ClInclude Include="..\..\include\G3D\debug.h" />
+    <ClInclude Include="..\..\include\G3D\format.h" />
+    <ClInclude Include="..\..\include\G3D\g3dmath.h" />
+    <ClInclude Include="..\..\include\G3D\GCamera.h" />
+    <ClInclude Include="..\..\include\G3D\Line.h" />
+    <ClInclude Include="..\..\include\G3D\Matrix3.h" />
+    <ClInclude Include="..\..\include\G3D\Plane.h" />
+    <ClInclude Include="..\..\include\G3D\platform.h" />
+    <ClInclude Include="..\..\include\G3D\Quat.h" />
+    <ClInclude Include="..\..\include\G3D\Ray.h" />
+    <ClInclude Include="..\..\include\G3D\RegistryUtil.h" />
+    <ClInclude Include="..\..\include\G3D\Sphere.h" />
+    <ClInclude Include="..\..\include\G3D\stringutils.h" />
+    <ClInclude Include="..\..\include\G3D\System.h" />
+    <ClInclude Include="..\..\include\G3D\Table.h" />
+    <ClInclude Include="..\..\include\G3D\Triangle.h" />
+    <ClInclude Include="..\..\include\G3D\Vector2.h" />
+    <ClInclude Include="..\..\include\G3D\Vector2int16.h" />
+    <ClInclude Include="..\..\include\G3D\Vector3.h" />
+    <ClInclude Include="..\..\include\G3D\Vector3int16.h" />
+    <ClInclude Include="..\..\include\G3D\Vector4.h" />
+    <ClInclude Include="..\..\include\G3D\g3d_pch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\source\AABox.cpp" />
+    <ClCompile Include="..\..\source\CollisionDetection.cpp" />
+    <ClCompile Include="..\..\source\Cylinder.cpp" />
+    <ClCompile Include="..\..\source\format.cpp" />
+    <ClCompile Include="..\..\source\g3dfnmatch.cpp" />
+    <ClCompile Include="..\..\source\g3dmath.cpp" />
+    <ClCompile Include="..\..\source\Log.cpp" />
+    <ClCompile Include="..\..\source\Matrix3.cpp" />
+    <ClCompile Include="..\..\source\Matrix4.cpp" />
+    <ClCompile Include="..\..\source\Quat.cpp" />
+    <ClCompile Include="..\..\source\Random.cpp" />
+    <ClCompile Include="..\..\source\ReferenceCount.cpp" />
+    <ClCompile Include="..\..\source\RegistryUtil.cpp" />
+    <ClCompile Include="..\..\source\Sphere.cpp" />
+    <ClCompile Include="..\..\source\stringutils.cpp" />
+    <ClCompile Include="..\..\source\Vector2.cpp" />
+    <ClCompile Include="..\..\source\Vector3.cpp" />
+    <ClCompile Include="..\..\source\Vector4.cpp" />
+    <ClCompile Include="..\..\source\g3d_pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">G3D/g3d_pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">G3D/g3d_pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

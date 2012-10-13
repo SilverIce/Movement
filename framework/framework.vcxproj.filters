@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="testing">
+      <UniqueIdentifier>{0e7ab765-0afb-4a1f-ba30-d2faa403ae93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="delayInit">
+      <UniqueIdentifier>{4b3b977a-f74a-4ef7-81d6-ebc249d0188c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CommandMgr">
+      <UniqueIdentifier>{36e717df-943c-4ec6-999e-41d028f30272}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Component">
+      <UniqueIdentifier>{776a15e3-c0f4-4da1-919a-ef299a0514b2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="gtest.cpp">
+      <Filter>testing</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandMgr.cpp">
+      <Filter>CommandMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="Component.cpp">
+      <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="logging.cpp" />
+    <ClCompile Include="pch.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="gtest.h">
+      <Filter>testing</Filter>
+    </ClInclude>
+    <ClInclude Include="DelayInit.h">
+      <Filter>delayInit</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandMgr.h">
+      <Filter>CommandMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="Component.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="meta.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="RdtscTimer.h" />
+    <ClInclude Include="typedefs.h" />
+    <ClInclude Include="typedefs_p.h" />
+  </ItemGroup>
+</Project>

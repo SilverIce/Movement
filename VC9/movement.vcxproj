@@ -1,0 +1,247 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug_dll|Win32">
+      <Configuration>Debug_dll</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A395F7CE-51DF-4819-8760-C1C95726C8C1}</ProjectGuid>
+    <RootNamespace>main</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_dll|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug_dll|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <ReferencePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)/lib;$(ReferencePath)</ReferencePath>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Y:\$(MSBuildProjectDirectoryNoRoot)\$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <PostBuildEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</PostBuildEventUseInBuild>
+    <ReferencePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)/lib;$(ReferencePath)</ReferencePath>
+    <ReferencePath Condition="'$(Configuration)|$(Platform)'=='Debug_dll|Win32'">$(QTDIR)/lib;$(ReferencePath)</ReferencePath>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug_dll|Win32'">..\..\movemenagos\bin\Win32_Release</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Y:\$(MSBuildProjectDirectoryNoRoot)\$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug_dll|Win32'">Y:\$(MSBuildProjectDirectoryNoRoot)\$(Configuration)\</IntDir>
+    <PostBuildEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Debug_dll|Win32'">false</PostBuildEventUseInBuild>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug_dll|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug_dll|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug_dll|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>../dep/g3dlite/include/;../Movement/fake/;../;$(QTDIR)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CRT_SECURE_NO_WARNINGS;_CONSOLE;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <ForcedIncludeFiles>pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>QtCore4.lib;qtmain.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(QTDIR)/lib</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <Profile>true</Profile>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <PostBuildEvent>
+      <Command>$(TargetPath)</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>../dep/g3dlite/include/;../Movement/fake/;../;$(QTDIR)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <SmallerTypeCheck>true</SmallerTypeCheck>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <ForcedIncludeFiles>pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>QtCore4.lib;qtmain.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(QTDIR)/lib</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>MSVCRTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <LinkTimeCodeGeneration>
+      </LinkTimeCodeGeneration>
+      <Profile>true</Profile>
+    </Link>
+    <PostBuildEvent>
+      <Command>$(TargetPath)</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_dll|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>../dep/g3dlite/include/;../Movement/fake/;../;$(QTDIR)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <SmallerTypeCheck>true</SmallerTypeCheck>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <ForcedIncludeFiles>pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>QtCore4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(QTDIR)/lib</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>MSVCRTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <LinkTimeCodeGeneration>
+      </LinkTimeCodeGeneration>
+      <Profile>true</Profile>
+    </Link>
+    <PostBuildEvent />
+    <PostBuildEvent>
+      <Command>$(TargetPath)</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Movement\BasicTests.cpp" />
+    <ClCompile Include="..\Movement\Imports.cpp" />
+    <ClCompile Include="..\Movement\MoveUpdater.cpp" />
+    <ClCompile Include="..\Movement\opcodes.cpp" />
+    <ClCompile Include="..\Movement\UnitMovement.cpp" />
+    <ClCompile Include="..\Movement\MoveSpline.cpp" />
+    <ClCompile Include="..\Movement\spline.cpp" />
+    <ClCompile Include="..\Movement\TaskScheduler.cpp" />
+    <ClCompile Include="..\Movement\pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_dll|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Movement\Transport.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Movement\ByteBuffer.h" />
+    <ClInclude Include="..\Movement\LinkedList.h" />
+    <ClInclude Include="..\Movement\LinkedListSimple.h" />
+    <ClInclude Include="..\Movement\MoveEnv.h" />
+    <ClInclude Include="..\Movement\MoveEnv.UnitTest.hpp" />
+    <ClInclude Include="..\Movement\MovementBase.h" />
+    <ClInclude Include="..\Movement\MovementCommandMgr.h" />
+    <ClInclude Include="..\Movement\MSTime.h" />
+    <ClInclude Include="..\Movement\ObjectGuid.h" />
+    <ClInclude Include="..\Movement\opcodes.h" />
+    <ClInclude Include="..\Movement\ClientImpl.h" />
+    <ClInclude Include="..\Movement\ClientImpl.hpp" />
+    <ClInclude Include="..\Movement\ClientMoveStatus.h" />
+    <ClInclude Include="..\Movement\FallFormulas.hpp" />
+    <ClInclude Include="..\Movement\MovementMessage.h" />
+    <ClInclude Include="..\Movement\MoveSplineInit.hpp" />
+    <ClInclude Include="..\Movement\Packet.h" />
+    <ClInclude Include="..\Movement\UnitMoveFlags.h" />
+    <ClInclude Include="..\Movement\UnitMovement.Commands.hpp" />
+    <ClInclude Include="..\Movement\UnitMovement.Effects.hpp" />
+    <ClInclude Include="..\Movement\UnitMovement.Passenger.h" />
+    <ClInclude Include="..\Movement\UnitMovement.Tests.hpp" />
+    <ClInclude Include="..\Movement\UnitMovement.Vehicle.h" />
+    <ClInclude Include="..\Movement\UnitMovementImpl.h" />
+    <ClInclude Include="..\Movement\UnitMovementImpl.hpp" />
+    <ClInclude Include="..\Movement\UpdatableSpline.h" />
+    <ClInclude Include="..\Movement\UpdatableSpline.hpp" />
+    <ClInclude Include="..\Movement\MoveSpline.h" />
+    <ClInclude Include="..\Movement\MoveSplineFlag.h" />
+    <ClInclude Include="..\Movement\MoveSplineInitArgs.h" />
+    <ClInclude Include="..\Movement\packet_builder.h" />
+    <ClInclude Include="..\Movement\packet_builder.hpp" />
+    <ClInclude Include="..\Movement\spline.h" />
+    <ClInclude Include="..\Movement\spline.impl.h" />
+    <ClInclude Include="..\Movement\spline_tests.hpp" />
+    <ClInclude Include="..\Movement\POD_Array.Tests.hpp" />
+    <ClInclude Include="..\Movement\POD_Arrays.h" />
+    <ClInclude Include="..\Movement\TaskExecutorImpl_LinkedList1.10.hpp" />
+    <ClInclude Include="..\Movement\TaskExecutorImpl_LinkedList1.11.hpp" />
+    <ClInclude Include="..\Movement\TaskExecutorImpl_LinkedList1.12.hpp" />
+    <ClInclude Include="..\Movement\TaskExecutorImpl_Set1.00.hpp" />
+    <ClInclude Include="..\Movement\TaskExecutorImpl_Vector1.10.hpp" />
+    <ClInclude Include="..\Movement\TaskScheduler.h" />
+    <ClInclude Include="..\Movement\TaskScheduler.Tests.hpp" />
+    <ClInclude Include="..\Movement\pch.h" />
+    <ClInclude Include="..\Movement\Client.h" />
+    <ClInclude Include="..\Movement\Imports.h" />
+    <ClInclude Include="..\Movement\Location.h" />
+    <ClInclude Include="..\Movement\MoveListener.h" />
+    <ClInclude Include="..\Movement\MoveSplineInit.h" />
+    <ClInclude Include="..\Movement\Transport.h" />
+    <ClInclude Include="..\Movement\UnitMovement.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\dep\g3dlite\win\VC9\G3D.lib.vcxproj">
+      <Project>{b304f5f9-1123-42c9-93e8-14e3b3f89b49}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\framework\framework.vcxproj">
+      <Project>{688a630c-a0eb-4c3c-8acf-125cff744ae0}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
