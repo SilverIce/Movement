@@ -20,7 +20,7 @@ namespace Movement
 
         void OnUpdatePositionCallback(Tasks::TaskExecutor_Args& args) {
             RescheduleTaskWithDelay(args, 1000);
-            Imports.OnPositionChanged(m_unit->Owner, m_unit->GetGlobalLocation());
+            m_unit->OnPositionChanged();
         }
 
         struct PassengerImpl : IPassenger

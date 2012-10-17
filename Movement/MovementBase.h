@@ -19,13 +19,18 @@ class WorldObject;
 
 namespace Movement
 {
-    struct MovingEntity_WOW : MovingEntity_Revolvable2
+    struct MovingEntity_WOW : MovingEntity_Revolvable3
     {
     private:
         COMPONENT_TYPEID(MovingEntity_WOW);
-        typedef MovingEntity_Revolvable2 base;
+        typedef MovingEntity_Revolvable3 base;
 
     public:
+
+        void OnPositionChanged() {
+            const Vector3& global = GlobalPosition();
+            Imports.OnPositionChanged(Owner, Location(global.x,global.y,global.z,base::YawAngle()));
+        }
 
         ObjectGuid Guid;
         WorldObject* Owner;
@@ -41,28 +46,28 @@ namespace Movement
 
         void RelativePosition(const Vector3& position) {
             base::RelativePosition(position);
-            Imports.OnPositionChanged(Owner, GetGlobalLocation());
+            OnPositionChanged();
         }
 
         using base::YawAngle;
 
         void YawAngle(float value) {
             base::YawAngle(value);
-            Imports.OnPositionChanged(Owner, GetGlobalLocation());
+            OnPositionChanged();
         }
 
-        Location GetGlobalLocation() const {
-            return Location(GlobalPosition(),base::YawAngle());
+        Vector4 GetGlobalLocation() const {
+            return Vector4(GlobalPosition(),base::YawAngle());
         }
 
-        void RelativeLocation(const Location& position) {
-            base::YawAngle(position.orientation);
-            base::RelativePosition(position);
-            Imports.OnPositionChanged(Owner, GetGlobalLocation());
+        void RelativeLocation(const Vector4& position) {
+            base::YawAngle(position.w);
+            base::RelativePosition(position.xyz());
+            OnPositionChanged();
         }
 
-        Location RelativeLocation() const {
-            return Location(base::RelativePosition(),base::YawAngle());
+        Vector4 RelativeLocation() const {
+            return Vector4(base::RelativePosition(),base::YawAngle());
         }
 
         void toString(QTextStream& st) const override

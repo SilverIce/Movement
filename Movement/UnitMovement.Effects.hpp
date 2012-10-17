@@ -251,9 +251,9 @@ namespace Movement
 
     class TeleportEffect : private RespHandler
     {
-        Location m_location;
+        Vector4 m_location;
 
-        TeleportEffect(ClientImpl * client, const Location& loc) :
+        TeleportEffect(ClientImpl * client, const Vector4& loc) :
             RespHandler(MSG_MOVE_TELEPORT_ACK, client), m_location(loc)
         {
             ClientMoveState& state = PacketBuilder::CreateMoveState(*client->controlled());
@@ -272,7 +272,7 @@ namespace Movement
 
     public:
 
-        static void Launch(UnitMovementImpl& mov, const Location& loc)
+        static void Launch(UnitMovementImpl& mov, const Vector4& loc)
         {
             if (mov.IsClientControlled())
             {
@@ -281,8 +281,8 @@ namespace Movement
             else
             {
                 MoveSplineInit init(mov);
-                init.MoveTo(loc);
-                init.SetFacing(loc.orientation);
+                init.MoveTo(loc.xyz());
+                init.SetFacing(loc.w);
                 init.SetInstant();
                 init.Launch();
             }

@@ -49,8 +49,8 @@ namespace Movement
             transport_seat = 0;
         }
 
-        Location globalPosition;
-        Location relativePosition;
+        Vector4 globalPosition;
+        Vector4 relativePosition;
         ObjectGuid transport_guid;
         UnitMoveFlag moveFlags;
         MSTime ms_time;
@@ -75,11 +75,11 @@ namespace Movement
         QString string;
         QTextStream st(&string);
         st << "Movement flags       " << moveFlags.toString() << endl;
-        st << "Global position      " << globalPosition.toString() << endl;
+        st << "Global position      " << globalPosition.toString().c_str() << endl;
 
         if (moveFlags.ontransport)
         {
-            st << "Local position       " << relativePosition.toString() << endl;
+            st << "Local position       " << relativePosition.toString().c_str() << endl;
             st << "seat Id              " << (int32)transport_seat << endl;
         }
 

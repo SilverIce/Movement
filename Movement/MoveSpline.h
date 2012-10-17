@@ -10,7 +10,7 @@
 
 #include "spline.h"
 #include "MoveSplineInitArgs.h"
-#include "Location.h"
+#include "G3D/Vector4.h"
 
 class QTextStream;
 
@@ -79,7 +79,7 @@ namespace Movement
             while(difftime > 0);
         }
 
-        Location ComputePosition() const;
+        Vector4 ComputePosition() const;
 
         uint32 GetId() const { return m_Id;}
         bool Arrived() const { return timeTotal() == timePassed(); }

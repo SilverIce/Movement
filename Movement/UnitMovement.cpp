@@ -97,10 +97,10 @@ namespace Movement
 
     void UnitMovement::SetPosition(const Location& position)
     {
-        m->unit.RelativeLocation(position);
+        m->unit.RelativeLocation(Vector4(position.x,position.y,position.z,position.orientation));
     }
 
-    Location UnitMovement::GetPosition()
+    Vector4 UnitMovement::GetPosition()
     {
         return m->unit.GetGlobalLocation();
     }
@@ -187,7 +187,7 @@ namespace Movement
 
     void UnitMovement::Teleport(const Location& loc)
     {
-        TeleportEffect::Launch(m->unit, loc);
+        TeleportEffect::Launch(m->unit, Vector4(loc.x,loc.y,loc.z,loc.orientation));
     }
 
     void UnitMovement::Knockback(float directionAngle, float horizontalVelocity, float verticalVelocity)

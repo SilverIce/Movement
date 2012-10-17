@@ -66,13 +66,13 @@ namespace Movement
     {
         ClientMoveState stateIn;
 
-        stateIn.globalPosition = Location(10, 20, 30, 1);
+        stateIn.globalPosition = Vector4(10, 20, 30, 1);
         stateIn.fallTime = 400;
         stateIn.ms_time = 20000;
         testClientMoveStateSerialization(testState,stateIn);
 
         stateIn.moveFlags.ontransport = true;
-        stateIn.relativePosition = Location(1, 2, 3, 1);
+        stateIn.relativePosition = Vector4(1, 2, 3, 1);
         stateIn.transport_seat = 1;
         testClientMoveStateSerialization(testState,stateIn);
 
@@ -133,13 +133,13 @@ namespace Movement
         Vector3 pos = mov.FinalDestination();
         EXPECT_TRUE(pos.fuzzyEq(path[1]));
 
-        pos = mov.ComputePosition();
+        pos = mov.ComputePosition().xyz();
         EXPECT_TRUE( pos.fuzzyEq(path[0]) );
 
         mov.updateState(mov.timeTotal());
         EXPECT_TRUE(mov.Arrived());
         EXPECT_TRUE(mov.timeTotal() == mov.timePassed());
-        EXPECT_TRUE( mov.ComputePosition().fuzzyEq(path[1]) );
+        EXPECT_TRUE( mov.ComputePosition().xyz().fuzzyEq(path[1]) );
     }
 
     struct MoveSplineInitArgs_Default : public MoveSplineInitArgs
@@ -224,9 +224,9 @@ namespace Movement
 
             mov.updateState(diffTime, hdl);
 
-            Location loc = mov.ComputePosition();
+            Vector4 loc = mov.ComputePosition();
             EXPECT_TRUE( loc.isFinite() );
-            EXPECT_TRUE( arg.path[mov.currentPathPointIdx()].fuzzyEq( loc ) );
+            EXPECT_TRUE( arg.path[mov.currentPathPointIdx()].fuzzyEq( loc.xyz() ) );
         }
     }
 

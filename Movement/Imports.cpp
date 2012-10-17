@@ -13,7 +13,7 @@ namespace Movement
 {
     namespace
     {
-        void FOnPositionChanged(WorldObject* obj, const Movement::Location&) {}
+        void FOnPositionChanged(WorldObject* obj, const Location&) {}
         void FBroadcastMessage(WorldObject* obj, Movement::MovementMessage& msg) {}
         void FBroadcastMessage(WorldObject* obj, const PacketData& msg) {}
         void FSendPacket(void * socket, const PacketData& msg) {}
@@ -62,7 +62,6 @@ namespace Movement
 
     bool InitModule(const _Imports& ftable)
     {
-        srand((unsigned int)time(NULL));
         ::delayInit::callCtors();
         bool testRes = testing::runTests(meta<testing::TestInfo>::getListConst());
         SetupImports(ftable);
@@ -78,6 +77,7 @@ extern "C" int EXPORT InitAndRunTests()
 #if defined(_CONSOLE)
 int main(int argc, char **argv)
 {
+    srand((unsigned int)time(NULL));
     InitAndRunTests();
     return 0;
 }

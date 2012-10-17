@@ -3,15 +3,8 @@
 #include "framework/typedefs.h"
 
 class WorldObject;
-class Packet;
 
 template<class> class QVector;
-
-namespace Movement{
-    struct Location;
-    class MovementMessage;
-    class UnitMovement;
-}
 
 namespace G3D {
     class Vector3;
@@ -19,7 +12,12 @@ namespace G3D {
 
 namespace Movement
 {
+    class Location;
+    class MovementMessage;
+    class UnitMovement;
     struct PacketData;
+    class Packet;
+
     struct _Imports 
     {
         void (CDECL* OnPositionChanged)(WorldObject* obj, const Location&);

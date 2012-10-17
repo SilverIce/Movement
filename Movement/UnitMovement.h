@@ -46,11 +46,11 @@ namespace Movement
 
     EXPORT double Gravity();
     EXPORT double computeFallTime(float path_length);
-    EXPORT double computeFallElevation(float time_passed, float start_velocy);
+    EXPORT double computeFallElevation(float time_passed, float start_velocity);
     EXPORT double computeFallElevation(float time_passed);
 
     class UnitMovementImpl;
-    struct Location;
+    class Location;
 
     class UnitPassenger;
     class Transporter;
@@ -89,7 +89,7 @@ namespace Movement
         /** It changes raw position only and doesn't synchronizes it with clients.
             It has been added as additional initialization step */
         void SetPosition(const Location& position);
-        Location GetPosition();
+        Vector4 GetPosition();
         const Vector3& GetPosition3();
         /** Returns current moving direction. Returns Vector3(0,0,0) in case unit is not moving */
         Vector3 direction();

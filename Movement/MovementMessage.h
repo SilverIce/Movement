@@ -69,9 +69,9 @@ namespace Movement
         b << v.x << v.y << v.z;
     }
 
-    inline void operator << (ByteBuffer& b, const Location& v)
+    inline void operator << (ByteBuffer& b, const Vector4& v)
     {
-        b << v.x << v.y << v.z << v.orientation;
+        b << v.x << v.y << v.z << v.w;
     }
 
     inline void operator >> (ByteBuffer& b, Vector3& v)
@@ -79,9 +79,9 @@ namespace Movement
         b >> v.x >> v.y >> v.z;
     }
 
-    inline void operator >> (ByteBuffer& b, Location& v)
+    inline void operator >> (ByteBuffer& b, Vector4& v)
     {
-        b >> v.x >> v.y >> v.z >> v.orientation;
+        b >> v.x >> v.y >> v.z >> v.w;
     }
 
     inline void operator >> (ByteBuffer& b, MSTime& v)

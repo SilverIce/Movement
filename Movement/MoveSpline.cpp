@@ -12,14 +12,14 @@ inline float MSToSec(uint32 ms) {
     return ms / 1000.f;
 }
 
-Location MoveSpline::ComputePosition() const
+Vector4 MoveSpline::ComputePosition() const
 {
     float u = 1.f;
     int32 seg_time = spline.lengthBetween(point_Idx,point_Idx+1);
     if (seg_time > 0)
         u = (time_passed - spline.length(point_Idx)) / (float)seg_time;
 
-    Location c(spline.evaluatePosition(point_Idx,u), initialOrientation);
+    Vector4 c(spline.evaluatePosition(point_Idx,u), initialOrientation);
 
     if (splineflags.animation)
         ;// MoveSplineFlag::Animation disables falling or parabolic movement
@@ -31,9 +31,9 @@ Location MoveSpline::ComputePosition() const
     if (splineflags.done && splineflags.isFacing())
     {
         if (splineflags.final_angle)
-            c.orientation = facing.angle;
+            c.w = facing.angle;
         else if (splineflags.final_point)
-            c.orientation = atan2f(facing.y-c.y, facing.x-c.x);
+            c.w = atan2f(facing.y-c.y, facing.x-c.x);
         //nothing to do for MoveSplineFlag::Final_Target flag
     }
     else
@@ -41,11 +41,11 @@ Location MoveSpline::ComputePosition() const
         if (!splineflags.hasFlag(MoveSplineFlag::RotationFixed|MoveSplineFlag::Falling))
         {
             Vector3 direction = spline.evaluateDerivative(point_Idx,u);
-            c.orientation = atan2f(direction.y, direction.x);
+            c.w = atan2f(direction.y, direction.x);
         }
 
         if (splineflags.orientationInversed)
-            c.orientation = -c.orientation;
+            c.w = -c.w;
     }
     return c;
 }
