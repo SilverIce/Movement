@@ -221,6 +221,18 @@ void SplineBase::InitCatmullRom(const Vector3* controls, index_type count, bool 
     index_hi = points.size() - 1 - 1;
 }
 
+void SplineBase::initCustom(const Vector3* controls, index_type count, EvaluationMode mode)
+{
+    assert_or_throw(controls && count >= 4, ARGS(Exception<SplineBase,InitializationFailed>));
+    assert_or_throw(mode < ModeEnd, ARGS(Exception<SplineBase,InitializationFailed>));
+
+    points.resize(count);
+    memcpy(&points[0], controls, sizeof(Vector3) * count);
+    m_mode = mode;
+    index_lo = 1;
+    index_hi = count - 1 - 1;
+}
+
 QString SplineBase::toString() const
 {
     QString string;

@@ -135,6 +135,8 @@ public:
         cyclic_point parameter is a point index where spline end connects to that point, cyclic_point is [0, count). */
     void initCyclicSpline(const Vector3 * controls, index_type count, EvaluationMode mode, index_type cyclic_point);
 
+    void initCustom(const Vector3* controls, index_type count, EvaluationMode mode);
+
     /** As i can see there are a lot of ways how spline can be initialized
         would be no harm to have some custom initializers. */
     template<class Init> inline void initSpline(Init& initializer)
@@ -203,15 +205,31 @@ public:
     /**  Initializes lengths with SplineBase::segmentLength method. */    
     void initLengths(uint32 precision = SplineBase::LengthPrecisionDefault);
 
-    /** Initializes lengths in some custom way
-        Note that value returned by cacher must be greater or equal to previous value. */
-    template<class T> inline void initLengths(T& cacher)
+    /** Initializes lengths in some custom way.
+        Note that value returned by cacher must be greater or equal to previous value.
+        @func receives two arguments: spline and spline point index
+        and returns distance between first spline point and given point index. */
+    template<class T> inline void initLengths(T& func)
     {
         lengths.resize(last() + 1);
-        index_type i = 1, N = lengths.size();
-        while (i < N) {
-            setLength(i, cacher(const_cast<const Spline&>(*this), i));
-            ++i;
+        index_type pointIdx = 1;
+        while (pointIdx <= last()) {
+            setLength(pointIdx, func(const_cast<const Spline&>(*this), pointIdx));
+            ++pointIdx;
+        }
+    }
+
+    /** Initializes lengths in some custom way.
+        @func receives two arguments: spline and spline segment index
+        and returns distance between given segment index boundaries. */
+    template<class T> inline void initLengthsPart(T& func)
+    {
+        lengths.resize(last() + 1);
+        index_type segmentIdx = 0;
+        length_type lengthSumm = (length_type)0;
+        while (segmentIdx < last()) {
+            lengthSumm += func(const_cast<const Spline&>(*this), segmentIdx);
+            setLength(++segmentIdx, lengthSumm);
         }
     }
 
