@@ -152,8 +152,8 @@ public:
         LengthPrecisionWoWClient = 20,
     };
 
-    /** Calculates distance between [pointIdx; pointIdx+1] points, assumes that i and next i+1 indexes are in bounds.
-        precision - segment length evaluation precision. asserts that precision > 0. */
+    /** Calculates distance between boundary points of @segmentIdx segment. 
+        @precision - segment length evaluation precision. asserts that precision > 0. */
     float segmentLength(index_type segmentIdx, uint32 precision = LengthPrecisionDefault) const {
         assertInitialized();
         assertSegmentIndexInRange(segmentIdx);
@@ -200,18 +200,6 @@ public:
         @param t - percent of spline's length, t in range [0, 1]. */
     void computeIndex(float t, index_type& out_segmentIdx, float& out_u) const;
 
-    /** Initializes spline. Don't call other methods while spline not initialized. */
-    void initSpline(const Vector3 * controls, index_type count, EvaluationMode mode) {
-        SplineBase::initSpline(controls,count,mode);
-    }
-
-    /** Initializes cyclic spline. Don't call other methods while spline not initialized.
-        @param cyclic_point - a such index of the path where path tail will smoothly transite to that index
-    */
-    void initCyclicSpline(const Vector3 * controls, index_type count, EvaluationMode mode, index_type cyclic_point) {
-        SplineBase::initCyclicSpline(controls,count,mode,cyclic_point);
-    }
-
     /**  Initializes lengths with SplineBase::segmentLength method. */    
     void initLengths(uint32 precision = SplineBase::LengthPrecisionDefault);
 
@@ -238,7 +226,7 @@ public:
         return lengths[pointIdxNext]-lengths[pointIdx];
     }
 
-    /** Gets or sets length. Length is distance between 0 and @pointIdx spline points. */
+    /** Gets or sets length. Length is distance between 0 and @pointIdx spline points (or distance between 0 and low @segmentIndx point).*/
     length_type length(index_type pointIdx) const { return lengths[pointIdx];}
     void setLength(index_type pointIdx, length_type length) {
         assert_state(pointIdx == 0 || lengths[pointIdx-1] <= length);
