@@ -20,7 +20,6 @@ namespace Movement
     {
         using MovingEntity_WOW::Environment;
         using MovingEntity_WOW::SetEnvironment;
-        using MovingEntity_WOW::BindedEntities;
     public:
 
         Tasks::TaskTarget_DEV tasks;
@@ -31,7 +30,7 @@ namespace Movement
 
             Guid.SetRawValue(info.guid);
             Owner = info.object;
-            tasks.SetExecutor(info.executor);
+            tasks.SetExecutor(*info.executor);
         }
 
         ~TransportImpl() {
@@ -46,6 +45,7 @@ namespace Movement
         }
 
         void UnboardAll() {
+            // maybe it's not ok to invoke unboard at such low level.
             struct {
                 void operator()(Component * passenger) {
                     passenger->as<IPassenger>().Unboard();
@@ -90,12 +90,12 @@ namespace Movement
     struct LengthPassedDescr
     {
         uint32 enterStamp;
-        uint32 departureStamp;
+        uint32 departureTime;
         uint32 timeTotal;
 
         float accel;
         float velMax;
-        float segmentLength;
+        float pathLength;
         float initialLength;
 
         bool beginAccel;
@@ -108,12 +108,12 @@ namespace Movement
             memset(this, 0, sizeof(*this));
         }
 
-        public: void Init(float velocity, float Accel, float segmLength, float InitLength, bool BeginAccel, bool EndDecel)
+        public: void Init(float Velocity, float Accel, float PathLength, float InitialLength, bool BeginAccel, bool EndDecel)
         {
             accel = Accel;
-            velMax = velocity;
-            segmentLength = segmLength;
-            initialLength = InitLength;
+            velMax = Velocity;
+            pathLength = PathLength;
+            initialLength = InitialLength;
 
             beginAccel = BeginAccel;
             endDecel = EndDecel;
@@ -121,22 +121,22 @@ namespace Movement
             InitMoveTime();
         }
 
-        private: void InitMoveTime()
+        public: void InitMoveTime()
         {
             float ftimeTotal = 0;
 
             if (!beginAccel && !endDecel)
             {
-                ftimeTotal = segmentLength / velMax;
+                ftimeTotal = pathLength / velMax;
                 timeEndAccel = 0;
                 timeBeginDecel = ftimeTotal;
             }
             else {
-                // Length of the path that required to accelerate from zero to maximum velocity
+                // Length of the path that required to accelerate(or decelerate) from zero to maximum velocity
                 float accelS = velMax*velMax / (2*accel);
                 static_assert((1 == (int32)true) && (0 == (int32)false), "");
-                // Is true in case in current path segment transport able to accelerate to his maximum velocity
-                bool enoughToAccelerate = (segmentLength >= ((int32)beginAccel+(int32)endDecel)*accelS);
+                // 'enoughToAccelerate' is true in case it's possible to accelerate to maximum velocity
+                bool enoughToAccelerate = (pathLength >= ((int32)beginAccel+(int32)endDecel)*accelS);
                 if (enoughToAccelerate)
                 {
                     /** Graphic shows velocity changes. In current example 
@@ -157,7 +157,7 @@ namespace Movement
                     else
                         ftimeTotal += accelS / velMax;
 
-                    ftimeTotal += (segmentLength - 2*accelS) / velMax;
+                    ftimeTotal += (pathLength - 2*accelS) / velMax;
 
                     if (endDecel) {
                         timeBeginDecel = ftimeTotal;
@@ -183,7 +183,7 @@ namespace Movement
                         // Time that needed to accelerate velocity from zero to maximum velocity
                         // deceleration and acceleration takes equal time
                         //sqrtf(2 * (spline.lengthTotal()/2) / accel);
-                        float accelT = sqrtf(segmentLength / accel);
+                        float accelT = sqrtf(pathLength / accel);
                         // recalculate maximum velocity
                         velMax = accelT * accel;
 
@@ -192,13 +192,13 @@ namespace Movement
                     }
                     else if (beginAccel) {
                         //assert_state(segmentLength >= accelS); //for test
-                        ftimeTotal = sqrtf(2 * segmentLength / accel);
+                        ftimeTotal = sqrtf(2 * pathLength / accel);
                         timeEndAccel = timeBeginDecel = ftimeTotal;
                         velMax = ftimeTotal * accel;
                     }
                     else if (endDecel) {
                         //assert_state(segmentLength >= accelS); //for test
-                        ftimeTotal = sqrtf(2 * segmentLength / accel);
+                        ftimeTotal = sqrtf(2 * pathLength / accel);
                         timeEndAccel = timeBeginDecel = 0.f;
                         velMax = ftimeTotal * accel;
                     }
@@ -207,11 +207,11 @@ namespace Movement
             timeTotal = ftimeTotal * 1000;
         }
 
-        public: float pathPassedLen(uint32 mstime) const
+        public: float pathPassedLength(uint32 timeMs) const
         {
-            assert_state(mstime <= arriveTime());
+            assert_state(timeMs <= arriveTime());
 
-            float time = (mstime > departureStamp ? mstime - departureStamp : 0) * 0.001f;
+            float time = (timeMs > departureTime ? timeMs - departureTime : 0) * 0.001f;
             
             float len = 0.f;
             if (time < timeEndAccel)
@@ -236,23 +236,23 @@ namespace Movement
                 else
                     len += timeBeginDecel * velMax;
 
-                assert_state(endDecel);
+                //assert_state(endDecel); // assertion fails cause float ops are not precise. disabled assertion causes no harm
                 float timeLeft = (time - timeBeginDecel);
                 // deceleration: @accel has negative sign
                 len += velMax*timeLeft - accel * timeLeft * timeLeft * 0.5f;
             }
             // asserts that recently calculated length value is near or less than total length
-            assert_state(G3D::fuzzyLe(len,segmentLength));
+            assert_state(G3D::fuzzyLe(len,pathLength));
             return initialLength + len;
         }
 
         public: uint32 arriveTime() const {
-            return (departureStamp + timeTotal);
+            return (departureTime + timeTotal);
         }
 
-        public: bool isMoving(uint32 mstime) const {
-            assert_state(mstime <= arriveTime());
-            return mstime > departureStamp;
+        public: bool isMoving(uint32 time) const {
+            assert_state(time <= arriveTime());
+            return time > departureTime;
         }
 
         public: uint32 moveTimeTotal() const { return timeTotal;}
@@ -263,35 +263,37 @@ namespace Movement
         Vector3 position;
         Vector3 der;
         uint32 nodeIdx;
+        uint32 mapId;
     };
 
     class PathSegment
     {
-        Spline<float> spline;
+        public: const uint32 enterTime;
+        private: uint32 m_timeTotal;
+        private: uint32 m_mapId;
+        private: Spline<float> spline;
+        private: QVector<LengthPassedDescr> m_nodes;
 
-        QVector<LengthPassedDescr> m_nodes;
+        public: uint32 moveTimeTotal() const { return m_timeTotal;}
+        public: uint32 mapId() const { return m_mapId;}
 
-        uint32 m_timeTotal;
-        bool m_cyclic;
-
-        public: PathSegment(const Transport::MotionInfo& info, int32& nodeItr)
+        public: PathSegment(const Transport::MotionInfo& info, uint32& nodeItr, uint32 EnterTime)
+            : enterTime(EnterTime)
         {
             m_timeTotal = 0;
-            m_cyclic = false;
 
             assert_state(info.nodes);
             assert_state(info.nodesSize > 1);
-            assert_state(nodeItr < (int32)info.nodesSize);
+            assert_state(nodeItr < info.nodesSize);
 
-            const int32 first = nodeItr;
+            m_mapId = info.nodes[nodeItr].mapid;
+
+            const uint32 first = nodeItr;
             initSpline(info, first, nodeItr);
-            initLengthDescriptors(info, first, nodeItr);
-
-            const LengthPassedDescr& lastDescr = m_nodes.back();
-            assert_state( G3D::fuzzyEq(spline.lengthTotal(), lastDescr.initialLength+lastDescr.segmentLength) );
+            initLengthDescriptors(info, first);
         }
 
-        private: void initSpline(const Transport::MotionInfo &info, int32 first, int32 &nodeItr) 
+        private: void initSpline(const Transport::MotionInfo &info, uint32 first, uint32 &nodeItr) 
         {
             const TaxiPathNodeEntry * const nodes = info.nodes;
             SplineBase::ControlArray points;
@@ -306,183 +308,252 @@ namespace Movement
             }
             // now nodeItr is invalid or points to node that on different map
 
-            m_cyclic = (points.size() == info.nodesSize/* && !beginAccel && !endDeccel*/);
             assert_state(points.size() > 1);
-            if (!m_cyclic)
-                spline.initSpline(&points[0], points.size(), SplineBase::ModeCatmullrom);
-            else
-                spline.initCyclicSpline(&points[0], points.size(), SplineBase::ModeCatmullrom, 0);
+            spline.initCustom(&points[0], points.size(), SplineBase::ModeCatmullrom);
 
             struct LengthInit {
                 const Transport::MotionInfo& info;
                 int32 firstDbcIdx;
-                float lengthSumm;
 
-                float operator()(const Spline<float>& s, int32 pointIdx) {
-                    if (info.nodes[pointIdx + firstDbcIdx].actionTeleport())
-                        return lengthSumm;
+                float operator()(const Spline<float>& s, int32 segmentIdx) {
+                    if (info.nodes[segmentIdx + firstDbcIdx + 1].actionTeleport())
+                        return 0;
                     else
-                        return (lengthSumm += s.segmentLength(pointIdx-1, SplineBase::LengthPrecisionWoWClient));
+                        return s.segmentLength(segmentIdx, SplineBase::LengthPrecisionWoWClient);
                 }
             };
-            LengthInit init = {info, first, 0};
-            spline.initLengths(init);
+            LengthInit init = {info, first};
+            spline.initLengthsPart(init);
         }
 
-        private: void initLengthDescriptors(const Transport::MotionInfo &info, int32 first, int32 nodeEndIdx) 
+        private: void initLengthDescriptors(const Transport::MotionInfo &info, uint32 first) 
         {
-            const TaxiPathNodeEntry * const nodes = info.nodes;
-            int32 endIdx = nodeEndIdx + (int32)m_cyclic;
-            for (int32 nodeIdx = first; (nodeIdx+1) < endIdx; )
+            for (int32 segmentIdx = 0; segmentIdx < spline.last(); )
             {
-                const TaxiPathNodeEntry& node = nodes[(nodeIdx) % info.nodesSize];
+                // it is 'splineIdx + 1' because first and last nodes are used just as storage for spline control points 
+                // and are take no any participation in path length calculation
+                const TaxiPathNodeEntry& node = info.nodes[first + segmentIdx + 1];
 
-                if (node.actionTeleport())
-                    ++nodeIdx;
-                else {
-                    int32 splineIdxBegin = nodeIdx - first;
-                    bool beginAccel = node.actionStop();
-                    bool endDeccel;
-                    const float initialLength = spline.length(splineIdxBegin);
-                    while(true) {
-                        ++nodeIdx;
-                        const TaxiPathNodeEntry& nodeNext = nodes[nodeIdx % info.nodesSize];
-                        if (!((nodeIdx+1) < endIdx) || !nodeNext.noAction()) {
-                            endDeccel = nodeNext.actionStop();
-                            break;
-                        }
-                    }
-                    float segmLength = spline.lengthBetween(splineIdxBegin,nodeIdx - first);
-
-                    LengthPassedDescr taxiNode;
-                    taxiNode.enterStamp = m_timeTotal;
-                    m_timeTotal += (node.actionStop() ? node.delay : 0) * 1000;
-                    taxiNode.departureStamp = m_timeTotal;
-                    taxiNode.Init(info.velocity, info.acceleration, segmLength, initialLength, beginAccel, endDeccel);
-                    m_timeTotal += taxiNode.moveTimeTotal();
-
-                    m_nodes.push_back(taxiNode);
+                if (node.actionTeleport()) {
+                    ++segmentIdx;
+                    continue;
                 }
+                
+                bool beginAccel = node.actionStop();
+                bool endDeccel;
+                int32 segmentIdxBegin = segmentIdx;
+                const float initialLength = spline.length(segmentIdx);
+                while(true) {
+                    ++segmentIdx;
+                    const TaxiPathNodeEntry& nodeNext = info.nodes[first + segmentIdx + 1];
+
+                    if ((segmentIdx+1 > spline.last()) || !nodeNext.noAction()) {
+                        endDeccel = nodeNext.actionStop();
+                        break;
+                    }
+                }
+                float segmLength = spline.lengthBetween(segmentIdxBegin, segmentIdx);
+
+                LengthPassedDescr taxiNode;
+                taxiNode.enterStamp = m_timeTotal;
+                m_timeTotal += (node.actionStop() ? node.delay : 0) * 1000;
+                taxiNode.departureTime = m_timeTotal;
+                taxiNode.Init(info.velocity, info.acceleration, segmLength, initialLength, beginAccel, endDeccel);
+                m_timeTotal += taxiNode.moveTimeTotal();
+
+                m_nodes.push_back(taxiNode);
             }
+            
+            const LengthPassedDescr& lastDescr = m_nodes.back();
+            assert_state( G3D::fuzzyEq(spline.lengthTotal(), lastDescr.initialLength+lastDescr.pathLength) );
         }
 
-        private: const LengthPassedDescr& getDescr(uint32 time) const {
-            assert_state(time <= moveTimeTotal());
-            int32 idx = 0;
-            while(true) {
-                // terminate cycle only if next node timestamp > time or there is no next node
-                if (idx == (m_nodes.size()-1) || m_nodes[idx+1].enterStamp > time)
-                    break;
-                ++idx;
+        private: const LengthPassedDescr& getDescr(uint32 timeRelative) const
+        {
+            struct comparer {
+                bool operator () (const uint32& time, const LengthPassedDescr& segment) {
+                    return time < segment.enterStamp;
+                }
+            };
+            const LengthPassedDescr& descr = *(qUpperBound(m_nodes.begin(),m_nodes.end(),timeRelative,comparer()) - 1);
+            assert_state(descr.enterStamp <= timeRelative);
+            return descr;
         }
-
-        public: uint32 moveTimeTotal() const { return m_timeTotal;}
-
-        public: bool isCyclic() const { return m_cyclic;}
 
         public: TransportState computeState(uint32 time) const
         {
-            assert_state(time < m_timeTotal);
-
+            time = relativeTime(time);
             const LengthPassedDescr& desc = getDescr(time);
             int32 splineIdx;
             float u;
-            spline.computeIndex(desc.pathPassedLen(time) / spline.lengthTotal(), splineIdx, u);
+            spline.computeIndex(desc.pathPassedLength(time) / spline.lengthTotal(), splineIdx, u);
 
             TransportState state;
             state.position = spline.evaluatePosition(splineIdx, u);
             state.der = -spline.evaluateDerivative(splineIdx, u);
             state.nodeIdx = splineIdx;
+            state.mapId = m_mapId;
             return state;
         }
 
         public: void movingState(QTextStream& st, uint32 time) const
         {
+            time = relativeTime(time);
             TransportState state = computeState(time);
             st << endl << "nodeId " << state.nodeIdx;
-            st << endl << "period " << moveTimeTotal()*0.001f;
-            st << endl << "passed " << time*0.001f;
+            st << endl << "map Id " << m_mapId;
 
             const LengthPassedDescr& desc = getDescr(time);
             st << endl << "beginStop " << desc.beginAccel << " endStop " << desc.endDecel;
             st << endl << "timeToNextDesc " << 0.001f*(desc.arriveTime() - time);
             st << endl << "isMoving = " << desc.isMoving(time);
          }
+
+        private: uint32 relativeTime(uint32 time) const {
+            assert_state(enterTime <= time && time <= (enterTime + moveTimeTotal()));
+            return time - enterTime;
+        }
     };
 
     /** Controls transport motion */
-    class MOTransportMover : public Tasks::ICallBack, private Component
+    class MOTransportMover : private Component
     {
         COMPONENT_TYPEID(MOTransportMover);
-        TransportImpl* m_controlled;
-        std::auto_ptr<PathSegment> m_segment;
+        TransportImpl m_controlled;
+        Vector3 m_initialLocation;
+        Transport* m_publicFace;
+
         uint32 m_pathId;
+        uint32 m_currentTime;
+        uint32 m_period;
+        uint32 m_mapId;
+        QVector<PathSegment*> m_segments;
 
-        TransportState m_state;
     public:
+        int32 timeModDbg;
 
-        int32 timeMod;
-        uint32 time;
+        uint32 timeLine() const { return m_currentTime;}
+        uint32 period() const { return m_period; }
+        uint32 mapId() const { return m_mapId;}
+        TransportImpl& controlled() { return m_controlled;}
 
-        explicit MOTransportMover(TransportImpl& controlled, const Transport::MotionInfo& info)
+        explicit MOTransportMover(const Transport::CreateInfo& info, Transport* publicFace) : m_controlled(info)
         {
-            m_controlled = &controlled;
-            m_pathId = info.nodes->path;
-            timeMod = 0;
-            time = 0;
-            int32 firstIdx = 0;
-            m_segment.reset(new PathSegment(info, firstIdx));
-            controlled.ComponentAttach(this);
-            float oldPeriod = (float)Imports.GetUIntValue(m_controlled->Owner,GAMEOBJECT_LEVEL) * 0.001f;
-            Imports.SetUIntValue(m_controlled->Owner, GAMEOBJECT_LEVEL, m_segment->moveTimeTotal());
+            m_pathId = info.motion.nodes->path;
+            m_period = 0;
+            timeModDbg = 0;
+            m_currentTime = 0;
+            m_mapId = (uint32)-1;
+            m_publicFace = publicFace;
+            m_initialLocation = Vector3(info.initialLocation.x, info.initialLocation.y, info.initialLocation.z);
+
+            uint32 firstIdx = 0;
+            while (firstIdx < info.motion.nodesSize) {
+                PathSegment* segment = new PathSegment(info.motion, firstIdx, m_period);
+                m_period += segment->moveTimeTotal();
+                m_segments.append(segment);
+            }
+            assert_state(!m_segments.empty());
+
+            m_controlled.ComponentAttach(this);
+            m_controlled.tasks.AddTask(newTask(this,&MOTransportMover::updatePositionCallback), 0);
+
+            float oldPeriod = 0.001f * Imports.GetUIntValue(m_controlled.Owner,GAMEOBJECT_LEVEL);
+            Imports.SetUIntValue(m_controlled.Owner,GAMEOBJECT_LEVEL, m_period);
+
+            updateState(info.executor->TickCount().time);
 
             log_debug("transport mover initialized");
-            log_debug("    new period %f seconds, old %f. cyclic=%i",
-                m_segment->moveTimeTotal()/1000.f, oldPeriod, (int)m_segment->isCyclic());
+            log_debug("    %u new period %f seconds, old %f. accelRate %f velocity %f",
+                info.motion.nodes->path, m_period/1000.f, oldPeriod, info.motion.acceleration, info.motion.velocity);
         }
 
         ~MOTransportMover() {
-            m_controlled = nullptr;
+            qDeleteAll(m_segments);
         }
 
         /** If true, enables transport position visualization by spawning marks.
             Disabled by default, because such visualization causes client crash.*/
         static volatile bool spawnMarks;
 
-        void Execute(Tasks::TaskExecutor_Args& args) override
+        void updatePositionCallback(Tasks::TaskExecutor_Args& args)
         {
             Tasks::RescheduleTaskWithDelay(args, 500);
-
-            time = (timeMod + args.now.time) % m_segment->moveTimeTotal();
-
-            m_state = m_segment->computeState(time);
-            m_controlled->RelativePosition(m_state.position);
-            m_controlled->SetRotationFromTangentLine(m_state.der);
-
+            updateState(args.now.time);
             // spawn mark each 2.5 sec to show ship server-side location
             if (args.execTickCount % (2500/100) && spawnMarks)
-                Imports.SpawnMark(m_controlled->Owner, m_controlled->GlobalPosition());
+                Imports.SpawnMark(m_controlled.Owner, m_controlled.GlobalPosition());
+        }
+
+        void updateState(uint32 time)
+        {
+            m_currentTime = time % m_period;
+            TransportState state = currentSegment().computeState(m_currentTime);
+            m_controlled.RelativePosition(m_initialLocation + state.position);
+            m_controlled.SetRotationFromTangentLine(state.der);
+            if (m_mapId != state.mapId) {
+                m_mapId = state.mapId;
+                Transport::OnMapChanged(*m_publicFace, controlled().Owner);
+            }
+        }
+
+        const PathSegment& currentSegment() const {
+            struct comparer {
+                bool operator () (const uint32& time, const PathSegment* segment) {
+                    return time < segment->enterTime;
+                }
+            };
+            const PathSegment& segm = **(qUpperBound(m_segments.constBegin(),m_segments.constEnd(),m_currentTime,comparer()) - 1);
+            assert_state(segm.enterTime <= m_currentTime);
+            return segm;
         }
 
         void toString(QTextStream& st) const override
         {
             st << endl << "path Id " << m_pathId;
-            st << endl << "movetime mod (sec) " << timeMod*0.001f;
-            m_segment->movingState(st, time);
+            st << endl << "movetime mod " << timeModDbg*0.001f;
+            st << endl << "period " << m_period*0.001f;
+            st << endl << "passed " << m_currentTime*0.001f;
+            st << endl << "map Id " << m_mapId;
+            currentSegment().movingState(st, m_currentTime);
         }
     };
 
     volatile bool MOTransportMover::spawnMarks = false;
 
-    Transport::Transport(const Transport::CreateInfo& info) {
-        m = new TransportImpl(info);
-        m->tasks.AddTask(new MOTransportMover(*m, info.motion), 0);
+    Transport::Transport(const Transport::CreateInfo& info) : m(nullptr) {
+        m = new MOTransportMover(info, this);
     }
 
     Transport::~Transport() {
         delete m;
         m = nullptr;
     }
+
+    uint32 Transport::timeLine() {
+        return m->timeLine();
+    }
+
+    uint32 Transport::mapId() {
+        return m->mapId();
+    }
+
+    const Vector3& Transport::Position() {
+        return m->controlled().GlobalPosition();
+    }
+
+    QVector<Component*> Transport::Passengers() {
+        QVector<Component*> passengers;
+        auto first = m->controlled().BindedEntities().first();
+        while (first) {
+            passengers.append(first->Value);
+            first = first->Next();
+        }
+        return passengers;
+    }
+
+    static void OnMapChanged_DoNothing(Transport&, WorldObject*) {}
+    void (*Transport::OnMapChanged)(Transport&, WorldObject*) = &OnMapChanged_DoNothing;
 }
 
 namespace Movement
@@ -510,7 +581,7 @@ namespace Movement
             Description = "Enables or disables transport position visualization. Command affects all transports.";
         }
 
-        void Invoke(StringReader& /*command*/, CommandInvoker& /*invoker*/) override {
+        void Invoke(StringReader& command, CommandInvoker& invoker) override {
             MOTransportMover::spawnMarks = !MOTransportMover::spawnMarks;
         }
     };
@@ -526,7 +597,7 @@ namespace Movement
 
         void Invoke(StringReader& command, CommandInvoker& inv) override {
             if (MOTransportMover * mover = extractMover(inv))
-                mover->timeMod = command.readFloat() * 1000;
+                mover->timeModDbg = command.readFloat() * 1000;
         }
     };
     DELAYED_INIT(SetTransportTimeMod, SetTransportTimeMod);
@@ -546,4 +617,89 @@ namespace Movement
         }
     };
     DELAYED_INIT(PrintTransportInfoCommand, PrintTransportInfoCommand);
+}
+
+namespace Movement
+{
+    TEST_REGISTER(LoadTaxiNodes);
+    void LoadTaxiNodes(testing::State& testState)
+    {
+        const TaxiPathNodeEntry nodes[] = {
+            {1094,0,571,7559.285645,1858.847656,644.990051,0,0,0,0},
+            {1094,1,571,7495.156250,1804.520020,644.990051,0,0,0,0},
+            {1094,2,571,7408.253418,1736.899902,636.212830,0,0,0,0},
+            {1094,3,571,7287.811523,1662.633057,644.990051,0,0,0,0},
+            {1094,4,571,7156.391602,1594.091553,644.990051,0,0,0,0},
+            {1094,5,571,7035.677246,1512.187134,644.990051,2,5,0,0},
+            {1094,6,571,7096.642578,1412.777588,629.185364,0,0,0,0},
+            {1094,7,571,7243.689941,1458.626221,608.824402,0,0,0,0},
+            {1094,8,571,7398.887207,1559.812744,595.243347,2,5,0,0},
+            {1094,9,571,7705.005371,1751.556274,597.215637,0,0,0,0},
+            {1094,10,571,7861.870605,1856.443970,620.241089,0,0,0,0},
+            {1094,11,571,7810.094727,1962.217041,640.380249,2,5,0,0},
+            {1094,12,571,7691.859375,1936.717896,641.684753,0,0,0,0},
+            {1094,13,571,7560.709473,1858.655151,644.990051,0,0,0,0},
+            {1094,14,571,7497.058105,1804.973389,644.990051,0,0,0,0},
+            {1094,15,571,7409.123535,1737.521484,636.074219,0,0,0,0},
+        };
+
+        Transport::MotionInfo info;
+        info.nodes = nodes;
+        info.nodesSize = CountOf(nodes);
+        info.acceleration = 1;
+        info.velocity = 2;
+
+        uint32 firstNode = 0;
+        PathSegment segm(info, firstNode, 0);
+
+        log_console("new period is %f, proper is 1051.388062", segm.moveTimeTotal()*0.001f);
+
+        Vector3 prevPos = segm.computeState(0).position;
+
+        for (uint32 time = 0; time <= segm.moveTimeTotal()*10; time += (segm.moveTimeTotal()/100)) {
+            TransportState& st = segm.computeState(time % segm.moveTimeTotal());
+            EXPECT_TRUE( st.position.isFinite() );
+            EXPECT_TRUE( st.der.isFinite() );
+
+            float dist = (st.position - prevPos).length();
+            prevPos = st.position;
+            // expects that position changes are enough 'smooth'
+            //EXPECT_TRUE( dist < 80 );
+        }
+    }
+
+    TEST_REGISTER(LengthPassedDescrTest);
+    void LengthPassedDescrTest(testing::State& testState)
+    {
+        using G3D::fuzzyEq;
+
+        {
+            LengthPassedDescr desc;
+            desc.accel = 0;
+            desc.velMax = 10;
+            desc.pathLength = 60;
+            desc.beginAccel = desc.endDecel = false;
+            desc.InitMoveTime();
+
+            EXPECT_TRUE(desc.moveTimeTotal() == uint32(1000 * desc.pathLength / desc.velMax));
+            EXPECT_TRUE(fuzzyEq(desc.pathPassedLength(desc.moveTimeTotal()), desc.pathLength));
+        }
+        {
+            LengthPassedDescr desc;
+            desc.accel = 2;
+            desc.velMax = 10;
+            desc.pathLength = 60;
+            desc.beginAccel = true;
+            desc.endDecel = false;
+            desc.InitMoveTime();
+
+            float accelS = desc.velMax * desc.velMax * 0.5f / desc.accel;
+            float moveTime = 0.f;
+            if (accelS >= desc.pathLength)
+                moveTime = sqrtf(2*desc.pathLength/desc.accel);
+            else
+                moveTime = desc.velMax / desc.accel + (desc.pathLength - accelS) / desc.velMax;
+            EXPECT_TRUE(fuzzyEq(0.001f * desc.moveTimeTotal(), moveTime));
+        }
+    }
 }

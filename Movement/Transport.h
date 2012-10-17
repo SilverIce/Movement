@@ -2,9 +2,12 @@
 
 #include "framework/typedefs.h"
 #include "framework/Component.h"
+#include "movement/Location.h"
 
 class WorldObject;
 struct TaxiPathNodeEntry;
+
+template<class> class QVector;
 
 namespace Tasks {
     class ITaskExecutor;
@@ -12,7 +15,7 @@ namespace Tasks {
 
 namespace Movement
 {
-    /** Holds the info that helps unboard, delink passenger from the transport. */
+    /** For internal use only! Holds the info that helps unboard, delink passenger from the transport. */
     struct IPassenger : Component
     {
         virtual void Unboard() = 0;
@@ -21,7 +24,7 @@ namespace Movement
 
     class EXPORT Transport
     {
-        class TransportImpl* m;
+        class MOTransportMover* m;
 
         Transport& operator = (const Transport&);
         Transport(const Transport&);
@@ -38,12 +41,26 @@ namespace Movement
         struct CreateInfo
         {
             WorldObject* object;
-            Tasks::ITaskExecutor& executor;
+            Tasks::ITaskExecutor* executor;
             uint64 guid;
             MotionInfo motion;
+            Location initialLocation;
         };
 
         explicit Transport(const Transport::CreateInfo& );
         ~Transport();
+
+        uint32 timeLine();
+
+        uint32 mapId();
+
+        const Vector3& Position();
+
+        // special position to append it into create packets
+        const Vector3& initialPosition();
+
+        QVector<Component*> Passengers();
+
+        static void (*OnMapChanged)(Transport& transport, WorldObject* owner);
     };
 }
