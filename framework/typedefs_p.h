@@ -28,24 +28,22 @@ namespace Movement
 #       define assert_or_throw_msg(expr, exception_type, message) assert_or_throw(expr, exception_type)
 #   else
 
-        template<class ExceptionSource>
-        class ExceptionBase : public std::runtime_error {
-        public:
-            explicit ExceptionBase(const char* Message) : std::runtime_error(Message) {}
-        };
-
         template<class ExceptionSource, int Reason = -1>
-        class Exception : public ExceptionBase<ExceptionSource> {
+        class Exception : public Exception<ExceptionSource,-1> {
         public:
-            explicit Exception(const char* Message) : ExceptionBase<ExceptionSource>(Message) {}
+            explicit Exception(const char* Message) : Exception<ExceptionSource,-1>(Message) {}
         };
 
+        template<class ExceptionSource>
+        class Exception<ExceptionSource, -1> : public std::runtime_error {
+        public:
+            explicit Exception(const char* Message) : std::runtime_error(Message) {}
+        };
+
+#       define assert_or_throw(expr, exception_type) assert_or_throw_msg(expr, exception_type, "")
 #       define assert_or_throw_msg(expr, exception_type, message) \
             if (!(expr)) \
                 throw (exception_type)("In "__FUNCTION__": assertion '" #expr "' failed and exception of type '" #exception_type "' is thrown. " message);
-#       define assert_or_throw(expr, exception_type) \
-            if (!(expr)) \
-                throw (exception_type)("In "__FUNCTION__": assertion '" #expr "' failed and exception of type '" #exception_type "' is thrown");
 #   endif
 
 #   define ARGS(...) __VA_ARGS__
