@@ -9,10 +9,10 @@
 #pragma once
 
 #include "framework/Component.h"
+#include <QtCore/QTextStream>
 #include "ObjectGuid.h"
 #include "Location.h"
 #include "Imports.h"
-#include <QtCore/QTextStream>
 #include "MoveEnv.h"
 
 class WorldObject;

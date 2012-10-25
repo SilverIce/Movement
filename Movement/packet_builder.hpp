@@ -226,7 +226,7 @@ namespace Movement
         else
             state.moveFlags.spline_enabled = false;
 
-        validateFLags(state.moveFlags);
+        state.moveFlags.assertValid();
 
         return state;
     }

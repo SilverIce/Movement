@@ -301,6 +301,24 @@ namespace Movement
 
     //////////////////////////////////////////////////////////////////////////
 
+    void UnitMovementImpl::CleanReferences() {
+        if (m_client) {
+            m_client->Dereference(this);
+            m_client = nullptr;
+        }
+        commonTasks.Unregister();
+        Owner = nullptr;
+    }
+    
+    void UnitMovementImpl::toString(QTextStream& st) const {
+        MovingEntity_WOW::toString(st);
+
+        if (m_client)
+            m_client->ToString(st);
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+
     struct ClientMemoryLayout : public Client {
         explicit ClientMemoryLayout(void* socket) : impl(socket) {}
         ClientImpl impl;

@@ -38,7 +38,6 @@
 #include "MoveSplineInit.hpp"
 #include "ClientImpl.hpp"
 #include "UpdatableSpline.hpp"
-#include "UnitMovementImpl.hpp"
 #include "packet_builder.hpp"
 #include "FallFormulas.hpp"
 
@@ -55,11 +54,10 @@ namespace Movement
         UnitMovementStruct(const UnitMovement::CreateInfo& info, UnitMovement * publicFace)
         {
             unit.ComponentInit(&unit);
-            unit.ComponentAttach(publicFace);
-
             unit.Guid.SetRawValue(info.guid);
             unit.Owner = info.object;
             unit.Init(info.executor);
+            unit.ComponentAttach(publicFace);
             monsterController.Init(unit);
 
         }

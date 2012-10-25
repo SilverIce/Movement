@@ -18,6 +18,42 @@ namespace Movement
         Parameter_End,
     };
 
+    inline FloatParameter SelectSpeedType(UnitMoveFlag moveFlags)
+    {
+        if (moveFlags.spline_enabled)
+            return Parameter_SpeedCustom;
+
+        bool use_walk_forced = false;
+        if ( moveFlags.flying )
+        {
+            if ( moveFlags.backward /*&& speed_obj.flight >= speed_obj.flight_back*/ )
+                return Parameter_SpeedFlightBack;
+            else
+                return Parameter_SpeedFlight;
+        }
+        else if ( moveFlags.swimming )
+        {
+            if ( moveFlags.backward /*&& speed_obj.swim >= speed_obj.swim_back*/ )
+                return Parameter_SpeedSwimBack;
+            else
+                return Parameter_SpeedSwim;
+        }
+        else
+        {
+            if ( moveFlags.walk_mode || use_walk_forced )
+            {
+                //if ( speed_obj.run > speed_obj.walk )
+                return Parameter_SpeedWalk;
+            }
+            else
+            {
+                if ( moveFlags.backward /*&& speed_obj.run >= speed_obj.run_back*/ )
+                    return Parameter_SpeedRunBack;
+            }
+            return Parameter_SpeedRun;
+        }
+    }
+
     /** Contains unused fields */
     struct _ClientMoveState
     {

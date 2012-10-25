@@ -150,7 +150,7 @@ namespace Movement
 
         // select velocity if was not selected
         if (args.velocity == 0.f) {
-            selectedVelocity = UnitMovementImpl::SelectSpeedType(moveFlag_new & ~UnitMoveFlag::Spline_Enabled);
+            selectedVelocity = SelectSpeedType(moveFlag_new & ~UnitMoveFlag::Spline_Enabled);
             args.velocity = m_owner->GetParameter(selectedVelocity);
         }
         else
