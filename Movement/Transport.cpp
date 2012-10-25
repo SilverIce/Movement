@@ -271,7 +271,7 @@ namespace Movement
         public: const uint32 enterTime;
         private: uint32 m_timeTotal;
         private: uint32 m_mapId;
-        private: Spline<float> spline;
+        private: Spline<float> m_spline;
         private: QVector<LengthPassedDescr> m_nodes;
 
         public: uint32 moveTimeTotal() const { return m_timeTotal;}
@@ -308,8 +308,7 @@ namespace Movement
             }
             // now nodeItr is invalid or points to node that on different map
 
-            assert_state(points.size() > 1);
-            spline.initCustom(&points[0], points.size(), SplineBase::ModeCatmullrom);
+            m_spline.initCustom(&points[0], points.size(), SplineBase::ModeCatmullrom);
 
             struct LengthInit {
                 const Transport::MotionInfo& info;
@@ -323,12 +322,12 @@ namespace Movement
                 }
             };
             LengthInit init = {info, first};
-            spline.initLengthsPart(init);
+            m_spline.initLengthsPart(init);
         }
 
         private: void initLengthDescriptors(const Transport::MotionInfo &info, uint32 first) 
         {
-            for (int32 segmentIdx = 0; segmentIdx < spline.last(); )
+            for (int32 segmentIdx = 0; segmentIdx < m_spline.last(); )
             {
                 // it is 'splineIdx + 1' because first and last nodes are used just as storage for spline control points 
                 // and are take no any participation in path length calculation
@@ -342,17 +341,17 @@ namespace Movement
                 bool beginAccel = node.actionStop();
                 bool endDeccel;
                 int32 segmentIdxBegin = segmentIdx;
-                const float initialLength = spline.length(segmentIdx);
+                const float initialLength = m_spline.length(segmentIdx);
                 while(true) {
                     ++segmentIdx;
                     const TaxiPathNodeEntry& nodeNext = info.nodes[first + segmentIdx + 1];
 
-                    if ((segmentIdx+1 > spline.last()) || !nodeNext.noAction()) {
+                    if ((segmentIdx+1 > m_spline.last()) || !nodeNext.noAction()) {
                         endDeccel = nodeNext.actionStop();
                         break;
                     }
                 }
-                float segmLength = spline.lengthBetween(segmentIdxBegin, segmentIdx);
+                float segmLength = m_spline.lengthBetween(segmentIdxBegin, segmentIdx);
 
                 LengthPassedDescr taxiNode;
                 taxiNode.enterStamp = m_timeTotal;
@@ -365,7 +364,7 @@ namespace Movement
             }
             
             const LengthPassedDescr& lastDescr = m_nodes.back();
-            assert_state( G3D::fuzzyEq(spline.lengthTotal(), lastDescr.initialLength+lastDescr.pathLength) );
+            assert_state( G3D::fuzzyEq(m_spline.lengthTotal(), lastDescr.initialLength+lastDescr.pathLength) );
         }
 
         private: const LengthPassedDescr& getDescr(uint32 timeRelative) const
@@ -386,11 +385,11 @@ namespace Movement
             const LengthPassedDescr& desc = getDescr(time);
             int32 splineIdx;
             float u;
-            spline.computeIndex(desc.pathPassedLength(time) / spline.lengthTotal(), splineIdx, u);
+            m_spline.computeIndex(desc.pathPassedLength(time) / m_spline.lengthTotal(), splineIdx, u);
 
             TransportState state;
-            state.position = spline.evaluatePosition(splineIdx, u);
-            state.der = -spline.evaluateDerivative(splineIdx, u);
+            state.position = m_spline.evaluatePosition(splineIdx, u);
+            state.der = -m_spline.evaluateDerivative(splineIdx, u);
             state.nodeIdx = splineIdx;
             state.mapId = m_mapId;
             return state;
@@ -400,7 +399,6 @@ namespace Movement
         {
             time = relativeTime(time);
             TransportState state = computeState(time);
-            st << endl << "nodeId " << state.nodeIdx;
             st << endl << "map Id " << m_mapId;
 
             const LengthPassedDescr& desc = getDescr(time);
