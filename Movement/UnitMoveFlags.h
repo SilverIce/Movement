@@ -104,11 +104,11 @@ namespace Movement
         void assertValid() const {
             // Some movement flag combinations can freeze client.
             // function asserts that flags aren't enabled in same time
-            assert_state(forward && backward);
-            assert_state(strafe_left && strafe_right);
-            assert_state(ascending && descending);
-            assert_state(pitch_up && pitch_down);
-            //assert_state(spline_enabled && root); //confirmed
+            assert_state(!(forward & backward));
+            assert_state(!(strafe_left & strafe_right));
+            assert_state(!(ascending & descending));
+            assert_state(!(pitch_up & pitch_down));
+            //assert_state(!(spline_enabled & root)); //confirmed
         }
 
         union
