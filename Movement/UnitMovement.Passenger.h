@@ -6,7 +6,7 @@ namespace Movement
     /** Handles notification that object-passenger will be deleted soon. */
     struct OnPassengerDestroy
     {
-        virtual void onDestroy(Unit_Passenger & psg) = 0;
+        virtual void onPassengerDestroy(Unit_Passenger & psg) = 0;
     };
 
     class Unit_Passenger : public Component
@@ -14,7 +14,7 @@ namespace Movement
         COMPONENT_TYPEID(Unit_Passenger);
         UnitMovementImpl * m_unit;
         OnPassengerDestroy * m_onDestroy;
-        Tasks::TaskTarget_DEV m_updatePosTask;
+        Tasks::TaskTarget m_updatePosTask;
         ObjectGuid m_transportGuid;
         int8 m_seatId;
 
@@ -76,23 +76,23 @@ namespace Movement
             m_unit = &unitPassenger;
             m_seatId = seatId;
             m_onDestroy = onDestr;
-            m_updatePosTask.SetExecutor(unitPassenger.Updater());
 
             // TODO: need force stop spline movement effect before any coordinate system switch, otherwise
             // such effect will move us into wrong place
             ToUnit().SetEnvironment(&transport);
-            m_updatePosTask.AddTask(newTask(this,&Unit_Passenger::OnUpdatePositionCallback), 0);
+            ToUnit().ApplyMoveFlag(UnitMoveFlag::Ontransport,true);
+            ToUnit().Updater().AddTask(newTask(this,&Unit_Passenger::OnUpdatePositionCallback), 0, &m_updatePosTask);
         }
 
         ~Unit_Passenger() {
-            m_updatePosTask.Unregister();
+            ToUnit().Updater().CancelTasks(m_updatePosTask);
             // TODO: need force stop spline movement effect before any coordinate system switch, otherwise
             // such effect will move us into wrong place
             ToUnit().SetEnvironment(nullptr);
             ComponentDetach();
 
             if (m_onDestroy)
-                m_onDestroy->onDestroy(*this);
+                m_onDestroy->onPassengerDestroy(*this);
 
             m_onDestroy = nullptr;
             m_unit = nullptr;

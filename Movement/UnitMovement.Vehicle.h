@@ -56,7 +56,7 @@ namespace Movement
     #pragma region  event handlers
     private:
 
-        void onDestroy(Unit_Passenger & psg) override {
+        void onPassengerDestroy(Unit_Passenger & psg) override {
             assert_state(m_passengers[psg.SeatId()] == &psg);
             m_passengers[psg.SeatId()] = nullptr;
             OnUnboarded(psg);
@@ -210,6 +210,7 @@ namespace Movement
     }
 
     void Vehicle::Install(UnitMovement& transportOwner, uint32 vehicleId) {
+        assert_state(!transportOwner.asVehicle());
         new VehicleImpl(transportOwner.Impl(), vehicleId);
     }
 
