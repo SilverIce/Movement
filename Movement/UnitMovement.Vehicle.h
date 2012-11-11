@@ -65,10 +65,10 @@ namespace Movement
         void Onboarded(Unit_Passenger & psg)
         {
             // put your custom code here
-            Location seatOffset(Vector3(), 0);
+            Vector3 seatOffset;
             MoveSplineInit init(psg.ToUnit());
             init.MoveTo(seatOffset);
-            init.SetFacing(seatOffset.orientation);
+            init.SetFacing(0);
             init.Launch();
             //ModeChangeEffect::Launch(&psg.ToUnit(), MoveModeRoot, true);
             //TeleportEffect::Launch(&ToUnit(), seatOffset);

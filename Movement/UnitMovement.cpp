@@ -167,7 +167,7 @@ namespace Movement
 
     Vector3 UnitMovement::direction()
     {
-        return m->unit.direction();
+        return m->unit.movingDirection();
     }
 
     uint32 UnitMovement::MoveSplineId()

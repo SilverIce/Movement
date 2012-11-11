@@ -50,24 +50,24 @@ namespace Movement
 
         void toString(QTextStream& st) const override;
 
-        Vector3 direction2d() const {
+        Vector3 movingDirection2D() const {
             if (!moveFlags.hasDirection())
                 return Vector3();
-            float dir = directionAngle();
+            float dir = movingDirectionAngle();
             return Vector3(cos(dir), sin(dir), 0);
         }
 
-        Vector3 direction() const {
+        Vector3 movingDirection() const {
             if (!moveFlags.hasDirection())
                 return Vector3();
             if (!moveFlags.hasFlag(UnitMoveFlag::Mask_Pitching))
-                return direction2d();
+                return movingDirection2D();
             float cosPitch = cos(PitchAngle());
-            float yaw = directionAngle();
+            float yaw = movingDirectionAngle();
             return Vector3( cosPitch*cos(yaw), cosPitch*sin(yaw), sin(PitchAngle()) );
         }
 
-        float directionAngle() const {
+        float movingDirectionAngle() const {
             float dest_angle = YawAngle();
             float quartPi = G3D::halfPi()*0.5f;
             if (moveFlags.forward) {
