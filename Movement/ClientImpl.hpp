@@ -201,10 +201,12 @@ namespace Movement
 
             if (unit.moveFlags.ontransport != newFlags.ontransport)
             {
-                if (newFlags.ontransport)
-                {
-                }
-                else {
+                Unit_Passenger::dealloc( unit.getAspect<Unit_Passenger>() );
+
+                if (newFlags.ontransport && state.transport_guid.GetRawValue() != 0) {
+                    MovingEntity_WOW * transp = unit.context->registry.get<MovingEntity_WOW>(state.transport_guid);
+                    assert_state( transp );
+                    Unit_Passenger::create(unit, *transp, nullptr, state.transport_seat);
                 }
             }
 
