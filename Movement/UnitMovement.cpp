@@ -54,12 +54,9 @@ namespace Movement
         UnitMovementStruct(const UnitMovement::CreateInfo& info, UnitMovement * publicFace)
         {
             unit.ComponentInit(&unit);
-            unit.Guid.SetRawValue(info.guid);
-            unit.Owner = info.object;
-            unit.Init(info.executor);
+            unit.Init(info);
             unit.ComponentAttach(publicFace);
             monsterController.Init(unit);
-
         }
 
         ~UnitMovementStruct()

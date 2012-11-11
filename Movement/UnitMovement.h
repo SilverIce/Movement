@@ -55,6 +55,7 @@ namespace Movement
     class UnitPassenger;
     class Transporter;
     class Vehicle;
+    class Context;
 
     class EXPORT UnitMovement : public Component
     {
@@ -68,7 +69,7 @@ namespace Movement
         struct CreateInfo
         {
             WorldObject* object;
-            Tasks::ITaskExecutor& executor;
+            Context& context;
             uint64 guid;
         };
 

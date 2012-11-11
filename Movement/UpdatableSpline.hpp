@@ -181,7 +181,7 @@ namespace Movement
                 assert_state(me.IsOrientationBinded());
 
                 UnitMovementImpl& controlled = me.controlled();
-                if (UnitMovement * target = Imports.GetUnit2(controlled.Owner, me.m_targetGuid.GetRawValue()))
+                if (UnitMovement * target = controlled.context->registry.get<UnitMovement>(me.m_targetGuid))
                 {
                     RescheduleTaskWithDelay(args, RotationUpdateDelay);
                     lastOrientationUpdate = args.now;

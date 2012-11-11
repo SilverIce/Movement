@@ -78,7 +78,7 @@ namespace Movement
         m_resp_handlers.clear();
         LostControl();
         commonTasks.Unregister();
-        m_socket = NULL;
+        m_socket = nullptr;
     }
 
     ClientImpl::~ClientImpl()
@@ -124,12 +124,6 @@ namespace Movement
             m_controlled->client(NULL);
         }
         m_controlled = NULL;
-    }
-
-    ClientImpl::ClientImpl(void * socket) :
-        m_socket(socket),
-        m_controlled(NULL)
-    {
     }
 
     void ClientImpl::ToString(QTextStream& str) const
@@ -286,7 +280,7 @@ namespace Movement
         ObjectGuid guid;
         data >> guid;
 
-        if (UnitMovement * movem = Imports.GetUnit(client.m_socket, guid.GetRawValue())) {
+        if (UnitMovement * movem = client.m_context.registry.get<UnitMovement>(guid)) {
             client.LostControl();
             client.SetControl(movem->Impl());
         }
@@ -307,7 +301,7 @@ namespace Movement
             m_client = nullptr;
         }
         commonTasks.Unregister();
-        Owner = nullptr;
+        MovingEntity_WOW::CleanReferences();
     }
     
     void UnitMovementImpl::toString(QTextStream& st) const {
@@ -320,7 +314,7 @@ namespace Movement
     //////////////////////////////////////////////////////////////////////////
 
     struct ClientMemoryLayout : public Client {
-        explicit ClientMemoryLayout(void* socket) : impl(socket) {}
+        explicit ClientMemoryLayout(void* socket, Context &context) : impl(socket, context) {}
         ClientImpl impl;
     };
 
@@ -334,9 +328,9 @@ namespace Movement
         HandlersHolder::instance().InvokeHander(static_cast<ClientMemoryLayout*>(this)->impl, Packet(message));
     }
 
-    Client* Client::create(void * socket)
+    Client* Client::create(void * socket, Context &context)
     {
-        return new ClientMemoryLayout(socket);
+        return new ClientMemoryLayout(socket, context);
     }
 
     void Client::dealloc()

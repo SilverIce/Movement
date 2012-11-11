@@ -340,15 +340,17 @@ namespace Movement
         }
     };
 
-    struct MovingEntity_Revolvable3 : Component
+    // Note: implementation assumes that T derives this class
+    template<class T>
+    struct MovingEntity_Revolvable3
     {
     private:
-        MovingEntity_Revolvable3 * m_Environment;
+        T * m_Environment;
         Vector3 m_RelativePosition;
         LazyRotation m_rotation;
 
-        LinkedListSimple<MovingEntity_Revolvable3*> m_binded;
-        LinkedListElementSimple<MovingEntity_Revolvable3*> m_me;
+        LinkedListSimple<T*> m_binded;
+        LinkedListElementSimple<T*> m_me;
         // cached data:
         mutable bool m_globalRotationOutdated;
         mutable bool m_globalPositionOutdated;
@@ -361,7 +363,7 @@ namespace Movement
             if (Environment())
                 m_globalPositionOutdated = true;
             struct {
-                void operator()(MovingEntity_Revolvable3* entity) const {
+                void operator()(T* entity) const {
                     entity->m_globalPositionOutdated = true;
                     entity->m_binded.Visit(*this);
                 }
@@ -375,7 +377,7 @@ namespace Movement
             if (Environment())
                 m_globalRotationOutdated = true;
             struct {
-                void operator()(MovingEntity_Revolvable3* entity) const {
+                void operator()(T* entity) const {
                     entity->m_globalRotationOutdated = true;
                     entity->m_globalPositionOutdated = true;
                     entity->m_binded.Visit(*this);
@@ -424,11 +426,11 @@ namespace Movement
             return m_globalPosition;
         }
 
-        MovingEntity_Revolvable3* Environment() const {
+        T* Environment() const {
             return m_Environment;
         }
 
-        void SetEnvironment(MovingEntity_Revolvable3* env)
+        void SetEnvironment(T* env)
         {
             // detect cyclic dependence:
             //     -------------<-------------------
@@ -449,7 +451,7 @@ namespace Movement
             m_Environment = env;
         }
 
-        typedef LinkedListSimple<MovingEntity_Revolvable3*> Entities;
+        typedef LinkedListSimple<T*> Entities;
         const Entities& BindedEntities() const {
             return m_binded;
         }
@@ -461,7 +463,7 @@ namespace Movement
             m_globalPositionOutdated(true),
             m_globalRotationOutdated(true)
         {
-            m_me.Value = this;
+            m_me.Value = static_cast<T*>(this);
         }
 
         ~MovingEntity_Revolvable3() {

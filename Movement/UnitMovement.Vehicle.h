@@ -130,8 +130,8 @@ namespace Movement
 
         static void ChangeSeats(ClientImpl& client, Packet& data)
         {
-            UnitMovementImpl& unit = client.firstControlled();
-            // TODO: too much 'as' casts here..
+            UnitMovementImpl& unit = *client.firstControlledUnit();
+            // TODO: is not too much 'as' casts here?
             Unit_Passenger& psg = unit.as<Unit_Passenger>();
             VehicleImpl& veh = psg.Transport().as<VehicleImpl>();
 

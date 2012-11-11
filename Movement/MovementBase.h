@@ -14,46 +14,59 @@
 #include "Location.h"
 #include "Imports.h"
 #include "MoveEnv.h"
+#include "Context.h"
 
 class WorldObject;
 
 namespace Movement
 {
-    struct MovingEntity_WOW : MovingEntity_Revolvable3
+    struct MovingEntity_WOW : Component, private MovingEntity_Revolvable3<MovingEntity_WOW>
     {
     private:
         COMPONENT_TYPEID(MovingEntity_WOW);
-        typedef MovingEntity_Revolvable3 base;
+        typedef MovingEntity_Revolvable3<MovingEntity_WOW> base;
+
+        // maybe not very good solution - just to allow MovingEntity_WOW access to his own fields:
+        friend struct base;
+
+        friend class Unit_Passenger;
+        using base::SetEnvironment;
 
     public:
+        using base::Environment;
+        using base::YawAngle;
+        using base::PitchAngle;
+        using base::RollAngle;
+        using base::SetRotationFromTangentLine;
+        using base::RelativePosition;
+        using base::GlobalPosition;
+        using base::BindedEntities;
+
+        const ObjectGuid Guid;
+        WorldObject* const Owner;
+        Context* const context;
+
+        explicit MovingEntity_WOW() : Owner(nullptr), context(nullptr) {}
+
+        void Init(const ObjectGuid& guid, WorldObject* object, Context& _context) {
+            const_cast<ObjectGuid&>(Guid) = guid;
+            const_cast<WorldObject*>(Owner) = object;
+            const_cast<Context*>(context) = &_context;
+            _context.registry.add(guid, *this);
+        }
+
+        void CleanReferences() {
+            context->registry.remove(Guid);
+            const_cast<Context*>(context) = nullptr;
+        }
+
+        ~MovingEntity_WOW() {
+            assert_state(!context);
+        }
 
         void OnPositionChanged() {
             const Vector3& global = GlobalPosition();
-            Imports.OnPositionChanged(Owner, Location(global.x,global.y,global.z,base::YawAngle()));
-        }
-
-        ObjectGuid Guid;
-        WorldObject* Owner;
-
-        explicit MovingEntity_WOW() : Owner(nullptr) {}
-
-        void Init(const ObjectGuid& guid, WorldObject* object) {
-            Guid = guid;
-            Owner = object;
-        }
-
-        using base::RelativePosition;
-
-        void RelativePosition(const Vector3& position) {
-            base::RelativePosition(position);
-            OnPositionChanged();
-        }
-
-        using base::YawAngle;
-
-        void YawAngle(float value) {
-            base::YawAngle(value);
-            OnPositionChanged();
+            Imports.OnPositionChanged(Owner, Location(global.x,global.y,global.z,YawAngle()));
         }
 
         Vector4 GetGlobalLocation() const {
@@ -61,13 +74,17 @@ namespace Movement
         }
 
         void RelativeLocation(const Vector4& position) {
-            base::YawAngle(position.w);
-            base::RelativePosition(position.xyz());
+            YawAngle(position.w);
+            RelativePosition(position.xyz());
+        }
+
+        void RelativePosition(const Vector3& position) {
+            base::RelativePosition(position);
             OnPositionChanged();
         }
 
         Vector4 RelativeLocation() const {
-            return Vector4(base::RelativePosition(),base::YawAngle());
+            return Vector4(RelativePosition(),YawAngle());
         }
 
         void toString(QTextStream& st) const override

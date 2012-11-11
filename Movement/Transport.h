@@ -8,6 +8,7 @@ class WorldObject;
 struct TaxiPathNodeEntry;
 
 template<class> class QVector;
+class QByteArray;
 
 namespace Tasks {
     class ITaskExecutor;
@@ -21,6 +22,8 @@ namespace Movement
         virtual void Unboard() = 0;
         COMPONENT_TYPEID(IPassenger);
     };
+
+    class Context;
 
     class EXPORT Transport
     {
@@ -41,7 +44,7 @@ namespace Movement
         struct CreateInfo
         {
             WorldObject* object;
-            Tasks::ITaskExecutor* executor;
+            Context* context;
             uint64 guid;
             MotionInfo motion;
             Location initialLocation;
@@ -60,6 +63,8 @@ namespace Movement
         const Vector3& initialPosition();
 
         QVector<Component*> Passengers();
+
+        QByteArray WriteCreate();
 
         static void (*OnMapChanged)(Transport& transport, WorldObject* owner);
     };

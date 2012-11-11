@@ -4,22 +4,22 @@
 #include "framework/DelayInit.h"
 #include "Imports.h"
 #include "TaskScheduler.h"
+#include "framework/typedefs_p.h"
+
+#include "MovementBase.h"
+#include "spline.h"
+#include "UpdateFields.h"
+#include "MovementCommandMgr.h"
 
 #include <memory>
 #include <QtCore/QVector>
 #include <QtCore/QTextStream>
-#include "MovementCommandMgr.h"
-#include "framework/typedefs_p.h"
-#include "UpdateFields.h"
-#include "spline.h"
-#include "MovementBase.h"
 
 namespace Movement
 {
     class TransportImpl : public MovingEntity_WOW
     {
         using MovingEntity_WOW::Environment;
-        using MovingEntity_WOW::SetEnvironment;
     public:
 
         Tasks::TaskTarget_DEV tasks;
@@ -28,9 +28,8 @@ namespace Movement
         {
             ComponentInit<MovingEntity_WOW>(this);
 
-            Guid.SetRawValue(info.guid);
-            Owner = info.object;
-            tasks.SetExecutor(*info.executor);
+            Init(ObjectGuid(info.guid), info.object, *info.context);
+            tasks.SetExecutor(info.context->executor);
         }
 
         ~TransportImpl() {
@@ -42,16 +41,14 @@ namespace Movement
         void CleanReferences() {
             UnboardAll();
             tasks.Unregister();
+            MovingEntity_WOW::CleanReferences();
         }
 
         void UnboardAll() {
             // maybe it's not ok to invoke unboard at such low level.
-            struct {
-                void operator()(Component * passenger) {
-                    passenger->as<IPassenger>().Unboard();
-                }
-            } unboarder;
-            BindedEntities().Visit(unboarder);
+            while (!BindedEntities().empty()) {
+                BindedEntities().first()->Value->as<IPassenger>().Unboard();
+            }
             assert_state(BindedEntities().empty());
         }
     };
@@ -459,7 +456,7 @@ namespace Movement
             float oldPeriod = 0.001f * Imports.GetUIntValue(m_controlled.Owner,GAMEOBJECT_LEVEL);
             Imports.SetUIntValue(m_controlled.Owner,GAMEOBJECT_LEVEL, m_period);
 
-            updateState(info.executor->TickCount().time);
+            updateState(info.context->executor.TickCount().time);
 
             log_debug("transport mover initialized");
             log_debug("    %u new period %f seconds, old %f. accelRate %f velocity %f",
@@ -550,6 +547,11 @@ namespace Movement
         return passengers;
     }
 
+    QByteArray Transport::WriteCreate() {
+        assert_state(false); // not implemented yet
+        return QByteArray();
+    }
+
     static void OnMapChanged_DoNothing(Transport&, WorldObject*) {}
     void (*Transport::OnMapChanged)(Transport&, WorldObject*) = &OnMapChanged_DoNothing;
 }
@@ -563,7 +565,7 @@ namespace Movement
     static MOTransportMover* extractMover(CommandInvoker& invoker)
     {
         MOTransportMover * mover = nullptr;
-        if (MovingEntity_Revolvable2 * transp = invoker.com.as<MovingEntity_WOW>().Environment()) {
+        if (MovingEntity_WOW * transp = invoker.com.as<MovingEntity_WOW>().Environment()) {
             mover = transp->getAspect<MOTransportMover>();
             if (!mover)
                 invoker.output << endl << "Transport-target has no " STR(MOTransportMover) " component";
@@ -608,7 +610,7 @@ namespace Movement
         }
 
         void Invoke(StringReader& command, CommandInvoker& invoker) override {
-            if (MovingEntity_Revolvable2* target = invoker.com.as<MovingEntity_WOW>().Environment())
+            if (MovingEntity_WOW* target = invoker.com.as<MovingEntity_WOW>().Environment())
                 invoker.output << endl << "Transport info: " << target->toStringAll();
             else
                 invoker.output << endl << "Invoker is not boarded";

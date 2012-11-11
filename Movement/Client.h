@@ -13,6 +13,7 @@ template<typename> class QVector;
 
 namespace Movement
 {
+    class Context;
     class MovementMessage;
     struct PacketData;
 
@@ -29,7 +30,7 @@ namespace Movement
         ~Client() {}
     public:
 
-        static Client* create(void * socket);
+        static Client* create(void * socket, Context &context);
         void dealloc();
 
         /** Receives movement messages from all visible clients */

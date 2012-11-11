@@ -22,6 +22,7 @@ namespace Movement
     private:
         void * m_socket;
         UnitMovementImpl * m_controlled;
+        Context &m_context;
         MSTime m_time_diff;             // difference between client and server time: diff = client_ticks - server_ticks
         UInt32Counter m_requestCounter;
         //int32 time_skipped;
@@ -48,10 +49,10 @@ namespace Movement
 
         UnitMovementImpl* controlled() const { return m_controlled;}
 
-        UnitMovementImpl& firstControlled() const {
-            UnitMovement* result = Imports.GetUnit(m_socket, m_firstControlled.GetRawValue());
-            assert_state(result);
-            return result->Impl();
+        // 
+        UnitMovementImpl* firstControlledUnit() const {
+            UnitMovement *unit = m_context.registry.get<UnitMovement>(m_firstControlled);
+            return unit ? &unit->Impl() : nullptr;
         }
 
         void SetClientTime(const MSTime& client_time) {
@@ -86,7 +87,13 @@ namespace Movement
         void Dereference(const UnitMovementImpl * m);
     public:
 
-        explicit ClientImpl(void * socket);
+        explicit ClientImpl(void * socket, Context &context)
+            :  m_socket(socket)
+            , m_controlled(nullptr)
+            , m_context(context)
+        {
+        }
+
         ~ClientImpl();
 
         void ToString(QTextStream& st) const;

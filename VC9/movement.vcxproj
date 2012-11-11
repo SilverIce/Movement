@@ -166,7 +166,6 @@
   <ItemGroup>
     <ClCompile Include="..\Movement\BasicTests.cpp" />
     <ClCompile Include="..\Movement\Imports.cpp" />
-    <ClCompile Include="..\Movement\MoveUpdater.cpp" />
     <ClCompile Include="..\Movement\opcodes.cpp" />
     <ClCompile Include="..\Movement\UnitMovement.cpp" />
     <ClCompile Include="..\Movement\MoveSpline.cpp" />
@@ -181,6 +180,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Movement\ByteBuffer.h" />
+    <ClInclude Include="..\Movement\Context.h" />
     <ClInclude Include="..\Movement\LinkedList.h" />
     <ClInclude Include="..\Movement\LinkedListSimple.h" />
     <ClInclude Include="..\Movement\MoveEnv.h" />
@@ -204,7 +204,6 @@
     <ClInclude Include="..\Movement\UnitMovement.Tests.hpp" />
     <ClInclude Include="..\Movement\UnitMovement.Vehicle.h" />
     <ClInclude Include="..\Movement\UnitMovementImpl.h" />
-    <ClInclude Include="..\Movement\UnitMovementImpl.hpp" />
     <ClInclude Include="..\Movement\UpdatableSpline.h" />
     <ClInclude Include="..\Movement\UpdatableSpline.hpp" />
     <ClInclude Include="..\Movement\MoveSpline.h" />

@@ -44,8 +44,8 @@ namespace Movement
             return m_transportGuid;
         }
 
-        MovingEntity_Revolvable2& Transport() const {
-            MovingEntity_Revolvable2 * env = m_unit->Environment();
+        MovingEntity_WOW& Transport() const {
+            MovingEntity_WOW * env = m_unit->Environment();
             assert_state(env);
             return *env;
         }

@@ -17,7 +17,7 @@ namespace Movement
     public:
 
         explicit UnitMovementImpl()
-            : m_client(NULL)
+            : m_client(nullptr)
         {
             const float BaseValues[Parameter_End] = {
                 2.5f,                                                   // SpeedWalk
@@ -36,8 +36,9 @@ namespace Movement
             m_currentSpeedType = Parameter_SpeedRun;
         }
 
-        void Init(Tasks::ITaskExecutor& updater) {
-            commonTasks.SetExecutor(updater);
+        void Init(const UnitMovement::CreateInfo& info) {
+            MovingEntity_WOW::Init(ObjectGuid(info.guid), info.object, info.context);
+            commonTasks.SetExecutor(info.context.executor);
         }
 
         virtual ~UnitMovementImpl() {

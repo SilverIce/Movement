@@ -150,7 +150,9 @@ namespace Movement
         MoveEnv_LaunchTests<MovingEntity_Revolvable2>(testState);
     }
 
+    struct MovingEntity_Revolvable3_der : MovingEntity_Revolvable3<MovingEntity_Revolvable3_der> {};
+
     TEST(MoveEnv, MovingEntity_Revolvable3) {
-        MoveEnv_LaunchTests<MovingEntity_Revolvable3>(testState);
+        MoveEnv_LaunchTests<MovingEntity_Revolvable3_der>(testState);
     }
 }
