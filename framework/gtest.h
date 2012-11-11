@@ -44,6 +44,7 @@ namespace testing
     TEST(function, none) { extern void function(::testing::State&); function(testState); }
 
 #define EXPECT_TRUE(expression) ::testing::check(testState, expression, __FUNCTION__, #expression " is false");
+#define EXPECT_FALSE(expression)  ::testing::check(testState, !(expression), __FUNCTION__, #expression " is true");
 #define EXPECT_EQ(a, b) ::testing::check(testState, (a) == (b), __FUNCTION__, #a " != " #b);
 
 #define EXPECT_THROW(expression, exception) \

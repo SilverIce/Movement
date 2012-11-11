@@ -69,23 +69,24 @@ namespace Movement
 
         float directionAngle() const {
             float dest_angle = YawAngle();
+            float quartPi = G3D::halfPi()*0.5f;
             if (moveFlags.forward) {
                 if (moveFlags.strafe_right)
-                    dest_angle -= G3D::halfPi()*0.5;
+                    dest_angle -= quartPi;
                 else if (moveFlags.strafe_left)
-                    dest_angle += G3D::halfPi()*0.5;
+                    dest_angle += quartPi;
             }
             else if (moveFlags.backward) {
                 dest_angle += G3D::pi();
                 if (moveFlags.strafe_right)
-                    dest_angle += G3D::halfPi()*0.5;
+                    dest_angle += quartPi;
                 else if (moveFlags.strafe_left)
-                    dest_angle -= G3D::halfPi()*0.5;
+                    dest_angle -= quartPi;
             }
             else if (moveFlags.strafe_right)
-                dest_angle -= G3D::halfPi();
+                dest_angle -= quartPi;
             else if (moveFlags.strafe_left)
-                dest_angle += G3D::halfPi();
+                dest_angle += quartPi;
             return dest_angle;
         }
 

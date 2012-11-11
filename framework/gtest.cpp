@@ -87,6 +87,7 @@ namespace testing
     TEST(gtest, test_self)
     {
         EXPECT_TRUE( true );
+        EXPECT_FALSE( false );
         EXPECT_EQ( 1, 1);
 
         EXPECT_THROW( throw "expected_exception", char* );
