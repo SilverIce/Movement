@@ -74,7 +74,7 @@ namespace Tasks
         const Movement::uint32 execTickCount;
     };
 
-    class ReferenceCountable
+    class EXPORT ReferenceCountable
     {
     private:
         Movement::int32 refCount;

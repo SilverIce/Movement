@@ -218,4 +218,33 @@ namespace Movement
             EXPECT_EQ(guidIn, guidOut);
         }
     }
+
+    TEST(ObjectGuid, performance)
+    {
+        ObjectGuid guidIn( (uint64)rand() | 
+            ((uint64)rand() << 14) |
+            ((uint64)rand() << 28) |
+            ((uint64)rand() << 42) 
+            );
+
+        RdtscTimer pack, unpack;
+        PackedGuid packed;
+        ObjectGuid guidOut;
+        int i = 1000;
+        while(i-- > 0)
+        {
+            {
+                RdtscCall c(pack);
+                packed.Set(guidIn.GetRawValue());
+            }
+            {
+                RdtscCall c(unpack);
+                guidOut.SetRawValue(packed.Get());
+            }
+            // all these strange moves are done to not make compiler over-optimize code and remove packing, unpacking calls
+            guidIn = guidOut;
+        }
+        log_console("guid packing   takes %u", pack.avg());
+        log_console("guid unpacking takes %u", unpack.avg());
+    }
 }

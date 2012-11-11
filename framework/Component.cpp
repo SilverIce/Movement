@@ -307,5 +307,16 @@ namespace Movement
             }
         }
         log_console("average as<T> cast takes %u CPU ticks, casts count %u", tim.avg(), (uint32)tim.count());
+
+        RdtscTimer tm;
+        Component * com = &ctype;
+        for (int i = 0; i < 8000; ++i)
+        {
+            tm.onCallBegin();
+            com = dynamic_cast<TypeC*>(com);
+            tm.onCallEnd();
+            assert_state(com && com == &ctype);
+        }
+        log_console("average dynamic_cast<T> takes %u CPU ticks, casts count %u", tm.avg(), (uint32)tim.count());
     }
 }

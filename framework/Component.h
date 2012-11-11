@@ -46,7 +46,9 @@ namespace Movement
 
         public: explicit Component() : m_tree(0), m_this(0), m_typeId(0) {}
 
-        public: virtual ~Component();
+        /** Public virtual destructor is needed only in case it required to delete a component
+            by having just a pointer to abstract Component. This is not my case. */
+        protected: /*virtual*/ ~Component();
 
         public: template<class MyType> inline void ComponentInit(MyType * me) {
             _ComponentInit(static_cast<typename MyType::HasTypeId::ComponentType*>(me), MyType::HasTypeId::getTypeId(), 0);

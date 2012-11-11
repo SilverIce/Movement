@@ -89,6 +89,7 @@ namespace Movement
             // TODO: need force stop spline movement effect before any coordinate system switch, otherwise
             // such effect will move us into wrong place
             ToUnit().SetEnvironment(nullptr);
+            ToUnit().ApplyMoveFlag(UnitMoveFlag::Ontransport,false);
             ComponentDetach();
 
             if (m_onDestroy)

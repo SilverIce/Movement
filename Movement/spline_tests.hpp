@@ -118,4 +118,34 @@ namespace Movement
         EXPECT_THROW(spline.initSpline(points.constData(),points.count(),SplineBase::ModeEnd), ExcSplineInitFailed);
         EXPECT_THROW(spline.initCyclicSpline(points.constData(),points.count(),SplineBase::ModeCatmullrom,points.count()), ExcSplineInitFailed);
     }
+
+    TEST_DISABLED(SplineTests, spline_acceleration_RomanRom2)
+    {
+        SplineBase spline;
+        SplineBase::ControlArray points;
+        points << Vector3(0,0,0) << Vector3(1,1,0) << Vector3(2,0,0);
+
+        spline.initSpline(points.constData(),points.count(), SplineBase::ModeCatmullrom);
+
+        float delta = 0.01f;
+        float prevLength = 0.f;
+
+        float moveTime = 4;
+
+        log_console("segment length: %f", spline.segmentLength(1));
+        log_console("moveTime: %f", moveTime);
+
+        for (float t = 0.f; t <= 0.99f; t += delta)
+        {
+            float dt = delta * moveTime;
+
+            float length = (spline.evaluatePosition(1, t) - spline.evaluatePosition(1, t + delta)).length();
+
+            float v2 = length / dt, v1 = prevLength / dt;
+            float accel = (v2 - v1) / dt;
+
+            log_console("t: %f lengthDiff: %f accel: %f", t, length, accel);
+            prevLength = length;
+        }
+    }
 }
