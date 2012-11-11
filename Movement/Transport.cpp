@@ -456,7 +456,7 @@ namespace Movement
             float oldPeriod = 0.001f * Imports.GetUIntValue(m_controlled.Owner,GAMEOBJECT_LEVEL);
             Imports.SetUIntValue(m_controlled.Owner,GAMEOBJECT_LEVEL, m_period);
 
-            updateState(info.context->executor.TickCount().time);
+            updateState(info.context->executor.Time().time);
 
             log_debug("transport mover initialized");
             log_debug("    %u new period %f seconds, old %f. accelRate %f velocity %f",

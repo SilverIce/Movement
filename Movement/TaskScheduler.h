@@ -25,6 +25,7 @@ namespace Tasks
         virtual void AddTask(ICallBack * task, Movement::MSTime exec_time, TaskTarget* target) = 0;
         virtual void CancelTasks(TaskTarget& target) = 0;
         virtual void Execute(Movement::MSTime time) = 0;
+        virtual Movement::MSTime Time() = 0;
     protected:
         ~ITaskExecutor() {}
     };
@@ -43,6 +44,8 @@ namespace Tasks
         void CancelAllTasks();
 
         void Execute(Movement::MSTime time) override;
+
+        Movement::MSTime Time() override;
     };
 
     class EXPORT TaskTarget

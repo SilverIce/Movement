@@ -87,6 +87,7 @@ namespace Tasks { namespace detail
         Impl& impl;
         int32 m_objectsRegistered;
         MSTime updateCounter;
+        MSTime tickCount;
 
         NON_COPYABLE(taskExecutor);
     public:
@@ -119,10 +120,16 @@ namespace Tasks { namespace detail
 
         void Execute(MSTime time) override
         {
+            assert_state(tickCount <= time);
+            tickCount = time;
             RdtscCall c(timerUpdate);
             TaskExecutor_Args tt(*this, time, updateCounter.time);
             impl.Execute(tt);
             updateCounter += 1;
+        }
+
+        MSTime Time() override {
+            return tickCount;
         }
 
         void Register(TaskTarget& obj)
@@ -514,12 +521,12 @@ namespace Tasks { namespace detail
     }
 
     void TaskExecutorTest_TickCount(testing::State& testState, ITaskExecutor2& ex) {
-        EXPECT_TRUE( ex.TickCount() == 0 );
+        EXPECT_TRUE( ex.Time() == 0 );
         const MSTime time = 14000;
         ex.Execute(time);
-        EXPECT_TRUE( time == ex.TickCount() );
+        EXPECT_TRUE( time == ex.Time() );
         ex.Execute(time);
-        EXPECT_TRUE( time == ex.TickCount() );
+        EXPECT_TRUE( time == ex.Time() );
     }
     TEST(TaskExecutorTest, TickCount) {
         testExecutors(testState, TaskExecutorTest_TickCount);

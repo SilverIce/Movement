@@ -107,12 +107,16 @@ namespace Tasks
 
     public:
 
+        MSTime TickCount;
+
         void AddTask(ICallBack * task, MSTime exec_time, TaskTarget* target) {
             assert_state(task);
             ImplBase::AddTask(task, exec_time, target);
         }
 
         void Execute(ITaskExecutor& exec, MSTime time) {
+            assert_state(TickCount <= time);
+            TickCount = time;
             TaskExecutor_Args args(exec, time, m_updateCounter.time);
             ImplBase::Execute(args);
             m_updateCounter += 1;
@@ -140,6 +144,11 @@ namespace Tasks
     void TaskExecutor::CancelAllTasks()
     {
         impl.CancelAllTasks();
+    }
+
+    MSTime TaskExecutor::Time()
+    {
+        return impl.TickCount;
     }
 
     //////////////////////////////////////////////////////////////////////////

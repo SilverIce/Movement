@@ -18,7 +18,7 @@ namespace Movement
         if (!IsMoving())
             return;
 
-        MSTime timeNow = Imports.getMSTime();
+        MSTime timeNow = m_updater->Time();
         int32 difftime = (timeNow - m_lastQuery).time;
         if (difftime < recacheDelay)
             return;
@@ -96,7 +96,7 @@ namespace Movement
             return;
 
         m_base.Initialize(args);
-        m_lastQuery = Imports.getMSTime();
+        m_lastQuery = m_updater->Time();
         m_moving = true;
 
         m_updater->CancelTasks(m_updateMovementTask);
