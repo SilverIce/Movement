@@ -13,49 +13,53 @@ namespace Movement
     struct EXPORT Component
     {
         private: ComponentTree* m_tree;
-        private: void* m_this;
         private: AspectTypeId m_typeId;
 
         private: Component(const Component &);
         private: Component& operator = (const Component &);
 
-        private: void* _getAspect(AspectTypeId objectTypeId) const;
-        private: void* _as(AspectTypeId objectTypeId) const;
-        private: void _ComponentInit(void * me, AspectTypeId objectTypeId, ComponentTree * tree);
-        private: void _ComponentAttach(void * object, AspectTypeId objectTypeId, Component * com);
+        private: Component* _getAspect(AspectTypeId objectTypeId) const;
+        private: Component& _as(AspectTypeId objectTypeId) const;
+        private: void _ComponentInit(Component* me, AspectTypeId objectTypeId, ComponentTree * tree);
+        private: void _ComponentAttach(AspectTypeId objectTypeId, Component * com);
 
         /** Returns true to show that both components belongs to same entity. */
         public: bool sameTree(const Component& another) const {
             return m_tree == another.m_tree;
         }
 
-        public: virtual void toString(QTextStream& st) const;
+        /** Describes component by filling stream with text. */
+        public: virtual void toString(QTextStream& stream) const;
 
         /** Describes all components that attached to the tree  */
         public: QString toStringAll() const;
 
         /** Performs a cast to given type. Returns a null in case cast failed.*/
         public: template<class T> inline typename T::HasTypeId::ComponentType* getAspect() const {
-            return (typename T::HasTypeId::ComponentType*)_getAspect(T::HasTypeId::getTypeId());
+            return static_cast<typename T::HasTypeId::ComponentType*>( _getAspect(T::HasTypeId::getTypeId()) );
         }
 
         /** Performs a cast to given type. Asserts that cast never fails.*/
         public: template<class T> inline typename T::HasTypeId::ComponentType& as() const {
-            return *(typename T::HasTypeId::ComponentType*)_as(T::HasTypeId::getTypeId());
+            return static_cast<typename T::HasTypeId::ComponentType&>( _as(T::HasTypeId::getTypeId()) );
         }
 
-        public: explicit Component() : m_tree(0), m_this(0), m_typeId(0) {}
+        public: explicit Component() : m_tree(0), m_typeId(0) {}
 
         /** Public virtual destructor is needed only in case it required to delete a component
             by having just a pointer to abstract Component. This is not my case. */
         protected: /*virtual*/ ~Component();
 
         public: template<class MyType> inline void ComponentInit(MyType * me) {
-            _ComponentInit(static_cast<typename MyType::HasTypeId::ComponentType*>(me), MyType::HasTypeId::getTypeId(), 0);
+            (void)static_cast<typename MyType::HasTypeId::ComponentType*>(me);
+            (void)static_cast<Component*>(me);
+            _ComponentInit(me, MyType::HasTypeId::getTypeId(), 0);
         }
 
         public: template<class T> inline void ComponentAttach(T * object) {
-            _ComponentAttach(static_cast<typename T::HasTypeId::ComponentType*>(object), T::HasTypeId::getTypeId(), object);
+            (void)static_cast<typename T::HasTypeId::ComponentType*>(object);
+            (void)static_cast<Component*>(object);
+            _ComponentAttach(T::HasTypeId::getTypeId(), object);
         }
 
         public: void ComponentDetach();

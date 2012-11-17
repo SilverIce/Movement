@@ -103,44 +103,42 @@ namespace Movement
 
     Component::~Component()
     {
+        // code below should NOT throw!
         ComponentDetach();
     }
 
-    void Component::_ComponentInit(void * me, AspectTypeId objectTypeId, ComponentTree * tree)
+    void Component::_ComponentInit(Component* me, AspectTypeId objectTypeId, ComponentTree * tree)
     {
         assert_state(!m_tree);
-        assert_state(me);
+        assert_state(this == me);
 
         if (!tree)
             tree = new ComponentTree();
         m_tree = tree;
-        m_this = me;
         m_typeId = objectTypeId;
         m_tree->addRef();
         m_tree->addAspect(objectTypeId, *this);
     }
 
-    void Component::_ComponentAttach(void * object, AspectTypeId objectTypeId, Component * com)
+    void Component::_ComponentAttach(AspectTypeId objectTypeId, Component * component)
     {
-        assert_state(com);
+        assert_state(component);
         assert_state(m_tree);
-        com->_ComponentInit(object, objectTypeId, m_tree);
+        component->_ComponentInit(component, objectTypeId, m_tree);
     }
 
-    void* Component::_getAspect(AspectTypeId objectTypeId) const {
+    Component* Component::_getAspect(AspectTypeId objectTypeId) const {
         assert_state(m_tree);
         if (m_typeId == objectTypeId)
-            return m_this;
-        else if (Component * com = m_tree->getAspect(objectTypeId))
-            return com->m_this;
+            return const_cast<Component*>(this); // uh.. why i have declared cast methods as constant?
         else
-            return nullptr;
+            return m_tree->getAspect(objectTypeId);
     }
 
-    void* Component::_as(AspectTypeId objectTypeId) const {
-        void * object = _getAspect(objectTypeId);
+    Component& Component::_as(AspectTypeId objectTypeId) const {
+        Component * object = _getAspect(objectTypeId);
         assert_or_throw(object != nullptr, Exception<Component>);
-        return object;
+        return *object;
     }
 
     void Component::toString(QTextStream& st) const
@@ -249,6 +247,28 @@ namespace Movement
         EXPECT_TRUE( cnt.Count() == 0 );
     }
 
+    TEST(TypeContainer, cast)
+    {
+        struct BaseObj {
+            virtual ~BaseObj() {}
+            BaseObj () {}
+            char field1[100];
+        };
+
+        struct DerObj : BaseObj, Component {
+            COMPONENT_TYPEID(DerObj);
+            char field2[8];
+        };
+
+        DerObj type;
+        type.ComponentInit(&type);
+
+        TypeA atype;
+        type.ComponentAttach(&atype);
+
+        EXPECT_TRUE( atype.getAspect<DerObj>() == &type );
+    }
+
     TEST(TypeContainer, Component)
     {
         TypeA atype;
@@ -264,6 +284,18 @@ namespace Movement
         EXPECT_TRUE( atype.getAspect<TypeA>() == &atype );
         EXPECT_TRUE( btype.getAspect<TypeB>() == &btype );
         EXPECT_TRUE( &atype.as<TypeB>() == &btype );
+
+        btype.ComponentDetach();
+        EXPECT_TRUE( atype.getAspect<TypeB>() == nullptr );
+
+        {
+            TypeC *ctype = new TypeC;
+            atype.ComponentAttach(ctype);
+            EXPECT_TRUE( atype.getAspect<TypeC>() == ctype );
+
+            delete ctype;
+            EXPECT_TRUE( atype.getAspect<TypeC>() == nullptr );
+        }
     }
 
     TEST(TypeContainer, as_cast_performance)
