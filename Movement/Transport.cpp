@@ -525,11 +525,11 @@ namespace Movement
         m = nullptr;
     }
 
-    uint32 Transport::timeLine() {
+    uint32 Transport::TimeLine() {
         return m->timeLine();
     }
 
-    uint32 Transport::mapId() {
+    uint32 Transport::MapId() {
         return m->mapId();
     }
 

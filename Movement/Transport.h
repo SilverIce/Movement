@@ -16,13 +16,6 @@ namespace Tasks {
 
 namespace Movement
 {
-    /** For internal use only! Holds the info that helps unboard, delink passenger from the transport. */
-    struct IPassenger : Component
-    {
-        virtual void Unboard() = 0;
-        COMPONENT_TYPEID(IPassenger);
-    };
-
     class Context;
 
     class EXPORT Transport
@@ -53,14 +46,14 @@ namespace Movement
         explicit Transport(const Transport::CreateInfo& );
         ~Transport();
 
-        uint32 timeLine();
+        uint32 TimeLine();
 
-        uint32 mapId();
+        uint32 MapId();
 
         const Vector3& Position();
 
         // special position to append it into create packets
-        const Vector3& initialPosition();
+        const Vector3& InitialPosition();
 
         QVector<Component*> Passengers();
 

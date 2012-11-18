@@ -99,4 +99,11 @@ namespace Movement
                 st << endl << "moving entities attached count " << attachedCount;
         }
     };
+
+    /** For internal use only! Holds the info that helps unboard, delink passenger from the transport. */
+    struct IPassenger : Component
+    {
+        virtual void Unboard() = 0;
+        COMPONENT_TYPEID(IPassenger);
+    };
 }
