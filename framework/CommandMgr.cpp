@@ -223,7 +223,7 @@ namespace Movement
 
     TEST(CommandMgr, help_command)
     {
-        Component com;
+        struct : Component {} com;
         CommandInvoker invoker(com);
 
         CommandMgr mgr;

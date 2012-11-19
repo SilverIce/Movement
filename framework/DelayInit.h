@@ -7,14 +7,6 @@ namespace delayInit
     /** This structure should not be used directly by user.
         Also it should be allocated in global scope only. */
     typedef void (*CTor)();
-    struct node
-    {
-        CTor ctor;
-        node * next;
-
-        explicit node(CTor creator);
-    };
-
     template<class T> struct Obj {
         T * _objPtr;
         char _data[sizeof(T)];

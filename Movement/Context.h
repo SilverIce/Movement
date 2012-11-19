@@ -1,8 +1,10 @@
 #pragma once
 
+#include "TaskScheduler.h"
+#include "framework/Component.h"
+
 #include <QtCore/QHash>
 #include "framework/typedefs_p.h"
-#include "TaskScheduler.h"
 #include "ObjectGuid.h"
 
 namespace Movement

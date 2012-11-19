@@ -1,8 +1,14 @@
-#include "framework/typedefs_p.h"
 #include "TaskScheduler.h"
 
+#include "framework/typedefs_p.h"
 #include "LinkedList.h"
 #include "LinkedListSimple.h"
+#include "POD_Arrays.h"
+
+#include <time.h>
+#include <algorithm>
+#include <QtCore/QMap>
+#include <QtCore/QVector>
 
 namespace Tasks
 {
@@ -69,21 +75,6 @@ namespace Tasks { namespace detail
     static_assert(sizeof(TaskTargetImpl) <= sizeof(TaskTarget), "");
 }
 }
-
-#define ForEach(element, _array, action) { \
-        size_t ForEach_iter = 0; \
-        size_t ForEach_end = (_array).size(); \
-        while (ForEach_iter < ForEach_end) { \
-            element = (_array)[ForEach_iter]; \
-            ++ForEach_iter; \
-            action; \
-        } \
-    }
-
-#include <algorithm>
-#include <QtCore/QMap>
-#include <QtCore/QVector>
-#include "POD_Arrays.h"
 
 #include "TaskExecutorImpl_Vector1.10.hpp"
 #include "TaskExecutorImpl_LinkedList1.10.hpp"
