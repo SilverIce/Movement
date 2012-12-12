@@ -59,6 +59,27 @@ namespace Movement
     };
     DELAYED_INIT(TargetInfoCommand, TargetInfoCommand);
 
+    struct InstallVehicleCommand : public MovementCommand
+    {
+        explicit InstallVehicleCommand() {
+            Init("InstallVehicle|InstVeh");
+            Description = "attaches or detaches a vehicle component. argument is vehicle Id. pass zero to detach.";
+        }
+
+        void Invoke(StringReader& command, CommandInvoker& invoker) override {
+            uint32 vehicleId = command.readInt();
+            if (UnitMovement* unit = invoker.com.getAspect<UnitMovement>()) {
+                if (vehicleId != 0)
+                    Vehicle::Install(*unit, vehicleId);
+                else
+                    Vehicle::UnInstall(*unit);
+            }
+            else
+                invoker.output << "Target has no UnitMovement component";
+        }
+    };
+    DELAYED_INIT(InstallVehicleCommand, InstallVehicleCommand);
+
     struct TestCommand : public MovementCommand
     {
         explicit TestCommand() {

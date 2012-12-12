@@ -151,6 +151,7 @@ namespace Movement
         operator bool() const { return m != 0;}
 
         static void Install(UnitMovement& transportOwner, uint32 vehicleId);
+        static void Uninstall(UnitMovement& transportOwner);
 
         void Board(int8 seatId, UnitMovement& passenger);
         UnitMovement* Passenger(int8 seatId);

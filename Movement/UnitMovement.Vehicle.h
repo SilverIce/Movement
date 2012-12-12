@@ -214,6 +214,10 @@ namespace Movement
         new VehicleImpl(transportOwner.Impl(), vehicleId);
     }
 
+    static void Uninstall(UnitMovement& transportOwner) {
+        delete transportOwner.getAspect<VehicleImpl>();
+    }
+
     void Vehicle::Board(int8 seatId, UnitMovement& passenger) {
         m->Board(seatId, passenger.Impl());
     }
