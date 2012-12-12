@@ -15,6 +15,7 @@ namespace Movement
         UnitMovementImpl * m_owner;
         IListener * m_listener;
         Tasks::ITaskExecutor * m_updater;
+        void* m_coordinateSystemId;
         bool m_moving;
         TaskTarget m_updateMovementTask;
         TaskTarget m_updateRotationTask;
@@ -60,6 +61,7 @@ namespace Movement
             m_owner(nullptr),
             m_listener(nullptr),
             m_updater(nullptr),
+            m_coordinateSystemId(nullptr),
             m_moving(false),
             m_selectedVelocity(Parameter_SpeedCustom)
         {

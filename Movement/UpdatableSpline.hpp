@@ -51,6 +51,13 @@ namespace Movement
         } hdl = {*this, events, false};
 
         m_base.updateState(difftime,hdl);
+        // there is an issue when MoveSpline changes position after coordinate system switch:
+        // MoveSpline moves object like it is still in old coordinate system
+        // Possible ways to solve:
+        // 1. transform path points and re-launch movement after coord. system get changed
+        // 2. stop movement
+        // current way: close eyes and assert that this never happens. movement gets stopped by Unit_Passenger
+        assert_state(m_coordinateSystemId == m_owner->Environment());
         m_owner->RelativeLocation(m_base.ComputePosition());
 
         if (hdl.needSync)
@@ -98,6 +105,7 @@ namespace Movement
         m_base.Initialize(args);
         m_lastQuery = m_updater->Time();
         m_moving = true;
+        m_coordinateSystemId = m_owner->Environment();
 
         m_updater->CancelTasks(m_updateMovementTask);
         m_updater->AddTask(newTask(this,&MoveSplineUpdatable::OnUpdateCallback), NextUpdateTime(), &m_updateMovementTask);
