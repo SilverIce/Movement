@@ -24,8 +24,8 @@ namespace Movement
     } }
 
 #   ifdef ASSERTION_NOT_THROWS
-#       define assert_or_throw(expr, exception_type) mov_assert(expr)
-#       define assert_or_throw_msg(expr, exception_type, message) assert_or_throw(expr, exception_type)
+#       define assert_or_throw(expr, ...) mov_assert(expr)
+#       define assert_or_throw_msg(expr, message, ...) assert_or_throw(expr, )
 #   else
 
         template<class ExceptionSource, int Reason = -1>
@@ -40,10 +40,13 @@ namespace Movement
             explicit Exception(const char* Message) : std::runtime_error(Message) {}
         };
 
-#       define assert_or_throw(expr, exception_type) assert_or_throw_msg(expr, exception_type, "")
-#       define assert_or_throw_msg(expr, exception_type, message) \
+#       define assert_or_throw(expr, ... /*exception type*/) \
             if (!(expr)) \
-                throw (exception_type)("In "__FUNCTION__": assertion '" #expr "' failed and exception of type '" #exception_type "' is thrown. " message);
+                throw __VA_ARGS__("In "__FUNCTION__": assertion '" #expr "' failed and exception of type '" #__VA_ARGS__ "' is thrown.");
+
+#       define assert_or_throw_msg(expr, message,  ... /*exception type*/) \
+            if (!(expr)) \
+                throw __VA_ARGS__("In "__FUNCTION__": assertion '" #expr "' failed and exception of type '" #__VA_ARGS__ "' is thrown. " message);
 #   endif
 
 #   define ARGS(...) __VA_ARGS__

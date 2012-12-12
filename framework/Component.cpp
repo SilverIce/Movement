@@ -41,6 +41,7 @@ namespace Movement
     public:
 
         explicit ComponentTree() {}
+
         ~ComponentTree() {
             assert_state(m_refCount <= 0);
             assert_state(m_types.empty());
@@ -69,7 +70,7 @@ namespace Movement
             Type type = {objectTypeId, &object};
             QVector<Type>::iterator itr = find(type);
             assert_or_throw_msg(itr == m_types.end() || itr->typeId != type.typeId,
-                Exception<Component>, "aspect of same type added already");
+                 "aspect of same type added already", Exception<Component>);
             m_types.insert(itr, type);
         }
 

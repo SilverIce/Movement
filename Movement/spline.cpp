@@ -154,16 +154,16 @@ float SplineBase::SegLengthCatmullRom(index_type index, uint32 iterationCount) c
 
 void SplineBase::initSpline(const Vector3 * controls, index_type count, EvaluationMode m)
 {
-    assert_or_throw(controls && count >= 2, ARGS(Exception<SplineBase,InitializationFailed>));
-    assert_or_throw(m < ModeEnd , ARGS(Exception<SplineBase,InitializationFailed>));
+    assert_or_throw(controls && count >= 2, Exception<SplineBase,InitializationFailed>);
+    assert_or_throw(m < ModeEnd , Exception<SplineBase,InitializationFailed>);
     (this->*initializers[m])(controls, count, false, 0);
     m_mode = m;
 }
 
 void SplineBase::initCyclicSpline(const Vector3 * controls, index_type count, EvaluationMode m, index_type cyclic_point)
 {
-    assert_or_throw(controls && count >= 2, ARGS(Exception<SplineBase,InitializationFailed>));
-    assert_or_throw(m < ModeEnd, ARGS(Exception<SplineBase,InitializationFailed>));
+    assert_or_throw(controls && count >= 2, Exception<SplineBase,InitializationFailed>);
+    assert_or_throw(m < ModeEnd, Exception<SplineBase,InitializationFailed>);
     (this->*initializers[m])(controls, count, true, cyclic_point);
     m_mode = m;
 }
@@ -189,7 +189,7 @@ void SplineBase::InitLinear(const Vector3* controls, index_type count, bool cycl
 
 void SplineBase::InitCatmullRom(const Vector3* controls, index_type count, bool cyclic, index_type cyclic_point)
 {
-    assert_or_throw(0 <= cyclic_point && cyclic_point < (count-1), ARGS(Exception<SplineBase,InitializationFailed>));
+    assert_or_throw(0 <= cyclic_point && cyclic_point < (count-1), Exception<SplineBase,InitializationFailed>);
 
     const int real_size = count + (cyclic ? (1+2) : (1+1));
     int lo_index = 1;
@@ -223,8 +223,8 @@ void SplineBase::InitCatmullRom(const Vector3* controls, index_type count, bool 
 
 void SplineBase::initCustom(const Vector3* controls, index_type count, EvaluationMode mode)
 {
-    assert_or_throw(controls && count >= 4, ARGS(Exception<SplineBase,InitializationFailed>));
-    assert_or_throw(mode < ModeEnd, ARGS(Exception<SplineBase,InitializationFailed>));
+    assert_or_throw(controls && count >= 4, Exception<SplineBase,InitializationFailed>);
+    assert_or_throw(mode < ModeEnd, Exception<SplineBase,InitializationFailed>);
 
     points.resize(count);
     memcpy(&points[0], controls, sizeof(Vector3) * count);

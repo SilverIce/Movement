@@ -47,15 +47,15 @@ private:
 
 protected:
     inline void assertInitialized() const {
-        assert_or_throw_msg(!empty(), ARGS(Exception<SplineBase,SplineBase::Uninitialized>), "spline is not initialized");
+        assert_or_throw_msg(!empty(), "spline is not initialized", Exception<SplineBase,SplineBase::Uninitialized>);
     }
 
     inline void assertSegmentIndexInRange(index_type index) const {
-        assert_or_throw(index >= 0 && index < last(), ARGS(Exception<SplineBase,SegmentIndexOutOfRange>));
+        assert_or_throw(index >= 0 && index < last(), Exception<SplineBase,SegmentIndexOutOfRange>);
     }
 
     inline void assertCoeffInRange(float coeff) const {
-        assert_or_throw(coeff >= 0.f && coeff <= 1.f, ARGS(Exception<SplineBase,SegmentCoeffOutOfRange>));
+        assert_or_throw(coeff >= 0.f && coeff <= 1.f, Exception<SplineBase,SegmentCoeffOutOfRange>);
     }
 
 private:
@@ -123,7 +123,7 @@ public:
 
     const Vector3& getPoint(index_type pointIdx) const {
         assertInitialized();
-        assert_or_throw(0 <= pointIdx && pointIdx <= last(), ARGS(Exception<SplineBase,PointIndexOutOfRange>));
+        assert_or_throw(0 <= pointIdx && pointIdx <= last(), /*ARGS*/(Exception<SplineBase,PointIndexOutOfRange>));
         return points[index_lo + pointIdx];
     }
 

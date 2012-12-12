@@ -192,8 +192,8 @@ namespace Movement
             //     -------------<-------------------
             //    |                                 |
             // enitity0 -> entity1 -> entity2 -> entity3
-            assert_or_throw_msg(!Env || Env->GetRoot() != this, Exception<MovingEntity>,
-                "circular dependence - trying to bind to entity which is dependant on current entity");
+            assert_or_throw_msg(!Env || Env->GetRoot() != this,
+                "circular dependence - trying to bind to entity which is dependant on current entity", Exception<MovingEntity>);
             m_entity.Environment(Env);
         }
 
@@ -273,8 +273,8 @@ namespace Movement
             //     -------------<-------------------
             //    |                                 |
             // enitity0 -> entity1 -> entity2 -> entity3
-            assert_or_throw_msg(!env || env->GetRoot() != this, Exception<MovingEntity>,
-                "circular dependence - trying to bind to entity which is dependant on current entity");
+            assert_or_throw_msg(!env || env->GetRoot() != this, 
+                "circular dependence - trying to bind to entity which is dependant on current entity", Exception<MovingEntity>);
             if (m_Environment == env)
                 return;
             if (m_Environment)
@@ -436,8 +436,8 @@ namespace Movement
             //     -------------<-------------------
             //    |                                 |
             // enitity0 -> entity1 -> entity2 -> entity3
-            assert_or_throw_msg(!env || env->GetRoot() != this, Exception<MovingEntity>,
-                "circular dependence - trying to bind to entity which is dependant on current entity");
+            assert_or_throw_msg(!env || env->GetRoot() != this,
+                "circular dependence - trying to bind to entity which is dependant on current entity", Exception<MovingEntity>);
             if (m_Environment == env)
                 return;
             if (m_Environment)
