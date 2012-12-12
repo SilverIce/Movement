@@ -29,7 +29,6 @@ namespace Movement
             ComponentInit<MovingEntity_WOW>(this);
 
             Init(ObjectGuid(info.guid), info.object, *info.context);
-            tasks.SetExecutor(info.context->executor);
         }
 
         ~TransportImpl() {
@@ -40,7 +39,6 @@ namespace Movement
 
         void CleanReferences() {
             UnboardAll();
-            tasks.Unregister();
             MovingEntity_WOW::CleanReferences();
         }
 
@@ -424,6 +422,8 @@ namespace Movement
         uint32 m_mapId;
         QVector<PathSegment*> m_segments;
 
+        Tasks::TaskTarget_DEV m_positionUpdateTask;
+
     public:
         int32 timeModDbg;
 
@@ -449,12 +449,12 @@ namespace Movement
                 m_segments.append(segment);
             }
             assert_state(!m_segments.empty());
-
-            m_controlled.ComponentAttach(this);
-            m_controlled.tasks.AddTask(newTask(this,&MOTransportMover::updatePositionCallback), 0);
-
             float oldPeriod = 0.001f * Imports.GetUIntValue(m_controlled.Owner,GAMEOBJECT_LEVEL);
             Imports.SetUIntValue(m_controlled.Owner,GAMEOBJECT_LEVEL, m_period);
+
+            m_controlled.ComponentAttach(this);
+            m_positionUpdateTask.SetExecutor(m_controlled.context->executor);
+            m_positionUpdateTask.AddTask(newTask(this,&MOTransportMover::updatePositionCallback), 0);
 
             updateState(info.context->executor.Time().time);
 
@@ -464,6 +464,9 @@ namespace Movement
         }
 
         ~MOTransportMover() {
+            m_positionUpdateTask.Unregister();
+            ComponentDetach();
+
             qDeleteAll(m_segments);
         }
 

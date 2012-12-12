@@ -67,13 +67,13 @@ namespace Movement
         explicit Unit_Passenger(UnitMovementImpl& unitPassenger, MovingEntity_WOW& transport,
             OnPassengerDestroy* onDestr, int8 seatId)
         {
-            unitPassenger.ComponentAttach(this);
-            unitPassenger.ComponentAttach<IPassenger>(&m_PassengerImpl);
-
             m_transportGuid = transport.Guid;
             m_unit = &unitPassenger;
             m_seatId = seatId;
             m_onDestroy = onDestr;
+
+            unitPassenger.ComponentAttach(this);
+            unitPassenger.ComponentAttach<IPassenger>(&m_PassengerImpl);
 
             // TODO: need force stop spline movement effect before any coordinate system switch, otherwise
             // such effect will move us into wrong place
@@ -88,10 +88,12 @@ namespace Movement
             // such effect will move us into wrong place
             ToUnit().SetEnvironment(nullptr);
             ToUnit().ApplyMoveFlag(UnitMoveFlag::Ontransport,false);
-            ComponentDetach();
 
             if (m_onDestroy)
                 m_onDestroy->onPassengerDestroy(*this);
+
+            ComponentDetach();
+            m_PassengerImpl.ComponentDetach();
 
             m_onDestroy = nullptr;
             m_unit = nullptr;
