@@ -9,7 +9,10 @@
 
 *.*
 
+*.obj
+
 # Extensions
 !.gitignore
 !Movement/*
 !framework/*
+!*.vcxproj

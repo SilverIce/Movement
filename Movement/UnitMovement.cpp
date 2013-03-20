@@ -1,29 +1,32 @@
 
+// clean public headers, implemented in current (UnitMovement) subsystem
 #include "UnitMovement.h"
 #include "Client.h"
 #include "MoveSplineInit.h"
 #include "MoveListener.h"
 
+// clean public headers, implemented not here
 #include "framework/Component.h"
 #include "Imports.h"
 #include "TaskScheduler.h"
 #include "framework/DelayInit.h"
 #include "framework/typedefs_p.h"
 
+// external library headers
 #include <QtCore/QTextStream>
 #include <QtCore/QHash>
 #include <QtCore/QVector>
 #include <typeinfo>
 
-//#include "Object.h"
+// private headers, that may be referenced by multiple subsystems
 #include "Packet.h"
 #include "opcodes.h"
-
-#include "MoveSpline.h"
 #include "MoveEnv.h"
 #include "MovementBase.h"
 #include "MovementCommandMgr.h"
 
+// private headers, that belong to "unitmovement" subsystem
+#include "MoveSpline.h"
 #include "UnitMoveFlags.h"
 #include "ClientMoveStatus.h"
 #include "packet_builder.h"
@@ -34,6 +37,7 @@
 #include "UnitMovement.Passenger.h"
 #include "UnitMovement.Vehicle.h"
 
+// private implementation files, that belong to "unitmovement" subsystem
 #include "UnitMovement.Effects.hpp"
 #include "MoveSplineInit.hpp"
 #include "ClientImpl.hpp"
@@ -61,7 +65,7 @@ namespace Movement
 
         ~UnitMovementStruct()
         {
-            /** Bad solution: UnitMovementStruct destructor have to care about dynamically allocated components.
+            /** Bad solution: UnitMovementStruct destructor have to care about dynamically allocated components, have to know about them..
                 How to solve? use ref counted pointers? or add a new wheel, 
             */
             Unit_Passenger::dealloc( unit.getAspect<Unit_Passenger>() );

@@ -17,3 +17,4 @@ namespace Movement
 }
 
 using Movement::Location;
+using Movement::UnitMovement;

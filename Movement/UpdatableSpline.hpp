@@ -73,6 +73,7 @@ namespace Movement
         // for ex: if current movement speed is 2.5 then delay between updates is 3.5/2.5 = 1.4 seconds
         // The main goal is performance: need update it not too frequently
         const float distance = 3.5f;
+        //const float distance = 1.f; // increase precission temporary
         int32 moveTime = int32(distance / m_owner->GetCurrentSpeed() * 1000.f);
         return m_lastQuery + std::min<int32>(m_base.timeElapsed(), moveTime);
     }
