@@ -470,6 +470,42 @@ namespace Movement
             qDeleteAll(m_segments);
         }
 
+        /*static void EnableFlag(WorldObject* obj, uint16 fieldIdx, uint32 flag, bool enable) {
+            uint32 value = (enable ? (Imports.GetUIntValue(obj, fieldIdx)|flag) : (Imports.GetUIntValue(obj, fieldIdx) & ~flag));
+            Imports.SetUIntValue(obj, fieldIdx, value);
+        }
+
+        static void SetByte(WorldObject* obj, uint16 fieldIdx, uint8 byteIdx, uint8 value) {
+            assert_state(byteIdx < 4);
+            uint32 valueUInt = Imports.GetUIntValue(obj, fieldIdx);
+            *(byteIdx + (uint8*)&valueUInt) = value;
+            Imports.SetUIntValue(obj, fieldIdx, valueUInt);
+        }
+
+        enum {
+            GO_FLAG_IN_USE = 1,
+            GO_STATE_ACTIVE             = 0,                        // show in world as used and not reset (closed door open)
+            GO_STATE_READY              = 1,                        // show in world as ready (closed door close)
+            GO_STATE_ACTIVE_ALTERNATIVE = 2                         // show in world as used in alt way and not reset (closed door open by cannon fire)
+        };
+
+        void setStopped(bool stopped) {
+            if (isStopped() == stopped)
+                return;
+            if (!stopped)
+                // Bad solution: it assumes that 'Imports.getMSTime()' and  movementProgress timelines
+                // have same sources
+                timeMod += (Imports.getMSTime() - stopTime);
+            else
+                stopTime = Imports.getMSTime();
+            EnableFlag(m_controlled.Owner, GAMEOBJECT_FLAGS, GO_FLAG_IN_USE, stopped);
+            SetByte(m_controlled.Owner, GAMEOBJECT_BYTES_1, 0, stopped ? GO_STATE_READY : GO_STATE_ACTIVE);
+        }*/
+        
+        bool isStopped() const {
+            return false;//Imports.GetUIntValue(m_controlled.Owner, GAMEOBJECT_FLAGS) & GO_FLAG_IN_USE;
+        }
+
         /** If true, enables transport position visualization by spawning marks.
             Disabled by default, because such visualization causes client crash.*/
         static volatile bool spawnMarks;
@@ -671,8 +707,64 @@ namespace Movement
         }
     }
 
-    TEST_REGISTER(LengthPassedDescrTest);
-    void LengthPassedDescrTest(testing::State& testState)
+    TEST(Transport, LoadTaxiNodes2)
+    {
+        const TaxiPathNodeEntry nodes[] = {
+            {1094,0,571,7559.285645,1858.847656,644.990051,0,0,0,0},
+            {1094,1,571,7495.156250,1804.520020,644.990051,0,0,0,0},
+            {1094,2,571,7408.253418,1736.899902,636.212830,0,0,0,0},
+            {1094,3,571,7287.811523,1662.633057,644.990051,0,0,0,0},
+            {1094,4,571,7156.391602,1594.091553,644.990051,0,0,0,0},
+            {1094,5,571,7035.677246,1512.187134,644.990051,2,5,0,0},
+            {1094,6,571,7096.642578,1412.777588,629.185364,0,0,0,0},
+            {1094,7,571,7243.689941,1458.626221,608.824402,0,0,0,0},
+            {1094,8,571,7398.887207,1559.812744,595.243347,2,5,0,0},
+            {1094,9,571,7705.005371,1751.556274,597.215637,0,0,0,0},
+            {1094,10,571,7861.870605,1856.443970,620.241089,0,0,0,0},
+            {1094,11,571,7810.094727,1962.217041,640.380249,2,5,0,0},
+            {1094,12,571,7691.859375,1936.717896,641.684753,0,0,0,0},
+            {1094,13,571,7560.709473,1858.655151,644.990051,0,0,0,0},
+            {1094,14,571,7497.058105,1804.973389,644.990051,0,0,0,0},
+            {1094,15,571,7409.123535,1737.521484,636.074219,0,0,0,0},
+            {1094,0,572,7559.285645,1858.847656,644.990051,0,0,0,0},
+            {1094,1,572,7495.156250,1804.520020,644.990051,0,0,0,0},
+            {1094,2,572,7408.253418,1736.899902,636.212830,0,0,0,0},
+            {1094,3,572,7287.811523,1662.633057,644.990051,0,0,0,0},
+            {1094,4,572,7156.391602,1594.091553,644.990051,0,0,0,0},
+            {1094,5,572,7035.677246,1512.187134,644.990051,2,5,0,0},
+            {1094,6,572,7096.642578,1412.777588,629.185364,0,0,0,0},
+            {1094,7,572,7243.689941,1458.626221,608.824402,0,0,0,0},
+            {1094,8,572,7398.887207,1559.812744,595.243347,2,5,0,0},
+            {1094,9,572,7705.005371,1751.556274,597.215637,0,0,0,0},
+            {1094,10,572,7861.870605,1856.443970,620.241089,0,0,0,0},
+            {1094,11,572,7810.094727,1962.217041,640.380249,2,5,0,0},
+            {1094,12,572,7691.859375,1936.717896,641.684753,0,0,0,0},
+            {1094,13,572,7560.709473,1858.655151,644.990051,0,0,0,0},
+            {1094,14,572,7497.058105,1804.973389,644.990051,0,0,0,0},
+            {1094,15,572,7409.123535,1737.521484,636.074219,0,0,0,0},
+        };
+
+        Context context;
+        Transport::CreateInfo info2;
+        info2.context = &context;
+        info2.guid = 0;
+        info2.object = nullptr;
+        info2.motion.nodes = nodes;
+        info2.motion.nodesSize = CountOf(nodes);
+        info2.motion.acceleration = 1;
+        info2.motion.velocity = 2;
+
+        MOTransportMover mover(info2, nullptr);
+
+        for (uint32 time = 0; time <= mover.period()*10; time += (mover.period()/100))
+        {
+            context.executor.Execute(time);
+            // expects that position changes are enough 'smooth'
+            //EXPECT_TRUE( dist < 80 );
+        }
+    }
+
+    TEST(Transport, LengthPassedDescrTest)
     {
         using G3D::fuzzyEq;
 
@@ -704,5 +796,24 @@ namespace Movement
                 moveTime = desc.velMax / desc.accel + (desc.pathLength - accelS) / desc.velMax;
             EXPECT_TRUE(fuzzyEq(0.001f * desc.moveTimeTotal(), moveTime));
         }
+        /*{
+            LengthPassedDescr desc;
+            desc.accel = 2;
+            desc.velMax = 10;
+            desc.segmentLength = 60;
+            desc.beginAccel = false;
+            desc.endDecel = true;
+            desc.InitMoveTime();
+
+            float decelT = desc.velMax / desc.accel;
+            float accelS = ;
+            float moveTime = 0.f;
+            if (accelS >= desc.segmentLength)
+                moveTime = sqrtf(2*desc.segmentLength/desc.accel);
+            else
+                moveTime = desc.velMax / desc.accel + (desc.segmentLength - accelS) / desc.velMax;
+            EXPECT_TRUE(fuzzyEq(0.001f * desc.moveTimeTotal(), moveTime));
+        }*/
+
     }
 }
