@@ -78,14 +78,47 @@ namespace Tasks { namespace detail
 
 #include "TaskExecutorImpl_Vector1.10.hpp"
 #include "TaskExecutorImpl_LinkedList1.10.hpp"
-/*
+#include "TaskExecutorImpl_Set1.00.hpp"
 #include "TaskExecutorImpl_LinkedList1.11.hpp"
+//#include "TaskExecutorImpl_LinkedList1.12.hpp"
+/*
 #include "TaskExecutorImpl_LinkedList1.13.hpp"*/
+
 #include "POD_Array.Tests.hpp"
 #include "TaskScheduler.Tests.hpp"
 
 namespace Tasks
 {
+    struct Statistics
+    {
+        static const int32 rounding = 2;
+        QMap<int32, uint32 > _slots;
+        time_t startTime;
+        int32 timeNow;
+
+        Statistics() : startTime(0), timeNow(0) {}
+
+        ~Statistics()
+        {
+            uint32 seconds = time(NULL) - startTime;
+            log_write("TaskExecutor stats");
+            for (QMap<int32, uint32>::const_iterator it = _slots.begin(); it!= _slots.end(); ++it)
+            {
+                log_write("slot %u-%u sec : freq: %f per second, total tasks added: %u",
+                    it.key(), (it.key()+rounding), *it/float(seconds), *it);
+            }
+        }
+
+        void OnTaskAdded(int32 taskTime)
+        {
+            if (!startTime)
+                startTime = time(NULL);
+
+            int32 rounded = (((taskTime>timeNow) ? (taskTime-timeNow) : 0) / 1000) / rounding * rounding;
+            ++(_slots[rounded]); 
+        }
+    };
+
     typedef
         TaskExecutorImpl_LinkedList110
         // some another implementation placeholder
@@ -106,6 +139,11 @@ namespace Tasks
         }
 
         void Execute(ITaskExecutor& exec, MSTime time) {
+            // time correction:
+            /*if (time < TickCount) {
+                m_updateTimeOffset = TickCount - time;
+            }
+            time += m_updateTimeOffset;*/
             assert_state(TickCount <= time);
             TickCount = time;
             TaskExecutor_Args args(exec, time, m_updateCounter.time);

@@ -1,3 +1,4 @@
+#ifndef NO_TESTS
 #include "framework/RdtscTimer.h"
 #include "framework/gtest.h"
 #include <typeinfo>
@@ -170,6 +171,8 @@ namespace Tasks { namespace detail
     void produceExecutors(QVector<ITaskExecutor2*>& executors) {
         executors
             << new taskExecutor<TaskExecutorImpl_LinkedList110>
+            << new taskExecutor<TaskExecutorImpl_LinkedList111>
+            << new taskExecutor<TaskExecutorImpl_Set100>
         ;
     }
 
@@ -469,10 +472,10 @@ namespace Tasks { namespace detail
 
         MSTime execTime = 14000;
         for (int i = 0; i < CountOf(text); ++i) {
+            execTime += rand() % 3;
             Fake * mark = new Fake();
             mark->Setup(text[i], &textWriteItr);
             executor.AddTask(mark, execTime, &target);
-            execTime += rand() % 3;
         }
 
         executor.Execute(execTime);

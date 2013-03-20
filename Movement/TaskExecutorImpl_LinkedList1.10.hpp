@@ -23,18 +23,18 @@ namespace Tasks { namespace detail
         void push(T* obj) {
             assert_state(_allocated > 0);
             --_allocated;
-            obj->clear();
+            obj->~T();
             _data.push_back(obj);
         }
 
         T* pop() {
             ++_allocated;
             if (_data.empty())
-                return new T();
+                return operator new(sizeof T) T();
             else {
                 T * obj = _data.back();
                 _data.pop_back();
-                return obj;
+                return new(obj)T;
             }
         }
 
@@ -52,6 +52,195 @@ namespace Tasks { namespace detail
     /** A simple linkedlist based recycler. 
         TODO: how to ensure that T is LinkedListElement<V> ?
     */
+    template<class T, uint32 blockSize>
+    class Recycler4
+    {
+    protected:
+        Movement::LinkedList<typename T::value_type> _data;
+        uint32 _allocated;
+
+        struct Block {
+            Block * prev;
+            uint32 count;
+
+            static Block * alloc(Block * prev, uint32 elemCount) {
+                assert_state(elemCount > 0);
+                Block * bl = (Block*)operator new(sizeof(Block) + elemCount * sizeof(T));
+                bl->count = elemCount;
+                bl->prev = prev;
+                return bl;
+            }
+
+            static void deallocChain(Block * block) {
+                while(block) {
+                    Block * prev = block->prev;
+                    delete block;
+                    block = prev;
+                }
+            }
+
+            T* at(uint32 idx) {
+                assert_state(idx < count);
+                return (T*) ((char*)this + sizeof(Block) + idx * sizeof(T));
+            }
+        };
+
+        Block * last;
+
+    public:
+
+        Recycler4() {
+            _allocated = 0;
+            last = nullptr;
+        }
+
+        ~Recycler4() {
+            assert_state(cleaned());
+            clear();
+        }
+
+        void push(T* obj) {
+            assert_state(_allocated > 0);
+            --_allocated;
+            obj->clear();
+            _data.link_last(*obj);
+        }
+
+        T* pop()
+        {
+            ++_allocated;
+            if (_data.empty()) {
+                last = Block::alloc(last, blockSize);
+                for (int32 idx = blockSize-1; idx >= 0; --idx) {
+                    T * obj = new(last->at(idx))T();
+                    _data.link_last(*obj);
+                }
+            }
+            T * obj = static_cast<T*>(_data.last());
+            _data.delink_last();
+            return obj;
+        }
+
+        bool cleaned() const {
+            return _allocated == 0;
+        }
+
+        void clear() {
+            _data.clear();
+            assert_state(_data.empty());
+            Block::deallocChain(last);
+            last = nullptr;
+            _allocated = 0;
+        }
+    };
+
+    template<class T, uint32 blockCount, uint32 blockSize, uint32 timeRange>
+    class Recycler5
+    {
+    protected:
+
+        struct Block {
+            Block * prev;
+            uint32 count;
+
+            static Block * alloc(Block * prev, uint32 elemCount) {
+                assert_state(elemCount > 0);
+                Block * bl = (Block*)operator new(sizeof(Block) + elemCount * sizeof(T));
+                bl->count = elemCount;
+                bl->prev = prev;
+                return bl;
+            }
+
+            static void deallocChain(Block * block) {
+                while(block) {
+                    Block * prev = block->prev;
+                    delete block;
+                    block = prev;
+                }
+            }
+
+            T* at(uint32 idx) {
+                assert_state(idx < count);
+                return (T*) ((char*)this + sizeof(Block) + idx * sizeof(T));
+            }
+        };
+
+        struct Alloc {
+            Movement::LinkedList<typename T::value_type> _data;
+            T _elem[blockSize];
+
+            explicit Alloc() {
+                uint32 idx = blockSize;
+                while(idx--)
+                    _data.link_last(_elem[idx]);
+                assert_state(_data.size() == blockSize);
+            }
+
+            ~Alloc() {
+                _data.clear();
+            }
+
+            void push(T* obj) {
+                obj->clear();
+                _data.link_last(*obj);
+            }
+
+            T* pop(Block *& last) {
+                if (_data.empty()) {
+                    last = Block::alloc(last, blockSize);
+                    for (int32 idx = blockSize-1; idx >= 0; --idx) {
+                        T * obj = new(last->at(idx))T();
+                        _data.link_last(*obj);
+                    }
+                }
+                T * obj = static_cast<T*>(_data.last());
+                _data.delink_last();
+                return obj;
+            }
+        };
+
+        Alloc blocks[blockCount];
+        uint32 _allocated;
+        Block * last;
+
+        Alloc& getAlloc(uint32 time) {
+            uint32 idx = (time%timeRange) * blockCount / timeRange;
+            assert_state(idx < blockCount);
+            return blocks[idx];
+        }
+
+    public:
+
+        Recycler5() {
+            _allocated = 0;
+            last = nullptr;
+        }
+
+        ~Recycler5() {
+            assert_state(cleaned());
+
+            Block::deallocChain(last);
+            last = nullptr;
+            _allocated = 0;
+        }
+
+        void push(T* obj, uint32 time) {
+            assert_state(_allocated > 0);
+            --_allocated;
+            getAlloc(time).push(obj);
+        }
+
+        T* pop(uint32 time)
+        {
+            ++_allocated;
+            return getAlloc(time).pop(last);
+        }
+
+        bool cleaned() const {
+            return _allocated == 0;
+        }
+    };
+
     template<class T>
     class Recycler3
     {
@@ -72,7 +261,7 @@ namespace Tasks { namespace detail
         void push(T* obj) {
             assert_state(_allocated > 0);
             --_allocated;
-            obj->clear();
+            obj->~T();
             _data.link_last(*obj);
         }
 
@@ -83,7 +272,7 @@ namespace Tasks { namespace detail
             else {
                 T * obj = static_cast<T*>(_data.last());
                 _data.delink_last();
-                return obj;
+                return new(obj)T;
             }
         }
 
@@ -204,22 +393,14 @@ namespace Tasks { namespace detail
     };
 
     template<typename T>
-    class RecyclerPullFake
+    class RecyclerFake
     {
         uint32 NodesActive;
     public:
-
-        uint32 PullTotalSize() const { return 0;}
-        uint32 PullAllocActiveSize() const { return 0;}
-
-        uint32 TotalActiveSize() const { return NodesActive;}
-        uint32 DynamicActiveSize() const { return NodesActive - PullAllocActiveSize();}
-
-    public:
-        RecyclerPullFake(uint32 pullSize = 800) : NodesActive(0) {
+        RecyclerFake(uint32 pullSize = 800) : NodesActive(0) {
         }
 
-        ~RecyclerPullFake() {
+        ~RecyclerFake() {
             clear();
         }
 
@@ -283,12 +464,12 @@ namespace Tasks { namespace detail
 
             void clear()
             {
-                if (linked())
-                    List().delink(*this);
+                delink();
+                if (taskTarget)
+                    TaskTargetImpl::cast(*taskTarget).delink(tasknode);
                 execution_time = 0;
                 callback = 0;
                 taskTarget = 0;
-                tasknode.delink();
             }
 
             bool cleaned() const {
@@ -302,8 +483,6 @@ namespace Tasks { namespace detail
 
         enum Config{
             roundConst = 128,
-            NodePullSize = 5000,
-            NodeListPullSize = 500,
         };
 
         struct TimeComparator {
@@ -319,6 +498,21 @@ namespace Tasks { namespace detail
         Recycler3<Node> unusedNodes;
         MarkArray marks;
 
+        // For debugging purposes
+
+        // infinite Update-> AddTask-> Update detection:
+
+        struct DBGFields {
+            MSTime TimeNow;
+            bool UpdateLoop;
+
+            DBGFields() {
+                UpdateLoop = false;
+            }
+        } debug;
+
+        //////////////////////////////////////////////////////////////////////////
+
         TaskExecutorImpl_LinkedList110()
         {
         }
@@ -332,7 +526,8 @@ namespace Tasks { namespace detail
         void printStats()
         {
             log_console("tasks active: %u", top.size());
-            log_console("delta time: %u ms", ((Node*)top.last())->execution_time - ((Node*)top.first())->execution_time);
+            if (!top.empty())
+                log_console("delta time: %u ms", ((Node*)top.last())->execution_time - ((Node*)top.first())->execution_time);
             log_console("marks amount: %u", marks.size());
         }
 
@@ -408,6 +603,8 @@ namespace Tasks { namespace detail
 
         void AddTask(CallBack* obj, MSTime exec_time, TaskTarget* target)
         {
+            //assert_state(!debug.UpdateLoop || debug.TimeNow < exec_time);
+
             obj->addref();
 
             Node * newNode = unusedNodes.pop();
@@ -475,6 +672,10 @@ namespace Tasks { namespace detail
         void Execute(TaskExecutor_Args& args)
         {
             ensureSorted();
+
+            debug.TimeNow = args.now;
+            debug.UpdateLoop = true;
+
             Node * firstNode = NULL;
             while ((firstNode = static_cast<Node*>(top.first())) && firstNode->execution_time <= args.now.time)
             {
@@ -494,6 +695,8 @@ namespace Tasks { namespace detail
                 }
                 unusedNodes.push(firstNode);
             }
+
+            debug.UpdateLoop = false;
         }
     };
 }
