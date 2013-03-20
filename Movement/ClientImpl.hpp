@@ -10,7 +10,8 @@ namespace Movement
         }
 
         void Execute(TaskExecutor_Args& args) override {
-            new TimeSyncRequest(m_client);
+            if (m_client->controlled())
+                new TimeSyncRequest(m_client);
             RescheduleTaskWithDelay(args, TimeSyncRequest::SyncTimePeriod);
         }
 
