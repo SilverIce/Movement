@@ -31,6 +31,14 @@ namespace Movement
         ObjectGuid m_firstControlled; // it's always a 
 
     public:
+
+        // TEMP
+        int32 timeMod;
+        MSTime timeSkipped;
+        MSTime latency;
+        MSTime lastClientStamp;
+        MSTime timeLine;
+
         static MSTime ServerTime() { return MSTime(Imports.getMSTime());}
         MSTime ServerToClientTime(const MSTime& server_time) const { return server_time + m_time_diff;}
         MSTime ClientTime() const {return ServerToClientTime(ServerTime());}
@@ -46,6 +54,7 @@ namespace Movement
         }
 
         TaskTarget_DEV commonTasks;
+        MSTime timeRandomModifier;
 
         UnitMovementImpl* controlled() const { return m_controlled;}
 
@@ -56,7 +65,9 @@ namespace Movement
         }
 
         void SetClientTime(const MSTime& client_time) {
+            MSTime desync = ClientTime() - client_time;
             m_time_diff = client_time - ServerTime();
+            log_debug("SetClientTime: time desync is %d ticks", desync.time);
         }
 
         /** The main 'gate' for movement states that incomes from client. */
@@ -92,6 +103,8 @@ namespace Movement
             , m_controlled(nullptr)
             , m_context(context)
         {
+            timeMod = 0;
+            timeRandomModifier = 0;//rand() * uint32(0xFFFFFFFF/0x7FFF);
         }
 
         ~ClientImpl();
@@ -138,6 +151,7 @@ namespace Movement
             ClientOpcode opcode = (ClientOpcode)msg.getOpcode();
             Handler hdl = getHandler(opcode);
             assert_state_msg(hdl != nullptr, "no handlers for %s", OpcodeName(opcode));
+            log_debug("client sends: %s", OpcodeName(opcode));
             (*hdl) (client, msg);
             ensureParsed(msg);
         }

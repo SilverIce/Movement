@@ -15,6 +15,9 @@ namespace Movement
             RescheduleTaskWithDelay(args, TimeSyncRequest::SyncTimePeriod);
         }
 
+        /** If enabled, takes into account latency. */
+        static volatile bool TimeCorrectionEnabled;
+
     private:
         class TimeSyncRequest : public RespHandler
         {
@@ -26,10 +29,10 @@ namespace Movement
 
             explicit TimeSyncRequest(ClientImpl * client) : RespHandler(CMSG_TIME_SYNC_RESP, client)
             {
+                m_requestSendTime = Imports.getMSTime();
                 Packet data(SMSG_TIME_SYNC_REQ, 4);
                 data << requestId();
                 client->SendPacket(data);
-                m_requestSendTime = Imports.getMSTime();
             }
 
             bool OnReply(ClientImpl * client, Packet& data) override
@@ -40,12 +43,46 @@ namespace Movement
                 data >> client_ticks;
                 if (!checkRequestId(client_req_id))
                     return false;
-                MSTime latency = (Imports.getMSTime() - m_requestSendTime.time) / 2;
+                MSTime latency = TimeCorrectionEnabled ? ((ClientImpl::ServerTime() - m_requestSendTime).time / 2) : 0;
                 client->SetClientTime(client_ticks + latency);
+                client->latency = latency;
                 return true;
             }
         };
     };
+
+    volatile bool TimeSyncRequestScheduler::TimeCorrectionEnabled = true;
+
+    struct SyncTimeCorrectToggleCommand : public MovementCommand
+    {
+        SyncTimeCorrectToggleCommand() {
+            Init("sync");
+            Description = "Toggles time correction option that helps determine client-side time more precisely.";
+        }
+
+        void Invoke(StringReader& /*command*/, CommandInvoker& invoker) override {
+            bool on = TimeSyncRequestScheduler::TimeCorrectionEnabled ^= true;
+            invoker.output << endl << "Time correction " << (on ? "enabled" : "disabled");
+        }
+    };
+    DELAYED_INIT(SyncTimeCorrectToggleCommand,SyncTimeCorrectToggleCommand);
+    struct SetClientTimeMod : public MovementCommand
+    {
+        explicit SetClientTimeMod() {
+            Init("TimeMod");
+            Description = "Modifies movement packet time deltas.";
+        }
+
+        void Invoke(StringReader& command, CommandInvoker& invoker) override {
+            if (ClientImpl * cl = invoker.com.as<UnitMovement>().Impl().client()) {
+                cl->timeMod = command.readInt();
+                invoker.output << endl << "time mod is " << cl->timeMod;
+            }
+            else
+                invoker.output << endl << "Unit is not client controlled";
+        }
+    };
+    DELAYED_INIT(SetClientTimeMod, SetClientTimeMod);
 
     void ClientImpl::OnCommonMoveMessage(ClientImpl& client, Packet& recv_data)
     {
@@ -129,6 +166,10 @@ namespace Movement
 
     void ClientImpl::ToString(QTextStream& str) const
     {
+        str << endl << "Client info";
+        str << endl << "skipped time " << timeSkipped.time;
+        str << endl << "latency      " << latency.time;
+        str << endl << "time mod     " << timeMod;
         str << endl << "Server-side time: " << ServerTime().time << " Client-side time: " << ClientTime().time;
         str << endl << "Request  counter: " << m_requestCounter.getCurrent();
         if (!m_resp_handlers.empty()) {
@@ -215,6 +256,7 @@ namespace Movement
             unit.PitchAngle(state.pitchAngle);
             unit.SetMoveFlag(newFlags);
             unit.m_unused = state;
+            unit.lastMoveEvent = state.ms_time;
             if (state.floatValueType != Parameter_End)
                 unit.SetParameter(state.floatValueType, state.floatValue);
         }
@@ -224,10 +266,37 @@ namespace Movement
     {
         assertControlled();
         assert_state(source == controlled()->Guid);
-        MSTime applyTime = ClientToServerTime(client_state.ms_time);
-        client_state.ms_time = applyTime;
 
-        m_controlled->commonTasks.AddTask(new ApplyStateTask(*m_controlled,client_state), client_state.ms_time);
+        //client_state.ms_time = ClientToServerTime(client_state.ms_time); // convert client to server time
+
+        if (!controlled()->moveFlags.hasFlag(UnitMoveFlag::Mask_Moving)
+            && client_state.moveFlags.hasFlag(UnitMoveFlag::Mask_Moving))
+        {
+            // movement has began, need reset timers
+            timeSkipped = 0;
+            timeLine = ClientToServerTime(client_state.ms_time);
+            lastClientStamp = client_state.ms_time;
+        }
+
+        MSTime timeDiff = client_state.ms_time - lastClientStamp;
+
+        // Disabled because not required: client increases timestamps by self
+        //timeDiff += timeSkipped;
+        //timeSkipped = 0;
+
+        timeLine += timeDiff;
+        timeLine += timeMod; // for test purposes only
+
+        //MSTime deltaS = ServerTime() - lastStamp;
+        //MSTime deltaC = client_state.ms_time - lastStamp;
+        //log_debug("deltaS %d", deltaS.time);
+        //log_debug("deltaC %d", deltaC.time);
+        log_debug("timeDiff: %u", (client_state.ms_time - lastClientStamp).time);
+        log_debug(qPrintable(client_state.toString()));
+
+        lastClientStamp = client_state.ms_time;
+        client_state.ms_time = timeLine;
+        m_controlled->commonTasks.AddTask(new ApplyStateTask(*m_controlled,client_state), timeLine);
     }
 
     void ClientImpl::OnMoveTimeSkipped(ClientImpl& client, Packet & recv_data)
@@ -239,6 +308,7 @@ namespace Movement
         recv_data >> guid.ReadAsPacked();
         recv_data >> skipped;
 
+        client.timeSkipped += skipped;
         MovementMessage data(client.controlled(), MSG_MOVE_TIME_SKIPPED, 16);
         data << guid.WriteAsPacked();
         data << skipped;
@@ -261,6 +331,8 @@ namespace Movement
         /*move_spline->updateState(1);
         if (splineId != move_spline->getLastMoveId())
             log_function("incorrect splineId: %u, expected %u", splineId, move_spline->getLastMoveId());*/
+
+        log_debug("OnSplineDone: arrive time desync is: %d", (state.ms_time - move_spline.ArriveTime()).time);
     }
 
     void ClientImpl::OnNotActiveMover(ClientImpl& client, Packet& data)
