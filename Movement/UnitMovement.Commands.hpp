@@ -72,7 +72,7 @@ namespace Movement
                 if (vehicleId != 0)
                     Vehicle::Install(*unit, vehicleId);
                 else
-                    Vehicle::UnInstall(*unit);
+                    Vehicle::Uninstall(*unit);
             }
             else
                 invoker.output << "Target has no UnitMovement component";

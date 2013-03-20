@@ -214,7 +214,7 @@ namespace Movement
         new VehicleImpl(transportOwner.Impl(), vehicleId);
     }
 
-    static void Uninstall(UnitMovement& transportOwner) {
+    void Vehicle::Uninstall(UnitMovement& transportOwner) {
         delete transportOwner.getAspect<VehicleImpl>();
     }
 
