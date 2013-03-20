@@ -23,8 +23,12 @@ namespace Movement
         private: void _ComponentInit(Component* me, AspectTypeId objectTypeId, ComponentTree * tree);
         private: void _ComponentAttach(AspectTypeId objectTypeId, Component * com);
 
+        public: bool ComponentIntialized() const {
+            return m_tree != nullptr;
+        }
+
         /** Returns true to show that both components belongs to same entity. */
-        public: bool sameTree(const Component& another) const {
+        public: bool sameEnity(const Component& another) const {
             return m_tree == another.m_tree;
         }
 
@@ -44,24 +48,28 @@ namespace Movement
             return static_cast<typename T::HasTypeId::ComponentType&>( _as(T::HasTypeId::getTypeId()) );
         }
 
-        public: explicit Component() : m_tree(0), m_typeId(0) {}
+        public: explicit Component() : m_tree(nullptr), m_typeId(nullptr) {}
 
         /** Public virtual destructor is needed only in case it required to delete a component
             by having just a pointer to abstract Component. This is not my case. */
         protected: /*virtual*/ ~Component();
 
-        public: template<class MyType> inline void ComponentInit(MyType * me) {
-            (void)static_cast<typename MyType::HasTypeId::ComponentType*>(me);
-            (void)static_cast<Component*>(me);
-            _ComponentInit(me, MyType::HasTypeId::getTypeId(), 0);
+        /** Initializes @thisComponent component as component tree's root node.
+            Use ComponentAttach method to initialize and attach rest components. */
+        public: template<class MyType> inline void ComponentInit(MyType * thisComponent) {
+            (void)static_cast<typename MyType::HasTypeId::ComponentType*>(thisComponent);
+            (void)static_cast<Component*>(thisComponent);
+            _ComponentInit(thisComponent, MyType::HasTypeId::getTypeId(), 0);
         }
 
-        public: template<class T> inline void ComponentAttach(T * object) {
-            (void)static_cast<typename T::HasTypeId::ComponentType*>(object);
-            (void)static_cast<Component*>(object);
-            _ComponentAttach(T::HasTypeId::getTypeId(), object);
+        /** Initializes @otherComponent component and attaches it to this component that should be initialized already. */
+        public: template<class T> inline void ComponentAttach(T * otherComponent) {
+            (void)static_cast<typename T::HasTypeId::ComponentType*>(otherComponent);
+            (void)static_cast<Component*>(otherComponent);
+            _ComponentAttach(T::HasTypeId::getTypeId(), otherComponent);
         }
 
+        /** Detaches component from the tree. */
         public: void ComponentDetach();
     };
 
